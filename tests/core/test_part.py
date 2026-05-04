@@ -22,9 +22,15 @@
 
 """Test basic using part/body/face."""
 
+from pathlib import Path
+
 import pytest
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Body, Face, Part, Project, Speos
+from ansys.speos.core.generic.parameters import MeshData
+from ansys.speos.core.kernel import ProtoFace
+from tests.conftest import test_path
+from tests.core.test_opt_prop import create_rect_face
 
 
 def test_create_root_part(speos: Speos):
@@ -500,3 +506,32 @@ def test_face_invalid_normals_raises(speos: Speos):
     f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     with pytest.raises(ValueError):
         f.normals = [0, 0, 1, 0, 0, 1]  # length mismatch with vertices
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_vertices_data(speos: Speos):
+    """Test vertices data implementation."""
+    p = Project(speos=speos)
+    rp = p.create_root_part()
+    bdy0 = rp.create_body(name="Body0")
+
+    face0_0 = create_rect_face(bdy0, "face0_0", [0, 0, 0], 5, 5)
+    face0_0.vertices_data = [MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])]
+    face0_0.commit()  # full picture
+    assert face0_0._face.vertices_data[0] == ProtoFace.MeshData(
+        name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    )
+
+    face0_0 = create_rect_face(bdy0, "face0_0", [0, 0, 0], 5, 5)
+    with pytest.raises(TypeError):
+        face0_0.vertices_data = [
+            ProtoFace.MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+        ]
+
+    p2 = Project(speos=speos, path=Path(test_path) / "Texture.1.speos" / "Texture.1.speos")
+
+    body = p2.find(name="Mesh*", name_regex=True, feature_type=Part)[0]
+
+    assert isinstance(body, Body)
+    assert isinstance(body._geom_features[0], Face)
+    assert isinstance(body._geom_features[0].vertices_data[0], MeshData)

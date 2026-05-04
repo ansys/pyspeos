@@ -1,0 +1,387 @@
+name: Pull Request
+
+on:
+  pull_request:
+    # Add non default types edited and labeled
+    types: [opened, reopened, synchronize, edited, labeled]
+
+env:
+  MAIN_PYTHON_VERSION: '3.14'
+  DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
+  PACKAGE_NAMESPACE: 'ansys.speos.core'
+  PACKAGE_NAME: 'ansys-speos-core'
+  BUILD_CHEATSHEET: 'true'
+  ON_CI: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Disable all default permissions at workflow level for security (least privilege principle)
+# Individual jobs will explicitly request only the permissions they need
+permissions: {}
+
+jobs:
+
+  label-syncer:
+    name: Syncer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: micnncim/action-label-syncer@3abd5ab72fda571e69fffd97bd4e0033dd5f495c # v1.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  labeler:
+    name: Set labels
+    needs: [label-syncer]
+    permissions:
+      contents: read        # Required to read repository files and .github/labeler.yml configuration
+      pull-requests: write  # Required to add/modify labels on pull requests
+    runs-on: ubuntu-latest
+    steps:
+
+    # Label based on modified files
+    - name: Label based on changed files
+      uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Label based on branch name
+    - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf # v1.1.3
+      if: |
+        startsWith(github.event.pull_request.head.ref, 'doc') ||
+        startsWith(github.event.pull_request.head.ref, 'docs')
+      with:
+        labels: documentation
+
+    - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf # v1.1.3
+      if: |
+        startsWith(github.event.pull_request.head.ref, 'maint') ||
+        startsWith(github.event.pull_request.head.ref, 'no-ci') ||
+        startsWith(github.event.pull_request.head.ref, 'ci')
+      with:
+        labels: maintenance
+
+    - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf # v1.1.3
+      if: startsWith(github.event.pull_request.head.ref, 'feat')
+      with:
+        labels: enhancement
+
+    - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf # v1.1.3
+      if: |
+        startsWith(github.event.pull_request.head.ref, 'fix') ||
+        startsWith(github.event.pull_request.head.ref, 'patch')
+      with:
+        labels: bug
+
+  commenter:
+    name: Commenter
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read        # Required to read PR metadata
+      pull-requests: write  # Required to post comments on pull requests
+    steps:
+    - name: Suggest to add labels
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+      # Execute only when no labels have been applied to the pull request
+      if: toJSON(github.event.pull_request.labels.*.name) == '{}'
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          Please add one of the following labels to add this contribution to the Release Notes :point_down:
+          - [bug](https://github.com/ansys/pyspeos/pulls?q=label%3Abug+)
+          - [documentation](https://github.com/ansys/pyspeos/pulls?q=label%3Adocumentation+)
+          - [enhancement](https://github.com/ansys/pyspeos/pulls?q=label%3Aenhancement+)
+          - [good first issue](https://github.com/ansys/pyspeos/pulls?q=label%3Agood+first+issue)
+          - [maintenance](https://github.com/ansys/pyspeos/pulls?q=label%3Amaintenance+)
+          - [release](https://github.com/ansys/pyspeos/pulls?q=label%3Arelease+)
+
+  changelog-fragment:
+    name: Create changelog fragment
+    needs: [labeler]
+    permissions:
+      contents: write       # Required to commit changelog fragments to the repository
+      pull-requests: write  # Required to update PR with changelog information
+    runs-on: ubuntu-latest
+    steps:
+    - uses: ansys/actions/doc-changelog@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+      with:
+        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        use-conventional-commits: true
+        use-default-towncrier-config: true
+        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+  pr-name:
+    name: Check the name of the PR
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read   # Required to read PR metadata
+    steps:
+      - name: Check commit name
+        uses: ansys/actions/check-pr-title@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  actions-security:
+    name: Check actions security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read workflow files and check for security issues
+    steps:
+      - uses: ansys/actions/check-actions-security@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
+        with:
+          generate-summary: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          auditing-level: 'high'
+
+  vulnerabilities:
+    name: Vulnerabilities
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for vulnerability scanning
+    steps:
+      - uses: ansys/actions/check-vulnerabilities@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-package-name: ${{ env.PACKAGE_NAME }}
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          dev-mode: ${{ github.ref != 'refs/heads/main' }}
+          extra-targets: 'graphics,jupyter'
+
+  type-check:
+    name: Type check with Ty
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for type checking
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: false
+          prune-cache: true
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+
+      # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
+      - name: Run Ty on selected files
+        run: |
+          source .venv/bin/activate
+          ty check src/ansys/speos/core/ examples/ \
+            --exclude src/ansys/speos/core/body.py \
+            --exclude src/ansys/speos/core/face.py \
+            --exclude src/ansys/speos/core/bsdf.py \
+            --exclude src/ansys/speos/core/launcher.py \
+            --exclude src/ansys/speos/core/intensity.py \
+            --exclude src/ansys/speos/core/ground_plane.py \
+            --exclude src/ansys/speos/core/geo_ref.py \
+            --exclude src/ansys/speos/core/logger.py \
+            --exclude src/ansys/speos/core/lxp.py \
+            --exclude src/ansys/speos/core/part.py \
+            --exclude src/ansys/speos/core/opt_prop.py \
+            --exclude src/ansys/speos/core/project.py \
+            --exclude src/ansys/speos/core/proto_message_utils.py \
+            --exclude src/ansys/speos/core/source.py \
+            --exclude src/ansys/speos/core/spectrum.py \
+            --exclude src/ansys/speos/core/simulation.py \
+            --exclude src/ansys/speos/core/sensor.py \
+            --exclude src/ansys/speos/core/__init__.py \
+            --exclude src/ansys/speos/core/generic \
+            --exclude src/ansys/speos/core/kernel \
+            --exclude src/ansys/speos/core/workflow \
+            --exclude examples/core \
+            --exclude examples/kernel \
+            --exclude examples/workflow
+
+  doc-style:
+    name: Documentation style check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read documentation files for style checking
+    steps:
+      - name: PyAnsys documentation style checks
+        uses: ansys/actions/doc-style@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  smoke-tests:
+    name: Build and Smoke tests
+    runs-on: ${{ matrix.os }}
+    permissions:
+      attestations: write   # Required to create and publish build attestations (SLSA provenance)
+      contents: read        # Required to read repository content for building
+      id-token: write       # Required for OIDC token generation (for provenance signing)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - name: Build wheelhouse and perform smoke test
+        uses: ansys/actions/build-wheelhouse@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          attest-provenance: true
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+
+  doc-build:
+    name: Documentation build
+    runs-on: ubuntu-latest
+    needs: [doc-style]
+    permissions:
+      contents: read   # Required to read documentation files for building
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io/ansys
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start container
+        shell: bash
+        env:
+          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
+
+      - name: Run Ansys documentation building action
+        uses: ansys/actions/doc-build@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          check-links: false
+          sphinxopts: -j 1 --keep-going # Try without parallel execution
+          checkout: false
+          dependencies: "pandoc"
+          needs-quarto: true
+
+      - name: Stop container
+        shell: bash
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
+
+  # NOTE: Should this job be using ansys/actions/tests-pytest ?
+  testing:
+    name: Testing and coverage
+    needs: [smoke-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for testing
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Create Python virtual environment
+        shell: bash
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -c "import sys; print(sys.executable)"
+
+      - name: Install packages for testing
+        shell: bash
+        run: |
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install --upgrade build wheel
+          pip install .[tests]
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io/ansys
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start container
+        shell: bash
+        env:
+          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0 -m 25000000
+
+      - name: Run pytest
+        shell: bash
+        run: |
+          . .venv/bin/activate
+          pytest -xs
+
+      - name: Upload Coverage Results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-html-ubuntu
+          path: .cov/html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: .cov/xml
+
+      - name: Stop container
+        shell: bash
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
+
+  build-library:
+    name: Build library
+    runs-on: ubuntu-latest
+    needs: [doc-build, testing]
+    permissions:
+      attestations: write   # Required to create and publish package attestations (SLSA provenance)
+      contents: read        # Required to read repository content for packaging
+      id-token: write       # Required for OIDC token generation (for provenance signing)
+    steps:
+      - name: Build library source and wheel artifacts
+        uses: ansys/actions/build-library@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          attest-provenance: true
+          library-name: ${{ env.PACKAGE_NAME }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}

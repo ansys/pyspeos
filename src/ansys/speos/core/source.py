@@ -46,6 +46,7 @@ from ansys.speos.core.generic.parameters import (
     AutomaticSunParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
+    DisplayParameters,
     FluxFromFileParameters,
     IntensityFluxParameters,
     IntensityOrientationType,
@@ -125,7 +126,7 @@ class BaseSource:
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
             default_parameters : Optional[\
-            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None,
+            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None
                 If defined the values in the UserDefinedWhitePoint instance will be
                 overwritten by the values of the data class.
             stable_ctr : bool
@@ -147,9 +148,14 @@ class BaseSource:
                     msg = "UserDefinedWhitePoint class instantiated outside of class scope"
                     raise RuntimeError(msg)
                 self._userdefined_white_point = userdefined_white_point
+                self._fill_parameters(default_parameters)
 
-                if default_parameters is not None:
-                    self.white_point = [default_parameters.x, default_parameters.y]
+            def _fill_parameters(
+                self, default_parameters: Optional[UserDefinedWhitePointParameters] = None
+            ) -> None:
+                if default_parameters is None:
+                    return
+                self.white_point = [default_parameters.x, default_parameters.y]
 
             @property
             def white_point(self):
@@ -211,34 +217,38 @@ class BaseSource:
                 field_name_to_complete="blue_spectrum_guid",
                 spectrum_guid=self._userdefined_color_space.blue_spectrum_guid,
             )
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                # Default values
-                self.red_spectrum = str(default_parameters.red_spectrum_uri)
-                self.green_spectrum = str(default_parameters.green_spectrum_uri)
-                self.blue_spectrum = str(default_parameters.blue_spectrum_uri)
-                match default_parameters.white_point_type:
-                    case WhitePointType.d65:
-                        self.set_white_point_type_d65()
-                    case WhitePointType.d50:
-                        self.set_white_point_type_d50()
-                    case WhitePointType.c:
-                        self.set_white_point_type_c()
-                    case WhitePointType.e:
-                        self.set_white_point_type_e()
-                    case _:
-                        match type(default_parameters.white_point_type).__name__:
-                            case "UserDefinedWhitePointParameters":
-                                self.set_white_point_type_user_defined().white_point = [
-                                    default_parameters.white_point_type.x,
-                                    default_parameters.white_point_type.y,
-                                ]
-                            case _:
-                                raise ValueError(
-                                    "Unsupported white point_type type: {}".format(
-                                        type(default_parameters.white_point_type).__name__
-                                    )
+        def _fill_parameters(
+            self, default_parameters: Optional[UserDefinedColorSpaceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.red_spectrum = str(default_parameters.red_spectrum_uri)
+            self.green_spectrum = str(default_parameters.green_spectrum_uri)
+            self.blue_spectrum = str(default_parameters.blue_spectrum_uri)
+            match default_parameters.white_point_type:
+                case WhitePointType.d65:
+                    self.set_white_point_type_d65()
+                case WhitePointType.d50:
+                    self.set_white_point_type_d50()
+                case WhitePointType.c:
+                    self.set_white_point_type_c()
+                case WhitePointType.e:
+                    self.set_white_point_type_e()
+                case _:
+                    match type(default_parameters.white_point_type).__name__:
+                        case "UserDefinedWhitePointParameters":
+                            self.set_white_point_type_user_defined().white_point = [
+                                default_parameters.white_point_type.x,
+                                default_parameters.white_point_type.y,
+                            ]
+                        case _:
+                            raise ValueError(
+                                "Unsupported white point_type type: {}".format(
+                                    type(default_parameters.white_point_type).__name__
                                 )
+                            )
 
         @property
         def red_spectrum(self) -> dict:
@@ -334,12 +344,19 @@ class BaseSource:
 
             Returns
             -------
-            Union[None,\
-           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
+            Union[None, \
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType, \
            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
                 PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
             """
+            if self._white_point_type is None:
+                if self._userdefined_color_space.HasField("pre_defined_white_point"):
+                    self._white_point_type = (
+                        self._userdefined_color_space.pre_defined_white_point.white_point_type
+                    )
+                elif self._userdefined_color_space.HasField("user_defined_white_point"):
+                    self._white_point_type = self.set_white_point_type_user_defined()
             return self._white_point_type
 
         def set_white_point_type_d65(self) -> BaseSource.UserDefinedColorSpace:
@@ -471,14 +488,16 @@ class BaseSource:
                 msg = "PredefinedColorSpace class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._predefined_color_space = predefined_color_space
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                # Default values
-                match default_parameters:
-                    case ColorSpaceType.srgb:
-                        self.set_color_space_srgb()
-                    case ColorSpaceType.adobe_rgb:
-                        self.set_color_space_adobergb()
+        def _fill_parameters(self, default_parameters: Optional[ColorSpaceType] = None) -> None:
+            if default_parameters is None:
+                return
+            match default_parameters:
+                case ColorSpaceType.srgb:
+                    self.set_color_space_srgb()
+                case ColorSpaceType.adobe_rgb:
+                    self.set_color_space_adobergb()
 
         def set_color_space_srgb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the srgb preset.
@@ -581,20 +600,31 @@ class BaseSource:
                 raise RuntimeError(msg)
             self._flux = flux
             self._flux_type = None
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                if isinstance(default_parameters, LuminousFluxParameters):
-                    self.set_luminous()
-                    self.value = default_parameters.value
-                elif isinstance(default_parameters, RadiantFluxParameters):
-                    self.set_radiant()
-                    self.value = default_parameters.value
-                elif isinstance(
-                    default_parameters, (FluxFromFileParameters, IntensityFluxParameters)
-                ):
-                    pass
-                else:
-                    raise ValueError(f"Unsupported flux type: {type(default_parameters).__name__}")
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    FluxFromFileParameters,
+                    IntensityFluxParameters,
+                ]
+            ] = None,
+        ) -> None:
+            if default_parameters is None:
+                return
+            if isinstance(default_parameters, LuminousFluxParameters):
+                self.set_luminous()
+                self.value = default_parameters.value
+            elif isinstance(default_parameters, RadiantFluxParameters):
+                self.set_radiant()
+                self.value = default_parameters.value
+            elif isinstance(default_parameters, (FluxFromFileParameters, IntensityFluxParameters)):
+                pass
+            else:
+                raise ValueError(f"Unsupported flux type: {type(default_parameters).__name__}")
 
         def set_luminous(self) -> BaseSource.Flux:
             """Set flux type luminous.
@@ -1027,56 +1057,60 @@ class SourceLuminaire(BaseSource):
             message_to_complete=self._source_template.luminaire,
             spectrum_guid=self._source_template.luminaire.spectrum_guid,
         )
+        self._fill_parameters(default_parameters)
 
-        if default_parameters is not None:
-            # New Default values
-            self.intensity_file_uri = default_parameters.intensity_file_uri
-            match type(default_parameters.flux_type).__name__:
-                case "FluxFromFileParameters":
-                    self.set_flux_from_intensity_file()
-                case "LuminousFluxParameters":
-                    self.flux.set_luminous()
-                    self.flux.value = default_parameters.flux_type.value
-                case "RadiantFluxParameters":
-                    self.flux.set_radiant()
-                    self.flux.value = default_parameters.flux_type.value
-                case _:
-                    raise ValueError(
-                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
-                    )
+    def _fill_parameters(
+        self, default_parameters: Optional[LuminaireSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.intensity_file_uri = default_parameters.intensity_file_uri
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_intensity_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
 
-            match default_parameters.spectrum_type:
-                case SpectrumType.incandescent:
-                    self.spectrum.set_incandescent()
-                case SpectrumType.warm_white_fluorescent:
-                    self.spectrum.set_warmwhitefluorescent()
-                case SpectrumType.daylight_fluorescent:
-                    self.spectrum.set_daylightfluorescent()
-                case SpectrumType.white_led:
-                    self.spectrum.set_white_led()
-                case SpectrumType.halogen:
-                    self.spectrum.set_halogen()
-                case SpectrumType.metal_halide:
-                    self.spectrum.set_metalhalide()
-                case SpectrumType.high_pressure_sodium:
-                    self.spectrum.set_highpressuresodium()
-                case _:
-                    match type(default_parameters.spectrum_type).__name__:
-                        case "SpectrumLibraryParameters":
-                            self.spectrum.set_library().file_uri = (
-                                default_parameters.spectrum_type.file_uri
+        match default_parameters.spectrum_type:
+            case SpectrumType.incandescent:
+                self.spectrum.set_incandescent()
+            case SpectrumType.warm_white_fluorescent:
+                self.spectrum.set_warmwhitefluorescent()
+            case SpectrumType.daylight_fluorescent:
+                self.spectrum.set_daylightfluorescent()
+            case SpectrumType.white_led:
+                self.spectrum.set_white_led()
+            case SpectrumType.halogen:
+                self.spectrum.set_halogen()
+            case SpectrumType.metal_halide:
+                self.spectrum.set_metalhalide()
+            case SpectrumType.high_pressure_sodium:
+                self.spectrum.set_highpressuresodium()
+            case _:
+                match type(default_parameters.spectrum_type).__name__:
+                    case "SpectrumLibraryParameters":
+                        self.spectrum.set_library().file_uri = (
+                            default_parameters.spectrum_type.file_uri
+                        )
+                    case "SpectrumBlackBodyParameters":
+                        self.spectrum.set_blackbody().temperature = (
+                            default_parameters.spectrum_type.temperature
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.spectrum_type).__name__
                             )
-                        case "SpectrumBlackBodyParameters":
-                            self.spectrum.set_blackbody().temperature = (
-                                default_parameters.spectrum_type.temperature
-                            )
-                        case _:
-                            raise ValueError(
-                                "Unsupported spectrum type: {}".format(
-                                    type(default_parameters.spectrum_type).__name__
-                                )
-                            )
-            self.axis_system = default_parameters.axis_system
+                        )
+        self.axis_system = default_parameters.axis_system
 
     @property
     def visual_data(self) -> _VisualData:
@@ -1243,8 +1277,7 @@ class SourceRayFile(BaseSource):
         ----------
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
-        default_parameters : Optional[\
-        ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
+        default_parameters : Optional[ansys.core.generic.parameters.RayFileSourceParameters] = None
             If defined the values in the ExitGeometries instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -1280,7 +1313,6 @@ class SourceRayFile(BaseSource):
             ansys.speos.core.body.Body, ansys.speos.core.face.Face]]]
                 Exit Geometries that will use this rayfile source.
                 By default, ``[]``.
-
 
             Returns
             -------
@@ -1348,48 +1380,51 @@ class SourceRayFile(BaseSource):
         self._type = None
         # Attribute gathering more complex exit geometries settings
         self._exit_geometry_type = None
+        self._fill_parameters(default_parameters)
 
-        if default_parameters is not None:
-            self.ray_file_uri = default_parameters.ray_file_uri
-            match type(default_parameters.flux_type).__name__:
-                case "FluxFromFileParameters":
-                    self.set_flux_from_ray_file()
-                case "LuminousFluxParameters":
-                    self.flux.set_luminous()
-                    self.flux.value = default_parameters.flux_type.value
-                case "RadiantFluxParameters":
-                    self.flux.set_radiant()
-                    self.flux.value = default_parameters.flux_type.value
+    def _fill_parameters(
+        self, default_parameters: Optional[RayFileSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.ray_file_uri = default_parameters.ray_file_uri
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_ray_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+        self.axis_system = default_parameters.axis_system
+
+        if default_parameters.spectrum_type is not None:
+            match type(default_parameters.spectrum_type).__name__:
+                case "SpectrumBlackBodyParameters":
+                    self.spectrum.set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
+                    )
+                case "SpectrumLibraryParameters":
+                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+                case "SpectrumMonochromaticParameters":
+                    self.spectrum.set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
                 case _:
                     raise ValueError(
-                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
+                        )
                     )
 
-            self.axis_system = default_parameters.axis_system
-
-            if default_parameters.spectrum_type is not None:
-                match type(default_parameters.spectrum_type).__name__:
-                    case "SpectrumBlackBodyParameters":
-                        self.spectrum.set_blackbody().temperature = (
-                            default_parameters.spectrum_type.temperature
-                        )
-                    case "SpectrumLibraryParameters":
-                        self.spectrum.set_library().file_uri = (
-                            default_parameters.spectrum_type.file_uri
-                        )
-                    case "SpectrumMonochromaticParameters":
-                        self.spectrum.set_monochromatic().wavelength = (
-                            default_parameters.spectrum_type.wavelength
-                        )
-                    case _:
-                        raise ValueError(
-                            "Unsupported spectrum type: {}".format(
-                                type(default_parameters.spectrum_type).__name__
-                            )
-                        )
-
-            if default_parameters.exit_geometry is not None:
-                self.set_exit_geometries().geometries = default_parameters.exit_geometry
+        if default_parameters.exit_geometry is not None:
+            self.set_exit_geometries().geometries = default_parameters.exit_geometry
 
     @property
     def visual_data(self) -> _VisualData:
@@ -1619,11 +1654,24 @@ class SourceSurface(BaseSource):
                 msg = "Flux class instantiated outside of class scope"
                 raise RuntimeError(msg)
             super().__init__(flux, default_parameters, stable_ctr)
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                if isinstance(default_parameters, IntensityFluxParameters):
-                    self.set_luminous_intensity()
-                    self.value = default_parameters.value
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    IntensityFluxParameters,
+                    FluxFromFileParameters,
+                ]
+            ] = None,
+        ) -> None:
+            if default_parameters is None:
+                return
+            if isinstance(default_parameters, IntensityFluxParameters):
+                self.set_luminous_intensity()
+                self.value = default_parameters.value
 
         def set_luminous_intensity(self) -> BaseSource.Flux:
             """Set flux type luminous intensity.
@@ -1673,8 +1721,14 @@ class SourceSurface(BaseSource):
                 raise RuntimeError(msg)
             self._exitance_constant = exitance_constant
             self._exitance_constant_props = exitance_constant_props
-            if default_parameters is not None:
-                self.geometries = default_parameters.emissive_faces
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[ConstantExitanceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.geometries = default_parameters.emissive_faces
 
         @property
         def geometries(self) -> List[tuple[GeoRef, bool]]:
@@ -1752,12 +1806,16 @@ class SourceSurface(BaseSource):
                 raise RuntimeError(msg)
             self._exitance_variable = exitance_variable
             self._exitance_variable_props = exitance_variable_props
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                # Default values
-                self._exitance_variable.SetInParent()
-                self.axis_plane = default_parameters.axis_system
-                self.xmp_file_uri = default_parameters.xmp_file_uri
+        def _fill_parameters(
+            self, default_parameters: Optional[VariableExitanceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self._exitance_variable.SetInParent()
+            self.axis_plane = default_parameters.axis_system
+            self.xmp_file_uri = default_parameters.xmp_file_uri
 
         @property
         def xmp_file_uri(self) -> str:
@@ -1847,140 +1905,135 @@ class SourceSurface(BaseSource):
         self._exitance_type = None
         # Attribute gathering more complex flux type
         self._flux_type = None
+        self._fill_parameters(default_parameters)
 
-        if default_parameters is not None:
-            # Flux
-            match type(default_parameters.flux_type).__name__:
-                case "FluxFromFileParameters":
-                    self.set_flux_from_intensity_file()
-                case "LuminousFluxParameters":
-                    self.flux.set_luminous()
-                    self.flux.value = default_parameters.flux_type.value
-                case "RadiantFluxParameters":
-                    self.flux.set_radiant()
-                    self.flux.value = default_parameters.flux_type.value
-                case "IntensityFluxParameters":
-                    self.flux.set_luminous_intensity()
-                    self.flux.value = default_parameters.flux_type.value
+    def _fill_parameters(
+        self, default_parameters: Optional[SurfaceSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        # Flux
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_intensity_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case "IntensityFluxParameters":
+                self.flux.set_luminous_intensity()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+        # Exitance
+        match type(default_parameters.exitance_type).__name__:
+            case "VariableExitanceParameters":
+                self.set_exitance_variable().xmp_file_uri = (
+                    default_parameters.exitance_type.xmp_file_uri
+                )
+                self.set_exitance_variable().axis_plane = (
+                    default_parameters.exitance_type.axis_system
+                )
+            case "ConstantExitanceParameters":
+                self.set_exitance_constant().geometries = (
+                    default_parameters.exitance_type.emissive_faces
+                )
+            case _:
+                raise ValueError(
+                    "Unsupported exitance type: {}".format(
+                        type(default_parameters.exitance_type).__name__
+                    )
+                )
+
+        # Spectrum
+        if default_parameters.spectrum_type is not None:
+            match type(default_parameters.spectrum_type).__name__:
+                case "SpectrumBlackBodyParameters":
+                    self.spectrum.set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
+                    )
+                case "SpectrumLibraryParameters":
+                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+                case "SpectrumMonochromaticParameters":
+                    self.spectrum.set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
                 case _:
                     raise ValueError(
-                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
-                    )
-
-            # Exitance
-            match type(default_parameters.exitance_type).__name__:
-                case "VariableExitanceParameters":
-                    self.set_exitance_variable().xmp_file_uri = (
-                        default_parameters.exitance_type.xmp_file_uri
-                    )
-                    self.set_exitance_variable().axis_plane = (
-                        default_parameters.exitance_type.axis_system
-                    )
-                case "ConstantExitanceParameters":
-                    self.set_exitance_constant().geometries = (
-                        default_parameters.exitance_type.emissive_faces
-                    )
-                case _:
-                    raise ValueError(
-                        "Unsupported exitance type: {}".format(
-                            type(default_parameters.exitance_type).__name__
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
                         )
                     )
 
-            # Spectrum
-            if default_parameters.spectrum_type is not None:
-                match type(default_parameters.spectrum_type).__name__:
-                    case "SpectrumBlackBodyParameters":
-                        self.spectrum.set_blackbody().temperature = (
-                            default_parameters.spectrum_type.temperature
-                        )
-                    case "SpectrumLibraryParameters":
-                        self.spectrum.set_library().file_uri = (
-                            default_parameters.spectrum_type.file_uri
-                        )
-                    case "SpectrumMonochromaticParameters":
-                        self.spectrum.set_monochromatic().wavelength = (
-                            default_parameters.spectrum_type.wavelength
-                        )
+        # Intensity
+        match type(default_parameters.intensity_type).__name__:
+            case "IntensityLambertianParameters":
+                self.intensity.set_cos().n = 1
+                self.intensity.set_cos().total_angle = default_parameters.intensity_type.total_angle
+            case "IntensityCosParameters":
+                self.intensity.set_cos().n = default_parameters.intensity_type.n
+                self.intensity.set_cos().total_angle = default_parameters.intensity_type.total_angle
+            case "IntensitySymmetricGaussianParameters":
+                self.intensity.set_gaussian().fwhm_angle_x = default_parameters.intensity_type.fwhm
+                self.intensity.set_gaussian().fwhm_angle_y = default_parameters.intensity_type.fwhm
+                self.intensity.set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            case "IntensitAsymmetricGaussianParameters":
+                self.intensity.set_gaussian().fwhm_angle_x = (
+                    default_parameters.intensity_type.fwhm_x
+                )
+                self.intensity.set_gaussian().fwhm_angle_y = (
+                    default_parameters.intensity_type.fwhm_y
+                )
+                self.intensity.set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+                self.intensity.set_gaussian().axis_system = (
+                    default_parameters.intensity_type.axis_system
+                )
+            case "IntensityLibraryParameters":
+                self.intensity.set_library().intensity_file_uri = (
+                    default_parameters.intensity_type.intensity_file_uri
+                )
+                if default_parameters.intensity_type.exit_geometries is not None:
+                    self.intensity.set_library().exit_geometries = (
+                        default_parameters.intensity_type.exit_geometries
+                    )
+                match default_parameters.intensity_type.orientation_type:
+                    case IntensityOrientationType.normal_to_uv:
+                        self.intensity.set_library().set_orientation_normal_to_uv_map()
+                    case IntensityOrientationType.normal_to_surface:
+                        self.intensity.set_library().set_orientation_normal_to_surface()
                     case _:
-                        raise ValueError(
-                            "Unsupported spectrum type: {}".format(
-                                type(default_parameters.spectrum_type).__name__
-                            )
-                        )
-
-            # Intensity
-            match type(default_parameters.intensity_type).__name__:
-                case "IntensityLambertianParameters":
-                    self.intensity.set_cos().n = 1
-                    self.intensity.set_cos().total_angle = (
-                        default_parameters.intensity_type.total_angle
-                    )
-                case "IntensityCosParameters":
-                    self.intensity.set_cos().n = default_parameters.intensity_type.n
-                    self.intensity.set_cos().total_angle = (
-                        default_parameters.intensity_type.total_angle
-                    )
-                case "IntensitySymmetricGaussianParameters":
-                    self.intensity.set_gaussian().fwhm_angle_x = (
-                        default_parameters.intensity_type.fwhm
-                    )
-                    self.intensity.set_gaussian().fwhm_angle_y = (
-                        default_parameters.intensity_type.fwhm
-                    )
-                    self.intensity.set_gaussian().total_angle = (
-                        default_parameters.intensity_type.total_angle
-                    )
-                case "IntensitAsymmetricGaussianParameters":
-                    self.intensity.set_gaussian().fwhm_angle_x = (
-                        default_parameters.intensity_type.fwhm_x
-                    )
-                    self.intensity.set_gaussian().fwhm_angle_y = (
-                        default_parameters.intensity_type.fwhm_y
-                    )
-                    self.intensity.set_gaussian().total_angle = (
-                        default_parameters.intensity_type.total_angle
-                    )
-                    self.intensity.set_gaussian().axis_system = (
-                        default_parameters.intensity_type.axis_system
-                    )
-                case "IntensityLibraryParameters":
-                    self.intensity.set_library().intensity_file_uri = (
-                        default_parameters.intensity_type.intensity_file_uri
-                    )
-                    if default_parameters.intensity_type.exit_geometries is not None:
-                        self.intensity.set_library().exit_geometries = (
-                            default_parameters.intensity_type.exit_geometries
-                        )
-                    match default_parameters.intensity_type.orientation_type:
-                        case IntensityOrientationType.normal_to_uv:
-                            self.intensity.set_library().set_orientation_normal_to_uv_map()
-                        case IntensityOrientationType.normal_to_surface:
-                            self.intensity.set_library().set_orientation_normal_to_surface()
-                        case _:
-                            match type(default_parameters.intensity_type.orientation_type).__name__:
-                                case "IntensityOrientationAxisSystemParameters":
-                                    orientation_axis = (
-                                        default_parameters.intensity_type.orientation_type
+                        match type(default_parameters.intensity_type.orientation_type).__name__:
+                            case "IntensityOrientationAxisSystemParameters":
+                                orientation_axis = (
+                                    default_parameters.intensity_type.orientation_type
+                                )
+                                axis_parameters = orientation_axis.axis_system
+                                self.intensity.set_library().orientation_axis_system = (
+                                    axis_parameters
+                                )
+                            case _:
+                                raise ValueError(
+                                    "Unsupported orientation type: {}".format(
+                                        type(
+                                            default_parameters.intensity_type.orientation_type
+                                        ).__name__
                                     )
-                                    axis_parameters = orientation_axis.axis_system
-                                    self.intensity.set_library().orientation_axis_system = (
-                                        axis_parameters
-                                    )
-                                case _:
-                                    raise ValueError(
-                                        "Unsupported orientation type: {}".format(
-                                            type(
-                                                default_parameters.intensity_type.orientation_type
-                                            ).__name__
-                                        )
-                                    )
-                case _:
-                    raise ValueError(
-                        "Unsupported intensity type: {}".format(
-                            type(default_parameters.intensity_type).__name__
-                        )
+                                )
+            case _:
+                raise ValueError(
+                    "Unsupported intensity type: {}".format(
+                        type(default_parameters.intensity_type).__name__
                     )
+                )
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2314,16 +2367,21 @@ class BaseSourceAmbient(BaseSource):
                     "BaseSourceAmbient.AutomaticSun class instantiated outside of class scope"
                 )
             self._sun = sun
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                self.year = default_parameters.year
-                self.month = default_parameters.month
-                self.day = default_parameters.day
-                self.hour = default_parameters.hour
-                self.minute = default_parameters.minute
-                self.time_zone = default_parameters.time_zone
-                self.longitude = default_parameters.longitude
-                self.latitude = default_parameters.latitude
+        def _fill_parameters(
+            self, default_parameters: Optional[AutomaticSunParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.year = default_parameters.year
+            self.month = default_parameters.month
+            self.day = default_parameters.day
+            self.hour = default_parameters.hour
+            self.minute = default_parameters.minute
+            self.time_zone = default_parameters.time_zone
+            self.longitude = default_parameters.longitude
+            self.latitude = default_parameters.latitude
 
         @property
         def year(self) -> int:
@@ -2523,9 +2581,14 @@ class BaseSourceAmbient(BaseSource):
                     "BaseSourceAmbient.Manual class instantiated outside of class scope"
                 )
             self._sun = sun
+            self._fill_parameters(default_parameters)
 
-            if default_parameters is not None:
-                self.direction = default_parameters.direction
+        def _fill_parameters(
+            self, default_parameters: Optional[ManualSunParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.direction = default_parameters.direction
 
         @property
         def direction(self) -> List[float]:
@@ -2621,26 +2684,29 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self._speos_client = self._project.client
         self._name = name
         self._type = None
+        self._fill_parameters(default_parameters)
 
-        if default_parameters is not None:
-            self.with_sky = default_parameters.with_sky
-            self.turbidity = default_parameters.turbidity
-            self.zenith_direction = default_parameters.zenith_direction
-            self.north_direction = default_parameters.north_direction
-            if isinstance(default_parameters.sun_type, AutomaticSunParameters):
-                self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
-                self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
-                self.set_sun_automatic().year = default_parameters.sun_type.year
-                self.set_sun_automatic().month = default_parameters.sun_type.month
-                self.set_sun_automatic().day = default_parameters.sun_type.day
-                self.set_sun_automatic().hour = default_parameters.sun_type.hour
-                self.set_sun_automatic().minute = default_parameters.sun_type.minute
-            elif isinstance(default_parameters.sun_type, ManualSunParameters):
-                self.set_sun_manual().direction = default_parameters.sun_type.direction
-            else:
-                raise ValueError(
-                    f"Unsupported sun type: {type(default_parameters.sun_type).__name__}"
-                )
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientNaturalLightParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.with_sky = default_parameters.with_sky
+        self.turbidity = default_parameters.turbidity
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+            self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+            self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+            self.set_sun_automatic().year = default_parameters.sun_type.year
+            self.set_sun_automatic().month = default_parameters.sun_type.month
+            self.set_sun_automatic().day = default_parameters.sun_type.day
+            self.set_sun_automatic().hour = default_parameters.sun_type.hour
+            self.set_sun_automatic().minute = default_parameters.sun_type.minute
+        elif isinstance(default_parameters.sun_type, ManualSunParameters):
+            self.set_sun_manual().direction = default_parameters.sun_type.direction
+        else:
+            raise ValueError(f"Unsupported sun type: {type(default_parameters.sun_type).__name__}")
 
     @property
     def turbidity(self) -> float:
@@ -2891,65 +2957,68 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self._speos_client = self._project.client
         self._name = name
         self._type = None
+        self._fill_parameters(default_parameters)
 
-        if default_parameters is not None:
-            self.zenith_direction = default_parameters.zenith_direction
-            self.north_direction = default_parameters.north_direction
-            self.luminance = default_parameters.luminance
-            match default_parameters.color_space_type:
-                case ColorSpaceType.srgb:
-                    self.set_predefined_color_space().set_color_space_srgb()
-                case ColorSpaceType.adobe_rgb:
-                    self.set_predefined_color_space().set_color_space_adobergb()
-                case _:
-                    if isinstance(
-                        default_parameters.color_space_type, UserDefinedColorSpaceParameters
-                    ):
-                        self.set_userdefined_color_space().red_spectrum = (
-                            default_parameters.color_space_type.red_spectrum_uri
-                        )
-                        self.set_userdefined_color_space().green_spectrum = (
-                            default_parameters.color_space_type.green_spectrum_uri
-                        )
-                        self.set_userdefined_color_space().blue_spectrum = (
-                            default_parameters.color_space_type.blue_spectrum_uri
-                        )
-                        match default_parameters.color_space_type.white_point_type:
-                            case WhitePointType.d65:
-                                self.set_userdefined_color_space().set_white_point_type_d65()
-                            case WhitePointType.d50:
-                                self.set_userdefined_color_space().set_white_point_type_d50()
-                            case WhitePointType.c:
-                                self.set_userdefined_color_space().set_white_point_type_c()
-                            case WhitePointType.e:
-                                self.set_userdefined_color_space().set_white_point_type_e()
-                            case _:
-                                if isinstance(
-                                    default_parameters.color_space_type.white_point_type,
-                                    UserDefinedWhitePointParameters,
-                                ):
-                                    color_space_prop = self.set_userdefined_color_space()
-                                    white_point_prop = (
-                                        color_space_prop.set_white_point_type_user_defined()
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientEnvironmentParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        self.luminance = default_parameters.luminance
+        match default_parameters.color_space_type:
+            case ColorSpaceType.srgb:
+                self.set_predefined_color_space().set_color_space_srgb()
+            case ColorSpaceType.adobe_rgb:
+                self.set_predefined_color_space().set_color_space_adobergb()
+            case _:
+                if isinstance(default_parameters.color_space_type, UserDefinedColorSpaceParameters):
+                    self.set_userdefined_color_space().red_spectrum = (
+                        default_parameters.color_space_type.red_spectrum_uri
+                    )
+                    self.set_userdefined_color_space().green_spectrum = (
+                        default_parameters.color_space_type.green_spectrum_uri
+                    )
+                    self.set_userdefined_color_space().blue_spectrum = (
+                        default_parameters.color_space_type.blue_spectrum_uri
+                    )
+                    match default_parameters.color_space_type.white_point_type:
+                        case WhitePointType.d65:
+                            self.set_userdefined_color_space().set_white_point_type_d65()
+                        case WhitePointType.d50:
+                            self.set_userdefined_color_space().set_white_point_type_d50()
+                        case WhitePointType.c:
+                            self.set_userdefined_color_space().set_white_point_type_c()
+                        case WhitePointType.e:
+                            self.set_userdefined_color_space().set_white_point_type_e()
+                        case _:
+                            if isinstance(
+                                default_parameters.color_space_type.white_point_type,
+                                UserDefinedWhitePointParameters,
+                            ):
+                                color_space_prop = self.set_userdefined_color_space()
+                                white_point_prop = (
+                                    color_space_prop.set_white_point_type_user_defined()
+                                )
+                                white_point_prop.white_point = [
+                                    default_parameters.color_space_type.white_point_type.x,
+                                    default_parameters.color_space_type.white_point_type.y,
+                                ]
+                            else:
+                                raise ValueError(
+                                    "Unsupported white point type: {}".format(
+                                        type(
+                                            default_parameters.color_space_type.white_point_type
+                                        ).__name__
                                     )
-                                    white_point_prop.white_point = [
-                                        default_parameters.color_space_type.white_point_type.x,
-                                        default_parameters.color_space_type.white_point_type.y,
-                                    ]
-                                else:
-                                    raise ValueError(
-                                        "Unsupported white point type: {}".format(
-                                            type(
-                                                default_parameters.color_space_type.white_point_type
-                                            ).__name__
-                                        )
-                                    )
-                    else:
-                        raise ValueError(
-                            "Unsupported color space type: {}".format(
-                                type(default_parameters.color_space_type).__name__
-                            )
+                                )
+                else:
+                    raise ValueError(
+                        "Unsupported color space type: {}".format(
+                            type(default_parameters.color_space_type).__name__
                         )
+                    )
 
     @property
     def zenith_direction(self) -> List[float]:
@@ -3150,6 +3219,8 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
         """Set the color space to use one of the presets.
 
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
         Returns
         -------
         ansys.speos.core.source.BaseSource.PredefinedColorSpace
@@ -3223,3 +3294,543 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             self._type._green_spectrum._delete()
             self._type._blue_spectrum._delete()
         super().delete()
+
+
+class SourceDisplay(BaseSource):
+    """Display Source.
+
+    By default, image uri is empty and luminance values is 50.
+
+    This feature wraps both:
+    - ``ansys.api.speos.source.v1.source_pb2.SourceTemplate.Display``
+    - ``ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.DisplayProperties``
+    """
+
+    @general_methods.min_speos_version(25, 2, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[DisplayParameters] = None,
+    ) -> None:
+        """Initialize a Display source object.
+
+        Parameters
+        ----------
+        project : ansys.speos.core.project.Project
+            Project that will own the feature.
+        name : str
+            Name of the feature.
+        description : str, optional
+            Description of the feature. Default is empty string.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata for the feature. Default is None (interpreted as {}).
+        source_instance : Optional[ProtoScene.SourceInstance], optional
+            If provided, populates the object from an existing scene SourceInstance.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.DisplayParameters], optional
+            If provided, Display source will be created based on values from the data class.
+            Default is None (no default values applied).
+
+        Returns
+        -------
+        None
+        """
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        # Intensity (similar pattern as for surface)
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            intensity_props_to_complete=self._source_instance.display_properties.intensity_properties,
+            key=self._source_template.display.intensity_guid,
+        )
+
+        # Ensure the template contains SourceDimensions (server rejects templates
+        # missing this element). Initialize to safe defaults if missing.
+        if not self._source_template.display.HasField("source_dimensions"):
+            sd = self._source_template.display.source_dimensions
+            sd.x_start = -50.0
+            sd.x_end = 50.0
+            sd.y_start = -50.0
+            sd.y_end = 50.0
+
+        # color space helper (either PredefinedColorSpace or UserDefinedColorSpace)
+        self._color_space_type = None
+
+        if default_parameters is not None:
+            self._fill_parameters(default_parameters)
+
+    def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
+        """Populate the Display source from defaults.
+
+        Parameters
+        ----------
+        default_parameters : ansys.speos.core.generic.parameters.DisplayParameters
+            Dataclass carrying the values to apply to this display source.
+
+        Raises
+        ------
+        ValueError
+            If an unsupported intensity orientation type is supplied.
+        """
+        # Color space
+        match default_parameters.color_space_type:
+            case ColorSpaceType.srgb:
+                self.set_pre_defined_color_space().set_color_space_srgb()
+            case ColorSpaceType.adobe_rgb:
+                self.set_pre_defined_color_space().set_color_space_adobergb()
+            case UserDefinedColorSpaceParameters():
+                cs = self.set_userdefined_color_space()
+                cs.red_spectrum = default_parameters.color_space_type.red_spectrum_uri
+                cs.green_spectrum = default_parameters.color_space_type.green_spectrum_uri
+                cs.blue_spectrum = default_parameters.color_space_type.blue_spectrum_uri
+                match default_parameters.color_space_type.white_point_type:
+                    case WhitePointType.d50:
+                        cs.set_white_point_type_d50()
+                    case WhitePointType.d65:
+                        cs.set_white_point_type_d65()
+                    case WhitePointType.e:
+                        cs.set_white_point_type_e()
+                    case WhitePointType.c:
+                        cs.set_white_point_type_c()
+                    case UserDefinedWhitePointParameters():
+                        ud_wp = cs.set_white_point_type_user_defined()
+                        ud_wp.white_point = [
+                            default_parameters.color_space_type.white_point_type.x,
+                            default_parameters.color_space_type.white_point_type.y,
+                        ]
+
+        # Intensity
+        if default_parameters.intensity_type is not None:
+            match type(default_parameters.intensity_type).__name__:
+                case "IntensityLambertianParameters":
+                    self.intensity.set_cos().n = 1
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensityCosParameters":
+                    self.intensity.set_cos().n = default_parameters.intensity_type.n
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitySymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitAsymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm_x
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm_y
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                    self.intensity.set_gaussian().axis_system = (
+                        default_parameters.intensity_type.axis_system
+                    )
+                case "IntensityLibraryParameters":
+                    self.intensity.set_library().intensity_file_uri = (
+                        default_parameters.intensity_type.intensity_file_uri
+                    )
+                    if default_parameters.intensity_type.exit_geometries is not None:
+                        self.intensity.set_library().exit_geometries = (
+                            default_parameters.intensity_type.exit_geometries
+                        )
+                    match default_parameters.intensity_type.orientation_type:
+                        case IntensityOrientationType.normal_to_uv:
+                            self.intensity.set_library().set_orientation_normal_to_uv_map()
+                        case IntensityOrientationType.normal_to_surface:
+                            self.intensity.set_library().set_orientation_normal_to_surface()
+                        case _:
+                            match type(default_parameters.intensity_type.orientation_type).__name__:
+                                case "IntensityOrientationAxisSystemParameters":
+                                    orientation_axis = (
+                                        default_parameters.intensity_type.orientation_type
+                                    )
+                                    axis_parameters = orientation_axis.axis_system
+                                    self.intensity.set_library().orientation_axis_system = (
+                                        axis_parameters
+                                    )
+                                case _:
+                                    raise ValueError(
+                                        "Unsupported orientation type: {}".format(
+                                            type(
+                                                default_parameters.intensity_type.orientation_type
+                                            ).__name__
+                                        )
+                                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported intensity type: {}".format(
+                            type(default_parameters.intensity_type).__name__
+                        )
+                    )
+
+        # Scalar / instance-level properties
+        self.luminance = default_parameters.luminance
+        self.contrast_ratio = default_parameters.contrast_ratio
+        self.image_file_uri = default_parameters.image_file_uri
+        self.axis_system = default_parameters.axis_system
+        self.x_start = default_parameters.x_start
+        self.x_end = default_parameters.x_end
+        self.y_start = default_parameters.y_start
+        self.y_end = default_parameters.y_end
+
+    @property
+    def image_file_uri(self) -> str:
+        """Image file URI for the display.
+
+        Supported formats include PNG, JPEG, BMP, TIFF, RGB, HDR/EXR where applicable.
+
+        Returns
+        -------
+        str
+            Image file URI referenced by the display.
+        """
+        return self._source_template.display.image_file_uri
+
+    @image_file_uri.setter
+    def image_file_uri(self, uri: Union[str, Path]) -> None:
+        """Set the image file URI for the display.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            File path or URI to the image to be used by the display.
+        """
+        self._source_template.display.image_file_uri = str(uri)
+
+    @property
+    def x_start(self) -> float:
+        """Source physical dimension: x_start in millimeters.
+
+        Returns
+        -------
+        float
+            x_start in millimeters.
+        """
+        return self._source_template.display.source_dimensions.x_start
+
+    @x_start.setter
+    def x_start(self, value: float) -> None:
+        """Set source physical dimension x_start.
+
+        Parameters
+        ----------
+        value : float
+            x_start in millimeters.
+        """
+        self._source_template.display.source_dimensions.x_start = float(value)
+
+    @property
+    def x_end(self) -> float:
+        """Source physical dimension: x_end in millimeters.
+
+        Returns
+        -------
+        float
+            x_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.x_end
+
+    @x_end.setter
+    def x_end(self, value: float) -> None:
+        """Set source physical dimension x_end.
+
+        Parameters
+        ----------
+        value : float
+            x_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.x_end = float(value)
+
+    @property
+    def y_start(self) -> float:
+        """Source physical dimension: y_start in millimeters.
+
+        Returns
+        -------
+        float
+            y_start in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_start
+
+    @y_start.setter
+    def y_start(self, value: float) -> None:
+        """Set source physical dimension y_start.
+
+        Parameters
+        ----------
+        value : float
+            y_start in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_start = float(value)
+
+    @property
+    def y_end(self) -> float:
+        """Source physical dimension: y_end in millimeters.
+
+        Returns
+        -------
+        float
+            y_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_end
+
+    @y_end.setter
+    def y_end(self, value: float) -> None:
+        """Set source physical dimension y_end.
+
+        Parameters
+        ----------
+        value : float
+            y_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_end = float(value)
+
+    @property
+    def luminance(self) -> float:
+        """Luminance value for the display.
+
+        Returns
+        -------
+        float
+            Luminous flux expressed as luminance (cd/m^2).
+        """
+        return self._source_template.display.luminous_flux
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        """Set Luminance value.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+        """
+        self._source_template.display.luminous_flux = float(value)
+
+    @property
+    def contrast_ratio(self) -> Optional[int]:
+        """Contrast ratio for the display.
+
+        The underlying protobuf field is optional. When unset it behaves as None
+        from the Python API perspective (the proto scalar default is 0).
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
+
+        Returns
+        -------
+        Optional[int]
+            Contrast ratio if set, otherwise 0 (unset behavior preserved by proto).
+        """
+        return self._source_template.display.contrast_ratio
+
+    @contrast_ratio.setter
+    def contrast_ratio(self, value: Optional[int]) -> None:
+        """Set or clear the contrast ratio.
+
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
+
+        Parameters
+        ----------
+        value : Optional[int]
+            Integer contrast ratio to set, or None to clear the optional field.
+        """
+        if value is None:
+            # proto3 optional semantics: clear by assigning default (no direct ClearField on scalar)
+            self._source_template.display.ClearField("contrast_ratio")
+        else:
+            self._source_template.display.contrast_ratio = int(value)
+
+    @property
+    def axis_system(self) -> list:
+        """Axis system for the display.
+
+        Returns
+        -------
+        list
+            12-element axis system vector describing
+            origin and axes (Ox,Oy,Oz,Xx,Xy,Xz,Yx,Yy,Yz,Zx,Zy,Zz).
+        """
+        return self._source_instance.display_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list) -> None:
+        """Set the axis system for the display.
+
+        Parameters
+        ----------
+        axis_system : list
+            12-element sequence describing the origin and local axes for placement in the scene.
+        """
+        self._source_instance.display_properties.axis_system[:] = axis_system
+
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity settings for the display source.
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity object tied to the scene for this display.
+        """
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.display_properties.intensity_properties
+        ):
+            self._intensity._intensity_properties = (
+                self._source_instance.display_properties.intensity_properties
+            )
+        return self._intensity
+
+    def set_pre_defined_color_space(self) -> BaseSource.PredefinedColorSpace:
+        """Set display color space to a predefined color space.
+
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.PredefinedColorSpace
+            Helper object for choosing a predefined color space.
+        """
+        # proto field name in SourceTemplate.Display is `pre_defined_color_space`
+        if self._type is None and self._source_template.display.HasField("pre_defined_color_space"):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.PredefinedColorSpace):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
+                default_parameters=ColorSpaceType.srgb,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._predefined_color_space
+            is not self._source_template.display.pre_defined_color_space
+        ):
+            self._type._predefined_color_space = (
+                self._source_template.display.pre_defined_color_space
+            )
+        return self._type
+
+    def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
+        """Set user-defined RGB color space for the display.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+            Helper providing access to red/green/blue spectrum selection and white point.
+        """
+        # Note: proto field name in SourceTemplate.Display is `user_defined_rbg_space` (rbg)
+        if self._type is None and self._source_template.display.HasField("user_defined_rbg_space"):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=UserDefinedColorSpaceParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._type._userdefined_color_space
+            is not self._source_template.display.user_defined_rbg_space
+        ):
+            # Happens in case of feature reset
+            self._type._userdefined_color_space = (
+                self._source_template.display.user_defined_rbg_space
+            )
+        return self._type
+
+    def commit(self) -> SourceDisplay:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (committed).
+        """
+        # commit intensity template if used
+        if hasattr(self, "_intensity"):
+            self._intensity.commit()
+            # update template intensity guid
+            self._source_template.display.intensity_guid = (
+                self._intensity.intensity_template_link.key
+            )
+        # commit user-defined color space spectra if any
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._commit()
+            self._type._green_spectrum._commit()
+            self._type._blue_spectrum._commit()
+        super().commit()
+        return self
+
+    def reset(self) -> SourceDisplay:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (reset).
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._reset()
+            self._type._green_spectrum._reset()
+            self._type._blue_spectrum._reset()
+        # reset intensity
+        if hasattr(self, "_intensity"):
+            self._intensity.reset()
+        super().reset()
+        return self
+
+    def delete(self) -> SourceDisplay:
+        """Delete display source from server (local data kept).
+
+        Deletes any locally-managed spectra created for a user-defined color space
+        and deletes the feature from the server. Does not cascade-delete
+        the intensity.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (deleted on server).
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._delete()
+            self._type._green_spectrum._delete()
+            self._type._blue_spectrum._delete()
+        # do not cascade delete intensity template (consistent with surface behavior)
+        super().delete()
+        return self

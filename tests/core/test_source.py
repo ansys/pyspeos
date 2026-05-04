@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import GeoRef, Intensity, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
@@ -36,6 +36,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientNaturalLightParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
+    DisplayParameters,
     FluxFromFileParameters,
     IntensitAsymmetricGaussianParameters,
     IntensityCosParameters,
@@ -62,6 +63,7 @@ from ansys.speos.core.generic.parameters import (
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -798,15 +800,21 @@ def test_create_rayfile_source(speos: Speos):
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_natural_light_source(speos: Speos):
     """Test creation of ambient natural light source."""
-    p = Project(speos=speos)
+    from zoneinfo import ZoneInfo
 
-    # Default value :
+    p = Project(speos=speos)
+    cet = ZoneInfo("CET")
+    before = datetime.datetime.now(cet)
     source1 = SourceAmbientNaturalLight(
         p,
         name="NaturalLight.1",
         default_parameters=AmbientNaturalLightParameters(),
     )
-    now = datetime.datetime.now()
+    after = datetime.datetime.now(cet)
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
+
     assert source1._source_instance.HasField("ambient_properties")
     assert source1._source_instance.ambient_properties.zenith_direction == [
         0,
@@ -814,9 +822,6 @@ def test_create_natural_light_source(speos: Speos):
         1,
     ]
     assert source1._source_instance.ambient_properties.HasField("natural_light_properties")
-    tmp_natural_light_property = (
-        source1._source_instance.ambient_properties.natural_light_properties
-    )
     assert tmp_natural_light_property.north_direction == [
         0,
         1,
@@ -824,12 +829,24 @@ def test_create_natural_light_source(speos: Speos):
     ]
     assert tmp_natural_light_property.HasField("sun_axis_system")
     assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun = tmp_natural_light_property.sun_axis_system.automatic_sun
+    server_dt = datetime.datetime(
+        year=auto_sun.year,
+        month=auto_sun.month,
+        day=auto_sun.day,
+        hour=auto_sun.hour,
+        minute=auto_sun.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun.time_zone_uri == "CET"
 
     assert source1._source_template.HasField("ambient")
     assert source1._source_template.ambient.HasField("natural_light")
@@ -919,8 +936,9 @@ def test_create_natural_light_source(speos: Speos):
 
     source1.delete()
 
+    before2 = datetime.datetime.now(cet)
     source2 = p.create_source(name="NaturalLight.2", feature_type=SourceAmbientNaturalLight)
-    now = datetime.datetime.now()
+    after2 = datetime.datetime.now(cet)
     assert source2._source_instance.HasField("ambient_properties")
     assert source2._source_instance.ambient_properties.zenith_direction == [
         0,
@@ -938,12 +956,24 @@ def test_create_natural_light_source(speos: Speos):
     ]
     assert tmp_natural_light_property.HasField("sun_axis_system")
     assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun2 = tmp_natural_light_property.sun_axis_system.automatic_sun
+    server_dt2 = datetime.datetime(
+        year=auto_sun2.year,
+        month=auto_sun2.month,
+        day=auto_sun2.day,
+        hour=auto_sun2.hour,
+        minute=auto_sun2.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before2 - datetime.timedelta(seconds=60)
+        <= server_dt2
+        <= after2 + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun2.time_zone_uri == "CET"
 
     assert source2._source_template.HasField("ambient")
     assert source2._source_template.ambient.HasField("natural_light")
@@ -1753,3 +1783,177 @@ def test_get_source(speos: Speos, capsys):
     stdout, stderr = capsys.readouterr()
     assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_display_source_basic(speos: Speos):
+    """Test basic Display Source."""
+    p = Project(speos=speos)
+    src = p.create_source(name="Display.1", feature_type=SourceDisplay)
+    assert isinstance(src, SourceDisplay)
+    assert src._source_template.HasField("display")
+    assert src._source_instance.HasField("display_properties")
+
+    src.image_file_uri = str(Path(test_path) / "stars.exr")
+    src.luminance = 200.0
+    src.set_pre_defined_color_space().set_color_space_adobergb()
+    src.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    src.commit()
+
+    tpl = src.source_template_link.get()
+    assert tpl.display.image_file_uri != ""
+    assert tpl.display.luminous_flux == pytest.approx(200.0)
+    assert tpl.display.pre_defined_color_space.color_space_type == 1  # AdobeRGB
+
+    src.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_display_userdefined_color_space_and_intensity_library(speos: Speos):
+    """Test display source with userdefined colorspace."""
+    p = Project(speos=speos)
+
+    # Create Display with user-defined color space and intensity library via parameters
+    display_params = DisplayParameters()
+    udcs = UserDefinedColorSpaceParameters()
+    udcs.red_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+    )
+    udcs.green_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Green Spectrum.spectrum"
+    )
+    udcs.blue_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+    )
+    udcs.white_point_type = UserDefinedWhitePointParameters()
+    display_params.color_space_type = udcs
+
+    # intensity library
+    ilp = IntensityLibraryParameters()
+    ilp.intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    display_params.intensity_type = ilp
+
+    for i, point in enumerate(WhitePointType):
+        display_params.color_space_type.white_point_type = point
+
+        src = p.create_source(
+            name=f"Display.UD.{i}", feature_type=SourceDisplay, parameters=display_params
+        )
+        assert isinstance(src, SourceDisplay)
+        usr = src.set_userdefined_color_space()
+        match point:
+            case WhitePointType.d50:
+                assert usr.white_point_type == 1
+            case WhitePointType.c:
+                assert usr.white_point_type == 0
+            case WhitePointType.e:
+                assert usr.white_point_type == 3
+            case WhitePointType.d65:
+                assert usr.white_point_type == 2
+        src.delete()
+
+    udcs.white_point_type = UserDefinedWhitePointParameters(x=0.33, y=0.33)
+    display_params.color_space_type = udcs
+    src = p.create_source(name="Display.1", feature_type=SourceDisplay, parameters=display_params)
+
+    assert isinstance(src, SourceDisplay)
+    # access and commit; color space and intensity should be committed and linked
+    usr = src.set_userdefined_color_space()
+    assert isinstance(usr.red_spectrum, dict)
+    assert usr.white_point_type.white_point == pytest.approx([0.33, 0.33], abs=0.00001)
+    src.intensity.set_library().intensity_file_uri = ilp.intensity_file_uri
+    src.image_file_uri = str(Path(test_path) / "stars.exr")
+    src.commit()
+
+    tpl = src.source_template_link.get()
+    assert tpl.display.user_defined_rbg_space.red_spectrum_guid != ""
+    assert tpl.display.intensity_guid != ""
+
+    # Verify intensity template type on server (library)
+    intensity_obj = speos.client[tpl.display.intensity_guid]
+    assert intensity_obj.get().HasField("library")
+
+    src.delete()
+    display_params.color_space_type = ColorSpaceType.adobe_rgb
+
+    src = p.create_source(name="Display.2", feature_type=SourceDisplay, parameters=display_params)
+    assert isinstance(src, SourceDisplay)
+    assert src._source_template.display.pre_defined_color_space.color_space_type == 1  # AdobeRGB
+    src.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_display_source(speos: Speos):
+    """Test display source with userdefined colorspace."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "test_display_source.1.speos" / "test_display_source.1.speos",
+    )
+
+    for source in p.sources:
+        match source._name:
+            case "library_contrast50_srgb:430":
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 200.0
+                assert source.contrast_ratio == 50.0
+                assert source.x_start == -6
+                assert source.x_end == 6
+                assert source.y_start == -5
+                assert source.y_end == 5
+                assert isinstance(source.intensity.type, Intensity.Library)
+                assert source._source_instance.display_properties.intensity_properties.HasField(
+                    "library_properties"
+                )
+                assert source.intensity.type.intensity_file_uri.endswith(".ies")
+                assert source._source_template.display.HasField("pre_defined_color_space")
+                assert (
+                    source._source_template.display.pre_defined_color_space.color_space_type == 0
+                )  #
+                assert source.axis_system == [-10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            case "lamber_infinite_srgb:55":
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 20.0
+                assert source.contrast_ratio == 0
+                assert source.x_start == -3
+                assert source.x_end == 3
+                assert source.y_start == -2.5
+                assert source.y_end == 2.5
+                assert isinstance(source.intensity.type, Intensity.Cos)
+                assert source.intensity.type.n == 1
+                assert source.intensity.type.total_angle == 180
+                assert source._source_template.display.HasField("pre_defined_color_space")
+                assert (
+                    source._source_template.display.pre_defined_color_space.color_space_type == 1
+                )  #
+                assert source.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            case "gausian_contrast500_udrgb:71":
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 200.0
+                assert source.contrast_ratio == 500.0
+                assert source.x_start == -6
+                assert source.x_end == 6
+                assert source.y_start == -5
+                assert source.y_end == 5
+                assert isinstance(source.intensity.type, Intensity.Gaussian)
+                assert source.intensity.type.fwhm_angle_x == 30
+                assert source.intensity.type.fwhm_angle_y == 30
+                assert source.intensity.type.total_angle == 180
+                assert source._source_template.display.HasField("user_defined_rbg_space")
+                udcs = source.set_userdefined_color_space()
+                assert udcs.red_spectrum["library"]["file_uri"].endswith(".spectrum")
+                assert source._source_template.display.user_defined_rbg_space.HasField(
+                    "user_defined_white_point"
+                )
+                assert udcs.white_point_type.white_point == pytest.approx(
+                    [0.31271, 0.32902], abs=0.00001
+                )
+                assert source.axis_system == [10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]

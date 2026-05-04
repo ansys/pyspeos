@@ -16,7 +16,7 @@ exclude: |
 repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.7
+  rev: v0.15.12
   hooks:
     - id: ruff
     - id: ruff-format
@@ -37,12 +37,12 @@ repos:
 
 # This validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.37.0
+  rev: 0.37.1
   hooks:
     - id: check-github-workflows
 
 - repo: https://github.com/ansys/pre-commit-hooks
-  rev: v0.6.0
+  rev: v0.7.1
   hooks:
     - id: add-license-headers
       files: '(ansys|tests)/.*\.(py)'
