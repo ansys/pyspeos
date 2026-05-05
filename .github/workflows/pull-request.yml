@@ -133,7 +133,7 @@ jobs:
     permissions:
       contents: read   # Required to read workflow files and check for security issues
     steps:
-      - uses: ansys/actions/check-actions-security@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
+      - uses: ansys/actions/check-actions-security@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
