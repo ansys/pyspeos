@@ -29,7 +29,6 @@ import re
 from threading import Thread
 from time import sleep
 from types import SimpleNamespace
-import typing
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
@@ -1191,8 +1190,7 @@ def test_export_old_version(monkeypatch, tmp_path):
     saved_requests = []
 
     class FakeActionsStub:
-        @typing.override
-        def SaveFile(self, request):
+        def SaveFile(self, request):  # noqa: N802
             saved_requests.append(request)
 
     project = SimpleNamespace(
