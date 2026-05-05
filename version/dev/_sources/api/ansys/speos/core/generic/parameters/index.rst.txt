@@ -1,0 +1,709 @@
+
+
+
+
+
+
+The ``parameters.py`` module
+============================
+
+.. py:module:: ansys.speos.core.generic.parameters
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: parameters
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.WavelengthsRangeParameters`
+            - Wavelength Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.DimensionsParameters`
+            - Dimension Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySensorDimensionsConoscopicParameters`
+            - Dataclass for Intensity Sensor dimension in case of conoscopic.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySensorDimensionsXAsMeridianParameters`
+            - Dataclass for Intensity Sensor dimension in case of x_as_meridian.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySensorDimensionsXAsParallelParameters`
+            - Dataclass for Intensity Sensor dimension in case of x_as_parallel.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerBySequenceParameters`
+            - Layer separation type Parameters  for Sequence separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.GeometryLayerParameters`
+            - Geometry Layer Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerByFaceParameters`
+            - Layer separation type Parameters  for Face separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters`
+            - Layer separation type Parameters for Incidence angle separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters`
+            - Parameters for Balance mode: User White.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters`
+            - Parameters for Balance mode: Display primaries.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorParameters`
+            - Camera Color Mode Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.MonoChromaticParameters`
+            - Monochromatic Camera Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.PhotometricCameraParameters`
+            - Photometric Parameters for Camera.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.CameraSensorParameters`
+            - Camera Sensor Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorimetricParameters`
+            - Colorimetric settings of the Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectralParameters`
+            - Colorimetric settings of the Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.MeasuresParameters`
+            - Measurements for 3d Irradiance Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IrradianceSensorParameters`
+            - Irradiance Sensor Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RadianceSensorParameters`
+            - Radiance Sensor Constants.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.Irradiance3DSensorParameters`
+            - Parameters class for 3D Irradiance Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.NearfieldParameters`
+            - Parameters data class for Nearfield.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityXMPSensorParameters`
+            - Intensity Sensor Parameters Dataclass.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LuminousFluxParameters`
+            - Luminous Flux Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RadiantFluxParameters`
+            - Radiant Flux Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.FluxFromFileParameters`
+            - Flux from intensity file.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectrumSampledParameters`
+            - Spectrum Sampled Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectrumLibraryParameters`
+            - Spectrum Library Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectrumBlackBodyParameters`
+            - Spectrum Black Body Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LuminaireSourceParameters`
+            - Parameters class for Luminaire Source.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectrumMonochromaticParameters`
+            - Spectrum Monochromatic Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RayFileSourceParameters`
+            - Parameters class for Ray File Source.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityFluxParameters`
+            - Luminous Flux Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityLambertianParameters`
+            - Intensity Lambertian Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityCosParameters`
+            - Intensity Cos Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySymmetricGaussianParameters`
+            - Intensity Symmetric Gaussian Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitAsymmetricGaussianParameters`
+            - Intensity Asymmetric Gaussian Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityOrientationAxisSystemParameters`
+            - Intensity Orientation Axis System Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityLibraryParameters`
+            - Intensity Library Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.VariableExitanceParameters`
+            - Spectrum Exit Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ConstantExitanceParameters`
+            - Spectrum Exit Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SurfaceSourceParameters`
+            - Parameters class for Surface Source.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.AutomaticSunParameters`
+            - Automatic Sun Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ManualSunParameters`
+            - Spectrum Exit Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.AmbientNaturalLightParameters`
+            - Ambient Natural Light Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters`
+            - User defined White Point Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters`
+            - User defined Color Space Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.DisplayParameters`
+            - Parameters class for Display Source.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.AmbientEnvironmentParameters`
+            - Ambient Environment Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.DirectSimulationParameters`
+            - Direct Simulation Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.InverseSimulationParameters`
+            - Inverse Simulation Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.InteractiveSimulationParameters`
+            - Interactive Simulation Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SensorSamplingUnionParameters`
+            - Sensor Sampling Union Parameters used in virtual BSDF Simulation Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters`
+            - Virtual BSDF Simulation Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SopMirrorParameters`
+            - SOP Mirror Parameters Dataclass.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SopLibraryParameters`
+            - SOP Library Parameters Dataclass.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.MeshData`
+            - Store named data on meshed Geometry.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.CommonUVMappingParameters`
+            - Store all information needed to create a UV mapping.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UVMappingPlanarParameters`
+            - Planar uv mapping parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UVMappingCubicParameters`
+            - Planar uv mapping parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UVMappingSphericalParameters`
+            - Spherical uv mapping parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UVMappingCylindricalParameters`
+            - Cylindrical uv mapping parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.UVMappingByData`
+            - Store mapping data when using custom mapping.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ImageTextureParameters`
+            - Parameters of an image based texture.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.NormalMapParameters`
+            - Parameters of a normal map based texture.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.TextureLayerParameters`
+            - Texture Layer Parameters Dataclass.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.VopLibraryParameters`
+            - VOP Parameters Dataclass.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.VopOpticParameters`
+            - Optics Material Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.OptPropParameters`
+            - Store default values for optical properties.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerTypes`
+            - Layer Separation Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SCAFilteringTypes`
+            - Surface contribution analyser filtering types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SequenceTypes`
+            - Sequence types to separate the sequence data.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.PngBits`
+            - Bit resolution of create PNG image.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorBalanceModeTypes`
+            - Color Balance Mode Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntegrationTypes`
+            - Integration Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RayfileTypes`
+            - Rayfile Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SensorTypes`
+            - Sensor Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySensorOrientationTypes`
+            - Intensity sensor orientation types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensitySensorViewingTypes`
+            - Intensity sensor viewing types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectrumType`
+            - Spectrum Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntensityOrientationType`
+            - Intensity Orientation Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.WhitePointType`
+            - White Point Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorSpaceType`
+            - Color Space Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorimetricStandardTypes`
+            - Colorimetric Standard Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SopTypes`
+            - Allowed mapping types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.NormalMapTypes`
+            - Normal Map Types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.TextureTypes`
+            - Different texture types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.TextureNormalizationTypes`
+            - Texture normalization types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.VopTypes`
+            - Allowed mapping types.
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> WavelengthsRangeParameters</api/ansys/speos/core/generic/parameters/WavelengthsRangeParameters>
+    <span class="nf nf-cod-symbol_class"></span> DimensionsParameters</api/ansys/speos/core/generic/parameters/DimensionsParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensitySensorDimensionsConoscopicParameters</api/ansys/speos/core/generic/parameters/IntensitySensorDimensionsConoscopicParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensitySensorDimensionsXAsMeridianParameters</api/ansys/speos/core/generic/parameters/IntensitySensorDimensionsXAsMeridianParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensitySensorDimensionsXAsParallelParameters</api/ansys/speos/core/generic/parameters/IntensitySensorDimensionsXAsParallelParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerBySequenceParameters</api/ansys/speos/core/generic/parameters/LayerBySequenceParameters>
+    <span class="nf nf-cod-symbol_class"></span> GeometryLayerParameters</api/ansys/speos/core/generic/parameters/GeometryLayerParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerByFaceParameters</api/ansys/speos/core/generic/parameters/LayerByFaceParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerByIncidenceAngleParameters</api/ansys/speos/core/generic/parameters/LayerByIncidenceAngleParameters>
+    <span class="nf nf-cod-symbol_class"></span> BalanceModeUserWhiteParameters</api/ansys/speos/core/generic/parameters/BalanceModeUserWhiteParameters>
+    <span class="nf nf-cod-symbol_class"></span> BalanceModeDisplayPrimariesParameters</api/ansys/speos/core/generic/parameters/BalanceModeDisplayPrimariesParameters>
+    <span class="nf nf-cod-symbol_class"></span> ColorParameters</api/ansys/speos/core/generic/parameters/ColorParameters>
+    <span class="nf nf-cod-symbol_class"></span> MonoChromaticParameters</api/ansys/speos/core/generic/parameters/MonoChromaticParameters>
+    <span class="nf nf-cod-symbol_class"></span> PhotometricCameraParameters</api/ansys/speos/core/generic/parameters/PhotometricCameraParameters>
+    <span class="nf nf-cod-symbol_class"></span> CameraSensorParameters</api/ansys/speos/core/generic/parameters/CameraSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> ColorimetricParameters</api/ansys/speos/core/generic/parameters/ColorimetricParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectralParameters</api/ansys/speos/core/generic/parameters/SpectralParameters>
+    <span class="nf nf-cod-symbol_class"></span> MeasuresParameters</api/ansys/speos/core/generic/parameters/MeasuresParameters>
+    <span class="nf nf-cod-symbol_class"></span> IrradianceSensorParameters</api/ansys/speos/core/generic/parameters/IrradianceSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> RadianceSensorParameters</api/ansys/speos/core/generic/parameters/RadianceSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> Irradiance3DSensorParameters</api/ansys/speos/core/generic/parameters/Irradiance3DSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> NearfieldParameters</api/ansys/speos/core/generic/parameters/NearfieldParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityXMPSensorParameters</api/ansys/speos/core/generic/parameters/IntensityXMPSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> LuminousFluxParameters</api/ansys/speos/core/generic/parameters/LuminousFluxParameters>
+    <span class="nf nf-cod-symbol_class"></span> RadiantFluxParameters</api/ansys/speos/core/generic/parameters/RadiantFluxParameters>
+    <span class="nf nf-cod-symbol_class"></span> FluxFromFileParameters</api/ansys/speos/core/generic/parameters/FluxFromFileParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumSampledParameters</api/ansys/speos/core/generic/parameters/SpectrumSampledParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumLibraryParameters</api/ansys/speos/core/generic/parameters/SpectrumLibraryParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumBlackBodyParameters</api/ansys/speos/core/generic/parameters/SpectrumBlackBodyParameters>
+    <span class="nf nf-cod-symbol_class"></span> LuminaireSourceParameters</api/ansys/speos/core/generic/parameters/LuminaireSourceParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumMonochromaticParameters</api/ansys/speos/core/generic/parameters/SpectrumMonochromaticParameters>
+    <span class="nf nf-cod-symbol_class"></span> RayFileSourceParameters</api/ansys/speos/core/generic/parameters/RayFileSourceParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityFluxParameters</api/ansys/speos/core/generic/parameters/IntensityFluxParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityLambertianParameters</api/ansys/speos/core/generic/parameters/IntensityLambertianParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityCosParameters</api/ansys/speos/core/generic/parameters/IntensityCosParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensitySymmetricGaussianParameters</api/ansys/speos/core/generic/parameters/IntensitySymmetricGaussianParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensitAsymmetricGaussianParameters</api/ansys/speos/core/generic/parameters/IntensitAsymmetricGaussianParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityOrientationAxisSystemParameters</api/ansys/speos/core/generic/parameters/IntensityOrientationAxisSystemParameters>
+    <span class="nf nf-cod-symbol_class"></span> IntensityLibraryParameters</api/ansys/speos/core/generic/parameters/IntensityLibraryParameters>
+    <span class="nf nf-cod-symbol_class"></span> VariableExitanceParameters</api/ansys/speos/core/generic/parameters/VariableExitanceParameters>
+    <span class="nf nf-cod-symbol_class"></span> ConstantExitanceParameters</api/ansys/speos/core/generic/parameters/ConstantExitanceParameters>
+    <span class="nf nf-cod-symbol_class"></span> SurfaceSourceParameters</api/ansys/speos/core/generic/parameters/SurfaceSourceParameters>
+    <span class="nf nf-cod-symbol_class"></span> AutomaticSunParameters</api/ansys/speos/core/generic/parameters/AutomaticSunParameters>
+    <span class="nf nf-cod-symbol_class"></span> ManualSunParameters</api/ansys/speos/core/generic/parameters/ManualSunParameters>
+    <span class="nf nf-cod-symbol_class"></span> AmbientNaturalLightParameters</api/ansys/speos/core/generic/parameters/AmbientNaturalLightParameters>
+    <span class="nf nf-cod-symbol_class"></span> UserDefinedWhitePointParameters</api/ansys/speos/core/generic/parameters/UserDefinedWhitePointParameters>
+    <span class="nf nf-cod-symbol_class"></span> UserDefinedColorSpaceParameters</api/ansys/speos/core/generic/parameters/UserDefinedColorSpaceParameters>
+    <span class="nf nf-cod-symbol_class"></span> DisplayParameters</api/ansys/speos/core/generic/parameters/DisplayParameters>
+    <span class="nf nf-cod-symbol_class"></span> AmbientEnvironmentParameters</api/ansys/speos/core/generic/parameters/AmbientEnvironmentParameters>
+    <span class="nf nf-cod-symbol_class"></span> DirectSimulationParameters</api/ansys/speos/core/generic/parameters/DirectSimulationParameters>
+    <span class="nf nf-cod-symbol_class"></span> InverseSimulationParameters</api/ansys/speos/core/generic/parameters/InverseSimulationParameters>
+    <span class="nf nf-cod-symbol_class"></span> InteractiveSimulationParameters</api/ansys/speos/core/generic/parameters/InteractiveSimulationParameters>
+    <span class="nf nf-cod-symbol_class"></span> SensorSamplingUnionParameters</api/ansys/speos/core/generic/parameters/SensorSamplingUnionParameters>
+    <span class="nf nf-cod-symbol_class"></span> VirtualBSDFSimulationParameters</api/ansys/speos/core/generic/parameters/VirtualBSDFSimulationParameters>
+    <span class="nf nf-cod-symbol_class"></span> SopMirrorParameters</api/ansys/speos/core/generic/parameters/SopMirrorParameters>
+    <span class="nf nf-cod-symbol_class"></span> SopLibraryParameters</api/ansys/speos/core/generic/parameters/SopLibraryParameters>
+    <span class="nf nf-cod-symbol_class"></span> MeshData</api/ansys/speos/core/generic/parameters/MeshData>
+    <span class="nf nf-cod-symbol_class"></span> CommonUVMappingParameters</api/ansys/speos/core/generic/parameters/CommonUVMappingParameters>
+    <span class="nf nf-cod-symbol_class"></span> UVMappingPlanarParameters</api/ansys/speos/core/generic/parameters/UVMappingPlanarParameters>
+    <span class="nf nf-cod-symbol_class"></span> UVMappingCubicParameters</api/ansys/speos/core/generic/parameters/UVMappingCubicParameters>
+    <span class="nf nf-cod-symbol_class"></span> UVMappingSphericalParameters</api/ansys/speos/core/generic/parameters/UVMappingSphericalParameters>
+    <span class="nf nf-cod-symbol_class"></span> UVMappingCylindricalParameters</api/ansys/speos/core/generic/parameters/UVMappingCylindricalParameters>
+    <span class="nf nf-cod-symbol_class"></span> UVMappingByData</api/ansys/speos/core/generic/parameters/UVMappingByData>
+    <span class="nf nf-cod-symbol_class"></span> ImageTextureParameters</api/ansys/speos/core/generic/parameters/ImageTextureParameters>
+    <span class="nf nf-cod-symbol_class"></span> NormalMapParameters</api/ansys/speos/core/generic/parameters/NormalMapParameters>
+    <span class="nf nf-cod-symbol_class"></span> TextureLayerParameters</api/ansys/speos/core/generic/parameters/TextureLayerParameters>
+    <span class="nf nf-cod-symbol_class"></span> VopLibraryParameters</api/ansys/speos/core/generic/parameters/VopLibraryParameters>
+    <span class="nf nf-cod-symbol_class"></span> VopOpticParameters</api/ansys/speos/core/generic/parameters/VopOpticParameters>
+    <span class="nf nf-cod-symbol_class"></span> OptPropParameters</api/ansys/speos/core/generic/parameters/OptPropParameters>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> LayerTypes</api/ansys/speos/core/generic/parameters/LayerTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SCAFilteringTypes</api/ansys/speos/core/generic/parameters/SCAFilteringTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SequenceTypes</api/ansys/speos/core/generic/parameters/SequenceTypes>
+    <span class="nf nf-cod-symbol_enum"></span> PngBits</api/ansys/speos/core/generic/parameters/PngBits>
+    <span class="nf nf-cod-symbol_enum"></span> ColorBalanceModeTypes</api/ansys/speos/core/generic/parameters/ColorBalanceModeTypes>
+    <span class="nf nf-cod-symbol_enum"></span> IntegrationTypes</api/ansys/speos/core/generic/parameters/IntegrationTypes>
+    <span class="nf nf-cod-symbol_enum"></span> RayfileTypes</api/ansys/speos/core/generic/parameters/RayfileTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SensorTypes</api/ansys/speos/core/generic/parameters/SensorTypes>
+    <span class="nf nf-cod-symbol_enum"></span> IntensitySensorOrientationTypes</api/ansys/speos/core/generic/parameters/IntensitySensorOrientationTypes>
+    <span class="nf nf-cod-symbol_enum"></span> IntensitySensorViewingTypes</api/ansys/speos/core/generic/parameters/IntensitySensorViewingTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SpectrumType</api/ansys/speos/core/generic/parameters/SpectrumType>
+    <span class="nf nf-cod-symbol_enum"></span> IntensityOrientationType</api/ansys/speos/core/generic/parameters/IntensityOrientationType>
+    <span class="nf nf-cod-symbol_enum"></span> WhitePointType</api/ansys/speos/core/generic/parameters/WhitePointType>
+    <span class="nf nf-cod-symbol_enum"></span> ColorSpaceType</api/ansys/speos/core/generic/parameters/ColorSpaceType>
+    <span class="nf nf-cod-symbol_enum"></span> ColorimetricStandardTypes</api/ansys/speos/core/generic/parameters/ColorimetricStandardTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SopTypes</api/ansys/speos/core/generic/parameters/SopTypes>
+    <span class="nf nf-cod-symbol_enum"></span> NormalMapTypes</api/ansys/speos/core/generic/parameters/NormalMapTypes>
+    <span class="nf nf-cod-symbol_enum"></span> TextureTypes</api/ansys/speos/core/generic/parameters/TextureTypes>
+    <span class="nf nf-cod-symbol_enum"></span> TextureNormalizationTypes</api/ansys/speos/core/generic/parameters/TextureNormalizationTypes>
+    <span class="nf nf-cod-symbol_enum"></span> VopTypes</api/ansys/speos/core/generic/parameters/VopTypes>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Collection of all parameter dataclasses used in PySpeos.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

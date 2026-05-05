@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`ConstantExitanceParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ConstantExitanceParameters
+
+   
+   Spectrum Exit Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ConstantExitanceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~emissive_faces`
+            - Faces that emit with constant exitance.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ConstantExitanceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: emissive_faces
+   :type:  list[str]
+   :value: []
+
+
+   
+   Faces that emit with constant exitance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

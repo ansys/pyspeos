@@ -1,0 +1,142 @@
+
+
+
+
+
+
+:class:`SensorUniform`
+======================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform(sensor_uniform_mode, default_values = True, stable_ctr = False)
+
+   
+   BSDF bench sensor settings.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorUniform
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~theta_sampling`
+            - Sampling value of theta direction.
+          * - :py:attr:`~phi_sampling`
+            - Sampling value of phi direction.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF import SensorUniform
+
+Property detail
+---------------
+
+.. py:property:: theta_sampling
+   :type: int
+
+
+   
+   Sampling value of theta direction.
+
+
+   :Parameters:
+
+       **value: int**
+           theta sampling value to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           theta sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: phi_sampling
+   :type: int
+
+
+   
+   Sampling value of phi direction.
+
+
+   :Parameters:
+
+       **value: int**
+           phi sampling value to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           phi sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

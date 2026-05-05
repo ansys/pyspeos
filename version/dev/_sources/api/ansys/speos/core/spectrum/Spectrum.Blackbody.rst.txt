@@ -1,0 +1,123 @@
+
+
+
+
+
+
+:class:`Blackbody`
+==================
+
+
+.. py:class:: ansys.speos.core.spectrum.Spectrum.Blackbody(blackbody, default_parameters = None, stable_ctr = False)
+
+   
+   Blackbody type of spectrum.
+
+   By default, Blackbody temperature is set to be 2856.
+
+   :Parameters:
+
+       **blackbody** : :obj:`ansys.api.speos.spectrum.v1.spectrum_pb2.Blackbody`
+           Blackbody protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.SpectrumBlackBodyParameters`] = :data:`python:None`
+           If defined the values in the Blackbody instance will be
+           overwritten by the values of the data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_blackbody method available in
+   Spectrum classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Blackbody
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~temperature`
+            - Property the temperature of the spectrum.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.spectrum.Spectrum import Blackbody
+
+Property detail
+---------------
+
+.. py:property:: temperature
+   :type: float
+
+
+   
+   Property the temperature of the spectrum.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Temperature of the spectrum.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Temperature of the spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

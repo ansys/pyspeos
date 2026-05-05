@@ -1,0 +1,168 @@
+
+
+
+
+
+
+:class:`ExitanceVariable`
+=========================
+
+
+.. py:class:: ansys.speos.core.source.SourceSurface.ExitanceVariable(exitance_variable, exitance_variable_props, default_parameters = None, stable_ctr = False)
+
+   
+   Type of surface source existence : existence variable.
+
+
+   :Parameters:
+
+       **exitance_variable** : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+           ..
+
+       **ExitanceVariable**
+           Existence variable to complete.
+
+       **exitance_variable_props** : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+           ..
+
+       **SurfaceProperties.ExitanceVariableProperties**
+           Existence variable properties to complete.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.VariableExitanceParameters`] = :data:`python:None`
+           If defined the values in the ExitanceVariable instance will be overwritten
+           by the values of the data class.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_exitance_variable method available in
+   Source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ExitanceVariable
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~xmp_file_uri`
+            - Xmp file uri.
+          * - :py:attr:`~axis_plane`
+            - Axis plane of the variable exitance surface source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceSurface import ExitanceVariable
+
+Property detail
+---------------
+
+.. py:property:: xmp_file_uri
+   :type: str
+
+
+   
+   Xmp file uri.
+
+
+   :Parameters:
+
+       **xmp_file_uri** : :obj:`Union`\[:class:`python:str`, :obj:`pathlib.Path`]
+           xmp file uri.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           xmp file uri.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_plane
+   :type: List[float]
+
+
+   
+   Axis plane of the variable exitance surface source.
+
+
+   :Parameters:
+
+       **axis_plane** : :obj:`List`\[:class:`python:float`]
+           Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,123 @@
+
+
+
+
+
+
+:class:`Monochromatic`
+======================
+
+
+.. py:class:: ansys.speos.core.spectrum.Spectrum.Monochromatic(monochromatic, default_parameters = None, stable_ctr = False)
+
+   
+   Monochromatic type of spectrum.
+
+   By default, monochromatic spectrum wavelength is set to be 550.
+
+   :Parameters:
+
+       **monochromatic** : :obj:`ansys.api.speos.spectrum.v1.spectrum_pb2.Monochromatic`
+           Monochromatic protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.SpectrumMonochromaticParameters`] = :data:`python:None`
+           If defined the values in the Monochromatic instance will be
+           overwritten by the values of the data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_monochromatic method available in
+   Spectrum classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Monochromatic
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelength`
+            - Property the wavelength of the spectrum.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.spectrum.Spectrum import Monochromatic
+
+Property detail
+---------------
+
+.. py:property:: wavelength
+   :type: float
+
+
+   
+   Property the wavelength of the spectrum.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Wavelength of the spectrum.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Wavelength of the spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
