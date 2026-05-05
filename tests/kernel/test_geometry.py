@@ -31,6 +31,7 @@ from ansys.speos.core.speos import Speos
 from tests.kernel.test_scene import create_face_rectangle
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_big_face(speos: Speos):
     """Test create big face."""
     assert speos.client.healthy is True
