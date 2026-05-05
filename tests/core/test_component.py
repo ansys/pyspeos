@@ -26,12 +26,14 @@ from pathlib import Path
 
 import pytest
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Project, Speos, part
 from ansys.speos.core.component import LightBox, LightBoxFile
 from ansys.speos.core.generic.parameters import ORIGIN
+from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.simulation import (
     SimulationDirect,
 )
+from ansys.speos.core.source import SourceRayFile, SourceSurface
 from tests.conftest import test_path
 
 
@@ -64,6 +66,20 @@ def test_create_lightbox(speos: Speos):
         )
     ]
 
+    assert len(lightbox._features) == 3
+
+    lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+    assert lightbox_material.get(key="name") == "Material.2"
+    assert lightbox_material.sop_mirror.reflectance == 100
+
+    lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+    assert lightbox_source._name == "Surface.2:1"
+
+    lightbox_part = lightbox.find(name="", feature_type=part.Part)[0]
+    assert len(lightbox_part.bodies) == 1
+    assert len(lightbox_part.bodies[0].faces) == 1
+    assert lightbox_part.bodies[0].faces[0]._name == "face.1:3037138295"
+
     with pytest.raises(
         ValueError,
         match="Lightbox: Light Box Import.1 has a conflict name with an existing feature.",
@@ -85,6 +101,37 @@ def test_create_lightbox(speos: Speos):
     assert lightbox.get("name") == "Light Box Import.1"
 
     assert str(lightbox) == lightbox.__str__()
+
+    lightbox.set_speos_light_box(
+        lightbox=LightBoxFile(
+            file=Path(test_path) / "lightbox" / "WhiteLightBox.SPEOSLightBox",
+        )
+    )
+    assert lightbox.name == "Light Box Import.1"
+    assert lightbox.axis_system == ORIGIN
+    assert lightbox._scene_instance.name == "Light Box Import.1"
+    assert lightbox._scene_instance.axis_system == ORIGIN
+    assert lightbox._scene_instance.scene_guid is not None
+    assert p.client[lightbox._scene_instance.scene_guid].get().name == "WhiteLightBox"
+    assert len(p.client[lightbox._scene_instance.scene_guid].get().sources) == 2
+    assert len(p.client[lightbox._scene_instance.scene_guid].get().materials) == 1
+
+    assert len(lightbox._features) == 4
+
+    lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+    assert lightbox_material.get(key="name") == "Material.1"
+    assert lightbox_material.vop_optic.index == 1.5
+    assert lightbox_material.vop_optic.absorption == 0
+
+    lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+    assert lightbox_source._name == "Surface.1:370"
+    lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceRayFile)[0]
+    assert lightbox_source._name == "Ray-file.1:399"
+
+    lightbox_part = lightbox.find(name="", feature_type=part.Part)[0]
+    assert len(lightbox_part.bodies) == 2
+    assert len(lightbox_part.bodies[0].faces) == 6
+    assert len(lightbox_part.bodies[1].faces) == 7
 
     lightbox.delete()
 
@@ -133,10 +180,16 @@ def test_load_lightbox(speos: Speos):
         1.0,
     ]
     assert lightbox_1.source_paths == ["3/Surface.1:258"]
+    lightbox_source = lightbox_1.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+    assert lightbox_source._name == "Surface.1:258"
     assert lightbox_2.source_paths == [
         "Light Box Import.2/Surface.2:1",
         "Light Box Import.2/Ray-file.1:12",
     ]
+    lightbox_source = lightbox_2.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+    assert lightbox_source._name == "Surface.2:1"
+    lightbox_source = lightbox_2.find(name=".*", name_regex=True, feature_type=SourceRayFile)[0]
+    assert lightbox_source._name == "Ray-file.1:12"
     assert lightbox_1._scene_instance.name == "3"
     assert lightbox_1._scene_instance.axis_system == [
         -40.99999999999999,

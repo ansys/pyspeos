@@ -67,7 +67,7 @@ from ansys.speos.core.geo_ref import GeoRef
 import ansys.speos.core.intensity as intensity
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
-from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.scene import ProtoScene, SceneLink
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.spectrum import Spectrum
 
@@ -532,8 +532,10 @@ class BaseSource:
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
+        scene_link: Optional[SceneLink] = None,
     ) -> None:
         self._project = project
+        self._scene_link = self._project.scene_link if scene_link is None else scene_link
         self._name = name
         self._unique_id = None
         self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
@@ -762,8 +764,8 @@ class BaseSource:
         out_dict = {}
 
         # SourceInstance (= source guid + source properties)
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
+        if self._scene_link and self._unique_id is not None:
+            scene_data = self._scene_link.get()
             src_inst = next(
                 (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
                 None,
@@ -830,8 +832,8 @@ class BaseSource:
     def __str__(self) -> str:
         """Return the string representation of the source."""
         out_str = ""
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
+        if self._scene_link and self._unique_id is not None:
+            scene_data = self._scene_link.get()
             src_inst = next(
                 (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
                 None,
@@ -870,9 +872,9 @@ class BaseSource:
             )  # Only update if template has changed
 
         # Update the scene with the source instance
-        if self._project.scene_link:
+        if self._scene_link:
             update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+            scene_data = self._scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             src_inst = next(
@@ -890,7 +892,7 @@ class BaseSource:
                 )  # if no, just add it to the list of sources
 
             if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+                self._scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -907,8 +909,8 @@ class BaseSource:
             self._source_template = self.source_template_link.get()
 
         # Reset source instance
-        if self._project.scene_link is not None:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+        if self._scene_link is not None:
+            scene_data = self._scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             src_inst = next(
                 (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
@@ -940,14 +942,14 @@ class BaseSource:
         self._source_instance.source_guid = ""
 
         # Remove the source from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
+        scene_data = self._scene_link.get()  # retrieve scene data
         src_inst = next(
             (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
             None,
         )
         if src_inst is not None:
             scene_data.sources.remove(src_inst)
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            self._scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
@@ -1035,6 +1037,7 @@ class SourceLuminaire(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
+        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[LuminaireSourceParameters] = None,
     ) -> None:
         if metadata is None:
@@ -1046,6 +1049,7 @@ class SourceLuminaire(BaseSource):
             description=description,
             metadata=metadata,
             source_instance=source_instance,
+            scene_link=scene_link,
         )
 
         # Attribute gathering more complex flux type
@@ -1129,7 +1133,7 @@ class SourceLuminaire(BaseSource):
             self._visual_data = (
                 _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
             )
-            for ray_path in self._project.scene_link.get_source_ray_paths(
+            for ray_path in self._scene_link.get_source_ray_paths(
                 self._name, rays_nb=100, raw_data=True, display_data=True
             ):
                 self._visual_data.add_data_line(
@@ -1349,6 +1353,7 @@ class SourceRayFile(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
+        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[RayFileSourceParameters] = None,
     ) -> None:
         if metadata is None:
@@ -1360,6 +1365,7 @@ class SourceRayFile(BaseSource):
             description=description,
             metadata=metadata,
             source_instance=source_instance,
+            scene_link=scene_link,
         )
         self._client = self._project.client
 
@@ -1442,7 +1448,7 @@ class SourceRayFile(BaseSource):
             self._visual_data = (
                 _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
             )
-            for ray_path in self._project.scene_link.get_source_ray_paths(
+            for ray_path in self._scene_link.get_source_ray_paths(
                 self._name, rays_nb=100, raw_data=True, display_data=True
             ):
                 self._visual_data.add_data_line(
@@ -1869,6 +1875,7 @@ class SourceSurface(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
+        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[SurfaceSourceParameters] = None,
     ) -> None:
         if metadata is None:
@@ -1880,6 +1887,7 @@ class SourceSurface(BaseSource):
             description=description,
             metadata=metadata,
             source_instance=source_instance,
+            scene_link=scene_link,
         )
         self._speos_client = self._project.client
         self._name = name
@@ -2058,7 +2066,7 @@ class SourceSurface(BaseSource):
                 if general_methods._GRAPHICS_AVAILABLE
                 else None
             )
-            for ray_path in self._project.scene_link.get_source_ray_paths(
+            for ray_path in self._scene_link.get_source_ray_paths(
                 self._name, rays_nb=100, raw_data=True, display_data=True
             ):
                 self._visual_data.add_data_line(
@@ -3314,6 +3322,7 @@ class SourceDisplay(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
+        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[DisplayParameters] = None,
     ) -> None:
         """Initialize a Display source object.
@@ -3348,6 +3357,7 @@ class SourceDisplay(BaseSource):
             description=description,
             metadata=metadata,
             source_instance=source_instance,
+            scene_link=scene_link,
         )
         self._speos_client = self._project.client
         self._name = name

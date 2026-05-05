@@ -26,12 +26,13 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 import os
 from pathlib import Path
+import re
 from typing import List, Mapping, Optional, Tuple, Union
 import uuid
 
 import numpy as np
 
-from ansys.speos.core import opt_prop, part
+from ansys.speos.core import body, face, opt_prop, part
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
@@ -41,8 +42,6 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.simulation import BaseSimulation
 from ansys.speos.core.source import (
-    SourceAmbientEnvironment,
-    SourceAmbientNaturalLight,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -112,15 +111,16 @@ class LightBox:
         self._features = []
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
         if scene_instance is None:
-            self.scene_template_link = self._project.client.scenes().create()
+            self.scene_link = self._project.client.scenes().create()
             self._scene_instance = ProtoScene.SceneInstance(
-                name=name, description=description, metadata=metadata
+                name=self._name, description=description, metadata=metadata
             )
         else:
             self._unique_id = scene_instance.metadata["UniqueId"]
-            self.scene_template_link = self._project.client[scene_instance.scene_guid]
+            self.scene_link = self._project.client[scene_instance.scene_guid]
             # reset will fill _scene_instance from project (using _unique_id)
             self.reset()
+            self._fill_features()
 
         if default_parameters is not None:
             self.axis_system = default_parameters.axis_system
@@ -246,8 +246,8 @@ class LightBox:
             Updated LightBox feature.
 
         """
-        self.scene_template_link.load_file(file_uri=lightbox.file, password=lightbox.password)
-        self._scene_instance.scene_guid = self.scene_template_link.key
+        self.scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
+        self._scene_instance.scene_guid = self.scene_link.key
         self._fill_features()
 
         # the following part is to check if any simulation contains source paths from the
@@ -267,6 +267,203 @@ class LightBox:
                         new_sources.append(source)
                 simulation.source_paths = new_sources
         return self
+
+    def find(
+        self,
+        name: str,
+        name_regex: bool = False,
+        feature_type: Optional[type] = None,
+    ) -> List[
+        Union[
+            opt_prop.OptProp,
+            SourceSurface,
+            SourceLuminaire,
+            SourceRayFile,
+            LightBox,
+            part.Part,
+            body.Body,
+            face.Face,
+            part.Part.SubPart,
+            GroundPlane,
+        ]
+    ]:
+        """Find feature(s) by name (possibility to use regex) and by feature type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted features.
+            Mandatory to fill for geometry features.
+            By default, ``None``, means that all features will be considered
+            (except geometry features).
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
+        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF, \
+        ansys.speos.core.simulation.SimulationDirect, \
+        ansys.speos.core.simulation.SimulationInteractive, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.component.LightBox, \
+        ansys.speos.core.part.Part, \
+        ansys.speos.core.body.Body, \
+        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
+        ansys.speos.core.ground_plane.GroundPlane]]
+            Found features.
+
+        Examples
+        --------
+        >>> # From name only
+        >>> find(name="Camera.1")
+        >>> # Specify feature type
+        >>> find(name="Camera.1", feature_type=ansys.speos.core.sensor.SensorCamera)
+        >>> # Using regex
+        >>> find(
+        >>>     name="Camera.*",
+        >>>     name_regex=True,
+        >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
+        >>> )
+        Here some examples when looking for a geometry feature:
+        (always precise feature_type)
+
+        >>> # Root part
+        >>> find(name="", feature_type=ansys.speos.core.part.Part)
+        >>> # Body in root part
+        >>> find(name="BodyName", feature_type=ansys.speos.core.body.Body)
+        >>> # Face from body in root part
+        >>> find(name="BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+        >>> # Sub part in root part
+        >>> find(name="SubPartName", feature_type=ansys.speos.core.part.Part.SubPart)
+        >>> # Face in a body from sub part in root part :
+        >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+        >>> # Regex can be use at each level separated by "/"
+        >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+        >>> # All faces of a specific body
+        >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+        >>> # All geometry features at first level (whatever their type: body, face, sub part)
+        >>> find(name=".*", name_regex=True, feature_type=ansys.speos.core.part.Part)
+        """
+        orig_feature_type = None
+        if (
+            feature_type == part.Part
+            or feature_type == part.Part.SubPart
+            or feature_type == body.Body
+            or feature_type == face.Face
+        ):
+            if feature_type != part.Part:
+                orig_feature_type = feature_type
+                feature_type = part.Part
+            if name == "":
+                name = "RootPart"
+            else:
+                name = "RootPart/" + name
+
+        orig_name = name
+        idx = name.find("/")
+        if idx != -1:
+            name = name[0:idx]
+
+        if name_regex:
+            p = re.compile(name)
+
+        found_features = []
+        if feature_type is None:
+            if name_regex:
+                found_features.extend([x for x in self._features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._features if x._name == name])
+        else:
+            if name_regex:
+                found_features.extend(
+                    [
+                        x
+                        for x in self._features
+                        if (
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
+                        )
+                        and p.match(x._name)
+                    ]
+                )
+            else:
+                found_features.extend(
+                    [
+                        x
+                        for x in self._features
+                        if (
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
+                        )
+                        and x._name == name
+                    ]
+                )
+
+        if found_features and idx != -1:
+            tmp = [
+                f.find(
+                    name=orig_name[idx + 1 :],
+                    name_regex=name_regex,
+                    feature_type=orig_feature_type,
+                )
+                for f in found_features
+            ]
+
+            found_features.clear()
+            for feats in tmp:
+                found_features.extend(feats)
+
+        return found_features
+
+    def create_root_part(
+        self,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ) -> part.Part:
+        """Create the project root part feature.
+
+        If a root part is already created in the project, it is returned.
+
+        Parameters
+        ----------
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.core.part.Part
+            Part feature.
+        """
+        if metadata is None:
+            metadata = {}
+
+        name = "RootPart"
+        existing_rp = self.find(name="", feature_type=part.Part)
+        if existing_rp:
+            return existing_rp[0]
+
+        feature = part.Part(
+            project=self._project,
+            name=name,
+            description=description,
+            metadata=metadata,
+        )
+        self._features.append(feature)
+        return feature
 
     def _fill_subparts(
         self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
@@ -319,7 +516,7 @@ class LightBox:
                     )
 
     def _add_unique_ids(self):
-        scene_data = self.scene_template_link.get()
+        scene_data = self.scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
         root_part = root_part_link.get()
@@ -351,31 +548,32 @@ class LightBox:
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
-        self.scene_template_link.set(data=scene_data)
+        self.scene_link.set(data=scene_data)
 
     def _fill_features(self):
         """Fill project features from a scene."""
         # delete previously created features
         for feature in self._features:
-            feature.delete()
+            if not isinstance(feature, part.Part):
+                feature.delete()
+        self._features = []
         # load new features
         self._add_unique_ids()
 
-        scene_data = self.scene_template_link.get()
+        scene_data = self.scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
         root_part_data = root_part_link.get()
-        root_part_feats = [
-            feature for feature in self._features if feature.name == f"{self.name}/RootPart"
-        ]
+        root_part_feats = self.find(name="", feature_type=part.Part)
         root_part_feat = None
-        if len(root_part_feats) == 0:
-            root_part_feat = part.Part(
-                project=self._project, name=f"{self.name}/RootPart", description="", metadata=None
-            )
-            self._features.append(root_part_feat)
-            root_part_data.name = f"{self.name}/RootPart"
+        if not root_part_feats:
+            root_part_feat = self.create_root_part()
+            root_part_data.name = "RootPart"
             root_part_link.set(root_part_data)
+            # print("debug", root_part_data.body_guids)
+            # for guid in root_part_data.body_guids:
+            #     print(self._project.client[guid].get())
+
             self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
         else:
             root_part_feat = root_part_feats[0]
@@ -402,46 +600,35 @@ class LightBox:
             if src_inst.HasField("rayfile_properties"):
                 src_feat = SourceRayFile(
                     project=self._project,
-                    name=f"{self.name}/{src_inst.name}",
+                    name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
+                    scene_link=self.scene_link,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
                     project=self._project,
-                    name=f"{self.name}/{src_inst.name}",
+                    name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
+                    scene_link=self.scene_link,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
                     project=self._project,
-                    name=f"{self.name}/{src_inst.name}",
+                    name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
+                    scene_link=self.scene_link,
                 )
             elif src_inst.HasField("display_properties"):
                 src_feat = SourceDisplay(
                     project=self._project,
-                    name=f"{self.name}/{src_inst.name}",
+                    name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
+                    scene_link=self.scene_link,
                 )
-            elif src_inst.HasField("ambient_properties"):
-                if src_inst.ambient_properties.HasField("natural_light_properties"):
-                    src_feat = SourceAmbientNaturalLight(
-                        project=self._project,
-                        name=f"{self.name}/{src_inst.name}",
-                        source_instance=src_inst,
-                        default_parameters=None,
-                    )
-                elif src_inst.ambient_properties.HasField("environment_map_properties"):
-                    src_feat = SourceAmbientEnvironment(
-                        project=self._project,
-                        name=f"{self.name}/{src_inst.name}",
-                        source_instance=src_inst,
-                        default_parameters=None,
-                    )
             if src_feat is not None:
                 self._features.append(src_feat)
 
@@ -541,7 +728,7 @@ class LightBox:
 
         if "scene" not in out_dict.keys():
             # SceneTemplate
-            if self.scene_template_link is None:
+            if self.scene_link is None:
                 out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
                     message=self._scene_template,
@@ -549,7 +736,7 @@ class LightBox:
             else:
                 out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
-                    message=self.scene_template_link.get(),
+                    message=self.scene_link.get(),
                 )
         proto_message_utils._replace_properties(json_dict=out_dict)
 
@@ -630,9 +817,9 @@ class LightBox:
             Updated LightBox feature.
         """
         # Delete the scene template
-        if self.scene_template_link is not None:
-            self.scene_template_link.delete()
-            self.scene_template_link = None
+        if self.scene_link is not None:
+            self.scene_link.delete()
+            self.scene_link = None
 
         # Reset then the scene_guid (as the scene template was deleted just above)
         self._scene_instance.scene_guid = ""
