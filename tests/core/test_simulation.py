@@ -28,6 +28,8 @@ import platform
 import re
 from threading import Thread
 from time import sleep
+from types import SimpleNamespace
+import typing
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
@@ -35,6 +37,7 @@ import pytest
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.general_methods import normalize_vector
 from ansys.speos.core.generic.parameters import TextureNormalizationTypes
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     BaseSimulation,
@@ -1161,13 +1164,137 @@ def test_export(speos: Speos):
             / (sim_first.get(key="name") + ".speos")
         )
     )
-    with pytest.raises(
-        ValueError,
-        match="Selected simulation is not the first simulation feature, it can't be exported.",
-    ):
+
+    if server_version_checker.is_version_supported(2026, 1, 1):  # >= 26r1 sp1
         sim_second.export(export_path=str(Path(test_path) / "export_test"))
+        assert does_file_exist(
+            str(
+                Path(test_path)
+                / "export_test"
+                / (sim_second.get(key="name") + ".speos")
+                / (sim_second.get(key="name") + ".speos")
+            )
+        )
+    else:  # < 26r1 sp1
+        with pytest.raises(
+            ValueError,
+            match="Selected simulation is not the first simulation feature, it can't be exported.",
+        ):
+            sim_second.export(export_path=str(Path(test_path) / "export_test"))
 
     remove_file(str(Path(test_path) / "export_test"))
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_export_old_version(monkeypatch, tmp_path):
+    """Test export legacy branch independently from the detected server version."""
+    saved_requests = []
+
+    class FakeActionsStub:
+        @typing.override
+        def SaveFile(self, request):
+            saved_requests.append(request)
+
+    project = SimpleNamespace(
+        _features=[],
+        scene_link=SimpleNamespace(
+            key="scene-guid",
+            stub=SimpleNamespace(_actions_stub=FakeActionsStub()),
+        ),
+    )
+
+    sim_first = SimulationDirect.__new__(SimulationDirect)
+    sim_first._project = project
+    sim_first._name = "Sim.1"
+
+    sim_second = SimulationInverse.__new__(SimulationInverse)
+    sim_second._project = project
+    sim_second._name = "Sim.2"
+
+    project._features = [sim_first, sim_second]
+
+    monkeypatch.setattr(
+        server_version_checker, "is_version_supported", lambda *args, **kwargs: False
+    )
+
+    warning_message = (
+        "Limitation : only the first inverse/direct simulation is exported and"
+        " stop conditions are not exported."
+    )
+    with pytest.warns(UserWarning, match=re.escape(warning_message)):
+        sim_first.export(export_path=tmp_path)
+
+    assert len(saved_requests) == 1
+    assert saved_requests[0].guid == "scene-guid"
+    assert saved_requests[0].file_uri == str(tmp_path / "Sim.1.speos")
+
+    with pytest.warns(UserWarning, match=re.escape(warning_message)):
+        with pytest.raises(
+            ValueError,
+            match="Selected simulation is not the first simulation feature, it can't be exported.",
+        ):
+            sim_second.export(export_path=tmp_path)
+
+
+@pytest.mark.supported_speos_versions(max=271)
+def test_export_new_version(monkeypatch, tmp_path):
+    """Test export newer branch independently from the detected server version."""
+
+    class FakeJobLink:
+        def __init__(self, remote_job):
+            self._remote_job = remote_job
+            self.set_calls = []
+            self.saved_paths = []
+
+        def get(self):
+            return self._remote_job
+
+        def set(self, data):
+            self.set_calls.append(data)
+            self._remote_job = data
+
+        def save_file(self, file_path):
+            self.saved_paths.append(file_path)
+
+    created_messages = []
+    created_job_link = FakeJobLink(remote_job=object())
+
+    class FakeJobs:
+        def create(self, message):
+            created_messages.append(message)
+            return created_job_link
+
+    project = SimpleNamespace(client=SimpleNamespace(jobs=lambda: FakeJobs()))
+
+    monkeypatch.setattr(
+        server_version_checker, "is_version_supported", lambda *args, **kwargs: True
+    )
+
+    sim_create = SimulationDirect.__new__(SimulationDirect)
+    sim_create._project = project
+    sim_create._name = "Sim.Create"
+    sim_create._job = object()
+    sim_create.job_link = None
+
+    sim_create.export(export_path=tmp_path)
+
+    assert created_messages == [sim_create._job]
+    assert sim_create.job_link is created_job_link
+    assert created_job_link.set_calls == []
+    assert created_job_link.saved_paths == [str(tmp_path / "Sim.Create.speos")]
+
+    existing_job_link = FakeJobLink(remote_job=object())
+    sim_update = SimulationDirect.__new__(SimulationDirect)
+    sim_update._project = project
+    sim_update._name = "Sim.Update"
+    sim_update._job = object()
+    sim_update.job_link = existing_job_link
+
+    sim_update.export(export_path=tmp_path)
+
+    assert created_messages == [sim_create._job]
+    assert existing_job_link.set_calls == [sim_update._job]
+    assert existing_job_link.saved_paths == [str(tmp_path / "Sim.Update.speos")]
 
 
 @pytest.mark.skipif(
