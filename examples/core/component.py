@@ -11,12 +11,12 @@
 import json
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos, launcher
+from ansys.speos.core import OptProp, Project, Speos, launcher
 from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
-from ansys.speos.core.simulation import SimulationDirect
+from ansys.speos.core.source import SourceRayFile, SourceSurface
 
 # ### Define constants
 #
@@ -221,9 +221,62 @@ lightbox.commit()
 print_lightbox_compact(lightbox)
 # -
 
-# ### Lightbox sources in simulation
+# ### Source and Bodies instance inside Lightbox
 #
-# The project contains two lightbox features
+# Find method is provided to select the features, e.g. sources, bodies inside lightbox.
+#
+# Example source in lightbox:
+
+# +
+lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+print(lightbox_source)
+# -
+
+# Example material property in lightbox:
+
+# +
+lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+print(lightbox_material)
+# -
+
+# ## Modify lightbox features
+#
+# ### feature instance modify method
+#
+# The Lightbox contains features that can be modified via feature commit.
+
+# +
+lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+print(lightbox_source)
+lightbox_source.flux.value = 30
+lightbox_source.commit()
+print(lightbox_source)
+# -
+
+# ### lightbox instance as global modofy method
+#
+# The Lightbox contains features that can be modified via lightbox commit.
+
+# +
+lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+print(lightbox_material)
+lightbox_material.sop_mirror.reflectance = 85
+lightbox_source_2 = lightbox.find(name=".*", name_regex=True, feature_type=SourceRayFile)[0]
+lightbox_source_2.flux.value = 20
+lightbox.commit()
+print(lightbox_material)
+print(lightbox_source_2)
+# -
+
+
+# ## Delete
+lightbox_source.delete()
+
+
+# ## Lightbox sources in simulation
+#
+# The project contains two lightbox features.
+# source_paths are in format of lightbox_name/source_name.
 
 # +
 p2 = Project(
@@ -235,35 +288,4 @@ lightbox_1 = lightboxes[0]
 lightbox_2 = lightboxes[1]
 print(lightbox_1.source_paths)
 print(lightbox_2.source_paths)
-# -
-
-# ## Modify
-#
-# The simulation contains sources from two lightbox features
-
-# +
-simulation = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-print(simulation.get(key="source_paths"))
-# -
-
-# Modify the second lightbox feature with a new lightbox file
-
-# +
-# lightbox_2.set_speos_light_box(
-#     lightbox=LightBoxFileInstance(
-#         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
-#     )
-# )
-# print(lightbox_2.source_paths)
-# lightbox_2.commit()
-# -
-
-# The new lightbox feature shares one light source compared to the previous lightbox feature,
-# so the un-matched old light source is removed from the simulation while keeping the matched
-# light source.
-# Any completely new light source will not be added to simulation by default, User need to decide
-# if adding the new light source into simulation to simulation.
-
-# +
-print(simulation.get(key="source_paths"))
 # -

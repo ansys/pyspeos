@@ -119,14 +119,14 @@ class LightBox:
 
         match instance:
             case None:
-                self.scene_link = self._project.client.scenes().create()
+                self._scene_link = self._project.client.scenes().create()
                 self._scene_instance = ProtoScene.SceneInstance(name=self._name)
                 self.axis_system = ORIGIN
             case LightBoxFileInstance():
-                self.scene_link = self._project.client.scenes().create()
+                self._scene_link = self._project.client.scenes().create()
                 self._scene_instance = ProtoScene.SceneInstance(name=self._name)
-                self.scene_link.load_file(file_uri=instance.file, password=instance.password)
-                self._scene_instance.scene_guid = self.scene_link.key
+                self._scene_link.load_file(file_uri=instance.file, password=instance.password)
+                self._scene_instance.scene_guid = self._scene_link.key
                 self.axis_system = instance.axis_system
                 self._fill_features()
 
@@ -148,7 +148,7 @@ class LightBox:
                         simulation.source_paths = new_sources
             case ProtoScene.SceneInstance():
                 self._unique_id = instance.metadata["UniqueId"]
-                self.scene_link = self._project.client[instance.scene_guid]
+                self._scene_link = self._project.client[instance.scene_guid]
                 # reset will fill _scene_instance from project (using _unique_id)
                 self.reset()
                 self._fill_features()
@@ -494,6 +494,7 @@ class LightBox:
             name=name,
             description=description,
             metadata=metadata,
+            scene_link=self._scene_link,
         )
         self._features.append(feature)
         return feature
@@ -575,7 +576,7 @@ class LightBox:
                     description=description,
                     metadata=metadata,
                     default_parameters=parameters,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             case "SourceRayFile":
                 if parameters is None:
@@ -591,7 +592,7 @@ class LightBox:
                     description=description,
                     metadata=metadata,
                     default_parameters=parameters,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             case "SourceLuminaire":
                 if parameters is None:
@@ -607,7 +608,7 @@ class LightBox:
                     description=description,
                     metadata=metadata,
                     default_parameters=parameters,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             case "SourceDisplay":
                 if parameters is None:
@@ -623,7 +624,7 @@ class LightBox:
                     description=description,
                     metadata=metadata,
                     default_parameters=parameters,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -689,6 +690,7 @@ class LightBox:
                 description=description,
                 metadata=metadata,
                 default_parameters=parameters,
+                scene_link=self._scene_link,
             )
         else:
             feature = opt_prop.OptProp(
@@ -697,6 +699,7 @@ class LightBox:
                 description=description,
                 metadata=metadata,
                 default_parameters=OptPropParameters(),
+                scene_link=self._scene_link,
             )
         self._features.append(feature)
         return feature
@@ -752,7 +755,7 @@ class LightBox:
                     )
 
     def _add_unique_ids(self):
-        scene_data = self.scene_link.get()
+        scene_data = self._scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
         root_part = root_part_link.get()
@@ -784,7 +787,7 @@ class LightBox:
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
-        self.scene_link.set(data=scene_data)
+        self._scene_link.set(data=scene_data)
 
     def _fill_features(self):
         """Fill project features from a scene."""
@@ -796,7 +799,7 @@ class LightBox:
         # load new features
         self._add_unique_ids()
 
-        scene_data = self.scene_link.get()
+        scene_data = self._scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
         root_part_data = root_part_link.get()
@@ -827,6 +830,7 @@ class LightBox:
                 description="",
                 metadata=None,
                 default_parameters=None,
+                scene_link=self._scene_link,
             )
             op_feature._fill(mat_inst=mat_inst)
             self._features.append(op_feature)
@@ -839,7 +843,7 @@ class LightBox:
                     name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
@@ -847,7 +851,7 @@ class LightBox:
                     name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
@@ -855,7 +859,7 @@ class LightBox:
                     name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             elif src_inst.HasField("display_properties"):
                 src_feat = SourceDisplay(
@@ -863,7 +867,7 @@ class LightBox:
                     name=src_inst.name,
                     source_instance=src_inst,
                     default_parameters=None,
-                    scene_link=self.scene_link,
+                    scene_link=self._scene_link,
                 )
             if src_feat is not None:
                 self._features.append(src_feat)
@@ -886,6 +890,9 @@ class LightBox:
         if general_methods._GRAPHICS_AVAILABLE:
             for item in self._visual_data:
                 item.updated = False
+
+        for feature in self._features:
+            feature.commit()
 
         # The _unique_id will help to find the correct item in the scene.scenes:
         # the list of SceneInstance
@@ -964,7 +971,7 @@ class LightBox:
 
         if "scene" not in out_dict.keys():
             # SceneTemplate
-            if self.scene_link is None:
+            if self._scene_link is None:
                 out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
                     message=self._scene_template,
@@ -972,7 +979,7 @@ class LightBox:
             else:
                 out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
-                    message=self.scene_link.get(),
+                    message=self._scene_link.get(),
                 )
         proto_message_utils._replace_properties(json_dict=out_dict)
 
@@ -1028,9 +1035,14 @@ class LightBox:
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
-        # Reset sensor template
+        for feature in self._features:
+            feature.reset()
 
-        # Reset sensor instance
+        # Reset scene template
+        if self._scene_link is not None:
+            self._scene_template = self._scene_link.get()
+
+        # Reset scene instance
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
@@ -1052,10 +1064,20 @@ class LightBox:
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
+        feature_part = None  # make sure the RootPart is deleted in the very end
+        for feature in self._features:
+            if not isinstance(feature, part.Part):
+                feature.delete()
+            else:
+                feature_part = feature
+        if feature_part is not None:
+            feature_part.delete()
+        self._features = []
+
         # Delete the scene template
-        if self.scene_link is not None:
-            self.scene_link.delete()
-            self.scene_link = None
+        if self._scene_link is not None:
+            self._scene_link.delete()
+            self._scene_link = None
 
         # Reset then the scene_guid (as the scene template was deleted just above)
         self._scene_instance.scene_guid = ""
@@ -1073,4 +1095,5 @@ class LightBox:
         # Reset the _unique_id
         self._unique_id = None
         self._scene_instance.metadata.pop("UniqueId")
+        self._project._features.remove(self)
         return self

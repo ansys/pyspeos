@@ -55,7 +55,6 @@ def test_create_lightbox(speos: Speos):
     assert len(lightbox._features) == 3
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
-    assert lightbox_material[0].__str__().startswith("local") is True
     assert lightbox_material[0].get(key="name") == "Material.2"
     assert lightbox_material[0].sop_mirror.reflectance == 100
     lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)
@@ -72,7 +71,6 @@ def test_create_lightbox(speos: Speos):
     lightbox_material[0].sop_mirror.reflectance = 90
     lightbox_material[0].commit()
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
-    assert lightbox_material.__str__().startswith("local") is False
     assert lightbox_material.sop_mirror.reflectance == 90
 
     lightbox.create_optical_property(name="new material")
@@ -335,3 +333,25 @@ def test_reset_lightbox(speos: Speos):
         0.0,
         1.0,
     ]
+
+
+def test_delete_lightbox(speos: Speos):
+    """Test delete a lightbox."""
+    p = Project(speos=speos)
+    lightbox_1 = p.create_lightbox(
+        name="Light Box Import.1",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
+        ),
+    )
+    assert lightbox_1._scene_link is not None
+    assert len(lightbox_1._features) == 3
+
+    # Delete
+    lightbox_1.delete()
+    assert len(p.scene_link.get().scenes) == 0
+    assert len(lightbox_1._features) == 0
+    assert lightbox_1._scene_link is None
+
+    lightbox = p.find(name=".*", name_regex=True, feature_type=LightBox)
+    assert len(lightbox) == 0
