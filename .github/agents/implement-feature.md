@@ -34,7 +34,8 @@ class SourceSphereParameters:
 **File:** `src/ansys/speos/core/source.py` (or the appropriate domain module)
 
 1. Subclass the matching `Base*` class (e.g. `BaseSource`, `BaseSensor`, `BaseSimulation`).
-2. Write a NumPy-style class docstring with `Parameters` and `Notes` sections. All linked Types need fully qualified pathes
+2. Write a NumPy-style class docstring with `Parameters` and `Notes` sections. All linked
+Types need fully qualified paths.
 3. Implement properties as `@property` getter / `<name>.setter` pairs that read/write the
    underlying protobuf message stored in `self._source_template` (or equivalent).
 4. Add a `_fill_parameters(self, default_parameters=None)` method that accepts a parameters
