@@ -32,6 +32,7 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.kernel import SceneLink
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.part import ProtoPart
 import ansys.speos.core.project as project
@@ -501,10 +502,12 @@ class Part:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        scene_link: Optional[SceneLink] = None,
     ) -> None:
         self._project = project
         self._name = name
         self.part_link = None
+        self._scene_link = self._project.scene_link if scene_link is None else scene_link
         """Link object for the part in database."""
 
         self._geom_features = []
@@ -641,11 +644,11 @@ class Part:
             g.commit()
 
         # Update the scene with the part
-        if self._project.scene_link:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+        if self._scene_link:
+            scene_data = self._scene_link.get()  # retrieve scene data
             if scene_data.part_guid != self.part_link.key:
                 scene_data.part_guid = self.part_link.key
-                self._project.scene_link.set(data=scene_data)  # update scene data
+                self._scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -681,9 +684,9 @@ class Part:
             self.part_link = None
 
         # Remove the part guid from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
+        scene_data = self._scene_link.get()  # retrieve scene data
         scene_data.part_guid = ""
-        self._project.scene_link.set(data=scene_data)  # update scene data
+        self._scene_link.set(data=scene_data)  # update scene data
 
         return self
 
