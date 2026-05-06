@@ -16,7 +16,7 @@ from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
-from ansys.speos.core.source import SourceRayFile, SourceSurface
+from ansys.speos.core.source import SourceSurface
 
 # ### Define constants
 #
@@ -261,11 +261,11 @@ print(lightbox_source)
 lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
 print(lightbox_material)
 lightbox_material.sop_mirror.reflectance = 85
-lightbox_source_2 = lightbox.find(name=".*", name_regex=True, feature_type=SourceRayFile)[0]
-lightbox_source_2.flux.value = 20
+print(lightbox_source)
+lightbox_source.intensity.set_cos.total_angle = 20
 lightbox.commit()
 print(lightbox_material)
-print(lightbox_source_2)
+print(lightbox_source)
 # -
 
 
