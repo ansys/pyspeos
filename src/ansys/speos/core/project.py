@@ -33,7 +33,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
-from ansys.speos.core.component import LightBox
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
@@ -47,7 +47,6 @@ from ansys.speos.core.generic.parameters import (
     InverseSimulationParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
-    LightBoxParameters,
     LuminaireSourceParameters,
     OptPropParameters,
     RadianceSensorParameters,
@@ -825,12 +824,10 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_lightbox_import(
+    def create_lightbox(
         self,
         name: str,
-        description: str = "",
-        metadata: Mapping[str, str] | None = None,
-        parameters: LightBoxParameters | None = None,
+        lightbox: Optional[LightBoxFileInstance] = None,
     ) -> LightBox:
         """Create lightbox import features.
 
@@ -838,38 +835,23 @@ class Project:
         ----------
         name: str
             name of the lightbox import
-        description : str
-            Description of the feature.
-            By default, ``""``.
-        metadata : Mapping[str, str] | None, optional
-            Metadata of the feature.
-            By default, ``{}``.
-        parameters: LightBoxParameters | None, optional
-            Allows to provide parameters to overwrite default parameters.
+        lightbox: Optional[ansys.speos.core.component.LightBoxFile] = None
+            LightBox file information (file path and password) to import.
+            If None, an empty lightbox will be created.
 
         Returns
         -------
         ansys.speos.core.component.LightBox
             Lightbox feature.
         """
-        if metadata is None:
-            metadata = {}
-
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
             raise ValueError(msg)
-        if parameters is not None and not isinstance(parameters, LightBoxParameters):
-            raise TypeError(
-                f"Incorrect parameter dataclass provided "
-                f"{str(type(parameters))} instead of LightBoxParameters"
-            )
         feature = LightBox(
             project=self,
             name=name,
-            description=description,
-            metadata=metadata,
-            default_parameters=parameters if parameters is not None else LightBoxParameters(),
+            instance=lightbox,
         )
         self._features.append(feature)
         return feature
@@ -1364,8 +1346,7 @@ class Project:
             lightbox_scene = LightBox(
                 project=self,
                 name=scene_inst.name,
-                scene_instance=scene_inst,
-                default_parameters=None,
+                instance=scene_inst,
             )
             self._features.append(lightbox_scene)
 

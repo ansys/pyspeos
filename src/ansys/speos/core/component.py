@@ -33,8 +33,15 @@ import uuid
 import numpy as np
 
 from ansys.speos.core import body, face, opt_prop, part
+from ansys.speos.core.generic.constants import ORIGIN
 import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.parameters import LightBoxParameters
+from ansys.speos.core.generic.parameters import (
+    DisplayParameters,
+    LuminaireSourceParameters,
+    OptPropParameters,
+    RayFileSourceParameters,
+    SurfaceSourceParameters,
+)
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import BodyLink, FaceLink, ProtoScene
@@ -49,7 +56,7 @@ from ansys.speos.core.source import (
 )
 
 
-class LightBoxFile:
+class LightBoxFileInstance:
     """Represent a LightBox file containing geometries and sources.
 
     The LightBox content is imported as a scene inside a project scene.
@@ -66,6 +73,7 @@ class LightBoxFile:
         self,
         file: Union[Path, str],
         password: str | None = None,
+        axis_system: Optional[List[float]] = None,
     ) -> None:
         self.file = str(file)
         """SPEOS file."""
@@ -73,6 +81,7 @@ class LightBoxFile:
             password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
         self.password = password
         """Password for the imported lightbox."""
+        self.axis_system = ORIGIN if axis_system is None else axis_system
 
 
 class LightBox:
@@ -100,30 +109,54 @@ class LightBox:
         self,
         name: str,
         project: project.Project,
-        description: str = "",
-        metadata: Optional[Mapping[str, str]] = None,
-        scene_instance: Optional[ProtoScene.SceneInstance] = None,
-        default_parameters: Optional[LightBoxParameters] = None,
+        instance: Optional[Union[LightBoxFileInstance, ProtoScene.SceneInstance]] = None,
     ):
         self._name = name
         self._unique_id = None
         self._project = project
         self._features = []
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
-        if scene_instance is None:
-            self.scene_link = self._project.client.scenes().create()
-            self._scene_instance = ProtoScene.SceneInstance(
-                name=self._name, description=description, metadata=metadata
-            )
-        else:
-            self._unique_id = scene_instance.metadata["UniqueId"]
-            self.scene_link = self._project.client[scene_instance.scene_guid]
-            # reset will fill _scene_instance from project (using _unique_id)
-            self.reset()
-            self._fill_features()
 
-        if default_parameters is not None:
-            self.axis_system = default_parameters.axis_system
+        match instance:
+            case None:
+                self.scene_link = self._project.client.scenes().create()
+                self._scene_instance = ProtoScene.SceneInstance(name=self._name)
+                self.axis_system = ORIGIN
+            case LightBoxFileInstance():
+                self.scene_link = self._project.client.scenes().create()
+                self._scene_instance = ProtoScene.SceneInstance(name=self._name)
+                self.scene_link.load_file(file_uri=instance.file, password=instance.password)
+                self._scene_instance.scene_guid = self.scene_link.key
+                self.axis_system = instance.axis_system
+                self._fill_features()
+
+                # the following part is to check if any simulation contains source paths from the
+                # current lightbox whose light source has been modified via set_speos_light_box.
+                # If there is such simulation,
+                # 1. the source paths from the current lightbox will be removed from this simulation
+                # if they are not included in the new lightbox file.
+                # 2. kept if they are still included in the new lightbox file.
+                for simulation in self._project.find(
+                    name=".*", name_regex=True, feature_type=BaseSimulation
+                ):
+                    sim_source_paths = simulation._simulation_instance.source_paths
+                    if any(self.name in path for path in sim_source_paths):
+                        new_sources = []
+                        for source in sim_source_paths:
+                            if (self.name not in source) or (source in self.source_paths):
+                                new_sources.append(source)
+                        simulation.source_paths = new_sources
+            case ProtoScene.SceneInstance():
+                self._unique_id = instance.metadata["UniqueId"]
+                self.scene_link = self._project.client[instance.scene_guid]
+                # reset will fill _scene_instance from project (using _unique_id)
+                self.reset()
+                self._fill_features()
+            case _:
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(instance))} instead of LightBoxFileInstance or SceneInstance"
+                )
 
     @property
     def visual_data(self) -> List[_VisualData]:
@@ -232,41 +265,41 @@ class LightBox:
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
-    def set_speos_light_box(self, lightbox: LightBoxFile) -> LightBox:
-        """Set the LightBox file used by this feature.
-
-        Parameters
-        ----------
-        lightbox : ansys.speos.core.component.LightBoxFile
-            LightBox file information to import.
-
-        Returns
-        -------
-        ansys.speos.core.component.LightBox
-            Updated LightBox feature.
-
-        """
-        self.scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
-        self._scene_instance.scene_guid = self.scene_link.key
-        self._fill_features()
-
-        # the following part is to check if any simulation contains source paths from the
-        # current lightbox whose light source has been modified via set_speos_light_box.
-        # If there is such simulation,
-        # 1. the source paths from the current lightbox will be removed from this simulation
-        # if they are not included in the new lightbox file.
-        # 2. kept if they are still included in the new lightbox file.
-        for simulation in self._project.find(
-            name=".*", name_regex=True, feature_type=BaseSimulation
-        ):
-            if any(self.name in path for path in simulation._simulation_instance.source_paths):
-                current_sources = simulation._simulation_instance.source_paths
-                new_sources = []
-                for source in current_sources:
-                    if (self.name not in source) or (source in self.source_paths):
-                        new_sources.append(source)
-                simulation.source_paths = new_sources
-        return self
+    # def set_speos_light_box(self, lightbox: LightBoxFileInstance) -> LightBox:
+    #     """Set the LightBox file used by this feature.
+    #
+    #     Parameters
+    #     ----------
+    #     lightbox : ansys.speos.core.component.LightBoxFileInstance
+    #         LightBox file information to import.
+    #
+    #     Returns
+    #     -------
+    #     ansys.speos.core.component.LightBox
+    #         Updated LightBox feature.
+    #
+    #     """
+    #     self.scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
+    #     self._scene_instance.scene_guid = self.scene_link.key
+    #     self._fill_features()
+    #
+    #     # the following part is to check if any simulation contains source paths from the
+    #     # current lightbox whose light source has been modified via set_speos_light_box.
+    #     # If there is such simulation,
+    #     # 1. the source paths from the current lightbox will be removed from this simulation
+    #     # if they are not included in the new lightbox file.
+    #     # 2. kept if they are still included in the new lightbox file.
+    #     for simulation in self._project.find(
+    #         name=".*", name_regex=True, feature_type=BaseSimulation
+    #     ):
+    #         if any(self.name in path for path in simulation._simulation_instance.source_paths):
+    #             current_sources = simulation._simulation_instance.source_paths
+    #             new_sources = []
+    #             for source in current_sources:
+    #                 if (self.name not in source) or (source in self.source_paths):
+    #                     new_sources.append(source)
+    #             simulation.source_paths = new_sources
+    #     return self
 
     def find(
         self,
@@ -462,6 +495,209 @@ class LightBox:
             description=description,
             metadata=metadata,
         )
+        self._features.append(feature)
+        return feature
+
+    def create_source(
+        self,
+        name: str,
+        description: str = "",
+        feature_type: type = SourceSurface,
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            Union[
+                LuminaireSourceParameters,
+                SurfaceSourceParameters,
+                RayFileSourceParameters,
+                DisplayParameters,
+            ]
+        ] = None,
+    ) -> Union[
+        SourceSurface,
+        SourceRayFile,
+        SourceLuminaire,
+        SourceDisplay,
+    ]:
+        """Create a new Source feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        feature_type: type
+            Source type to be created.
+            By default, ``ansys.speos.core.source.SourceSurface``.
+            Allowed types:
+            Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
+            ansys.speos.core.source.SourceLuminaire, \
+            ansys.speos.core.source.SourceDisplay].
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+        parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
+        ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
+        ansys.speos.core.generic.parameters.RayFileSourceParameters,\
+        ansys.speos.core.generic.parameters.DisplayParamaters]]
+            Allows to provide parameters to overwrite default parameters.
+
+        Returns
+        -------
+        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
+        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceDisplay]
+            Source class instance.
+        """
+        if metadata is None:
+            metadata = {}
+
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
+            raise ValueError(msg)
+        feature = None
+        match feature_type.__name__:
+            case "SourceSurface":
+                if parameters is None:
+                    parameters = SurfaceSourceParameters()
+                elif not isinstance(parameters, SurfaceSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of SurfaceSourceParameters"
+                    )
+                feature = SourceSurface(
+                    project=self._project,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                    scene_link=self.scene_link,
+                )
+            case "SourceRayFile":
+                if parameters is None:
+                    parameters = RayFileSourceParameters()
+                elif not isinstance(parameters, RayFileSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of RayFileSourceParameters"
+                    )
+                feature = SourceRayFile(
+                    project=self._project,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                    scene_link=self.scene_link,
+                )
+            case "SourceLuminaire":
+                if parameters is None:
+                    parameters = LuminaireSourceParameters()
+                elif not isinstance(parameters, LuminaireSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of LuminaireSourceParameters"
+                    )
+                feature = SourceLuminaire(
+                    project=self._project,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                    scene_link=self.scene_link,
+                )
+            case "SourceDisplay":
+                if parameters is None:
+                    parameters = DisplayParameters()
+                elif not isinstance(parameters, DisplayParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DisplayParameters"
+                    )
+                feature = SourceDisplay(
+                    project=self._project,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                    scene_link=self.scene_link,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type,
+                    [
+                        SourceSurface,
+                        SourceLuminaire,
+                        SourceRayFile,
+                        SourceDisplay,
+                    ],
+                )
+                raise TypeError(msg)
+        self._features.append(feature)
+        return feature
+
+    def create_optical_property(
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[OptPropParameters] = None,
+    ) -> opt_prop.OptProp:
+        """Create a new Optical Property feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters]
+             Allows to provide parameters to overwrite default parameters.
+
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            OptProp feature.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                opt_prop.OptProp, name
+            )
+            raise ValueError(msg)
+
+        if metadata is None:
+            metadata = {}
+        if parameters:
+            if not isinstance(parameters, OptPropParameters):
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(parameters))} instead of OptPropParameters"
+                )
+
+            feature = opt_prop.OptProp(
+                project=self._project,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=parameters,
+            )
+        else:
+            feature = opt_prop.OptProp(
+                project=self._project,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=OptPropParameters(),
+            )
         self._features.append(feature)
         return feature
 

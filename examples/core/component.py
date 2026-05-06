@@ -12,8 +12,7 @@ import json
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-from ansys.speos.core.component import LightBox, LightBoxFile
-from ansys.speos.core.generic.parameters import LightBoxParameters
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -185,11 +184,11 @@ print(p)
 #
 # The mention "local: " is added when printing the lightbox
 
-lightbox = p.create_lightbox_import(name="Light Box Import.1", parameters=LightBoxParameters())
-lightbox.set_speos_light_box(
-    lightbox=LightBoxFile(
+lightbox = p.create_lightbox(
+    name="Light Box Import.1",
+    lightbox=LightBoxFileInstance(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
-    )
+    ),
 )
 print_lightbox_compact(lightbox)
 
@@ -250,13 +249,13 @@ print(simulation.get(key="source_paths"))
 # Modify the second lightbox feature with a new lightbox file
 
 # +
-lightbox_2.set_speos_light_box(
-    lightbox=LightBoxFile(
-        file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
-    )
-)
-print(lightbox_2.source_paths)
-lightbox_2.commit()
+# lightbox_2.set_speos_light_box(
+#     lightbox=LightBoxFileInstance(
+#         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
+#     )
+# )
+# print(lightbox_2.source_paths)
+# lightbox_2.commit()
 # -
 
 # The new lightbox feature shares one light source compared to the previous lightbox feature,
