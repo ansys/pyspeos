@@ -50,11 +50,12 @@ def test_create_lightbox(speos: Speos):
             file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
         ),
     )
+    assert lightbox.__str__().startswith("local") is True
     assert lightbox.axis_system == ORIGIN
     assert len(lightbox._features) == 3
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
-    print(lightbox_material[0])
+    assert lightbox_material[0].__str__().startswith("local") is True
     assert lightbox_material[0].get(key="name") == "Material.2"
     assert lightbox_material[0].sop_mirror.reflectance == 100
     lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)
@@ -65,6 +66,14 @@ def test_create_lightbox(speos: Speos):
     assert len(lightbox_part[0].bodies) == 1
     assert len(lightbox_part[0].bodies[0].faces) == 1
     assert lightbox_part[0].bodies[0].faces[0]._name == "face.1:3037138295"
+
+    lightbox.commit()
+    assert lightbox.__str__().startswith("local") is False
+    lightbox_material[0].sop_mirror.reflectance = 90
+    lightbox_material[0].commit()
+    lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+    assert lightbox_material.__str__().startswith("local") is False
+    assert lightbox_material.sop_mirror.reflectance == 90
 
     lightbox.create_optical_property(name="new material")
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
@@ -309,9 +318,8 @@ def test_reset_lightbox(speos: Speos):
         path=Path(test_path) / "lightbox" / "Direct.1.speos",
     )
     lightbox_1 = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
-    lightbox_1.axis_system = ORIGIN
-    lightbox_1.__str__().startswith("local")
-    assert lightbox_1.axis_system == ORIGIN
+    lightbox_1.axis_system = [100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert lightbox_1.axis_system == [100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     lightbox_1.reset()
     assert lightbox_1.axis_system == [
         -40.99999999999999,
