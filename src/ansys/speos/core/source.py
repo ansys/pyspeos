@@ -637,10 +637,8 @@ class BaseSource:
                 Flux object
 
             """
-            if self._flux_type is None or not isinstance(
-                self._flux_type, source_pb2.SourceTemplate.Luminous
-            ):
-                self._flux_type = self._flux.luminous_flux
+            self._flux.luminous_flux.SetInParent()
+            self._flux_type = self._flux.luminous_flux
             return self
 
         def set_radiant(self) -> BaseSource.Flux:
@@ -652,10 +650,8 @@ class BaseSource:
                 Flux object
 
             """
-            if self._flux_type is None or not isinstance(
-                self._flux_type, source_pb2.SourceTemplate.Radiant
-            ):
-                self._flux_type = self._flux.radiant_flux
+            self._flux.radiant_flux.SetInParent()
+            self._flux_type = self._flux.radiant_flux
             return self
 
         @property
@@ -1687,6 +1683,7 @@ class SourceSurface(BaseSource):
                 Flux object
 
             """
+            self._flux.luminous_intensity_flux.SetInParent()
             self._flux_type = self._flux.luminous_intensity_flux
             return self
 

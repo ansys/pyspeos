@@ -262,7 +262,7 @@ lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptPr
 print(lightbox_material)
 lightbox_material.sop_mirror.reflectance = 85
 print(lightbox_source)
-lightbox_source.intensity.set_cos.total_angle = 20
+lightbox_source.intensity.set_cos().total_angle = 20
 lightbox.commit()
 print(lightbox_material)
 print(lightbox_source)
