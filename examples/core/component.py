@@ -152,7 +152,7 @@ def print_lightbox_compact(lightbox, *, max_depth=3, max_list_items=8):
 # [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
 #
 # > **Note:** Make sure you have downloaded the simulation assets and set
-# > ``assets_data_path`` to point to the assets folder.
+# > ``assets_data_path`` to point to the assets' folder.
 
 if USE_DOCKER:  # Running on the remote server.
     assets_data_path = Path("/app") / "assets"
@@ -253,7 +253,7 @@ lightbox_source.commit()
 print(lightbox_source)
 # -
 
-# ### lightbox instance as global modofy method
+# ### lightbox instance as global modify method
 #
 # The Lightbox contains features that can be modified via lightbox commit.
 
