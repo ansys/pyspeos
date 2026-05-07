@@ -34,6 +34,7 @@ from ansys.speos.core.generic.constants import (
 from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    AmbientUniformParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
@@ -63,6 +64,7 @@ from ansys.speos.core.generic.parameters import (
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -1281,6 +1283,132 @@ def test_create_environment_source(speos: Speos):
     source8.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_uniform_ambient_source(speos: Speos):
+    """Test creation of ambient uniform source."""
+    p = Project(speos=speos)
+
+    # Default values
+    source1 = SourceAmbientUniform(
+        p,
+        name="Uniform.1",
+        default_parameters=AmbientUniformParameters(),
+    )
+
+    # Check proto-level defaults
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("uniform_ambient")
+    assert source1._source_template.ambient.uniform_ambient.luminance == 1000.0
+    assert source1._source_template.ambient.uniform_ambient.mirrored_extent is False
+
+    # Check source instance defaults
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+    assert source1._source_instance.ambient_properties.HasField("uniform_ambient_properties")
+
+    # Check property methods - default values
+    assert source1.luminance == 1000.0
+    assert source1.mirrored_extent is False
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+
+    # Check spectrum was created with a valid default blackbody spectrum
+    assert source1._spectrum._spectrum._spectrum.HasField("blackbody")
+    assert source1._spectrum._spectrum._spectrum.blackbody.temperature == 2856
+    assert source1._spectrum._spectrum._spectrum.name == "Uniform.1.Spectrum"
+
+    # Set and verify properties
+    source1.luminance = 500.0
+    source1.mirrored_extent = True
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.set_sun_manual().direction = [1, 0, 0]
+    source1.set_sun_manual().reverse_sun = True
+    source1.commit()
+
+    assert source1._source_template.ambient.uniform_ambient.luminance == 500.0
+    assert source1._source_template.ambient.uniform_ambient.mirrored_extent is True
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert (
+        source1._source_instance.ambient_properties.uniform_ambient_properties.manual_sun.sun_direction
+        == [
+            1,
+            0,
+            0,
+        ]
+    )
+    assert (
+        source1._source_instance.ambient_properties.uniform_ambient_properties.manual_sun.reverse_sun
+        is True
+    )
+    assert source1.source_template_link is not None
+    assert source1.source_template_link.get().ambient.uniform_ambient.spectrum_guid != ""
+
+    project_scene = p.scene_link.get()
+    assert len(project_scene.sources) == 1
+    assert project_scene.sources[0].ambient_properties.HasField("uniform_ambient_properties")
+
+    # Verify via property accessors after commit
+    assert source1.luminance == 500.0
+    assert source1.mirrored_extent is True
+    assert source1.zenith_direction == [0, 1, 0]
+    assert source1.reverse_zenith_direction is True
+    assert source1.set_sun_manual().direction == [1, 0, 0]
+    assert source1.set_sun_manual().reverse_sun is True
+
+    serialized = source1.get()
+    assert serialized["source"]["ambient"]["uniform_ambient"]["luminance"] == 500.0
+    assert serialized["source"]["ambient"]["uniform_ambient"]["mirrored_extent"] is True
+    assert source1.get(key="reverse_zenith") is True
+    assert source1.get(key="sun_direction") == [1, 0, 0]
+
+    # Test using p.create_source factory
+    source2 = p.create_source(name="Uniform.2", feature_type=SourceAmbientUniform)
+    assert isinstance(source2, SourceAmbientUniform)
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("uniform_ambient")
+    source2.luminance = 2000.0
+    source2.commit()
+    assert source2.luminance == 2000.0
+    assert p.find(name="Uniform.2", feature_type=SourceAmbientUniform)[0] is source2
+
+    # Test with blackbody spectrum
+    source3 = SourceAmbientUniform(
+        p,
+        name="Uniform.3",
+        default_parameters=AmbientUniformParameters(
+            luminance=800.0,
+            mirrored_extent=True,
+            zenith_direction=[0, 0, 1],
+            spectrum_type=SpectrumBlackBodyParameters(temperature=5500),
+        ),
+    )
+    assert source3.luminance == 800.0
+    assert source3.mirrored_extent is True
+    assert source3._spectrum._spectrum._spectrum.HasField("blackbody")
+    assert source3._spectrum._spectrum._spectrum.blackbody.temperature == 5500
+
+    with pytest.raises(ValueError, match="Unsupported spectrum type for ambient uniform source"):
+        SourceAmbientUniform(
+            p,
+            name="Uniform.invalid",
+            default_parameters=AmbientUniformParameters(spectrum_type=SpectrumType.incandescent),
+        )
+
+    with pytest.raises(TypeError, match="AmbientUniformParameters"):
+        p.create_source(
+            name="Uniform.invalid.factory",
+            feature_type=SourceAmbientUniform,
+            parameters=AmbientEnvironmentParameters(),
+        )
+
+    # Test delete
+    source1.delete()
+    source2.delete()
+    source3.delete()
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -1957,3 +2085,73 @@ def test_load_display_source(speos: Speos):
                     [0.31271, 0.32902], abs=0.00001
                 )
                 assert source.axis_system == [10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_uniform_ambient_source(speos: Speos):
+    """Test loading ambient uniform sources from a SPEOS project."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "Source.speos" / "SourceUniformTests.speos",
+    )
+
+    expected_sources = {
+        "Default:661": {
+            "mirrored_extent": False,
+            "sun_direction": [0.0, 0.0, 1.0],
+            "spectrum_type": "blackbody",
+        },
+        "Mirror_True:688": {
+            "mirrored_extent": True,
+            "sun_direction": [0.0, 0.0, 1.0],
+            "spectrum_type": "blackbody",
+        },
+        "Active_Sun:727": {
+            "mirrored_extent": True,
+            "sun_direction": [-0.43301270189221946, 0.49999999999999994, 0.75],
+            "spectrum_type": "blackbody",
+        },
+        "Active_Sun.1:756": {
+            "mirrored_extent": True,
+            "sun_direction": [-0.43301270189221946, 0.49999999999999994, 0.75],
+            "spectrum_type": "library",
+        },
+    }
+
+    assert len(p.sources) == len(expected_sources)
+
+    for source in p.sources:
+        assert source._name in expected_sources
+        expected = expected_sources[source._name]
+
+        assert isinstance(source, SourceAmbientUniform)
+
+        # Public API checks
+        assert source.luminance == 1000.0
+        assert source.mirrored_extent is expected["mirrored_extent"]
+        assert source.zenith_direction == [0.0, 1.0, 0.0]
+        assert source.reverse_zenith_direction is False
+        assert source.set_sun_manual().direction == pytest.approx(expected["sun_direction"])
+        assert source.set_sun_manual().reverse_sun is False
+
+        # Backend template/instance checks
+        assert source._source_template.HasField("ambient")
+        assert source._source_template.ambient.HasField("uniform_ambient")
+        assert source._source_template.ambient.uniform_ambient.spectrum_guid != ""
+        assert source._source_instance.HasField("ambient_properties")
+        assert source._source_instance.ambient_properties.HasField("uniform_ambient_properties")
+        assert source._source_instance.ambient_properties.uniform_ambient_properties.HasField(
+            "manual_sun"
+        )
+
+        sun = source._source_instance.ambient_properties.uniform_ambient_properties.manual_sun
+        assert sun.sun_direction == pytest.approx(expected["sun_direction"])
+        assert sun.reverse_sun is False
+
+        spectrum = speos.client[source._source_template.ambient.uniform_ambient.spectrum_guid].get()
+        if expected["spectrum_type"] == "blackbody":
+            assert spectrum.HasField("blackbody")
+            assert spectrum.blackbody.temperature == 2856.0
+        else:
+            assert spectrum.HasField("library")
+            assert spectrum.library.file_uri.endswith(".spectrum")
