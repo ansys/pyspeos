@@ -43,6 +43,7 @@ import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    AmbientUniformParameters,
     AutomaticSunParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
@@ -55,6 +56,8 @@ from ansys.speos.core.generic.parameters import (
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
+    SpectrumBlackBodyParameters,
+    SpectrumLibraryParameters,
     SpectrumType,
     SurfaceSourceParameters,
     UserDefinedColorSpaceParameters,
@@ -2635,6 +2638,241 @@ class BaseSourceAmbient(BaseSource):
         @reverse_sun.setter
         def reverse_sun(self, value: bool) -> None:
             self._sun.reverse_sun = value
+
+
+class SourceAmbientUniform(BaseSourceAmbient):
+    """Uniform ambient source.
+
+    Sets a constant luminance for the entire sky (or full sphere if mirrored_extent is True)
+    without any sun contribution.
+
+    By default, luminance is set to 1000 cd/m^2, mirrored_extent is False and
+    [0, 0, 1] is used as zenith direction.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientUniformParameters] = None
+        If defined the values in the SourceAmbientUniform instance will be
+        overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientUniformParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+        self._source_instance.ambient_properties.uniform_ambient_properties.SetInParent()
+
+        self._spectrum = self._Spectrum(
+            speos_client=self._project.client,
+            name=name,
+            message_to_complete=self._source_template.ambient.uniform_ambient,
+            spectrum_guid=self._source_template.ambient.uniform_ambient.spectrum_guid,
+        )
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientUniformParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.luminance = default_parameters.luminance
+        self.mirrored_extent = default_parameters.mirrored_extent
+        self.zenith_direction = default_parameters.zenith_direction
+
+        if isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
+            self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+        elif isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
+            self.spectrum.set_blackbody().temperature = default_parameters.spectrum_type.temperature
+        else:
+            raise ValueError(
+                "Unsupported spectrum type for ambient uniform source: {}. "
+                "Only SpectrumLibraryParameters and SpectrumBlackBodyParameters "
+                "are supported.".format(type(default_parameters.spectrum_type).__name__)
+            )
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the uniform ambient source.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+
+        Returns
+        -------
+        float
+            Luminance value in cd/m^2.
+        """
+        return self._source_template.ambient.uniform_ambient.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.uniform_ambient.luminance = value
+
+    @property
+    def mirrored_extent(self) -> bool:
+        """Mirrored extent of the uniform ambient source.
+
+        If True the ambient light covers all space, if False only the upper half space.
+
+        Parameters
+        ----------
+        value : bool
+            True to cover all space, False to cover only the upper half space.
+
+        Returns
+        -------
+        bool
+            True if covering all space, False if covering only the upper half space.
+        """
+        return self._source_template.ambient.uniform_ambient.mirrored_extent
+
+    @mirrored_extent.setter
+    def mirrored_extent(self, value: bool) -> None:
+        self._source_template.ambient.uniform_ambient.mirrored_extent = value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Zenith direction of the uniform ambient source.
+
+        Parameters
+        ----------
+        direction : List[float]
+            Direction defining the zenith of the uniform ambient source.
+
+        Returns
+        -------
+        List[float]
+            Direction defining the zenith of the uniform ambient source.
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """Reverse zenith direction of the uniform ambient source.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum of the uniform ambient source.
+
+        Returns
+        -------
+        ansys.speos.core.spectrum.Spectrum
+            Spectrum associated with this source.
+        """
+        return self._spectrum._spectrum
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set the uniform ambient sun direction manually.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Manual sun feature to complete.
+        """
+        uniform_ambient_properties = (
+            self._source_instance.ambient_properties.uniform_ambient_properties
+        )
+        if self._type is None and uniform_ambient_properties.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                uniform_ambient_properties.manual_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            self._type = BaseSourceAmbient.Manual(
+                uniform_ambient_properties.manual_sun,
+                default_parameters=ManualSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not uniform_ambient_properties.manual_sun:
+            self._type._sun = uniform_ambient_properties.manual_sun
+        return self._type
+
+    def commit(self) -> SourceAmbientUniform:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().commit()
+        return self
+
+    def reset(self) -> SourceAmbientUniform:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().reset()
+        return self
+
+    def delete(self) -> SourceAmbientUniform:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().delete()
+        return self
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):

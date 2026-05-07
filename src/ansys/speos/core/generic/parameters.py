@@ -864,6 +864,22 @@ class DisplayParameters:
 
 
 @dataclass
+class AmbientUniformParameters:
+    """Ambient Uniform Parameters."""
+
+    luminance: float = 1000.0
+    """Luminance value in cd/m^2."""
+    mirrored_extent: bool = False
+    """If True the ambient light covers all space, if False only covers the upper half space."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    spectrum_type: Union[SpectrumLibraryParameters, SpectrumBlackBodyParameters] = field(
+        default_factory=SpectrumBlackBodyParameters
+    )
+    """Spectrum type for the uniform ambient source (blackbody or library spectra only)."""
+
+
+@dataclass
 class AmbientEnvironmentParameters:
     """Ambient Environment Parameters."""
 
