@@ -16,6 +16,7 @@ from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
+from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceSurface
 
 # ### Define constants
@@ -290,21 +291,19 @@ print(lightbox_1.source_paths)
 print(lightbox_2.source_paths)
 # -
 
-# ## Lightbox sources in simulation
+# ## Adding lightbox sources in simulation
 #
-# The project contains two lightbox features.
-# source_paths are in format of lightbox_name/source_name.
+# User can add all the sources from lightbox using source_paths method
+# Alternatively, user can choose to add selected features
 
 # +
-p2 = Project(
-    speos=speos,
-    path=assets_data_path / "lightbox" / "Direct.1.speos",
-)
-lightboxes = p2.find(name=".*", name_regex=True, feature_type=LightBox)
-lightbox_1 = lightboxes[0]
-lightbox_2 = lightboxes[1]
-print(lightbox_1.source_paths)
-print(lightbox_2.source_paths)
+sim = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+sim.source_paths = lightbox_2.source_paths
+sim.commit()
+
+lightbox_source = lightbox_2.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+sim.source_paths = [lightbox_source]
+sim.commit()
 # -
 
 # ## Black Lightbox

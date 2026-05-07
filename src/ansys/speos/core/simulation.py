@@ -448,7 +448,12 @@ class BaseSimulation:
             if isinstance(path, str):
                 src_paths.append(path)
             elif isinstance(path, BaseSource):
-                src_paths.append(path._name)
+                if path in path._project._features:
+                    # source created in main scene
+                    src_paths.append(path._name)
+                else:
+                    # source created in sub-scene
+                    src_paths.append(f"{path._scene_link.get().name}/{path._name}")
         self._simulation_instance.source_paths[:] = src_paths
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:

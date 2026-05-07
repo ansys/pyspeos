@@ -30,6 +30,7 @@ from ansys.speos.core import Project, Speos, part
 from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.generic.parameters import ORIGIN
 from ansys.speos.core.opt_prop import OptProp
+from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
 )
@@ -143,12 +144,13 @@ def test_create_lightbox(speos: Speos):
             axis_system=[100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
     )
+    lightbox3.commit()
     assert lightbox3.name == "Light Box Import.3"
     assert lightbox3.axis_system == [100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert lightbox3._scene_instance.name == "Light Box Import.3"
     assert lightbox3._scene_instance.axis_system == [100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert lightbox3._scene_instance.scene_guid is not None
-    assert p.client[lightbox3._scene_instance.scene_guid].get().name == "WhiteLightBox"
+    assert p.client[lightbox3._scene_instance.scene_guid].get().name == "Light Box Import.3"
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().sources) == 2
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().materials) == 1
 
@@ -168,6 +170,18 @@ def test_create_lightbox(speos: Speos):
     assert len(lightbox_part.bodies) == 2
     assert len(lightbox_part.bodies[0].faces) == 6
     assert len(lightbox_part.bodies[1].faces) == 7
+
+    ## Add features from lightbox to simulation
+    sensor = p.create_sensor(name="sensor_helper", feature_type=SensorIrradiance)
+    sim = p.create_simulation(name="sim_helper", feature_type=SimulationDirect)
+    sim.sensor_paths = [sensor]
+    sim.source_paths = lightbox3.source_paths
+    sim.commit()
+    assert len(sim.source_paths) == 2
+    lightbox_source = lightbox3.find(name=".*", name_regex=True, feature_type=SourceSurface)[0]
+    sim.source_paths = [lightbox_source]
+    sim.commit()
+    assert len(sim.source_paths) == 1
 
     lightbox.delete()
 

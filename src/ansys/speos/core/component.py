@@ -128,7 +128,6 @@ class LightBox:
                 self._scene_link.load_file(file_uri=instance.file, password=instance.password)
                 self._scene_instance.scene_guid = self._scene_link.key
                 self.axis_system = instance.axis_system
-                print(self._scene_link.get())
                 if self._scene_link.get():
                     self._fill_features()
 
@@ -758,6 +757,7 @@ class LightBox:
 
     def _add_unique_ids(self):
         scene_data = self._scene_link.get()
+        scene_data.name = self._name
 
         root_part_link = self._project.client[scene_data.part_guid]
         if root_part_link is not None:
@@ -813,9 +813,6 @@ class LightBox:
                 root_part_feat = self.create_root_part()
                 root_part_data.name = "RootPart"
                 root_part_link.set(root_part_data)
-                # print("debug", root_part_data.body_guids)
-                # for guid in root_part_data.body_guids:
-                #     print(self._project.client[guid].get())
 
                 self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
             else:
