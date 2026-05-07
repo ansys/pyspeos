@@ -128,7 +128,9 @@ class LightBox:
                 self._scene_link.load_file(file_uri=instance.file, password=instance.password)
                 self._scene_instance.scene_guid = self._scene_link.key
                 self.axis_system = instance.axis_system
-                self._fill_features()
+                print(self._scene_link.get())
+                if self._scene_link.get():
+                    self._fill_features()
 
                 # the following part is to check if any simulation contains source paths from the
                 # current lightbox whose light source has been modified via set_speos_light_box.
@@ -758,14 +760,15 @@ class LightBox:
         scene_data = self._scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
-        root_part = root_part_link.get()
-        update_rp = False
-        for sub_part in root_part.parts:
-            if sub_part.description.startswith("UniqueId_") is False:
-                sub_part.description = "UniqueId_" + str(uuid.uuid4())
-                update_rp = True
-        if update_rp:
-            root_part_link.set(data=root_part)
+        if root_part_link is not None:
+            root_part = root_part_link.get()
+            update_rp = False
+            for sub_part in root_part.parts:
+                if sub_part.description.startswith("UniqueId_") is False:
+                    sub_part.description = "UniqueId_" + str(uuid.uuid4())
+                    update_rp = True
+            if update_rp:
+                root_part_link.set(data=root_part)
 
         for mat_inst in scene_data.materials:
             if mat_inst.metadata["UniqueId"] == "":
@@ -802,26 +805,27 @@ class LightBox:
         scene_data = self._scene_link.get()
 
         root_part_link = self._project.client[scene_data.part_guid]
-        root_part_data = root_part_link.get()
-        root_part_feats = self.find(name="", feature_type=part.Part)
-        root_part_feat = None
-        if not root_part_feats:
-            root_part_feat = self.create_root_part()
-            root_part_data.name = "RootPart"
-            root_part_link.set(root_part_data)
-            # print("debug", root_part_data.body_guids)
-            # for guid in root_part_data.body_guids:
-            #     print(self._project.client[guid].get())
+        if root_part_link is not None:
+            root_part_data = root_part_link.get()
+            root_part_feats = self.find(name="", feature_type=part.Part)
+            root_part_feat = None
+            if not root_part_feats:
+                root_part_feat = self.create_root_part()
+                root_part_data.name = "RootPart"
+                root_part_link.set(root_part_data)
+                # print("debug", root_part_data.body_guids)
+                # for guid in root_part_data.body_guids:
+                #     print(self._project.client[guid].get())
 
-            self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
-        else:
-            root_part_feat = root_part_feats[0]
+                self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
+            else:
+                root_part_feat = root_part_feats[0]
 
-        root_part_feat.part_link = root_part_link
-        root_part_feat._part = root_part_data
-        # instead of root_part_feat.reset() - this avoid a useless read in server
+            root_part_feat.part_link = root_part_link
+            root_part_feat._part = root_part_data
+            # instead of root_part_feat.reset() - this avoid a useless read in server
 
-        self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
+            self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
 
         for mat_inst in scene_data.materials:
             op_feature = opt_prop.OptProp(

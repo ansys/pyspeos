@@ -173,6 +173,24 @@ def test_create_lightbox(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
+def test_create_balck_lightbox(speos: Speos):
+    """Test load a simulation with lightbox inside."""
+    p = Project(speos=speos)
+
+    # Default value
+    ### Create Lightbox with given lightbox file path
+    lightbox = p.create_lightbox(
+        name="Light Box Import.1",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "lightbox" / "BlackLightBox.SPEOSLightBox",
+        ),
+    )
+    assert lightbox.axis_system == ORIGIN
+    assert len(lightbox._features) == 0
+    assert len(lightbox.source_paths) == 0
+
+
+@pytest.mark.supported_speos_versions(min=261)
 def test_load_lightbox(speos: Speos):
     """Test load a simulation with lightbox inside."""
     p = Project(
@@ -309,6 +327,7 @@ def test_load_lightbox(speos: Speos):
     # ]
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_reset_lightbox(speos: Speos):
     """Test reset a lightbox."""
     p = Project(
@@ -335,6 +354,7 @@ def test_reset_lightbox(speos: Speos):
     ]
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_delete_lightbox(speos: Speos):
     """Test delete a lightbox."""
     p = Project(speos=speos)

@@ -289,3 +289,37 @@ lightbox_2 = lightboxes[1]
 print(lightbox_1.source_paths)
 print(lightbox_2.source_paths)
 # -
+
+# ## Lightbox sources in simulation
+#
+# The project contains two lightbox features.
+# source_paths are in format of lightbox_name/source_name.
+
+# +
+p2 = Project(
+    speos=speos,
+    path=assets_data_path / "lightbox" / "Direct.1.speos",
+)
+lightboxes = p2.find(name=".*", name_regex=True, feature_type=LightBox)
+lightbox_1 = lightboxes[0]
+lightbox_2 = lightboxes[1]
+print(lightbox_1.source_paths)
+print(lightbox_2.source_paths)
+# -
+
+# ## Black Lightbox
+#
+# The Black Lightbox is a lightbox which does not show any features' information.
+# All sources, geometries, materials information cannot be viewed and cannot be edited.
+
+# +
+lightbox2 = p.create_lightbox(
+    name="Light Box Import.2",
+    lightbox=LightBoxFileInstance(
+        file=assets_data_path / "lightbox" / "BlackLightBox.SPEOSLightBox", password=""
+    ),
+)
+print_lightbox_compact(lightbox2)
+print(lightbox2.name)
+print(lightbox2.source_paths)
+# -
