@@ -10,8 +10,8 @@ have been updated.
 Version ``0.8.0``
 -----------------
 - A big refactor of the codebase was done to make it more modular and easier to maintain. This
-  causes some breaking changes in the API. The main point of the refactor was to remove set_property
-  methods as much as possible and replace them by python properties. Below you can see an example of
+  causes some breaking changes in the API. The main point of the refactor was to remove set methods
+  as much as possible and replace them by python properties. Below you can see an example of
   how to migrate from the old API to the new one based on setting vertices of a face:
 
 .. code:: python
