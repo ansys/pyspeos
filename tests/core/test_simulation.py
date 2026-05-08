@@ -86,6 +86,7 @@ def _get_committed_simulation_or_skip(
     sim: BaseSimulation, p: Project
 ) -> messages.Scene.SimulationInstance:
     """Return the committed simulation or skip if the current server ignores source groups."""
+    expected_group_count = len(sim.source_groups)
     committed_sim = next(
         (
             scene_sim
@@ -94,15 +95,15 @@ def _get_committed_simulation_or_skip(
         ),
         None,
     )
-    if committed_sim is None or not committed_sim.source_groups:
+    if committed_sim is None or (expected_group_count > 0 and not committed_sim.source_groups):
         pytest.skip(
             "Current Speos server ignores SimulationInstance.source_groups during scene round-trip."
         )
     return committed_sim
 
 
-def test_source_group_api_without_server(monkeypatch):
-    """Test source group helpers without a live Speos server."""
+def test_source_group_api_local_validation(monkeypatch):
+    """Test source group helpers through local validation without server version gating."""
     monkeypatch.setattr(server_version_checker, "_version", None)
 
     sim = BaseSimulation.__new__(BaseSimulation)

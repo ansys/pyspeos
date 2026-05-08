@@ -523,8 +523,9 @@ class BaseSimulation:
         ) is not None and not server_version_checker.is_version_supported(2026, 1, 0):
             raise NotImplementedError("Source groups require Speos 2026.1.0 or later.")
 
-    @staticmethod
-    def _normalize_source_group_paths(source_paths: List[Union[str, BaseSource]]) -> List[str]:
+    def _normalize_source_group_paths(
+        self, source_paths: List[Union[str, BaseSource]]
+    ) -> List[str]:
         """Normalize source path values to their string representation.
 
         Raises
@@ -557,7 +558,8 @@ class BaseSimulation:
         """
         if allowed_source_paths is None:
             allowed_source_paths = self.source_paths
-        invalid_paths = [path for path in source_paths if path not in set(allowed_source_paths)]
+        allowed_source_paths_set = set(allowed_source_paths)
+        invalid_paths = [path for path in source_paths if path not in allowed_source_paths_set]
         if invalid_paths:
             invalid_source_paths = ", ".join(invalid_paths)
             msg = (
