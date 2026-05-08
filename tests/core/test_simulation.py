@@ -94,7 +94,7 @@ def _get_committed_simulation_or_skip(
         ),
         None,
     )
-    if committed_sim is None or len(committed_sim.source_groups) == 0:
+    if committed_sim is None or not committed_sim.source_groups:
         pytest.skip(
             "Current Speos server ignores SimulationInstance.source_groups during scene round-trip."
         )

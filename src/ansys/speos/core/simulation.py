@@ -539,7 +539,10 @@ class BaseSimulation:
             elif isinstance(path, BaseSource):
                 normalized_paths.append(path._name)
             else:
-                raise TypeError("source_paths values must be strings or BaseSource instances.")
+                raise TypeError(
+                    "source_paths values must be strings or BaseSource instances, "
+                    f"got {type(path).__name__}: {path}"
+                )
         return normalized_paths
 
     def _validate_source_group_paths(

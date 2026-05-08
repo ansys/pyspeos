@@ -32,6 +32,9 @@ docker run --detach --name speos-rpc \
   --transport_insecure --host 0.0.0.0
 ```
 
+The `docker login` step requires credentials that can pull `ghcr.io/ansys/speos-rpc`.
+Use the same GHCR access process documented in `README.rst` before starting the container.
+
 Then install the test dependencies and run pytest:
 
 ```bash
