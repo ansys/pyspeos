@@ -23,8 +23,11 @@ Version ``0.8.0``
     root_part = p.create_root_part().commit()
     body_b1 = root_part.create_body(name="TheBodyB1").commit()
     face_f1 = body_b1.create_face(name="TheFaceF1").commit()
-    # Old API
-    face_f1.set_vertices([0, 0, 0, 1, 0, 0, 1, 1, 0])
+    # Old API not working API
+    face_f1.set_vertices([0, 0, 0, 1, 0, 0, 1, 1, 0]).set_facets([0, 1, 2]).set_normals([0,0,1,0,0,1,0,0,1]).commit()
     # New API
     face_f1.vertices = [0, 0, 0, 1, 0, 0, 1, 1, 0]
+    face_f1.facets = [0, 1, 2]
+    face_f1.normals = [0,0,1,0,0,1,0,0,1]
+    face_f1.commit()
 

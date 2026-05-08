@@ -47,6 +47,13 @@ If you are adapting to a new version of PySpeos, see the :ref:`migration_guide`.
         Learn how to contribute to the PySpeos codebase
         or documentation.
 
+    .. grid-item-card:: Release notes :fa:`file-lines`
+        :padding: 2 2 2 2
+        :link: changelog
+        :link-type: doc
+
+        Learn about the latest changes in PySpeos with the release notes.
+
 .. toctree::
    :hidden:
    :maxdepth: 3
