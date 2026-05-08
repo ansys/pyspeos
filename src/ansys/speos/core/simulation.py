@@ -339,6 +339,68 @@ class BaseSimulation:
         def minimum_energy_percentage(self, value: float) -> None:
             self._weight.minimum_energy_percentage = value
 
+    class SourceGroup:
+        """Source group for simulation source layering.
+
+        Parameters
+        ----------
+        simulation : BaseSimulation
+            Simulation owning the source group.
+        source_group : messages.Scene.SimulationInstance.SourceGroup
+            Source group message to wrap.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope.
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use ``add_source_group()`` or
+        ``source_groups`` on simulation classes.
+        """
+
+        def __init__(
+            self,
+            simulation: BaseSimulation,
+            source_group: messages.Scene.SimulationInstance.SourceGroup,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "SourceGroup class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._simulation = simulation
+            self._source_group = source_group
+
+        @property
+        def name(self) -> str:
+            """Name of the source group.
+
+            Returns
+            -------
+            str
+                Group name.
+            """
+            return self._source_group.name
+
+        @name.setter
+        def name(self, value: str) -> None:
+            self._source_group.name = value
+
+        @property
+        def source_paths(self) -> List[str]:
+            """Source paths assigned to the group.
+
+            Returns
+            -------
+            List[str]
+                Grouped source paths.
+            """
+            return list(self._source_group.source_paths)
+
+        @source_paths.setter
+        def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
+            normalized_paths = self._simulation._normalize_source_group_paths(source_paths)
+            self._simulation._validate_source_group_paths(normalized_paths)
+            self._source_group.source_paths[:] = normalized_paths
+
     def __init__(
         self,
         project: project.Project,
@@ -449,7 +511,134 @@ class BaseSimulation:
                 src_paths.append(path)
             elif isinstance(path, BaseSource):
                 src_paths.append(path._name)
+        if hasattr(self._simulation_instance, "source_groups"):
+            for source_group in self._simulation_instance.source_groups:
+                self._validate_source_group_paths(
+                    list(source_group.source_paths),
+                    allowed_source_paths=src_paths,
+                )
         self._simulation_instance.source_paths[:] = src_paths
+
+    def _check_source_groups_support(self) -> None:
+        """Check whether source groups are supported."""
+        if not hasattr(self._simulation_instance, "source_groups"):
+            raise NotImplementedError("Source groups require ansys-api-speos>=0.16.2.")
+        if (
+            getattr(server_version_checker, "_version", None) is not None
+            and not server_version_checker.is_version_supported(2026, 1, 0)
+        ):
+            raise NotImplementedError("Source groups require Speos 2026.1.0 or later.")
+
+    @staticmethod
+    def _normalize_source_group_paths(source_paths: List[Union[str, BaseSource]]) -> List[str]:
+        """Normalize source path values to their string representation."""
+        normalized_paths = []
+        for path in source_paths:
+            if isinstance(path, str):
+                normalized_paths.append(path)
+            elif isinstance(path, BaseSource):
+                normalized_paths.append(path._name)
+            else:
+                raise TypeError("source_paths values must be strings or BaseSource instances.")
+        return normalized_paths
+
+    def _validate_source_group_paths(
+        self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
+    ) -> None:
+        """Validate that source group paths are included in simulation source paths."""
+        if allowed_source_paths is None:
+            allowed_source_paths = self.source_paths
+        invalid_paths = [path for path in source_paths if path not in set(allowed_source_paths)]
+        if invalid_paths:
+            invalid_source_paths = ", ".join(invalid_paths)
+            msg = (
+                "Source group paths must be included in simulation source_paths. "
+                f"Invalid source paths: {invalid_source_paths}"
+            )
+            raise ValueError(msg)
+
+    @property
+    def source_groups(self) -> List[BaseSimulation.SourceGroup]:
+        """Source groups assigned to the simulation.
+
+        Returns
+        -------
+        List[ansys.speos.core.simulation.BaseSimulation.SourceGroup]
+            Source groups bound to the simulation instance.
+        """
+        self._check_source_groups_support()
+        return [
+            BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+            for source_group in self._simulation_instance.source_groups
+        ]
+
+    def add_source_group(
+        self, name: str, source_paths: List[Union[str, BaseSource]]
+    ) -> BaseSimulation.SourceGroup:
+        """Add a source group to the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group.
+        source_paths : List[Union[str, BaseSource]]
+            Sources to add to the group. Each path must already belong to
+            ``source_paths`` of the simulation.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation.SourceGroup
+            Added source group wrapper.
+
+        Raises
+        ------
+        ValueError
+            If one of the given source paths is not included in the simulation.
+        """
+        self._check_source_groups_support()
+        normalized_paths = self._normalize_source_group_paths(source_paths)
+        self._validate_source_group_paths(normalized_paths)
+        source_group = self._simulation_instance.source_groups.add()
+        source_group.name = name
+        source_group.source_paths[:] = normalized_paths
+        return BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+
+    def remove_source_group(self, name: str) -> BaseSimulation:
+        """Remove a source group from the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group to remove.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+
+        Raises
+        ------
+        ValueError
+            If no source group with the provided name exists.
+        """
+        self._check_source_groups_support()
+        for index, source_group in enumerate(self._simulation_instance.source_groups):
+            if source_group.name == name:
+                del self._simulation_instance.source_groups[index]
+                return self
+        raise ValueError(f"Source group {name} not found.")
+
+    def clear_source_groups(self) -> BaseSimulation:
+        """Remove all source groups from the simulation.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+        """
+        self._check_source_groups_support()
+        del self._simulation_instance.source_groups[:]
+        return self
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
     #     """Set geometries that the simulation will take into account.
