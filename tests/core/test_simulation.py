@@ -82,7 +82,7 @@ def _create_source_group_test_prerequisites(
     return sensor, source_1, source_2
 
 
-def _get_committed_simulation_or_skip(
+def _get_committed_simulation_or_skip_test(
     sim: BaseSimulation, p: Project
 ) -> messages.Scene.SimulationInstance:
     """Return the committed simulation or skip if the current server ignores source groups."""
@@ -103,7 +103,7 @@ def _get_committed_simulation_or_skip(
 
 
 def test_source_group_api_local_validation(monkeypatch):
-    """Test source group helpers through local validation without server version gating."""
+    """Test source group API logic in isolation without any Speos server connection."""
     monkeypatch.setattr(server_version_checker, "_version", None)
 
     sim = BaseSimulation.__new__(BaseSimulation)
@@ -258,7 +258,7 @@ def test_source_groups_commit_and_reset(speos: Speos):
         sim.add_source_group(name="Group.2", source_paths=["Unknown.Source"])
 
     sim.commit()
-    assert list(_get_committed_simulation_or_skip(sim, p).source_groups[0].source_paths) == [
+    assert list(_get_committed_simulation_or_skip_test(sim, p).source_groups[0].source_paths) == [
         source_1._name,
         source_2._name,
     ]
@@ -294,7 +294,7 @@ def test_load_source_groups_from_exported_file(speos: Speos):
         sim.source_paths = [source_1, source_2]
         sim.add_source_group(name="Group.Export", source_paths=[source_1, source_2])
         sim.commit()
-        _get_committed_simulation_or_skip(sim, p)
+        _get_committed_simulation_or_skip_test(sim, p)
         sim.export(export_path=export_root)
 
         exported_path = (

@@ -364,7 +364,10 @@ class BaseSimulation:
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
-                msg = "SourceGroup class instantiated outside of class scope"
+                msg = (
+                    "Use simulation.add_source_group() or simulation.source_groups "
+                    "to access SourceGroup instances."
+                )
                 raise RuntimeError(msg)
             self._simulation = simulation
             self._source_group = source_group
