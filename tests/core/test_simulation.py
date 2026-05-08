@@ -86,7 +86,8 @@ def test_source_group_api_without_server(monkeypatch):
     """Test source group helpers without a live Speos server."""
     monkeypatch.setattr(server_version_checker, "_version", None)
 
-    sim = SimulationDirect.__new__(SimulationDirect)
+    sim = BaseSimulation.__new__(BaseSimulation)
+    sim._project = None
     sim._simulation_instance = messages.Scene.SimulationInstance(name="Direct.SourceGroups")
 
     sim.source_paths = ["source.1", "source.2"]
@@ -97,7 +98,7 @@ def test_source_group_api_without_server(monkeypatch):
     assert len(sim.source_groups) == 1
 
     sim.source_groups[0].source_paths = ["source.1", "source.2"]
-    assert list(sim._simulation_instance.source_groups[0].source_paths) == ["source.1", "source.2"]
+    assert sim.source_groups[0].source_paths == ["source.1", "source.2"]
 
     with pytest.raises(ValueError, match="Source group paths must be included"):
         sim.add_source_group(name="Group.2", source_paths=["source.3"])
@@ -224,11 +225,11 @@ def test_source_groups_commit_and_reset(speos: Speos):
     source_group = sim.add_source_group(name="Group.1", source_paths=[source_1])
     assert source_group.name == "Group.1"
     assert source_group.source_paths == [source_1._name]
-    assert len(sim._simulation_instance.source_groups) == 1
+    assert len(sim.source_groups) == 1
     assert sim.source_groups[0].name == "Group.1"
 
     sim.source_groups[0].source_paths = [source_1, source_2]
-    assert list(sim._simulation_instance.source_groups[0].source_paths) == [
+    assert sim.source_groups[0].source_paths == [
         source_1._name,
         source_2._name,
     ]

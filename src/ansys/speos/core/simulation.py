@@ -505,12 +505,7 @@ class BaseSimulation:
 
     @source_paths.setter
     def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
-        src_paths = []
-        for path in source_paths:
-            if isinstance(path, str):
-                src_paths.append(path)
-            elif isinstance(path, BaseSource):
-                src_paths.append(path._name)
+        src_paths = self._normalize_source_group_paths(source_paths)
         if hasattr(self._simulation_instance, "source_groups"):
             for source_group in self._simulation_instance.source_groups:
                 self._validate_source_group_paths(
