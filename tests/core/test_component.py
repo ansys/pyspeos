@@ -372,6 +372,7 @@ def test_reset_lightbox(speos: Speos):
 @pytest.mark.supported_speos_versions(min=261)
 def test_export_lightbox(speos: Speos):
     """Test reset a lightbox."""
+    # test lightbox from a loaded speos file can be exported as white or black lightbox.
     p = Project(
         speos=speos,
         path=Path(test_path) / "lightbox" / "Direct.1.speos",
@@ -386,6 +387,7 @@ def test_export_lightbox(speos: Speos):
     remove_file(str(exported_file_1))
     remove_file(str(exported_file_2))
 
+    # test imported lightbox feature can be exported
     lightbox_2 = p.create_lightbox(
         name="New Import",
         lightbox=LightBoxFileInstance(
@@ -395,6 +397,30 @@ def test_export_lightbox(speos: Speos):
     exported_file_3 = lightbox_2.export(export_path=Path(test_path) / "export_test_2.SPEOSLightBox")
     assert does_file_exist(str(exported_file_3))
     remove_file(str(exported_file_3))
+
+    # test black lightbox / empty lightbox cannot be exported
+    lightbox_3 = p.create_lightbox(
+        name="Black Import",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "lightbox" / "BlackLightBox.SPEOSLightBox",
+        ),
+    )
+    with pytest.raises(
+        ValueError,
+        match="LightBox file cannot be saved due to is a black lightbox or no features inside.",
+    ):
+        lightbox_3.export(export_path=Path(test_path) / "export_test_3.SPEOSLightBox")
+
+    # test new feature added in black lightbox / empty lightbox can be exported
+    black_lightbox_source = lightbox_3.create_source(
+        name="Black LightBox Source", feature_type=SourceRayFile
+    )
+    black_lightbox_source.ray_file_uri = Path(test_path) / "Rays.ray"
+    black_lightbox_source.set_flux_from_ray_file()
+    lightbox_3.commit()
+    exported_file_4 = lightbox_3.export(export_path=Path(test_path) / "export_test_3.SPEOSLightBox")
+    assert does_file_exist(str(exported_file_4))
+    remove_file(str(exported_file_4))
 
 
 @pytest.mark.supported_speos_versions(min=261)

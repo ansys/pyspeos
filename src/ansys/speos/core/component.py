@@ -964,6 +964,10 @@ class LightBox:
         """
         if self._scene_link is None:
             raise ValueError("LightBox file cannot be saved as it is not linked to any scene.")
+        if len(self._features) == 0:
+            raise ValueError(
+                "LightBox file cannot be saved due to is a black lightbox or no features inside."
+            )
         if password is None:
             password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
         self._scene_link.save_file(
