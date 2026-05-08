@@ -531,7 +531,13 @@ class BaseSimulation:
 
     @staticmethod
     def _normalize_source_group_paths(source_paths: List[Union[str, BaseSource]]) -> List[str]:
-        """Normalize source path values to their string representation."""
+        """Normalize source path values to their string representation.
+
+        Raises
+        ------
+        TypeError
+            If any element in ``source_paths`` is not a string or ``BaseSource`` instance.
+        """
         normalized_paths = []
         for path in source_paths:
             if isinstance(path, str):
@@ -545,7 +551,13 @@ class BaseSimulation:
     def _validate_source_group_paths(
         self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
     ) -> None:
-        """Validate that source group paths are included in simulation source paths."""
+        """Validate that source group paths are included in simulation source paths.
+
+        Raises
+        ------
+        ValueError
+            If any source path is not included in ``allowed_source_paths``.
+        """
         if allowed_source_paths is None:
             allowed_source_paths = self.source_paths
         invalid_paths = [path for path in source_paths if path not in set(allowed_source_paths)]

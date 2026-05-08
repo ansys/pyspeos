@@ -104,6 +104,7 @@ def test_source_group_api_without_server(monkeypatch):
 
     with pytest.raises(ValueError, match="Source group paths must be included"):
         sim.source_paths = ["source.1"]
+    assert sim.source_paths == ["source.1", "source.2"]
 
     sim.remove_source_group("Group.1")
     assert sim.source_groups == []
