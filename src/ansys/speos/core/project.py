@@ -38,6 +38,7 @@ from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    AmbientUniformParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
@@ -81,6 +82,7 @@ from ansys.speos.core.source import (
     BaseSource,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -179,6 +181,7 @@ class Project:
             SourceRayFile,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
+            SourceAmbientUniform,
         ]
     ]:
         """Property of project's sources inside.
@@ -189,7 +192,8 @@ class Project:
         ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceRayFile, \
         ansys.speos.core.source.SourceAmbientNaturalLight, \
-        ansys.speos.core.source.SourceAmbientEnvironment]]
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientUniform]]
             List of source features.
 
         """
@@ -323,6 +327,7 @@ class Project:
                 RayFileSourceParameters,
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
+                AmbientUniformParameters,
                 DisplayParameters,
             ]
         ] = None,
@@ -332,6 +337,7 @@ class Project:
         SourceLuminaire,
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
+        SourceAmbientUniform,
         SourceDisplay,
     ]:
         """Create a new Source feature.
@@ -351,6 +357,7 @@ class Project:
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceAmbientNaturalLight, \
             ansys.speos.core.source.SourceAmbientEnvironment, \
+             ansys.speos.core.source.SourceAmbientUniform, \
             ansys.speos.core.source.SourceDisplay].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
@@ -361,14 +368,19 @@ class Project:
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
         ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
+        ansys.speos.core.generic.parameters.AmbientUniformParameters,\
         ansys.speos.core.generic.parameters.DisplayParamaters]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
-        ansys.speos.core.source.SourceAmbientEnvironment, ansys.speos.core.source.SourceDisplay]
+        Union[ansys.speos.core.source.SourceSurface,\
+        ansys.speos.core.source.SourceRayFile,\
+        ansys.speos.core.source.SourceLuminaire,\
+        ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientEnvironment,\
+        ansys.speos.core.source.SourceAmbientUniform,\
+        ansys.speos.core.source.SourceDisplay]
             Source class instance.
         """
         if metadata is None:
@@ -472,6 +484,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientUniform":
+                if parameters is None:
+                    parameters = AmbientUniformParameters()
+                elif not isinstance(parameters, AmbientUniformParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUniformParameters"
+                    )
+                feature = SourceAmbientUniform(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -481,6 +508,7 @@ class Project:
                         SourceRayFile,
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
+                        SourceAmbientUniform,
                         SourceDisplay,
                     ],
                 )
@@ -836,6 +864,7 @@ class Project:
             SourceRayFile,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
+            SourceAmbientUniform,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -873,6 +902,7 @@ class Project:
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceAmbientEnvironment, \
         ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientUniform, \
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
@@ -1243,6 +1273,13 @@ class Project:
                     )
                 elif src_inst.ambient_properties.HasField("environment_map_properties"):
                     src_feat = SourceAmbientEnvironment(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
+                    src_feat = SourceAmbientUniform(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
