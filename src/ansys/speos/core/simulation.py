@@ -632,7 +632,7 @@ class BaseSimulation:
             if source_group.name == name:
                 del self._simulation_instance.source_groups[index]
                 return self
-        raise ValueError(f"Source group {name} not found.")
+        raise ValueError(f"Source group '{name}' not found.")
 
     def clear_source_groups(self) -> BaseSimulation:
         """Remove all source groups from the simulation.

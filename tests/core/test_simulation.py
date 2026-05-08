@@ -82,7 +82,9 @@ def _create_source_group_test_prerequisites(
     return sensor, source_1, source_2
 
 
-def _get_committed_simulation_or_skip(sim: BaseSimulation, p: Project):
+def _get_committed_simulation_or_skip(
+    sim: BaseSimulation, p: Project
+) -> messages.Scene.SimulationInstance:
     """Return the committed simulation or skip if the current server ignores source groups."""
     committed_sim = next(
         (
@@ -255,8 +257,7 @@ def test_source_groups_commit_and_reset(speos: Speos):
         sim.add_source_group(name="Group.2", source_paths=["Unknown.Source"])
 
     sim.commit()
-    committed_sim = _get_committed_simulation_or_skip(sim, p)
-    assert list(committed_sim.source_groups[0].source_paths) == [
+    assert list(_get_committed_simulation_or_skip(sim, p).source_groups[0].source_paths) == [
         source_1._name,
         source_2._name,
     ]
