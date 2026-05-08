@@ -56,6 +56,8 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
 from ansys.speos.core.source import BaseSource
 
+MIN_SOURCE_GROUPS_VERSION = (2026, 1, 0)
+
 
 class BaseSimulation:
     """
@@ -523,7 +525,7 @@ class BaseSimulation:
             raise NotImplementedError("Source groups require ansys-api-speos>=0.16.2.")
         if getattr(
             server_version_checker, "_version", None
-        ) is not None and not server_version_checker.is_version_supported(2026, 1, 0):
+        ) is not None and not server_version_checker.is_version_supported(*MIN_SOURCE_GROUPS_VERSION):
             raise NotImplementedError("Source groups require Speos 2026.1.0 or later.")
 
     def _normalize_source_group_paths(
