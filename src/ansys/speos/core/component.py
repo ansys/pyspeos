@@ -939,6 +939,38 @@ class LightBox:
 
         return self
 
+    def export(
+        self, export_path: Path | str, password: str | None = None, black_boxed: bool = False
+    ) -> Path:
+        """Save the LightBox feature as a LightBox file.
+
+        Parameters
+        ----------
+        black_boxed
+
+        export_path : Path | str
+            Path of the LightBox file to be saved.
+        password: str | None
+            Password to protect the LightBox file.
+            By default, ``None``, means that the LightBox file will not be password protected
+        black_boxed: bool
+            Whether to save the LightBox file as black-boxed.
+            By default, ``False``, means that the LightBox file will not be black-boxed.
+
+        Returns
+        -------
+        ansys.speos.core.component.LightBox
+            Updated LightBox feature.
+        """
+        if self._scene_link is None:
+            raise ValueError("LightBox file cannot be saved as it is not linked to any scene.")
+        if password is None:
+            password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
+        self._scene_link.save_file(
+            file_uri=str(export_path), password=password, black_boxed=black_boxed
+        )
+        return Path(export_path) / Path(export_path).name
+
     def _to_dict(self) -> dict:
         """Convert the LightBox data to a dictionary representation.
 

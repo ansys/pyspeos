@@ -119,6 +119,30 @@ class SceneLink(CrudItem):
             messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
         )
 
+    # Actions
+    def save_file(
+        self, file_uri: Path | str, password: str | None = None, black_boxed: bool = False
+    ) -> None:
+        """
+        Save speos file to fill the scene.
+
+        Parameters
+        ----------
+        black_boxed
+
+        file_uri: Path | str
+            File to be saved.
+        password: str | None, optional
+            Password needed to save the speos lightbox file.
+        black_boxed: bool, optional
+            If ``True``, the speos light box file will be black boxed.
+        """
+        self._actions_stub.SaveFile(
+            messages.SaveFile_Request(
+                guid=self.key, file_uri=str(file_uri), password=password, is_black_boxed=black_boxed
+            )
+        )
+
     def get_source_ray_paths(
         self,
         source_path: str,

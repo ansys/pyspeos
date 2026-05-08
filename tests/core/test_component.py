@@ -36,6 +36,7 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import SourceRayFile, SourceSurface
 from tests.conftest import test_path
+from tests.helper import does_file_exist, remove_file
 
 
 @pytest.mark.supported_speos_versions(min=261)
@@ -366,6 +367,34 @@ def test_reset_lightbox(speos: Speos):
         0.0,
         1.0,
     ]
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_export_lightbox(speos: Speos):
+    """Test reset a lightbox."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "lightbox" / "Direct.1.speos",
+    )
+    lightbox_1 = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
+    exported_file_1 = lightbox_1.export(export_path=Path(test_path) / "export_test.SPEOSLightBox")
+    exported_file_2 = lightbox_1.export(
+        export_path=Path(test_path) / "export_test_blackbox.SPEOSLightBox", black_boxed=True
+    )
+    assert does_file_exist(str(exported_file_1))
+    assert does_file_exist(str(exported_file_2))
+    remove_file(str(exported_file_1))
+    remove_file(str(exported_file_2))
+
+    lightbox_2 = p.create_lightbox(
+        name="New Import",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
+        ),
+    )
+    exported_file_3 = lightbox_2.export(export_path=Path(test_path) / "export_test_2.SPEOSLightBox")
+    assert does_file_exist(str(exported_file_3))
+    remove_file(str(exported_file_3))
 
 
 @pytest.mark.supported_speos_versions(min=261)
