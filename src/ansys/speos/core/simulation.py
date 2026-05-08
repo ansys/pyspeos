@@ -518,10 +518,9 @@ class BaseSimulation:
         """Check whether source groups are supported."""
         if not hasattr(self._simulation_instance, "source_groups"):
             raise NotImplementedError("Source groups require ansys-api-speos>=0.16.2.")
-        if (
-            getattr(server_version_checker, "_version", None) is not None
-            and not server_version_checker.is_version_supported(2026, 1, 0)
-        ):
+        if getattr(
+            server_version_checker, "_version", None
+        ) is not None and not server_version_checker.is_version_supported(2026, 1, 0):
             raise NotImplementedError("Source groups require Speos 2026.1.0 or later.")
 
     @staticmethod
