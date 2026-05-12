@@ -139,7 +139,8 @@ def remove_file(path):
             ["docker", "exec", DOCKER_CONTAINER_NAME, "rm", "-rf", Path(path).as_posix()]
         )
     else:
-        rmtree(Path(path))
+        if Path(path).exists():
+            rmtree(Path(path))
 
 
 def approx_comparison(value1, value2):

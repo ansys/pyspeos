@@ -82,26 +82,11 @@ def _create_source_group_test_prerequisites(
     return sensor, source_1, source_2
 
 
-def _validate_source_groups_support_or_skip(
-    sim: BaseSimulation, p: Project
-) -> messages.Scene.SimulationInstance:
+def _validate_source_groups_support_or_skip() -> None:
     """Return the committed simulation or skip if the current server ignores source groups."""
-    expected_group_count = len(sim.source_groups)
-    committed_sim = next(
-        (
-            scene_sim
-            for scene_sim in p.scene_link.get().simulations
-            if scene_sim.metadata["UniqueId"] == sim._unique_id
-        ),
-        None,
-    )
-    if committed_sim is None:
-        pytest.skip("Committed simulation was not found in the scene after commit().")
-    if expected_group_count > 0 and not committed_sim.source_groups:
-        pytest.skip(
-            "Current Speos server ignores SimulationInstance.source_groups during scene round-trip."
-        )
-    return committed_sim
+    check_version = server_version_checker.is_version_supported(2026, 1, 2)
+    if not check_version:
+        pytest.skip("Current Speos server is not supporting source group.")
 
 
 def test_source_group_api_local_validation(monkeypatch):
@@ -133,7 +118,7 @@ def test_source_group_api_local_validation(monkeypatch):
     assert sim.source_groups == []
 
     monkeypatch.setattr(server_version_checker, "_version", "2025.2.0")
-    with pytest.raises(NotImplementedError, match="Source groups require Speos 2026.1.0 or later."):
+    with pytest.raises(NotImplementedError, match="Source groups require Speos 2026.1.2 or later."):
         sim.add_source_group(name="Group.Unsupported", source_paths=["source.1"])
 
 
@@ -241,6 +226,7 @@ def test_create_direct(speos: Speos):
 @pytest.mark.supported_speos_versions(min=261)
 def test_source_groups_commit_and_reset(speos: Speos):
     """Test source groups with commit, validation, and reset."""
+    _validate_source_groups_support_or_skip()
     p = Project(speos=speos)
     sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
 
@@ -264,7 +250,7 @@ def test_source_groups_commit_and_reset(speos: Speos):
         sim.add_source_group(name="Group.2", source_paths=["Unknown.Source"])
 
     sim.commit()
-    assert list(_validate_source_groups_support_or_skip(sim, p).source_groups[0].source_paths) == [
+    assert sim.source_groups[0].source_paths == [
         source_1._name,
         source_2._name,
     ]
@@ -292,6 +278,7 @@ def test_load_source_groups_from_exported_file(speos: Speos):
     remove_file(str(export_root))
 
     try:
+        _validate_source_groups_support_or_skip()
         p = Project(speos=speos)
         sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
 
@@ -300,7 +287,6 @@ def test_load_source_groups_from_exported_file(speos: Speos):
         sim.source_paths = [source_1, source_2]
         sim.add_source_group(name="Group.Export", source_paths=[source_1, source_2])
         sim.commit()
-        _validate_source_groups_support_or_skip(sim, p)
         sim.export(export_path=export_root)
 
         exported_path = (
