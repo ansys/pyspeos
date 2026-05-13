@@ -1239,6 +1239,12 @@ class Project:
                 scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for sim_inst in scene_data.simulations:
+            sources = []
+            for source in sim_inst.source_paths:
+                if source not in sources:
+                    sources.append(source)
+            sim_inst.source_paths[:] = sources
+
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
