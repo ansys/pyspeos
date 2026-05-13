@@ -1239,12 +1239,14 @@ class Project:
                 scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for sim_inst in scene_data.simulations:
+            # Bug fix for Multi source blackbox issue
             sources = []
             for source in sim_inst.source_paths:
                 if source not in sources:
                     sources.append(source)
             sim_inst.source_paths[:] = sources
-
+            # end bug fix for multi source blackbox issue to be removed when 261 is no longer
+            # supported
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
