@@ -128,8 +128,11 @@ class LightBox:
                 self._scene_link.load_file(file_uri=instance.file, password=instance.password)
                 self._scene_instance.scene_guid = self._scene_link.key
                 self.axis_system = instance.axis_system
+                # in case of black box don't fill features
                 if self._scene_link.get():
-                    self._fill_features()
+                    scene_data = self._scene_link.get()
+                    if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                        self._fill_features()
 
                 # the following part is to check if any simulation contains source paths from the
                 # current lightbox whose light source has been modified via set_speos_light_box.
@@ -152,7 +155,10 @@ class LightBox:
                 self._scene_link = self._project.client[instance.scene_guid]
                 # reset will fill _scene_instance from project (using _unique_id)
                 self.reset()
-                self._fill_features()
+                scene_data = self._scene_link.get()
+                # in case of black box don't fill features
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                    self._fill_features()
             case _:
                 raise TypeError(
                     f"Incorrect parameter dataclass provided "
