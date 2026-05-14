@@ -540,6 +540,9 @@ class BaseSource:
         self._project = project
         self._scene_link = self._project.scene_link if scene_link is None else scene_link
         self._name = name
+        self._geo_path = (
+            self._name if scene_link is None else scene_link.get().name + "/" + self._name
+        )
         self._unique_id = None
         self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
