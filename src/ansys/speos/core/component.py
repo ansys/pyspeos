@@ -114,6 +114,7 @@ class LightBox:
         self._unique_id = None
         self._project = project
         self._features = []
+        self._is_black = False
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
 
         match instance:
@@ -127,14 +128,24 @@ class LightBox:
                 self._scene_link.load_file(file_uri=instance.file, password=instance.password)
                 self._scene_instance.scene_guid = self._scene_link.key
                 self.axis_system = instance.axis_system
+                # in case of black box don't fill features
                 if self._scene_link.get():
-                    self._fill_features()
+                    scene_data = self._scene_link.get()
+                    if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                        self._fill_features()
+                    else:
+                        self._is_black = True
             case ProtoScene.SceneInstance():
                 self._unique_id = instance.metadata["UniqueId"]
                 self._scene_link = self._project.client[instance.scene_guid]
                 # reset will fill _scene_instance from project (using _unique_id)
                 self.reset()
-                self._fill_features()
+                scene_data = self._scene_link.get()
+                # in case of black box don't fill features
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                    self._fill_features()
+                else:
+                    self._is_black = True
             case _:
                 raise TypeError(
                     f"Incorrect parameter dataclass provided "
@@ -464,6 +475,8 @@ class LightBox:
         ansys.speos.core.part.Part
             Part feature.
         """
+        if self._is_black:
+            raise ValueError("A black lightbox does not allow creating features.")
         if metadata is None:
             metadata = {}
 
@@ -534,6 +547,8 @@ class LightBox:
         ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceDisplay]
             Source class instance.
         """
+        if self._is_black:
+            raise ValueError("A black lightbox does not allow creating features.")
         if metadata is None:
             metadata = {}
 
@@ -651,6 +666,8 @@ class LightBox:
         ansys.speos.core.opt_prop.OptProp
             OptProp feature.
         """
+        if self._is_black:
+            raise ValueError("A black lightbox does not allow creating features.")
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(
