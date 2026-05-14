@@ -322,3 +322,16 @@ print_lightbox_compact(lightbox2)
 print(lightbox2.name)
 print(lightbox2.source_paths)
 # -
+
+# Add a black lightbox to simulation needs to add lightbox to the source paths.
+
+# +
+lightbox_3 = p2.create_lightbox(
+    name="Black Light Box Import",
+    lightbox=LightBoxFileInstance(
+        file=assets_data_path / "lightbox" / "BlackLightBox.SPEOSLightBox", password=""
+    ),
+)
+sim.source_paths = [lightbox_3.name]
+sim.commit()
+# -
