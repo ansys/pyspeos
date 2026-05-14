@@ -332,6 +332,7 @@ lightbox_3 = p2.create_lightbox(
         file=assets_data_path / "lightbox" / "BlackLightBox.SPEOSLightBox", password=""
     ),
 )
+lightbox_3.commit()
 sim.source_paths = [lightbox_3.name]
 sim.commit()
 # -

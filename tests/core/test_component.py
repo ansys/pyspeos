@@ -411,16 +411,12 @@ def test_export_lightbox(speos: Speos):
     ):
         lightbox_3.export(export_path=Path(test_path) / "export_test_3.SPEOSLightBox")
 
-    # test new feature added in black lightbox / empty lightbox can be exported
-    black_lightbox_source = lightbox_3.create_source(
-        name="Black LightBox Source", feature_type=SourceRayFile
-    )
-    black_lightbox_source.ray_file_uri = Path(test_path) / "Rays.ray"
-    black_lightbox_source.set_flux_from_ray_file()
-    lightbox_3.commit()
-    exported_file_4 = lightbox_3.export(export_path=Path(test_path) / "export_test_3.SPEOSLightBox")
-    assert does_file_exist(str(exported_file_4))
-    remove_file(str(exported_file_4))
+    # test new feature cannot be added in black lightbox
+    with pytest.raises(
+        ValueError,
+        match="A black lightbox does not allow creating features.",
+    ):
+        lightbox_3.create_source(name="Black LightBox Source", feature_type=SourceRayFile)
 
 
 @pytest.mark.supported_speos_versions(min=261)
