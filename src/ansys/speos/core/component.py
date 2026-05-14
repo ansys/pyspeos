@@ -47,7 +47,6 @@ from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import BodyLink, FaceLink, ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
-from ansys.speos.core.simulation import BaseSimulation
 from ansys.speos.core.source import (
     SourceDisplay,
     SourceLuminaire,
@@ -130,23 +129,6 @@ class LightBox:
                 self.axis_system = instance.axis_system
                 if self._scene_link.get():
                     self._fill_features()
-
-                # the following part is to check if any simulation contains source paths from the
-                # current lightbox whose light source has been modified via set_speos_light_box.
-                # If there is such simulation,
-                # 1. the source paths from the current lightbox will be removed from this simulation
-                # if they are not included in the new lightbox file.
-                # 2. kept if they are still included in the new lightbox file.
-                for simulation in self._project.find(
-                    name=".*", name_regex=True, feature_type=BaseSimulation
-                ):
-                    sim_source_paths = simulation._simulation_instance.source_paths
-                    if any(self.name in path for path in sim_source_paths):
-                        new_sources = []
-                        for source in sim_source_paths:
-                            if (self.name not in source) or (source in self.source_paths):
-                                new_sources.append(source)
-                        simulation.source_paths = new_sources
             case ProtoScene.SceneInstance():
                 self._unique_id = instance.metadata["UniqueId"]
                 self._scene_link = self._project.client[instance.scene_guid]
@@ -914,19 +896,6 @@ class LightBox:
             if scene_inst is not None:
                 if scene_inst != self._scene_instance:
                     scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
-
-                    # the following part is to update the simulation source paths of which
-                    # the corresponding lightbox instance has been modified via set_speos_light_box
-                    sim_insts = [
-                        x
-                        for x in scene_data.simulations
-                        if any(self.name in path for path in x.source_paths)
-                    ]
-                    for sim_inst in sim_insts:
-                        # modify the server
-                        sim_inst.CopyFrom(
-                            self._project.find(name=sim_inst.name)[0]._simulation_instance
-                        )
                 else:
                     update_scene = False
             else:
