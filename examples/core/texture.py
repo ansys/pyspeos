@@ -433,7 +433,7 @@ uv_1 = MeshData(
 )  # full picture
 
 if server_version_checker.is_version_supported(2026, 1, 2):
-    face1_0.vertices_data.append(uv_1)
+    face1_0.vertices_data = face1_0.vertices_data + [uv_1]
 else:
     face1_0.vertices_data = [uv_1]
 data["rp"].commit()
@@ -468,7 +468,7 @@ uv_2 = MeshData(
     ],
 )  # full picture
 if server_version_checker.is_version_supported(2026, 1, 2):
-    face1_0.vertices_data.append(uv_2)
+    face1_0.vertices_data = face1_0.vertices_data + [uv_2]
 else:
     face1_0.vertices_data = [uv_2]
 data["rp"].commit()
