@@ -58,6 +58,7 @@ from ansys.speos.core.generic.parameters import (
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel.body import BodyLink
+from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -112,7 +113,7 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
     path : str
         The project will be loaded from this speos file.
@@ -124,16 +125,24 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
-        self.client = speos.client
+    def __init__(self, speos: Union[Speos, SpeosClient], path: Optional[Union[str, Path]] = ""):
+        match speos:
+            case Speos():
+                self.client = speos.client
+            case SpeosClient():
+                self.client = speos
+            case _:
+                raise TypeError(f"Incorrect type for speos: {type(speos)}")
         """Speos instance client."""
-        self.scene_link = speos.client.scenes().create()
+        self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
         path = str(path)
         if len(path):
             self.scene_link.load_file(path)
-            self._fill_features()
+            scene_data = self.scene_link.get()
+            if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                self._fill_features()
 
     # def list(self):
     #    """Return all feature key as a tree.
@@ -1079,6 +1088,7 @@ class Project:
         # Delete each feature that was created
         for f in self._features:
             f.delete()
+            f = None
         self._features.clear()
 
         return self
