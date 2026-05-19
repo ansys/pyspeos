@@ -44,7 +44,7 @@ from ansys.speos.core.generic.parameters import (
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import ProtoScene
-from ansys.speos.core.project import Project
+import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.source import (
     SourceDisplay,
@@ -106,21 +106,23 @@ class LightBox:
     def __init__(
         self,
         name: str,
-        project: Project,
+        parent_project: project.Project,
         instance: Optional[Union[LightBoxFileInstance, ProtoScene.SceneInstance]] = None,
     ):
         self._scene_instance = ProtoScene.SceneInstance(name=name)
         self._unique_id = None
-        self._parent_project = project
+        self._parent_project = parent_project
         self._is_black = False
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
 
         match instance:
             case None:
-                self.project = Project(speos=self._parent_project.client)
+                self.project = project.Project(speos=self._parent_project.client)
                 self._scene_instance.axis_system = ORIGIN
             case LightBoxFileInstance():
-                self.project = Project(speos=self._parent_project.client, path=instance.file)
+                self.project = project.Project(
+                    speos=self._parent_project.client, path=instance.file
+                )
                 self._scene_instance.axis_system = instance.axis_system
                 scene_data = self.project.scene_link.get()
                 if (
@@ -132,7 +134,7 @@ class LightBox:
 
             case ProtoScene.SceneInstance():
                 self._unique_id = instance.metadata["UniqueId"]
-                self.project = Project(speos=self._parent_project.client)
+                self.project = project.Project(speos=self._parent_project.client)
                 self.project.scene_link = self.project.client[instance.scene_guid]
                 self._scene_instance = instance
                 scene_data = self.project.scene_link.get()
