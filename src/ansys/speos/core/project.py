@@ -118,6 +118,8 @@ class Project:
     path : str
         The project will be loaded from this speos file.
         By default, ``""``, means create from empty.
+    context : Optional[str]
+        For internal use only.
 
     Attributes
     ----------
@@ -125,7 +127,12 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Union[Speos, SpeosClient], path: Optional[Union[str, Path]] = ""):
+    def __init__(
+        self,
+        speos: Union[Speos, SpeosClient],
+        path: Optional[Union[str, Path]] = "",
+        context: Optional[str] = None,
+    ):
         match speos:
             case Speos():
                 self.client = speos.client
@@ -142,7 +149,7 @@ class Project:
             self.scene_link.load_file(path)
             scene_data = self.scene_link.get()
             if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
-                self._fill_features()
+                self._fill_features(context=context)
 
     # def list(self):
     #    """Return all feature key as a tree.
@@ -886,7 +893,7 @@ class Project:
             msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
             raise ValueError(msg)
         feature = LightBox(
-            project=self,
+            parent_project=self,
             name=name,
             instance=lightbox,
         )
@@ -1262,7 +1269,7 @@ class Project:
 
         self.scene_link.set(data=scene_data)
 
-    def _fill_features(self):
+    def _fill_features(self, context: Optional[str] = None):
         """Fill project features from a scene."""
         self._add_unique_ids()
 
@@ -1346,6 +1353,7 @@ class Project:
                         default_parameters=None,
                     )
             if src_feat is not None:
+                src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
 
         # ground plane
@@ -1399,7 +1407,7 @@ class Project:
 
         for scene_inst in scene_data.scenes:
             lightbox_scene = LightBox(
-                project=self,
+                parent_project=self,
                 name=scene_inst.name,
                 instance=scene_inst,
             )

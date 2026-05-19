@@ -109,7 +109,8 @@ class LightBox:
         parent_project: project.Project,
         instance: Optional[Union[LightBoxFileInstance, ProtoScene.SceneInstance]] = None,
     ):
-        self._scene_instance = ProtoScene.SceneInstance(name=name)
+        self._name = name
+        self._scene_instance = ProtoScene.SceneInstance(name=self._name)
         self._unique_id = None
         self._parent_project = parent_project
         self._is_black = False
@@ -118,12 +119,14 @@ class LightBox:
         match instance:
             case None:
                 self.project = project.Project(speos=self._parent_project.client)
-                self._scene_instance.axis_system = ORIGIN
+                self._scene_instance.axis_system[:] = ORIGIN
             case LightBoxFileInstance():
                 self.project = project.Project(
-                    speos=self._parent_project.client, path=instance.file
+                    speos=self._parent_project.client,
+                    path=instance.file,
+                    context=self._scene_instance.name + "/",
                 )
-                self._scene_instance.axis_system = instance.axis_system
+                self._scene_instance.axis_system[:] = instance.axis_system
                 scene_data = self.project.scene_link.get()
                 if (
                     len(scene_data.sources) == 0
@@ -140,7 +143,7 @@ class LightBox:
                 scene_data = self.project.scene_link.get()
                 # in case of black box don't fill features
                 if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
-                    self.project._fill_features()
+                    self.project._fill_features(context=self._scene_instance.name + "/")
                 else:
                     self._is_black = True
             case _:
@@ -189,7 +192,7 @@ class LightBox:
                 source_name = visual_source["name"]
                 self._visual_data.append(_VisualData(ray=True))
 
-                for ray_path in self._project.client[
+                for ray_path in self._parent_project.client[
                     self.get(key="scene_guid")
                 ].get_source_ray_paths(
                     source_path=source_name, rays_nb=100, raw_data=True, display_data=True
@@ -425,13 +428,15 @@ class LightBox:
         if self._is_black:
             raise ValueError("A black lightbox does not allow creating features.")
 
-        return self.project.create_source(
+        source_feat = self.project.create_source(
             name=name,
             description=description,
             feature_type=feature_type,
             metadata=metadata,
             parameters=parameters,
         )
+        source_feat._source_path = self._scene_instance.name + "/" + name
+        return source_feat
 
     def create_optical_property(
         self,
@@ -483,6 +488,11 @@ class LightBox:
         # Update the lightbox features.
         for feature in self.project._features:
             feature.commit()
+        self._scene_instance.scene_guid = self.project.scene_link.key
+        scene_data = self.project.scene_link.get()
+        if scene_data.name != self._scene_instance.name:
+            scene_data.name = self._scene_instance.name
+            self.project.scene_link.set(data=scene_data)
 
         # The _unique_id will help to find the correct item in the scene.scenes:
         # the list of SceneInstance
@@ -679,6 +689,8 @@ class LightBox:
 
         # Reset then the scene_guid (as the lightbox scene was deleted just above)
         self._scene_instance.scene_guid = ""
+        # Reset axis system to origin as the lightbox scene is deleted
+        self._scene_instance.axis_system[:] = ORIGIN
 
         # Remove the scene instance from the scene
         parent_scene_data = self._parent_project.scene_link.get()  # retrieve scene data

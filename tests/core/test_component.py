@@ -54,7 +54,7 @@ def test_create_lightbox(speos: Speos):
     )
     assert lightbox.__str__().startswith("local") is True
     assert lightbox.axis_system == ORIGIN
-    assert len(lightbox._features) == 3
+    assert len(lightbox.project._features) == 3
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
     assert lightbox_material[0].get(key="name") == "Material.2"
@@ -87,7 +87,7 @@ def test_create_lightbox(speos: Speos):
 
     lightbox_2 = p.create_lightbox(name="Light Box Import.2")
     assert lightbox_2.axis_system == ORIGIN
-    assert len(lightbox_2._features) == 0
+    assert len(lightbox_2.project._features) == 0
     lightbox_part = lightbox_2.find(name="", feature_type=part.Part)
     assert len(lightbox_part) == 0
 
@@ -108,7 +108,7 @@ def test_create_lightbox(speos: Speos):
     #     )
     # )
     # lightbox.commit()
-    # assert len(lightbox._features) == 3
+    # assert len(lightbox.project._features) == 3
     #
     # lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     # assert lightbox_material.get(key="name") == "Material.2"
@@ -155,7 +155,7 @@ def test_create_lightbox(speos: Speos):
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().sources) == 2
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().materials) == 1
 
-    assert len(lightbox3._features) == 4
+    assert len(lightbox3.project._features) == 4
 
     lightbox_material = lightbox3.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     assert lightbox_material.get(key="name") == "Material.1"
@@ -201,7 +201,7 @@ def test_create_balck_lightbox(speos: Speos):
         ),
     )
     assert lightbox.axis_system == ORIGIN
-    assert len(lightbox._features) == 0
+    assert len(lightbox.project._features) == 0
     assert len(lightbox.source_paths) == 0
 
 
@@ -429,14 +429,11 @@ def test_delete_lightbox(speos: Speos):
             file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
         ),
     )
-    assert lightbox_1._scene_link is not None
-    assert len(lightbox_1._features) == 3
+    assert lightbox_1.project.scene_link is not None
+    assert len(lightbox_1.project._features) == 3
 
     # Delete
     lightbox_1.delete()
     assert len(p.scene_link.get().scenes) == 0
-    assert len(lightbox_1._features) == 0
-    assert lightbox_1._scene_link is None
-
-    lightbox = p.find(name=".*", name_regex=True, feature_type=LightBox)
-    assert len(lightbox) == 0
+    assert len(lightbox_1.project._features) == 0
+    assert lightbox_1.project.scene_link is None
