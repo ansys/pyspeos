@@ -739,7 +739,8 @@ def test_change_loaded_mesh(speos: Speos):
     assert isinstance(face_1, Face)
 
     # no change happened
-    # @todo if this fails bug has been fix and temporary remove protection function can be removed
+    # @todo if this fails server side bug has been fixed and temporary remove protection function
+    # can be deprecated
     assert face_1._face == orig_value
     vertices = list(face_1._face.vertices)
     for i, value in enumerate(face_1._face.vertices):
