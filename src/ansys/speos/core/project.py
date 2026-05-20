@@ -131,7 +131,9 @@ class Project:
         self._features = []
         path = str(path)
         if len(path):
-            self.scene_link.load_file(path)
+            temp = speos.client.scenes().create()
+            temp.load_file(path)
+            self.scene_link.stub.update(self.scene_link, temp.stub.read(temp))
             self._fill_features()
 
     # def list(self):
