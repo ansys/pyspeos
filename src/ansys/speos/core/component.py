@@ -489,10 +489,6 @@ class LightBox:
         for feature in self.project._features:
             feature.commit()
         self._scene_instance.scene_guid = self.project.scene_link.key
-        scene_data = self.project.scene_link.get()
-        if scene_data.name != self._scene_instance.name:
-            scene_data.name = self._scene_instance.name
-            self.project.scene_link.set(data=scene_data)
 
         # The _unique_id will help to find the correct item in the scene.scenes:
         # the list of SceneInstance

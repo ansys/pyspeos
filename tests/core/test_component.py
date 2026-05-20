@@ -151,7 +151,8 @@ def test_create_lightbox(speos: Speos):
     assert lightbox3._scene_instance.name == "Light Box Import.3"
     assert lightbox3._scene_instance.axis_system == [100, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert lightbox3._scene_instance.scene_guid is not None
-    assert p.client[lightbox3._scene_instance.scene_guid].get().name == "Light Box Import.3"
+    # The name of the scene comes from the lightbox file imported.
+    assert p.client[lightbox3._scene_instance.scene_guid].get().name == "WhiteLightBox"
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().sources) == 2
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().materials) == 1
 
