@@ -939,6 +939,10 @@ class InverseSimulationParameters:
     """Path to the ambient material file."""
     light_expoert: bool = False
     """Whether light export is enabled."""
+    timeline: bool = False
+    """whether timeline is enabled"""
+    start_time: float = 0.00
+    """timeline start time (s)"""
     stop_condition_passes_number: int = 5
     """Maximum number of inverse passes before stopping."""
     stop_condition_duration: Optional[int] = None

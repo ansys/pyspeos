@@ -1358,6 +1358,8 @@ class SimulationInverse(BaseSimulation):
             self.set_weight().minimum_energy_percentage = (
                 default_parameters.minimum_energy_percentage
             )
+            self.timeline = default_parameters.timeline
+            self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
@@ -1433,6 +1435,54 @@ class SimulationInverse(BaseSimulation):
             simulation_template_pb2.CIE_1964
         )
         return self
+
+    @property
+    def timeline(self) -> bool:
+        """switch to enable/disable timeline for the simulation
+        
+        Returns
+        --------
+        bool
+            the state of timeline activation
+
+        """
+        return self._job.inverse_mc_simulation_properties.HasField("timeline")
+    
+    @timeline.setter
+    def timeline(self, value: bool) -> None:
+        props = self._job.inverse_mc_simulation_properties
+
+        if value:
+            if not props.HasField("timeline"):
+                timeline = props.timeline
+                timeline.start_time = 0.0
+        else:
+            props.ClearField("timeline")
+
+
+    @property
+    def start_time(self) -> Optional[float]:
+        """timeline start time (s)
+        
+        Returns
+        -------
+        Optional[float]
+            the start time (s) of the simulation timeline,
+            or None if timeline is disabled
+        
+        """
+        if hasattr(self._job.inverse_mc_simulation_properties, "timeline"):
+            return self._job.inverse_mc_simulation_properties.timeline.start_time
+        else:
+            return None
+        
+    @start_time.setter
+    def start_time(self, value: Optional[float]) -> None:
+        if value is None:
+            self._job.inverse_mc_simulation_properties.ClearField("timeline")
+        else:
+            self._job.inverse_mc_simulation_properties.timeline.start_time = value
+        
 
     @property
     def dispersion(self) -> bool:
