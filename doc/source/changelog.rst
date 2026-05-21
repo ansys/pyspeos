@@ -9,22 +9,6 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
-`0.8.1 <https://github.com/ansys/pyspeos/releases/tag/v0.8.1>`_ - May 19, 2026
-==============================================================================
-
-.. tab-set::
-
-
-  .. tab-item:: Maintenance
-
-    .. list-table::
-        :header-rows: 0
-        :widths: auto
-
-        * - Bump ansys-sphinx-theme to 1.8.0
-          - `#966 <https://github.com/ansys/pyspeos/pull/966>`_
-
-
 `0.8.0 <https://github.com/ansys/pyspeos/releases/tag/v0.8.0>`_ - May 08, 2026
 ==============================================================================
 
