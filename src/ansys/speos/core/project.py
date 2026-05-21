@@ -57,6 +57,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
+from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -112,11 +113,13 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
-    path : str
-        The project will be loaded from this speos file.
+    path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = ""
+        The project will be loaded from this speos file or lightbox instance.
         By default, ``""``, means create from empty.
+    context : Optional[str]
+        For internal use only.
 
     Attributes
     ----------
@@ -124,16 +127,36 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
-        self.client = speos.client
+    def __init__(
+        self,
+        speos: Union[Speos, SpeosClient],
+        path: Optional[Union[str, Path, LightBoxFileInstance]] = "",
+        context: Optional[str] = None,
+    ):
+        match speos:
+            case Speos():
+                self.client = speos.client
+            case SpeosClient():
+                self.client = speos
+            case _:
+                raise TypeError(f"Incorrect type for speos: {type(speos)}")
         """Speos instance client."""
-        self.scene_link = speos.client.scenes().create()
+        self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
-        path = str(path)
-        if len(path):
-            self.scene_link.load_file(path)
-            self._fill_features()
+        match path:
+            case None | "":
+                pass
+            case str() | Path():
+                self.scene_link.load_file(str(path))
+                self._fill_features(context=context)
+            case LightBoxFileInstance():
+                self.scene_link.load_file(file_uri=str(path.file), password=path.password)
+                scene_data = self.scene_link.get()
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                    self._fill_features(context=context)
+            case _:
+                raise TypeError(f"Unsupported path type: {type(path)}")
 
     # def list(self):
     #    """Return all feature key as a tree.
@@ -877,7 +900,7 @@ class Project:
             msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
             raise ValueError(msg)
         feature = LightBox(
-            project=self,
+            parent_project=self,
             name=name,
             instance=lightbox,
         )
@@ -1079,6 +1102,7 @@ class Project:
         # Delete each feature that was created
         for f in self._features:
             f.delete()
+            f = None
         self._features.clear()
 
         return self
@@ -1252,7 +1276,7 @@ class Project:
 
         self.scene_link.set(data=scene_data)
 
-    def _fill_features(self):
+    def _fill_features(self, context: Optional[str] = None):
         """Fill project features from a scene."""
         self._add_unique_ids()
 
@@ -1336,6 +1360,7 @@ class Project:
                         default_parameters=None,
                     )
             if src_feat is not None:
+                src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
 
         # ground plane
@@ -1389,7 +1414,7 @@ class Project:
 
         for scene_inst in scene_data.scenes:
             lightbox_scene = LightBox(
-                project=self,
+                parent_project=self,
                 name=scene_inst.name,
                 instance=scene_inst,
             )

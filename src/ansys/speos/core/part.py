@@ -507,7 +507,6 @@ class Part:
         self._project = project
         self._name = name
         self.part_link = None
-        self._scene_link = self._project.scene_link if scene_link is None else scene_link
         """Link object for the part in database."""
 
         self._geom_features = []
@@ -644,11 +643,11 @@ class Part:
             g.commit()
 
         # Update the scene with the part
-        if self._scene_link:
-            scene_data = self._scene_link.get()  # retrieve scene data
+        if self._project.scene_link:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
             if scene_data.part_guid != self.part_link.key:
                 scene_data.part_guid = self.part_link.key
-                self._scene_link.set(data=scene_data)  # update scene data
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -684,9 +683,9 @@ class Part:
             self.part_link = None
 
         # Remove the part guid from the scene
-        scene_data = self._scene_link.get()  # retrieve scene data
+        scene_data = self._project.scene_link.get()  # retrieve scene data
         scene_data.part_guid = ""
-        self._scene_link.set(data=scene_data)  # update scene data
+        self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 

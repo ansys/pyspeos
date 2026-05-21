@@ -26,7 +26,6 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 import os
 from pathlib import Path
-import re
 from typing import List, Mapping, Optional, Tuple, Union
 import uuid
 
@@ -44,7 +43,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
-from ansys.speos.core.kernel import BodyLink, FaceLink, ProtoScene
+from ansys.speos.core.kernel import ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.source import (
@@ -90,7 +89,7 @@ class LightBox:
 
     Parameters
     ----------
-    project : ansys.speos.core.project.Project
+    parent_project : ansys.speos.core.project.Project
         Project that will own the feature.
     name : str
         Name of the feature.
@@ -107,43 +106,43 @@ class LightBox:
     def __init__(
         self,
         name: str,
-        project: project.Project,
+        parent_project: project.Project,
         instance: Optional[Union[LightBoxFileInstance, ProtoScene.SceneInstance]] = None,
     ):
         self._name = name
         self._unique_id = None
-        self._project = project
-        self._features = []
+        self._parent_project = parent_project
+        self._scene_instance = ProtoScene.SceneInstance(name=self._name)
         self._is_black = False
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
 
         match instance:
             case None:
-                self._scene_link = self._project.client.scenes().create()
-                self._scene_instance = ProtoScene.SceneInstance(name=self._name)
-                self.axis_system = ORIGIN
+                self.project = project.Project(speos=self._parent_project.client)
+                self._scene_instance.axis_system[:] = ORIGIN
             case LightBoxFileInstance():
-                self._scene_link = self._project.client.scenes().create()
-                self._scene_instance = ProtoScene.SceneInstance(name=self._name)
-                self._scene_link.load_file(file_uri=instance.file, password=instance.password)
-                self._scene_instance.scene_guid = self._scene_link.key
-                self.axis_system = instance.axis_system
-                # in case of black box don't fill features
-                if self._scene_link.get():
-                    scene_data = self._scene_link.get()
-                    if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
-                        self._fill_features()
-                    else:
-                        self._is_black = True
+                self.project = project.Project(
+                    speos=self._parent_project.client,
+                    path=instance,
+                    context=self._scene_instance.name + "/",
+                )
+                self._scene_instance.axis_system[:] = instance.axis_system
+                scene_data = self.project.scene_link.get()
+                if (
+                    len(scene_data.sources) == 0
+                    and scene_data.part_guid == ""
+                    and len(scene_data.materials) == 0
+                ):
+                    self._is_black = True
             case ProtoScene.SceneInstance():
                 self._unique_id = instance.metadata["UniqueId"]
-                self._scene_link = self._project.client[instance.scene_guid]
-                # reset will fill _scene_instance from project (using _unique_id)
-                self.reset()
-                scene_data = self._scene_link.get()
+                self.project = project.Project(speos=self._parent_project.client)
+                self.project.scene_link = self.project.client[instance.scene_guid]
+                self._scene_instance = instance
+                scene_data = self.project.scene_link.get()
                 # in case of black box don't fill features
                 if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
-                    self._fill_features()
+                    self.project._fill_features(context=self._scene_instance.name + "/")
                 else:
                     self._is_black = True
             case _:
@@ -192,7 +191,7 @@ class LightBox:
                 source_name = visual_source["name"]
                 self._visual_data.append(_VisualData(ray=True))
 
-                for ray_path in self._project.client[
+                for ray_path in self._parent_project.client[
                     self.get(key="scene_guid")
                 ].get_source_ray_paths(
                     source_path=source_name, rays_nb=100, raw_data=True, display_data=True
@@ -224,7 +223,7 @@ class LightBox:
             Source paths in the form ``<lightbox_name>/<source_name>``.
 
         """
-        sources_data = self._project.client[self._scene_instance.scene_guid].get().sources
+        sources_data = self.project.scene_link.get().sources
         return [f"{self.name}/{data.name}" for data in sources_data]
 
     @property
@@ -258,42 +257,6 @@ class LightBox:
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
-
-    # def set_speos_light_box(self, lightbox: LightBoxFileInstance) -> LightBox:
-    #     """Set the LightBox file used by this feature.
-    #
-    #     Parameters
-    #     ----------
-    #     lightbox : ansys.speos.core.component.LightBoxFileInstance
-    #         LightBox file information to import.
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.component.LightBox
-    #         Updated LightBox feature.
-    #
-    #     """
-    #     self.scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
-    #     self._scene_instance.scene_guid = self.scene_link.key
-    #     self._fill_features()
-    #
-    #     # the following part is to check if any simulation contains source paths from the
-    #     # current lightbox whose light source has been modified via set_speos_light_box.
-    #     # If there is such simulation,
-    #     # 1. the source paths from the current lightbox will be removed from this simulation
-    #     # if they are not included in the new lightbox file.
-    #     # 2. kept if they are still included in the new lightbox file.
-    #     for simulation in self._project.find(
-    #         name=".*", name_regex=True, feature_type=BaseSimulation
-    #     ):
-    #         if any(self.name in path for path in simulation._simulation_instance.source_paths):
-    #             current_sources = simulation._simulation_instance.source_paths
-    #             new_sources = []
-    #             for source in current_sources:
-    #                 if (self.name not in source) or (source in self.source_paths):
-    #                     new_sources.append(source)
-    #             simulation.source_paths = new_sources
-    #     return self
 
     def find(
         self,
@@ -342,7 +305,6 @@ class LightBox:
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
         ansys.speos.core.simulation.SimulationInverse, \
-        ansys.speos.core.component.LightBox, \
         ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
@@ -381,76 +343,7 @@ class LightBox:
         >>> # All geometry features at first level (whatever their type: body, face, sub part)
         >>> find(name=".*", name_regex=True, feature_type=ansys.speos.core.part.Part)
         """
-        orig_feature_type = None
-        if (
-            feature_type == part.Part
-            or feature_type == part.Part.SubPart
-            or feature_type == body.Body
-            or feature_type == face.Face
-        ):
-            if feature_type != part.Part:
-                orig_feature_type = feature_type
-                feature_type = part.Part
-            if name == "":
-                name = "RootPart"
-            else:
-                name = "RootPart/" + name
-
-        orig_name = name
-        idx = name.find("/")
-        if idx != -1:
-            name = name[0:idx]
-
-        if name_regex:
-            p = re.compile(name)
-
-        found_features = []
-        if feature_type is None:
-            if name_regex:
-                found_features.extend([x for x in self._features if p.match(x._name)])
-            else:
-                found_features.extend([x for x in self._features if x._name == name])
-        else:
-            if name_regex:
-                found_features.extend(
-                    [
-                        x
-                        for x in self._features
-                        if (
-                            isinstance(x, feature_type)
-                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
-                        )
-                        and p.match(x._name)
-                    ]
-                )
-            else:
-                found_features.extend(
-                    [
-                        x
-                        for x in self._features
-                        if (
-                            isinstance(x, feature_type)
-                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
-                        )
-                        and x._name == name
-                    ]
-                )
-
-        if found_features and idx != -1:
-            tmp = [
-                f.find(
-                    name=orig_name[idx + 1 :],
-                    name_regex=name_regex,
-                    feature_type=orig_feature_type,
-                )
-                for f in found_features
-            ]
-
-            found_features.clear()
-            for feats in tmp:
-                found_features.extend(feats)
-
-        return found_features
+        return self.project.find(name=name, name_regex=name_regex, feature_type=feature_type)
 
     def create_root_part(
         self,
@@ -477,23 +370,7 @@ class LightBox:
         """
         if self._is_black:
             raise ValueError("A black lightbox does not allow creating features.")
-        if metadata is None:
-            metadata = {}
-
-        name = "RootPart"
-        existing_rp = self.find(name="", feature_type=part.Part)
-        if existing_rp:
-            return existing_rp[0]
-
-        feature = part.Part(
-            project=self._project,
-            name=name,
-            description=description,
-            metadata=metadata,
-            scene_link=self._scene_link,
-        )
-        self._features.append(feature)
-        return feature
+        return self.project.create_root_part(description=description, metadata=metadata)
 
     def create_source(
         self,
@@ -549,94 +426,15 @@ class LightBox:
         """
         if self._is_black:
             raise ValueError("A black lightbox does not allow creating features.")
-        if metadata is None:
-            metadata = {}
-
-        existing_features = self.find(name=name)
-        if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
-                feature_type, name
-            )
-            raise ValueError(msg)
-        feature = None
-        match feature_type.__name__:
-            case "SourceSurface":
-                if parameters is None:
-                    parameters = SurfaceSourceParameters()
-                elif not isinstance(parameters, SurfaceSourceParameters):
-                    raise TypeError(
-                        f"Incorrect parameter dataclass provided "
-                        f"{str(type(parameters))} instead of SurfaceSourceParameters"
-                    )
-                feature = SourceSurface(
-                    project=self._project,
-                    name=name,
-                    description=description,
-                    metadata=metadata,
-                    default_parameters=parameters,
-                    scene_link=self._scene_link,
-                )
-            case "SourceRayFile":
-                if parameters is None:
-                    parameters = RayFileSourceParameters()
-                elif not isinstance(parameters, RayFileSourceParameters):
-                    raise TypeError(
-                        f"Incorrect parameter dataclass provided "
-                        f"{str(type(parameters))} instead of RayFileSourceParameters"
-                    )
-                feature = SourceRayFile(
-                    project=self._project,
-                    name=name,
-                    description=description,
-                    metadata=metadata,
-                    default_parameters=parameters,
-                    scene_link=self._scene_link,
-                )
-            case "SourceLuminaire":
-                if parameters is None:
-                    parameters = LuminaireSourceParameters()
-                elif not isinstance(parameters, LuminaireSourceParameters):
-                    raise TypeError(
-                        f"Incorrect parameter dataclass provided "
-                        f"{str(type(parameters))} instead of LuminaireSourceParameters"
-                    )
-                feature = SourceLuminaire(
-                    project=self._project,
-                    name=name,
-                    description=description,
-                    metadata=metadata,
-                    default_parameters=parameters,
-                    scene_link=self._scene_link,
-                )
-            case "SourceDisplay":
-                if parameters is None:
-                    parameters = DisplayParameters()
-                elif not isinstance(parameters, DisplayParameters):
-                    raise TypeError(
-                        f"Incorrect parameter dataclass provided "
-                        f"{str(type(parameters))} instead of DisplayParameters"
-                    )
-                feature = SourceDisplay(
-                    project=self._project,
-                    name=name,
-                    description=description,
-                    metadata=metadata,
-                    default_parameters=parameters,
-                    scene_link=self._scene_link,
-                )
-            case _:
-                msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type,
-                    [
-                        SourceSurface,
-                        SourceLuminaire,
-                        SourceRayFile,
-                        SourceDisplay,
-                    ],
-                )
-                raise TypeError(msg)
-        self._features.append(feature)
-        return feature
+        source_feat = self.project.create_source(
+            name=name,
+            description=description,
+            feature_type=feature_type,
+            metadata=metadata,
+            parameters=parameters,
+        )
+        source_feat._source_path = self._scene_instance.name + "/" + name
+        return source_feat
 
     def create_optical_property(
         self,
@@ -668,216 +466,9 @@ class LightBox:
         """
         if self._is_black:
             raise ValueError("A black lightbox does not allow creating features.")
-        existing_features = self.find(name=name)
-        if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
-                opt_prop.OptProp, name
-            )
-            raise ValueError(msg)
-
-        if metadata is None:
-            metadata = {}
-        if parameters:
-            if not isinstance(parameters, OptPropParameters):
-                raise TypeError(
-                    f"Incorrect parameter dataclass provided "
-                    f"{str(type(parameters))} instead of OptPropParameters"
-                )
-
-            feature = opt_prop.OptProp(
-                project=self._project,
-                name=name,
-                description=description,
-                metadata=metadata,
-                default_parameters=parameters,
-                scene_link=self._scene_link,
-            )
-        else:
-            feature = opt_prop.OptProp(
-                project=self._project,
-                name=name,
-                description=description,
-                metadata=metadata,
-                default_parameters=OptPropParameters(),
-                scene_link=self._scene_link,
-            )
-        self._features.append(feature)
-        return feature
-
-    def _fill_subparts(
-        self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
-    ):
-        for sp in sub_parts:
-            sp_feat = feat_host.create_sub_part(name=sp.name, description=sp.description)
-            if sp.description.startswith("UniqueId_"):
-                idx = sp.description.find("_")
-                sp_feat._unique_id = sp.description[idx + 1 :]
-            sp_feat.part_link = self._project.client[sp.part_guid]
-            part_data = sp_feat.part_link.get()
-            sp_feat._part_instance = sp
-            sp_feat._part = (
-                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
-            )
-            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
-            self._fill_subparts(sub_parts=part_data.parts, feat_host=sp_feat)
-
-    def _fill_bodies(
-        self,
-        body_guids: List[str],
-        feat_host: Union[part.Part, part.Part.SubPart],
-    ):
-        """Fill part of sub part features from a list of body guids."""
-        for b_link in self._project.client.get_items(keys=body_guids, item_type=BodyLink):
-            b_data = b_link.get()
-            if not b_data.face_guids:
-                continue
-            b_feat = feat_host.create_body(name=b_data.name)
-            b_feat.body_link = b_link
-            b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
-
-            f_links = self._project.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
-            face_db = self._project.client.faces()
-            if face_db._is_batch_available:
-                f_data_list = face_db.read_batch(refs=f_links)
-                for f_data, f_link in zip(f_data_list, f_links):
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
-            else:
-                for f_link in f_links:
-                    f_data = f_link.get()
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
-
-    def _add_unique_ids(self):
-        scene_data = self._scene_link.get()
-        scene_data.name = self._name
-
-        root_part_link = self._project.client[scene_data.part_guid]
-        if root_part_link is not None:
-            root_part = root_part_link.get()
-            update_rp = False
-            for sub_part in root_part.parts:
-                if sub_part.description.startswith("UniqueId_") is False:
-                    sub_part.description = "UniqueId_" + str(uuid.uuid4())
-                    update_rp = True
-            if update_rp:
-                root_part_link.set(data=root_part)
-
-        for mat_inst in scene_data.materials:
-            if mat_inst.metadata["UniqueId"] == "":
-                mat_inst.metadata["UniqueId"] = str(uuid.uuid4())
-
-        for src_inst in scene_data.sources:
-            if src_inst.metadata["UniqueId"] == "":
-                src_inst.metadata["UniqueId"] = str(uuid.uuid4())
-
-        for ssr_inst in scene_data.sensors:
-            if ssr_inst.metadata["UniqueId"] == "":
-                ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
-
-        for scene_inst in scene_data.scenes:
-            if scene_inst.metadata["UniqueId"] == "":
-                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
-
-        for sim_inst in scene_data.simulations:
-            if sim_inst.metadata["UniqueId"] == "":
-                sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
-
-        self._scene_link.set(data=scene_data)
-
-    def _fill_features(self):
-        """Fill project features from a scene."""
-        # delete previously created features
-        for feature in self._features:
-            if not isinstance(feature, part.Part):
-                feature.delete()
-        self._features = []
-        # load new features
-        self._add_unique_ids()
-
-        scene_data = self._scene_link.get()
-
-        root_part_link = self._project.client[scene_data.part_guid]
-        if root_part_link is not None:
-            root_part_data = root_part_link.get()
-            root_part_feats = self.find(name="", feature_type=part.Part)
-            root_part_feat = None
-            if not root_part_feats:
-                root_part_feat = self.create_root_part()
-                root_part_data.name = "RootPart"
-                root_part_link.set(root_part_data)
-
-                self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
-            else:
-                root_part_feat = root_part_feats[0]
-
-            root_part_feat.part_link = root_part_link
-            root_part_feat._part = root_part_data
-            # instead of root_part_feat.reset() - this avoid a useless read in server
-
-            self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
-
-        for mat_inst in scene_data.materials:
-            op_feature = opt_prop.OptProp(
-                project=self._project,
-                name=f"{self.name}/{mat_inst.name}",
-                description="",
-                metadata=None,
-                default_parameters=None,
-                scene_link=self._scene_link,
-            )
-            op_feature._fill(mat_inst=mat_inst)
-            self._features.append(op_feature)
-
-        for src_inst in scene_data.sources:
-            src_feat = None
-            if src_inst.HasField("rayfile_properties"):
-                src_feat = SourceRayFile(
-                    project=self._project,
-                    name=src_inst.name,
-                    source_instance=src_inst,
-                    default_parameters=None,
-                    scene_link=self._scene_link,
-                )
-            elif src_inst.HasField("luminaire_properties"):
-                src_feat = SourceLuminaire(
-                    project=self._project,
-                    name=src_inst.name,
-                    source_instance=src_inst,
-                    default_parameters=None,
-                    scene_link=self._scene_link,
-                )
-            elif src_inst.HasField("surface_properties"):
-                src_feat = SourceSurface(
-                    project=self._project,
-                    name=src_inst.name,
-                    source_instance=src_inst,
-                    default_parameters=None,
-                    scene_link=self._scene_link,
-                )
-            elif src_inst.HasField("display_properties"):
-                src_feat = SourceDisplay(
-                    project=self._project,
-                    name=src_inst.name,
-                    source_instance=src_inst,
-                    default_parameters=None,
-                    scene_link=self._scene_link,
-                )
-            if src_feat is not None:
-                self._features.append(src_feat)
-
-        # ground plane
-        if scene_data.HasField("ground"):
-            ground_feat = GroundPlane(project=self, ground=scene_data.ground)
-
-            if ground_feat is not None:
-                self._features.append(ground_feat)
+        return self.project.create_optical_property(
+            name=name, description=description, metadata=metadata, parameters=parameters
+        )
 
     def commit(self) -> LightBox:
         """Save the local feature data to the Speos server database.
@@ -891,8 +482,9 @@ class LightBox:
             for item in self._visual_data:
                 item.updated = False
 
-        for feature in self._features:
+        for feature in self.project._features:
             feature.commit()
+        self._scene_instance.scene_guid = self.project.scene_link.key
 
         # The _unique_id will help to find the correct item in the scene.scenes:
         # the list of SceneInstance
@@ -900,28 +492,28 @@ class LightBox:
             self._unique_id = str(uuid.uuid4())
             self._scene_instance.metadata["UniqueId"] = self._unique_id
 
-        # Update the scene with the lightbox instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+        # Update the parent scene with the lightbox instance
+        if self._parent_project.scene_link:
+            update_parent_scene = True
+            parent_scene_data = self._parent_project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             scene_inst = next(
-                (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+                (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
             if scene_inst is not None:
                 if scene_inst != self._scene_instance:
                     scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
                 else:
-                    update_scene = False
+                    update_parent_scene = False
             else:
-                scene_data.scenes.append(
+                parent_scene_data.scenes.append(
                     self._scene_instance
                 )  # if no, just add it to the list of lightbox instances
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_parent_scene:  # Update scene only if instance has changed
+                self._parent_project.scene_link.set(data=parent_scene_data)  # update scene data
 
         return self
 
@@ -948,15 +540,13 @@ class LightBox:
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
-        if self._scene_link is None:
-            raise ValueError("LightBox file cannot be saved as it is not linked to any scene.")
-        if len(self._features) == 0:
+        if len(self.project._features) == 0:
             raise ValueError(
                 "LightBox file cannot be saved due to is a black lightbox or no features inside."
             )
         if password is None:
             password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
-        self._scene_link.save_file(
+        self.project.scene_link.save_file(
             file_uri=str(export_path), password=password, black_boxed=black_boxed
         )
         return Path(export_path) / Path(export_path).name
@@ -972,38 +562,25 @@ class LightBox:
         out_dict = {}
 
         # SceneInstance (= scene guid + scene properties)
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
+        if self._parent_project.scene_link and self._unique_id is not None:
+            parent_scene_data = self._parent_project.scene_link.get()
             scene_inst = next(
-                (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+                (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
             if scene_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=scene_inst
+                    speos_client=self._parent_project.client, message=scene_inst
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client,
+                    speos_client=self._parent_project.client,
                     message=self._scene_instance,
                 )
         else:
             out_dict = proto_message_utils._replace_guids(
-                speos_client=self._project.client, message=self._scene_instance
+                speos_client=self._parent_project.client, message=self._scene_instance
             )
-
-        if "scene" not in out_dict.keys():
-            # SceneTemplate
-            if self._scene_link is None:
-                out_dict["scene"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client,
-                    message=self._scene_template,
-                )
-            else:
-                out_dict["scene"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client,
-                    message=self._scene_link.get(),
-                )
         proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
@@ -1036,10 +613,10 @@ class LightBox:
     def __str__(self) -> str:
         """Return the string representation of the LightBox."""
         out_str = ""
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
+        if self._parent_project.scene_link and self._unique_id is not None:
+            parent_scene_data = self._parent_project.scene_link.get()
             scene_inst = next(
-                (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+                (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
             if scene_inst is None:
@@ -1058,19 +635,16 @@ class LightBox:
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
-        for feature in self._features:
+        # Reset all features of the lightbox
+        for feature in self.project._features:
             feature.reset()
 
-        # Reset scene template
-        if self._scene_link is not None:
-            self._scene_template = self._scene_link.get()
-
-        # Reset scene instance
-        if self._project.scene_link is not None:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+        # Reset scene instance in parent project
+        if self._parent_project.scene_link is not None:
+            parent_scene_data = self._parent_project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             scene_inst = next(
-                (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+                (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
             if scene_inst is not None:
@@ -1088,35 +662,39 @@ class LightBox:
             Updated LightBox feature.
         """
         feature_part = None  # make sure the RootPart is deleted in the very end
-        for feature in self._features:
+        for feature in self.project._features:
             if not isinstance(feature, part.Part):
                 feature.delete()
+                feature = None
             else:
                 feature_part = feature
         if feature_part is not None:
             feature_part.delete()
-        self._features = []
+            feature_part = None
+        self.project._features.clear()
 
-        # Delete the scene template
-        if self._scene_link is not None:
-            self._scene_link.delete()
-            self._scene_link = None
+        # Delete the lightbox scene
+        if self.project.scene_link is not None:
+            self.project.scene_link.delete()
+            self.project.scene_link = None
 
-        # Reset then the scene_guid (as the scene template was deleted just above)
+        # Reset then the scene_guid (as the lightbox scene was deleted just above)
         self._scene_instance.scene_guid = ""
+        # Reset axis system to origin as the lightbox scene is deleted
+        self._scene_instance.axis_system[:] = ORIGIN
 
         # Remove the scene instance from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
+        parent_scene_data = self._parent_project.scene_link.get()  # retrieve scene data
         scene_inst = next(
-            (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+            (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
             None,
         )
         if scene_inst is not None:
-            scene_data.scenes.remove(scene_inst)
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            parent_scene_data.scenes.remove(scene_inst)
+            self._parent_project.scene_link.set(data=parent_scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
         self._scene_instance.metadata.pop("UniqueId")
-        self._project._features.remove(self)
+        self._parent_project._features.remove(self)
         return self

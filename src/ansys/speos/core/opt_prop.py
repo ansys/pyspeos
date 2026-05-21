@@ -62,7 +62,7 @@ from ansys.speos.core.generic.parameters import (
     VopTypes,
 )
 from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.kernel.scene import ProtoScene, SceneLink
+from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
@@ -1567,7 +1567,6 @@ class TextureLayer(BaseSop):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[TextureLayerParameters] = None,
     ):
         """Initialize a texture layer.
@@ -1588,7 +1587,6 @@ class TextureLayer(BaseSop):
             Default texture layer parameters to apply at initialization.
         """
         self._project = opt_prop._project
-        self._scene_link = self._project.scene_link if scene_link is None else scene_link
         self._opt_prop = opt_prop
         self.sop_template_link = None
         if metadata is None:
@@ -1789,8 +1787,8 @@ class TextureLayer(BaseSop):
             self._normal_map = None
             self._aniso_map = None
             self._image_map = None
-        if self._scene_link is not None:
-            scene_data = self._scene_link.get()
+        if self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()
             mat_inst = next(
                 (
                     x
@@ -1881,7 +1879,6 @@ class OptProp(BaseVop, BaseSop):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        scene_link: Optional[SceneLink] = None,
         default_parameters: Optional[OptPropParameters] = None,
     ):
         """Initialize an optical property wrapper.
@@ -1903,7 +1900,6 @@ class OptProp(BaseVop, BaseSop):
         """
         self._name = name
         self._project = project
-        self._scene_link = self._project.scene_link if scene_link is None else scene_link
         self._unique_id = None
         self.sop_template_link = None
         """Link object for the sop template in database."""
@@ -2090,7 +2086,6 @@ class OptProp(BaseVop, BaseSop):
             name=name,
             description=description,
             default_parameters=default_parameters,
-            scene_link=self._scene_link,
         )
         new_layer._index = len(self._texture)
         self._texture.append(new_layer)
@@ -2122,8 +2117,8 @@ class OptProp(BaseVop, BaseSop):
         out_dict = {}
 
         # MaterialInstance (= vop guid + sop guids + geometries)
-        if self._scene_link and self._unique_id is not None:
-            scene_data = self._scene_link.get()
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
             mat_inst = next(
                 (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
                 None,
@@ -2218,8 +2213,8 @@ class OptProp(BaseVop, BaseSop):
         """
         out_str = ""
         # MaterialInstance (= vop guid + sop guids + geometries)
-        if self._scene_link and self._unique_id is not None:
-            scene_data = self._scene_link.get()
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
             mat_inst = next(
                 (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
                 None,
@@ -2297,9 +2292,9 @@ class OptProp(BaseVop, BaseSop):
                 )  # Only update if sop template has changed
 
         # Update the scene with the material instance
-        if self._scene_link:
+        if self._project.scene_link:
             update_scene = True
-            scene_data = self._scene_link.get()  # retrieve scene data
+            scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
@@ -2317,7 +2312,7 @@ class OptProp(BaseVop, BaseSop):
                 )  # if no, just add it to the list of material instances
 
             if update_scene:  # Update scene only if instance has changed
-                self._scene_link.set(data=scene_data)  # update scene data
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -2345,8 +2340,8 @@ class OptProp(BaseVop, BaseSop):
             self._sync_sop_properties()
 
         # Reset material instance
-        if self._scene_link is not None:
-            scene_data = self._scene_link.get()  # retrieve scene data
+        if self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
                 (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
@@ -2391,14 +2386,14 @@ class OptProp(BaseVop, BaseSop):
         self._material_instance.ClearField("sop_guids")
 
         # Remove the material instance from the scene
-        scene_data = self._scene_link.get()  # retrieve scene data
+        scene_data = self._project.scene_link.get()  # retrieve scene data
         mat_inst = next(
             (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
             None,
         )
         if mat_inst is not None:
             scene_data.materials.remove(mat_inst)
-            self._scene_link.set(data=scene_data)  # update scene data
+            self._project.scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
