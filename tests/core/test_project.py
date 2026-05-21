@@ -22,6 +22,7 @@
 
 """Test basic using project."""
 
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -47,6 +48,7 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from tests.conftest import test_path
+from tests.helper import clean_all_dbs
 
 
 def test_find_feature(speos: Speos):
@@ -972,3 +974,81 @@ def test_create_speos_feature_preview_3d_irradiance(speos: Speos):
     assert result is mock_plotter
     # At least one plot call for the 3D mesh
     assert mock_plotter.plot.call_count >= 1
+
+def test_change_loaded_mesh(speos: Speos):
+    """Test changed loaded mesh."""
+    # load initial file
+    p = Project(speos=speos, path=str(Path(test_path) / "MeshChange.speos" / "MeshChange.speos"))
+    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+    assert isinstance(body_1, Body)
+    face_1 = body_1._geom_features[0]
+    assert isinstance(face_1, Face)
+
+    # store original data
+    orig_value = deepcopy(face_1._face)
+
+    # change vertice
+    vertices = list(face_1._face.vertices)
+    for i, value in enumerate(face_1._face.vertices):
+        if (i + 2) % 3 == 0:
+            vertices[i] = 1
+    face_1._face.vertices[:] = vertices
+    face_1.commit()
+
+    # validate change occurred
+    assert face_1._face != orig_value
+
+    # export simulation
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    assert isinstance(sim, SimulationDirect)
+    sim.export(Path(test_path) / "changed")
+
+    # clean up
+    clean_all_dbs(speos.client)
+
+    # load change model
+    p = Project(
+        speos=speos, path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos")
+    )
+    # remove portection
+    p.remove_mesh_protection()
+
+    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+    assert isinstance(body_1, Body)
+    face_1 = body_1._geom_features[0]
+    assert isinstance(face_1, Face)
+
+    # no change happened
+    # @todo if this fails server side bug has been fixed and temporary remove protection function
+    # can be deprecated
+    assert face_1._face == orig_value
+    vertices = list(face_1._face.vertices)
+    for i, value in enumerate(face_1._face.vertices):
+        if (i + 2) % 3 == 0:
+            vertices[i] = 1
+    face_1._face.vertices[:] = vertices
+    face_1.commit()
+    assert face_1._face != orig_value
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    assert isinstance(sim, SimulationDirect)
+    sim.export(Path(test_path) / "changed_with_removed_protection")
+
+    # clean up
+    clean_all_dbs(speos.client)
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path)
+            / "changed_with_removed_protection"
+            / "MeshChange.speos"
+            / "MeshChange.speos"
+        ),
+    )
+    p.remove_mesh_protection()
+    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+    assert isinstance(body_1, Body)
+    face_1 = body_1._geom_features[0]
+    assert isinstance(face_1, Face)
+
+    # validate that with remove protection change did happen
+    assert face_1._face != orig_value

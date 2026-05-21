@@ -2095,24 +2095,24 @@ def test_load_uniform_ambient_source(speos: Speos):
     )
 
     expected_sources = {
-        "Default:661": {
+        "Default:235": {
             "mirrored_extent": False,
             "sun_direction": [0.0, 0.0, 1.0],
             "spectrum_type": "blackbody",
         },
-        "Mirror_True:688": {
+        "Mirror_True:271": {
             "mirrored_extent": True,
             "sun_direction": [0.0, 0.0, 1.0],
             "spectrum_type": "blackbody",
         },
-        "Active_Sun:727": {
+        "Active_Sun:348": {
             "mirrored_extent": True,
-            "sun_direction": [-0.43301270189221946, 0.49999999999999994, 0.75],
+            "sun_direction": [0.0, 0.8660254037844363, 0.5],
             "spectrum_type": "blackbody",
         },
-        "Active_Sun.1:756": {
+        "Active_Sun.1:485": {
             "mirrored_extent": True,
-            "sun_direction": [-0.43301270189221946, 0.49999999999999994, 0.75],
+            "sun_direction": [0.0, 0.8660254037844363, 0.5],
             "spectrum_type": "library",
         },
     }
