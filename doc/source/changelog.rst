@@ -9,7 +9,7 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
-`0.8.1 <https://github.com/ansys/pyspeos/releases/tag/v0.8.1>`_ - May 21, 2026
+`0.8.2 <https://github.com/ansys/pyspeos/releases/tag/v0.8.2>`_ - May 21, 2026
 ==============================================================================
 
 .. tab-set::
@@ -23,6 +23,9 @@ This document contains the release notes for the PySpeos project.
 
         * - Mesh change not working
           - `#970 <https://github.com/ansys/pyspeos/pull/970>`_
+
+        * - Theme version to display cheatsheet
+          - `#973 <https://github.com/ansys/pyspeos/pull/973>`_
 
 
   .. tab-item:: Maintenance
