@@ -309,6 +309,25 @@ This document contains the release notes for the PySpeos project.
           - `#946 <https://github.com/ansys/pyspeos/pull/946>`_
 
 
+`0.7.4 <https://github.com/ansys/pyspeos/releases/tag/v0.7.4>`_ - May 21, 2026
+==============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Mesh change not working
+          - `#970 <https://github.com/ansys/pyspeos/pull/970>`_
+
+        * - Theme version to display cheatsheet
+          - `#973 <https://github.com/ansys/pyspeos/pull/973>`_
+
+
 `0.7.3 <https://github.com/ansys/pyspeos/releases/tag/v0.7.3>`_ - March 23, 2026
 ================================================================================
 
