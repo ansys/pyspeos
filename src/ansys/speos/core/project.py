@@ -134,6 +134,17 @@ class Project:
             self.scene_link.load_file(path)
             self._fill_features()
 
+    def remove_mesh_protection(self):
+        """Remove mesh protection from the project loaded from *.speos file.
+
+        But this removes all features unsupported by speos rpc server.
+        """
+        msg = self.scene_link.get()
+        self.scene_link = self.client.scenes().create()
+        self.scene_link.set(msg)
+        self._features = []
+        self._fill_features()
+
     # def list(self):
     #    """Return all feature key as a tree.
     #
