@@ -63,8 +63,13 @@ class LightBoxFileInstance:
     ----------
     file : pathlib.Path | str
         LightBox file to load.
-    password : str, default: ""
+    password : str, optional
         Password for the imported LightBox file.
+        By default, ``None``, which reads ``PYSPEOS_ENCRYPTED_PASSWORD`` environment variable
+        or falls back to an empty string.
+    axis_system : list[float], optional
+        Axis system used to position the LightBox in the parent scene.
+        By default, ``None``, which uses the global origin axis system.
     """
 
     def __init__(
@@ -89,18 +94,18 @@ class LightBox:
 
     Parameters
     ----------
-    parent_project : ansys.speos.core.project.Project
-        Project that will own the feature.
     name : str
         Name of the feature.
-    description : str, default: ""
-        Description of the feature.
-    metadata : typing.Optional[typing.Mapping[str, str]], optional
-        Metadata of the feature.
-    scene_instance : ansys.speos.core.kernel.ProtoScene.SceneInstance, optional
-        Existing scene instance to reuse. If ``None``, a new scene instance is created.
-    default_parameters : ansys.speos.core.generic.parameters.LightBoxParameters, optional
-        Initial parameter values applied to the feature after initialization.
+    parent_project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    instance : ansys.speos.core.component.LightBoxFileInstance or \
+ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
+        Source for the LightBox content.
+
+        - If ``None`` (default), an empty LightBox is created from scratch.
+        - If a :class:`LightBoxFileInstance`, the LightBox is loaded from that file.
+        - If a ``ProtoScene.SceneInstance``, the LightBox is reconstructed from an
+          existing server scene instance.
     """
 
     def __init__(
@@ -239,17 +244,20 @@ class LightBox:
 
     @property
     def axis_system(self) -> List[float]:
-        """Property of the lightbox coordinate system.
+        """Coordinate system of the LightBox in the parent scene.
+
+        Twelve-element list ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]`` that fully describes
+        the origin and orientation of the LightBox.
 
         Parameters
         ----------
-        axis_system : List[float]
-            Coordinate system values.
+        axis_system : list[float]
+            New coordinate system values.
 
         Returns
         -------
         list[float]
-            Coordinate system values.
+            Current coordinate system values.
 
         """
         return self._scene_instance.axis_system
@@ -524,21 +532,20 @@ class LightBox:
 
         Parameters
         ----------
-        black_boxed
-
-        export_path : Path | str
+        export_path : pathlib.Path | str
             Path of the LightBox file to be saved.
-        password: str | None
+        password : str, optional
             Password to protect the LightBox file.
-            By default, ``None``, means that the LightBox file will not be password protected
-        black_boxed: bool
+            By default, ``None``, which reads ``PYSPEOS_ENCRYPTED_PASSWORD`` environment variable
+            or falls back to no password protection.
+        black_boxed : bool, optional
             Whether to save the LightBox file as black-boxed.
-            By default, ``False``, means that the LightBox file will not be black-boxed.
+            By default, ``False``, which means the LightBox file will not be black-boxed.
 
         Returns
         -------
-        ansys.speos.core.component.LightBox
-            Updated LightBox feature.
+        pathlib.Path
+            Path to the exported LightBox file.
         """
         if len(self.project._features) == 0:
             raise ValueError(
@@ -590,12 +597,14 @@ class LightBox:
 
         Parameters
         ----------
-        key : str, default: ""
+        key : str, optional
             Key prefix used to look up a value.
+            By default, ``""``, which returns the full dictionary.
 
         Returns
         -------
         str | dict
+            Value found for the given key, or the full dictionary when *key* is empty.
         """
         if key == "":
             return self._to_dict()
