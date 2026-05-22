@@ -56,7 +56,7 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
 from ansys.speos.core.source import BaseSource
 
-MIN_SOURCE_GROUPS_VERSION = (2026, 1, 2)
+MIN_SOURCE_GROUPS_VERSION = (26, 1, 2)
 
 
 class BaseSimulation:
@@ -359,6 +359,9 @@ class BaseSimulation:
         ``source_groups`` on simulation classes.
         """
 
+        @min_speos_version(
+            MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+        )
         def __init__(
             self,
             simulation: BaseSimulation,
@@ -519,17 +522,9 @@ class BaseSimulation:
                 )
         self._simulation_instance.source_paths[:] = src_paths
 
-    def _check_source_groups_support(self) -> None:
-        """Check whether source groups are supported."""
-        if not hasattr(self._simulation_instance, "source_groups"):
-            raise NotImplementedError("Source groups require ansys-api-speos>=0.16.2.")
-        if getattr(
-            server_version_checker, "_version", None
-        ) is not None and not server_version_checker.is_version_supported(
-            *MIN_SOURCE_GROUPS_VERSION
-        ):
-            raise NotImplementedError("Source groups require Speos 2026.1.2 or later.")
-
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def _normalize_source_group_paths(
         self, source_paths: List[Union[str, BaseSource]]
     ) -> List[str]:
@@ -553,6 +548,9 @@ class BaseSimulation:
                 )
         return normalized_paths
 
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def _validate_source_group_paths(
         self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
     ) -> None:
@@ -576,6 +574,9 @@ class BaseSimulation:
             raise ValueError(msg)
 
     @property
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def source_groups(self) -> List[BaseSimulation.SourceGroup]:
         """Source groups assigned to the simulation.
 
@@ -584,12 +585,17 @@ class BaseSimulation:
         List[ansys.speos.core.simulation.BaseSimulation.SourceGroup]
             Source groups bound to the simulation instance.
         """
-        self._check_source_groups_support()
-        return [
-            BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
-            for source_group in self._simulation_instance.source_groups
-        ]
+        if hasattr(self._simulation_instance, "source_groups"):
+            return [
+                BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+                for source_group in self._simulation_instance.source_groups
+            ]
+        else:
+            return None
 
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def add_source_group(
         self, name: str, source_paths: List[Union[str, BaseSource]]
     ) -> BaseSimulation.SourceGroup:
@@ -613,7 +619,6 @@ class BaseSimulation:
         ValueError
             If one of the given source paths is not included in the simulation.
         """
-        self._check_source_groups_support()
         normalized_paths = self._normalize_source_group_paths(source_paths)
         self._validate_source_group_paths(normalized_paths)
         source_group = self._simulation_instance.source_groups.add()
@@ -621,6 +626,9 @@ class BaseSimulation:
         source_group.source_paths[:] = normalized_paths
         return BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
 
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def remove_source_group(self, name: str) -> BaseSimulation:
         """Remove a source group from the simulation.
 
@@ -639,13 +647,15 @@ class BaseSimulation:
         ValueError
             If no source group with the provided name exists.
         """
-        self._check_source_groups_support()
         for index, source_group in enumerate(self._simulation_instance.source_groups):
             if source_group.name == name:
                 del self._simulation_instance.source_groups[index]
                 return self
         raise ValueError(f"Source group '{name}' not found.")
 
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
     def clear_source_groups(self) -> BaseSimulation:
         """Remove all source groups from the simulation.
 
@@ -654,7 +664,6 @@ class BaseSimulation:
         ansys.speos.core.simulation.BaseSimulation
             Simulation feature.
         """
-        self._check_source_groups_support()
         del self._simulation_instance.source_groups[:]
         return self
 
