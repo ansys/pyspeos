@@ -118,7 +118,9 @@ def test_source_group_api_local_validation(monkeypatch):
     assert sim.source_groups == []
 
     monkeypatch.setattr(server_version_checker, "_version", "2025.2.0")
-    with pytest.raises(NotImplementedError, match="Source groups require Speos 2026.1.2 or later."):
+    with pytest.raises(
+        NotImplementedError, match="needs a Speos Version of 2026 R1 SP2 or higher."
+    ):
         sim.add_source_group(name="Group.Unsupported", source_paths=["source.1"])
 
 
