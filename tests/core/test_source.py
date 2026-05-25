@@ -25,18 +25,19 @@
 import datetime
 from pathlib import Path
 
+from ansys.api.speos.source.v1 import source_pb2
 import pytest
 
 from ansys.speos.core import GeoRef, Intensity, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
-from ansys.api.speos.source.v1 import source_pb2
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
-    AmbientCieStandardGeneralSkyParameters,
+    CieType,
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
@@ -62,13 +63,12 @@ from ansys.speos.core.generic.parameters import (
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
     WhitePointType,
-    CieType,
 )
 from ansys.speos.core.source import (
+    SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
-    SourceAmbientCieStandardGeneralSky,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -1041,11 +1041,12 @@ def test_create_natural_light_source(speos: Speos):
     assert source5.north_direction == [1, 0, 0]
     assert source5.set_sun_manual().direction == [0.7071067811865476, 0.0, 0.7071067811865475]
 
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_cie_standard_general_sky_source(speos: Speos):
     """Test creation of ambient CIE general standard sky source."""
     from zoneinfo import ZoneInfo
-    
+
     p = Project(speos=speos)
     cet = ZoneInfo("CET")
     proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
@@ -1098,7 +1099,8 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     # enum wrapper assertion
     assert source1.cie_type == CieType.cloudy_slight_brightening
     # low-level enum assertion
-    assert (source1._source_template.ambient.cie_general.cie_type
+    assert (
+        source1._source_template.ambient.cie_general.cie_type
         == proto_enum.cloudy_slight_brightening
     )
 
@@ -1116,11 +1118,8 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     source1.cie_type = CieType.standard_overcast
     source1.commit()
 
-
     assert source1.cie_type == CieType.standard_overcast
-    assert (source1._source_template.ambient.cie_general.cie_type
-        == proto_enum.standard_overcast
-    )
+    assert source1._source_template.ambient.cie_general.cie_type == proto_enum.standard_overcast
     assert source1._source_template.ambient.cie_general.luminance == 1234
     assert source1._source_instance.ambient_properties.zenith_direction == [
         0,
@@ -1132,27 +1131,21 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
         0,
         0,
     ]
-    assert (
-        source1._source_instance.ambient_properties.cie_general_properties.reverse_north is True
-    )
+    assert source1._source_instance.ambient_properties.cie_general_properties.reverse_north is True
     assert source1._source_instance.ambient_properties.reverse_zenith is True
 
     source1.set_sun_manual().direction = [0, 0.707, 0.707]
     source1.commit()
 
     # check the backend
-    tmp_cie_general_prop = (
-        source1._source_instance.ambient_properties.cie_general_properties
-    )
+    tmp_cie_general_prop = source1._source_instance.ambient_properties.cie_general_properties
     assert tmp_cie_general_prop.sun_axis_system.HasField("manual_sun")
     assert tmp_cie_general_prop.sun_axis_system.manual_sun.sun_direction == [0, 0.707, 0.707]
     assert tmp_cie_general_prop.sun_axis_system.manual_sun.reverse_sun is False
 
     # check the property method
     assert source1.cie_type == CieType.standard_overcast
-    assert (source1._source_template.ambient.cie_general.cie_type
-        == proto_enum.standard_overcast
-    )
+    assert source1._source_template.ambient.cie_general.cie_type == proto_enum.standard_overcast
     assert source1.luminance == 1234
     assert source1.set_sun_manual().direction == [0, 0.707, 0.707]
     assert source1.set_sun_manual().reverse_sun is False
@@ -1168,9 +1161,7 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     source1.commit()
 
     # check the backend
-    tmp_cie_general_prop = (
-        source1._source_instance.ambient_properties.cie_general_properties
-    )
+    tmp_cie_general_prop = source1._source_instance.ambient_properties.cie_general_properties
     assert tmp_cie_general_prop.sun_axis_system.HasField("automatic_sun")
     assert tmp_cie_general_prop.sun_axis_system.automatic_sun.year == 2026
     assert tmp_cie_general_prop.sun_axis_system.automatic_sun.month == 12
@@ -1203,9 +1194,7 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
         1,
     ]
     assert source2._source_instance.ambient_properties.HasField("cie_general_properties")
-    tmp_cie_general_prop = (
-        source2._source_instance.ambient_properties.cie_general_properties
-    )
+    tmp_cie_general_prop = source2._source_instance.ambient_properties.cie_general_properties
     assert tmp_cie_general_prop.north_direction == [
         0,
         1,
@@ -1236,10 +1225,11 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     assert source2._source_template.ambient.HasField("cie_general")
     assert source2._source_template.ambient.cie_general.luminance == 1000
     assert source2.cie_type == CieType.cloudy_slight_brightening
-    assert (source2._source_template.ambient.cie_general.cie_type
+    assert (
+        source2._source_template.ambient.cie_general.cie_type
         == proto_enum.cloudy_slight_brightening
     )
-   
+
     source2.delete()
 
     # test parameters
@@ -1261,9 +1251,7 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
         feature_type=SourceAmbientCieStandardGeneralSky,
         parameters=new_default_parameters,
     )
-    tmp_cie_general_prop = (
-        source3._source_instance.ambient_properties.cie_general_properties
-    )
+    tmp_cie_general_prop = source3._source_instance.ambient_properties.cie_general_properties
     assert tmp_cie_general_prop.north_direction == [
         0,
         1,
@@ -1274,13 +1262,18 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     source3.delete()
 
     # test loading
-    p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceCieStandardGeneralSkyTests.speos")
+    p = Project(
+        speos, path=Path(test_path) / "Source.speos" / "SourceCieStandardGeneralSkyTests.speos"
+    )
     source4 = p.find(
-        name="CIE Standard General Sky.1", name_regex=True, feature_type=SourceAmbientCieStandardGeneralSky
+        name="CIE Standard General Sky.1",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardGeneralSky,
     )[0]
     assert source4.luminance == 1000
     assert source4.cie_type == CieType.cloudy_slight_brightening
-    assert (source4._source_template.ambient.cie_general.cie_type
+    assert (
+        source4._source_template.ambient.cie_general.cie_type
         == proto_enum.cloudy_slight_brightening
     )
     assert source4.north_direction == [0, 1, 0]
@@ -1291,13 +1284,13 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     assert source4.set_sun_automatic().hour == 10
 
     source5 = p.find(
-        name="CIE Standard General Sky.2", name_regex=True, feature_type=SourceAmbientCieStandardGeneralSky
+        name="CIE Standard General Sky.2",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardGeneralSky,
     )[0]
     assert source5.luminance == 1234
     assert source5.cie_type == CieType.cloudy_obscured_sun
-    assert (source5._source_template.ambient.cie_general.cie_type
-        == proto_enum.cloudy_obscured_sun
-    )
+    assert source5._source_template.ambient.cie_general.cie_type == proto_enum.cloudy_obscured_sun
     assert source5.north_direction == [1, 0, 0]
     assert source5.set_sun_manual().direction == [1, 0, 0]
 

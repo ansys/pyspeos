@@ -36,10 +36,10 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
-    AmbientCieStandardGeneralSkyParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
@@ -81,10 +81,10 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import (
     BaseSource,
+    SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
-    SourceAmbientCieStandardGeneralSky,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
