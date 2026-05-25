@@ -1359,7 +1359,6 @@ class SimulationInverse(BaseSimulation):
                 default_parameters.minimum_energy_percentage
             )
             self.timeline = default_parameters.timeline
-            self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
@@ -1468,10 +1467,10 @@ class SimulationInverse(BaseSimulation):
         -------
         Optional[float]
             the start time (s) of the simulation timeline,
-            or None if timeline is disabled
+            or None to disable timeline
         
         """
-        if hasattr(self._job.inverse_mc_simulation_properties, "timeline"):
+        if self._job.inverse_mc_simulation_properties.HasField("timeline"):
             return self._job.inverse_mc_simulation_properties.timeline.start_time
         else:
             return None

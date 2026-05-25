@@ -193,6 +193,9 @@ def test_create_inverse(speos: Speos):
     assert sim1.automatic_save_frequency == 1800
     assert sim1.sensor_paths == []
     assert sim1.source_paths == []
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == False
+    assert sim1.timeline == False
+    assert sim1.start_time == None
 
     # Change value
     # geom_distance_tolerance
@@ -276,6 +279,38 @@ def test_create_inverse(speos: Speos):
     #    ]
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
+
+    # timeline: enabled defaults
+    sim1.timeline = True
+    assert sim1.timeline == True
+    assert sim1.start_time == 0.0
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.0
+
+    # timeline: adjusting start_time
+    sim1.start_time = 0.1
+    assert sim1.start_time == 0.1
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.1
+
+    # timeline: disabling timeline clears field
+    sim1.timeline = False
+    assert sim1.timeline == False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == False
+    assert sim1.start_time == None
+
+    # timeline: setting start time re-enables field
+    sim1.start_time = 0.2
+    assert sim1.timeline == True
+    assert sim1.start_time == 0.2
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.2
+
+    # timeline: setting start time to None removes field
+    sim1.start_time = None
+    assert sim1.timeline == False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == False
+    assert sim1.start_time == None
+
 
     sim1.delete()
 
