@@ -35,6 +35,7 @@ from pathlib import Path
 
 import pytest
 
+from ansys.speos.core import launcher
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
 from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
@@ -90,6 +91,7 @@ def speos():
         channel = default_docker_channel(port=SERVER_PORT, message_size=message_size)
     else:
         channel = default_local_channel(port=SERVER_PORT, message_size=message_size)
+    #speos = launcher.launch_local_speos_rpc_server(version="261")
     speos = Speos(
         logging_level=logging.DEBUG,
         logging_file=log_file_path,

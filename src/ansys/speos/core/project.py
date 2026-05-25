@@ -39,6 +39,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
+    AmbientCieStandardGeneralSkyParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
@@ -83,6 +84,7 @@ from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientCieStandardGeneralSky,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -339,6 +341,7 @@ class Project:
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
+                AmbientCieStandardGeneralSkyParameters,
                 DisplayParameters,
             ]
         ] = None,
@@ -349,6 +352,7 @@ class Project:
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
+        SourceAmbientCieStandardGeneralSky,
         SourceDisplay,
     ]:
         """Create a new Source feature.
@@ -504,6 +508,21 @@ class Project:
                         f"{str(type(parameters))} instead of AmbientUniformParameters"
                     )
                 feature = SourceAmbientUniform(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientCieStandardGeneralSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardGeneralSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardGeneralSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientCieStandardGeneralSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardGeneralSky(
                     project=self,
                     name=name,
                     description=description,
@@ -1291,6 +1310,13 @@ class Project:
                     )
                 elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
                     src_feat = SourceAmbientUniform(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("cie_general_properties"):
+                    src_feat = SourceAmbientCieStandardGeneralSky(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
