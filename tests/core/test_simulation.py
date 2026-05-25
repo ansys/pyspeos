@@ -311,7 +311,6 @@ def test_create_inverse(speos: Speos):
     assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") == False
     assert sim1.start_time == None
 
-
     sim1.delete()
 
 

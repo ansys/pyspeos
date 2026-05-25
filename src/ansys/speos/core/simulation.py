@@ -1437,16 +1437,16 @@ class SimulationInverse(BaseSimulation):
 
     @property
     def timeline(self) -> bool:
-        """switch to enable/disable timeline for the simulation
-        
+        """Switch to enable/disable timeline for the simulation
+
         Returns
-        --------
+        -------
         bool
             the state of timeline activation
 
         """
         return self._job.inverse_mc_simulation_properties.HasField("timeline")
-    
+
     @timeline.setter
     def timeline(self, value: bool) -> None:
         props = self._job.inverse_mc_simulation_properties
@@ -1458,30 +1458,28 @@ class SimulationInverse(BaseSimulation):
         else:
             props.ClearField("timeline")
 
-
     @property
     def start_time(self) -> Optional[float]:
-        """timeline start time (s)
-        
+        """Timeline start time (s)
+
         Returns
         -------
         Optional[float]
             the start time (s) of the simulation timeline,
             or None to disable timeline
-        
+
         """
         if self._job.inverse_mc_simulation_properties.HasField("timeline"):
             return self._job.inverse_mc_simulation_properties.timeline.start_time
         else:
             return None
-        
+
     @start_time.setter
     def start_time(self, value: Optional[float]) -> None:
         if value is None:
             self._job.inverse_mc_simulation_properties.ClearField("timeline")
         else:
             self._job.inverse_mc_simulation_properties.timeline.start_time = value
-        
 
     @property
     def dispersion(self) -> bool:
