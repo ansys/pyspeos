@@ -41,11 +41,12 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
-    AmbientCieStandardGeneralSkyParameters,
     AmbientUniformParameters,
     AutomaticSunParameters,
+    CieType,
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
@@ -61,7 +62,6 @@ from ansys.speos.core.generic.parameters import (
     SpectrumLibraryParameters,
     SpectrumType,
     SurfaceSourceParameters,
-    CieType,
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
@@ -2978,11 +2978,10 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         CieType
 
         """
-        
         proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
 
         value = self._source_template.ambient.cie_general.cie_type
-        name = proto_enum.Name(value)   # int → string
+        name = proto_enum.Name(value)  # int → string
 
         return CieType(name)
 
@@ -2991,9 +2990,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
 
         if not isinstance(value, CieType):
-            raise TypeError(
-                f"cie_type must be a CieType enum, got {type(value)}"
-            )
+            raise TypeError(f"cie_type must be a CieType enum, got {type(value)}")
 
         try:
             enum_value = proto_enum.Value(value.value)
@@ -3001,7 +2998,6 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
             raise ValueError(f"Invalid CieType value: {value}")
 
         self._source_template.ambient.cie_general.cie_type = enum_value
-
 
     @property
     def zenith_direction(self) -> List[float]:
@@ -3108,9 +3104,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
 
         """
         cie_properties = self._source_instance.ambient_properties.cie_general_properties
-        if self._type is None and cie_properties.sun_axis_system.HasField(
-            "automatic_sun"
-        ):
+        if self._type is None and cie_properties.sun_axis_system.HasField("automatic_sun"):
             self._type = BaseSourceAmbient.AutomaticSun(
                 cie_properties.sun_axis_system.automatic_sun,
                 default_parameters=None,
@@ -3154,7 +3148,6 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = cie_properties.sun_axis_system.manual_sun
         return self._type
-
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):

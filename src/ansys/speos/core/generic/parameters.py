@@ -791,6 +791,7 @@ class CieType(str, Enum):
     cloudless_turbid_corona = "cloudless_turbid_corona"
     white_blue_broad = "white_blue_broad"
 
+
 @dataclass
 class AmbientCieStandardGeneralSkyParameters:
     """Ambient CIE Standard General Sky Parameters."""
@@ -807,6 +808,7 @@ class AmbientCieStandardGeneralSkyParameters:
         default_factory=lambda: AutomaticSunParameters()
     )
     """Sun definition, automatic or manual"""
+
 
 @dataclass
 class AmbientNaturalLightParameters:
