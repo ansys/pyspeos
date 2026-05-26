@@ -764,7 +764,12 @@ class BaseSimulation:
                 stop_condition_error = True
         elif self._job.HasField("inverse_mc_simulation_properties"):
             job_props = self._job.inverse_mc_simulation_properties
-            if not job_props.HasField("optimized_propagation_none"):
+            has_duration = job_props.HasField("stop_condition_duration")
+            has_passes = (
+                job_props.HasField("optimized_propagation_none")
+                and job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+            )
+            if not (has_duration or has_passes):
                 stop_condition_error = True
         elif self._job.HasField("virtualbsdfbench_simulation_properties"):
             job_props = self._job.virtualbsdfbench_simulation_properties
@@ -789,8 +794,7 @@ class BaseSimulation:
                 self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
             elif self._job.HasField("virtualbsdfbench_simulation_properties"):
                 default_sim_paras = VirtualBSDFSimulationParameters()
-                self.stop_condition_rays_number = default_sim_paras.stop_condition_ray_number
-            self.commit()
+                self.stop_condition_ray_number = default_sim_paras.stop_condition_ray_number
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
