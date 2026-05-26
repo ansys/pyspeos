@@ -709,6 +709,7 @@ class BaseSimulation:
             List of simulation results or 2 lists of simulation results
              and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.CPU
 
         if threads_number is not None:
@@ -738,6 +739,7 @@ class BaseSimulation:
             List of simulation results or 2 lists of simulation results
              and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
         if export_vtp:
@@ -749,6 +751,46 @@ class BaseSimulation:
         """Stop the simulation computation."""
         if self.job_link is not None:
             self.job_link.stop()
+
+    def _check_job(self) -> None:
+        """Check job stop conditions."""
+        stop_condition_error = False
+        if self._job.HasField("direct_mc_simulation_properties"):
+            job_props = self._job.direct_mc_simulation_properties
+            if not (
+                job_props.HasField("stop_condition_duration")
+                or job_props.HasField("stop_condition_rays_number")
+            ):
+                stop_condition_error = True
+        elif self._job.HasField("inverse_mc_simulation_properties"):
+            job_props = self._job.inverse_mc_simulation_properties
+            if not job_props.HasField("optimized_propagation_none"):
+                stop_condition_error = True
+        elif self._job.HasField("virtualbsdfbench_simulation_properties"):
+            job_props = self._job.virtualbsdfbench_simulation_properties
+            if not job_props.HasField("stop_condition_rays_number"):
+                stop_condition_error = True
+
+        if stop_condition_error:
+            warnings.warn(
+                "Limitation : In current RPC version, simulation stop condition"
+                " information is lost when loading speos file, please define stop "
+                "condition for simulation. Default simulation stop condition has "
+                "been applied in order to run simulation.",
+                stacklevel=2,
+            )
+            if self._job.HasField("direct_mc_simulation_properties"):
+                default_sim_paras = DirectSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_rays_number = default_sim_paras.stop_condition_rays_number
+            elif self._job.HasField("inverse_mc_simulation_properties"):
+                default_sim_paras = InverseSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
+            elif self._job.HasField("virtualbsdfbench_simulation_properties"):
+                default_sim_paras = VirtualBSDFSimulationParameters()
+                self.stop_condition_rays_number = default_sim_paras.stop_condition_ray_number
+            self.commit()
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
