@@ -772,10 +772,9 @@ class BaseSimulation:
 
         if stop_condition_error:
             warnings.warn(
-                "Limitation : In current RPC version, simulation stop condition"
-                " information is lost when loading speos file, please define stop "
-                "condition for simulation. Default simulation stop condition has "
-                "been applied in order to run simulation.",
+                "In the current RPC version, simulation stop condition information may be lost "
+                "when loading a .speos file. Please define a stop condition explicitly. Default "
+                "stop conditions have been applied so the simulation can run.",
                 stacklevel=2,
             )
             if self._job.HasField("direct_mc_simulation_properties"):

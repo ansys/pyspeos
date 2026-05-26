@@ -1751,9 +1751,9 @@ def test_check_job_no_stop_condition_direct(speos: Speos):
 
     Uses Prism.speos to load a direct simulation. After loading, the job has no
     ``direct_mc_simulation_properties`` set. Setting ``automatic_save_frequency`` creates the
-    properties field without any stop condition, simulating the scenario described in the
-    ``_check_job`` docstring. Verifies that a ``UserWarning`` is emitted and default stop
-    conditions are then applied.
+    properties field without any stop condition, simulating the load/commit scenario where job
+    properties are created without stop conditions. Verifies that a ``UserWarning`` is emitted and
+    default stop conditions are then applied.
     """
     p = Project(
         speos=speos,
@@ -1820,8 +1820,8 @@ def test_check_job_no_stop_condition_inverse(speos: Speos):
 def test_check_job_with_stop_conditions_no_warning(speos: Speos):
     """Test _check_job does not warn when simulations already have stop conditions set.
 
-    Uses Prism.speos (direct), Inverse_simu.speos (inverse), and nx_vbb_export.speos
-    (virtualBSDF) and ensures no warning is emitted when stop conditions are present.
+    Uses Prism.speos (direct) and Inverse_simu.speos (inverse) and ensures no warning is emitted
+    when stop conditions are present.
     """
     import warnings
 
