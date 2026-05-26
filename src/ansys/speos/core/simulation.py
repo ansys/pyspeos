@@ -765,10 +765,9 @@ class BaseSimulation:
         elif self._job.HasField("inverse_mc_simulation_properties"):
             job_props = self._job.inverse_mc_simulation_properties
             has_duration = job_props.HasField("stop_condition_duration")
-            has_passes = (
-                job_props.HasField("optimized_propagation_none")
-                and job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
-            )
+            has_passes = job_props.HasField(
+                "optimized_propagation_none"
+            ) and job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
             if not (has_duration or has_passes):
                 stop_condition_error = True
         elif self._job.HasField("virtualbsdfbench_simulation_properties"):
