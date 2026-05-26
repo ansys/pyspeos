@@ -1437,7 +1437,7 @@ class SimulationInverse(BaseSimulation):
 
     @property
     def timeline(self) -> bool:
-        """Switch to enable/disable timeline for the simulation
+        """Switch to enable/disable timeline for the simulation.
 
         Returns
         -------
@@ -1460,7 +1460,7 @@ class SimulationInverse(BaseSimulation):
 
     @property
     def start_time(self) -> Optional[float]:
-        """Timeline start time (s)
+        """Timeline start time (s).
 
         Returns
         -------
