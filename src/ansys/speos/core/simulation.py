@@ -766,7 +766,7 @@ class BaseSimulation:
             job_props = self._job.inverse_mc_simulation_properties
             if not (
                 job_props.HasField("stop_condition_duration")
-                or job_props.HasField("optimized_propagation_none")
+                or job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
             ):
                 stop_condition_error = True
 
