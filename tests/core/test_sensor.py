@@ -38,6 +38,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorimetricParameters,
     DimensionsParameters,
+    ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
     IntensitySensorDimensionsXAsMeridianParameters,
@@ -64,6 +65,7 @@ from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorImmersive,
     SensorIrradiance,
     SensorRadiance,
     SensorXMPIntensity,
@@ -2657,3 +2659,227 @@ def test_create_by_parameters(speos: Speos):
                 )
             elif para.integration_type == IntegrationTypes.radial:
                 assert s.set_type_radiometric()._integration_type.lower() == para.integration_type
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_immersive_sensor(speos: Speos):
+    """Test creation of an immersive sensor with default parameters."""
+    p = Project(speos=speos)
+    default_params = ImmersiveSensorParameters()
+
+    # Create with default parameters
+    sensor1 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
+    assert isinstance(sensor1, SensorImmersive)
+
+    # Verify defaults from parameters dataclass
+    assert sensor1.sampling == default_params.sampling
+    assert sensor1.integration_angle == default_params.integration_angle
+    assert sensor1.wavelengths_range.start == default_params.wavelengths_range.start
+    assert sensor1.wavelengths_range.end == default_params.wavelengths_range.end
+    assert sensor1.wavelengths_range.sampling == default_params.wavelengths_range.sampling
+    assert list(sensor1.axis_system) == list(default_params.axis_system)
+    assert sensor1.exclude_front == default_params.exclude_front
+    assert sensor1.exclude_back == default_params.exclude_back
+    assert sensor1.exclude_left == default_params.exclude_left
+    assert sensor1.exclude_right == default_params.exclude_right
+    assert sensor1.exclude_top == default_params.exclude_top
+    assert sensor1.exclude_bottom == default_params.exclude_bottom
+
+    # Commit and verify template is stored on server
+    assert sensor1.sensor_template_link is None
+    assert len(p.scene_link.get().sensors) == 0
+    sensor1.commit()
+    assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert len(p.scene_link.get().sensors) == 1
+    assert p.scene_link.get().sensors[0].HasField("immersive_properties")
+
+    # Verify template values on the server
+    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    assert tmpl.sampling == default_params.sampling
+    assert tmpl.integration_angle == default_params.integration_angle
+    assert tmpl.wavelengths_range.w_start == default_params.wavelengths_range.start
+    assert tmpl.wavelengths_range.w_end == default_params.wavelengths_range.end
+    assert tmpl.wavelengths_range.w_sampling == default_params.wavelengths_range.sampling
+    assert tmpl.exclude_faces.front == default_params.exclude_front
+    assert tmpl.exclude_faces.back == default_params.exclude_back
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_immersive_sensor_custom_parameters(speos: Speos):
+    """Test creation of an immersive sensor with custom parameters."""
+    p = Project(speos=speos)
+
+    custom_params = ImmersiveSensorParameters(
+        sampling=128,
+        integration_angle=10.0,
+        wavelengths_range=WavelengthsRangeParameters(start=380, end=780, sampling=21),
+        axis_system=[1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        layer_type=LayerTypes.by_source,
+        exclude_front=True,
+        exclude_back=False,
+        exclude_left=True,
+        exclude_right=False,
+        exclude_top=True,
+        exclude_bottom=False,
+    )
+
+    sensor1 = p.create_sensor(
+        name="Immersive.Custom",
+        feature_type=SensorImmersive,
+        parameters=custom_params,
+    )
+    assert isinstance(sensor1, SensorImmersive)
+
+    # Verify custom template values (local)
+    assert sensor1.sampling == 128
+    assert sensor1.integration_angle == 10.0
+    assert sensor1.wavelengths_range.start == 380
+    assert sensor1.wavelengths_range.end == 780
+    assert sensor1.wavelengths_range.sampling == 21
+    assert list(sensor1.axis_system) == [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1.layer == LayerTypes.by_source
+    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_source")
+    assert sensor1.exclude_front is True
+    assert sensor1.exclude_back is False
+    assert sensor1.exclude_left is True
+    assert sensor1.exclude_right is False
+    assert sensor1.exclude_top is True
+    assert sensor1.exclude_bottom is False
+
+    sensor1.commit()
+
+    # Verify values on the server after commit
+    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    assert tmpl.sampling == 128
+    assert tmpl.integration_angle == 10.0
+    assert tmpl.wavelengths_range.w_start == 380
+    assert tmpl.wavelengths_range.w_end == 780
+    assert tmpl.wavelengths_range.w_sampling == 21
+    assert tmpl.exclude_faces.front is True
+    assert tmpl.exclude_faces.left is True
+    assert tmpl.exclude_faces.top is True
+    assert tmpl.exclude_faces.back is False
+    assert tmpl.exclude_faces.right is False
+    assert tmpl.exclude_faces.bottom is False
+
+    scene_inst = p.scene_link.get().sensors[0]
+    assert scene_inst.HasField("immersive_properties")
+    assert list(scene_inst.immersive_properties.axis_system) == [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert scene_inst.immersive_properties.HasField("layer_type_source")
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_immersive_sensor_setters(speos: Speos):
+    """Test property setters of the immersive sensor."""
+    p = Project(speos=speos)
+
+    sensor1 = p.create_sensor(name="Immersive.Setters", feature_type=SensorImmersive)
+
+    # Modify via setters
+    sensor1.sampling = 256
+    sensor1.integration_angle = 7.5
+    wl = sensor1.set_wavelengths_range()
+    wl.start = 420
+    wl.end = 720
+    wl.sampling = 15
+    sensor1.axis_system = [5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.exclude_back = True
+    sensor1.exclude_bottom = True
+
+    assert sensor1.sampling == 256
+    assert sensor1.integration_angle == 7.5
+    assert sensor1.wavelengths_range.start == 420
+    assert sensor1.wavelengths_range.end == 720
+    assert sensor1.wavelengths_range.sampling == 15
+    assert list(sensor1.axis_system) == [5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1.exclude_back is True
+    assert sensor1.exclude_bottom is True
+    # Untouched faces should remain False
+    assert sensor1.exclude_front is False
+    assert sensor1.exclude_left is False
+    assert sensor1.exclude_right is False
+    assert sensor1.exclude_top is False
+
+    sensor1.commit()
+    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    assert tmpl.sampling == 256
+    assert tmpl.integration_angle == 7.5
+    assert tmpl.exclude_faces.back is True
+    assert tmpl.exclude_faces.bottom is True
+    assert tmpl.exclude_faces.front is False
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_immersive_sensor_layer_types(speos: Speos):
+    """Test layer type setters of the immersive sensor."""
+    p = Project(speos=speos)
+
+    sensor1 = p.create_sensor(name="Immersive.Layers", feature_type=SensorImmersive)
+
+    # Default: layer_type_none
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_none")
+
+    # Switch to by_source
+    sensor1.set_layer_type_source()
+    assert sensor1.layer == LayerTypes.by_source
+    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_source")
+
+    sensor1.commit()
+    scene_inst = p.scene_link.get().sensors[0]
+    assert scene_inst.immersive_properties.HasField("layer_type_source")
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_immersive_sensor_commit_reset_delete(speos: Speos):
+    """Test commit, reset, and delete lifecycle of immersive sensor."""
+    p = Project(speos=speos)
+
+    sensor1 = p.create_sensor(name="Immersive.Lifecycle", feature_type=SensorImmersive)
+    default_sampling = ImmersiveSensorParameters().sampling
+
+    # Before commit: no server entry
+    assert sensor1.sensor_template_link is None
+    assert len(p.scene_link.get().sensors) == 0
+
+    sensor1.commit()
+    assert sensor1.sensor_template_link is not None
+    assert len(p.scene_link.get().sensors) == 1
+
+    # Modify locally, not committed
+    sensor1.sampling = 512
+    assert sensor1.sampling == 512
+    assert sensor1.sensor_template_link.get().immersive_sensor_template.sampling == default_sampling
+
+    # Reset restores server values
+    sensor1.reset()
+    assert sensor1.sampling == default_sampling
+
+    # Delete clears server entries
+    sensor1.delete()
+    assert sensor1.sensor_template_link is None
+    assert sensor1._unique_id is None
+    assert len(p.scene_link.get().sensors) == 0
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_immersive_sensor_wrong_parameters(speos: Speos):
+    """Test that passing wrong parameter type raises TypeError."""
+    p = Project(speos=speos)
+
+    with pytest.raises(TypeError, match="ImmersiveSensorParameters"):
+        p.create_sensor(
+            name="Immersive.WrongParam",
+            feature_type=SensorImmersive,
+            parameters=IrradianceSensorParameters(),
+        )
