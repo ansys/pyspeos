@@ -5448,7 +5448,7 @@ class SensorImmersive(BaseSensor):
     """Sensor feature: Immersive.
 
     An immersive sensor wraps the observer inside a cube and collects light from all six faces.
-    By default, a sampling of 64 pixels per face, an integration angle of 5 degrees, a spectral
+    By default, a sampling of 600 pixels per face, an integration angle of 5 degrees, a spectral
     range from 400 nm to 700 nm (sampling 13), no layer separation, and no face exclusions are
     chosen.
 
@@ -5537,7 +5537,7 @@ class SensorImmersive(BaseSensor):
         Parameters
         ----------
         value : int
-            Pixel count per face. By default, ``64``.
+            Pixel count per face. By default, ``600``.
 
         Returns
         -------

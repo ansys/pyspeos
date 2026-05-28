@@ -545,7 +545,7 @@ class ImmersiveSensorParameters:
     """Spectral range."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
-    layer_type: Union[LayerTypes, str] = LayerTypes.none
+    layer_type: LayerTypes = LayerTypes.none
     """Layer separation type."""
     exclude_front: bool = False
     """Exclude front face."""
