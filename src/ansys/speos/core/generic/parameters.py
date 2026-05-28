@@ -530,6 +530,9 @@ class ImmersiveSensorParameters:
     exclude_bottom : bool, optional
         Exclude bottom face.
         By default, ``False``.
+    interocular_distance : float, optional
+         Distance between the left and right eyes, in millimeters.
+         By default, None.
     """
 
     sampling: int = 600
