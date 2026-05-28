@@ -498,7 +498,7 @@ class ImmersiveSensorParameters:
     ----------
     sampling : int, optional
         Horizontal and vertical number of pixels for a face.
-        By default, ``64``.
+        By default, ``600``.
     integration_angle : float, optional
         Integration angle in degrees for direct simulations.
         By default, ``5.0``.
@@ -532,7 +532,7 @@ class ImmersiveSensorParameters:
         By default, ``False``.
     """
 
-    sampling: int = 64
+    sampling: int = 600
     """Horizontal and vertical pixel count per face."""
     integration_angle: float = 5.0
     """Integration angle in degrees."""
@@ -556,6 +556,8 @@ class ImmersiveSensorParameters:
     """Exclude top face."""
     exclude_bottom: bool = False
     """Exclude bottom face."""
+    interocular_distance: Optional[float] = None
+    """Distance between viewpoints in mm."""
 
 
 # =============================================================================

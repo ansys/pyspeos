@@ -5502,6 +5502,7 @@ class SensorImmersive(BaseSensor):
         if default_parameters:
             self.sampling = default_parameters.sampling
             self.integration_angle = default_parameters.integration_angle
+            self.stereo_interocular_distance = default_parameters.interocular_distance
             _wl = self.set_wavelengths_range()
             _wl.start = default_parameters.wavelengths_range.start
             _wl.end = default_parameters.wavelengths_range.end
@@ -5569,6 +5570,29 @@ class SensorImmersive(BaseSensor):
     def integration_angle(self, value: float) -> None:
         self._sensor_template.immersive_sensor_template.integration_angle = float(value)
 
+    @property
+    def stereo_interocular_distance(self) -> float:
+        """Stereo interocular distance in mm.
+
+        Parameters
+        ----------
+        value : None | float
+            Stereo interocular distance in mm. By default, None.
+
+        Returns
+        -------
+        float
+            Current stereo interocular distance.
+        """
+        return self._sensor_template.immersive_sensor_template.stereo.interocular_distance
+
+    @stereo_interocular_distance.setter
+    def stereo_interocular_distance(self, value: None | float) -> None:
+        if value is not None:
+            self._sensor_template.immersive_sensor_template.stereo.interocular_distance = value
+        else:
+            self._sensor_template.immersive_sensor_template.ClearField("stereo")
+
     def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
         """Configure the wavelength range of the sensor.
 
@@ -5581,17 +5605,6 @@ class SensorImmersive(BaseSensor):
             wavelengths_range=self._sensor_template.immersive_sensor_template.wavelengths_range,
             stable_ctr=True,
         )
-
-    @property
-    def wavelengths_range(self) -> BaseSensor.WavelengthsRange:
-        """Wavelength range of the sensor (read-only convenience property).
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-            Wavelength range object.
-        """
-        return self.set_wavelengths_range()
 
     @property
     def exclude_front(self) -> bool:
