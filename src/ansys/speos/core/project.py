@@ -897,8 +897,8 @@ class Project:
         ----------
         name: str
             name of the lightbox import
-        lightbox: Optional[ansys.speos.core.component.LightBoxFile] = None
-            LightBox file information (file path and password) to import.
+        lightbox: Optional[ansys.speos.core.component.LightBoxFileInstance] = None
+            LightBoxFileInstance (file path, password, and axis_system) to import.
             If None, an empty lightbox will be created.
 
         Returns

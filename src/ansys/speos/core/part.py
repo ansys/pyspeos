@@ -32,7 +32,6 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.kernel import SceneLink
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.part import ProtoPart
 import ansys.speos.core.project as project
@@ -502,7 +501,6 @@ class Part:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        scene_link: Optional[SceneLink] = None,
     ) -> None:
         self._project = project
         self._name = name
