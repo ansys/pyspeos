@@ -62,9 +62,9 @@ class LightBoxFileInstance:
     Parameters
     ----------
     file : pathlib.Path | str
-        LightBox file to load.
+        SpeosLightBox file to load.
     password : str, optional
-        Password for the imported LightBox file.
+        Password for the imported SpeosLightBox file.
         By default, ``None``, which reads ``PYSPEOS_ENCRYPTED_PASSWORD`` environment variable
         or falls back to an empty string.
     axis_system : list[float], optional

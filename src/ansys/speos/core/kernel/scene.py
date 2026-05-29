@@ -124,12 +124,10 @@ class SceneLink(CrudItem):
         self, file_uri: Path | str, password: str | None = None, black_boxed: bool = False
     ) -> None:
         """
-        Save speos file to fill the scene.
+        Save the scene into SpeosLightBox file.
 
         Parameters
         ----------
-        black_boxed
-
         file_uri: Path | str
             File to be saved.
         password: str | None, optional
