@@ -263,7 +263,9 @@ source5.delete()
 
 # +
 source_thermal = p.create_source(name="Thermic.1", feature_type=SourceThermic)
-source_thermal.set_emissive_faces(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+source_thermal.set_emissive_faces(
+    geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
+)
 print(source_thermal)
 
 source_thermal.delete()
