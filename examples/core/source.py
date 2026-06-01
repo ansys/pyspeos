@@ -11,7 +11,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import Face, Project, Speos, launcher
+from ansys.speos.core import Face, GeoRef, Project, Speos, launcher
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
