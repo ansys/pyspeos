@@ -538,6 +538,7 @@ class BaseSource:
     ) -> None:
         self._project = project
         self._name = name
+        self._source_path = self._name
         self._unique_id = None
         self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
@@ -638,10 +639,8 @@ class BaseSource:
                 Flux object
 
             """
-            if self._flux_type is None or not isinstance(
-                self._flux_type, source_pb2.SourceTemplate.Luminous
-            ):
-                self._flux_type = self._flux.luminous_flux
+            self._flux.luminous_flux.SetInParent()
+            self._flux_type = self._flux.luminous_flux
             return self
 
         def set_radiant(self) -> BaseSource.Flux:
@@ -653,10 +652,8 @@ class BaseSource:
                 Flux object
 
             """
-            if self._flux_type is None or not isinstance(
-                self._flux_type, source_pb2.SourceTemplate.Radiant
-            ):
-                self._flux_type = self._flux.radiant_flux
+            self._flux.radiant_flux.SetInParent()
+            self._flux_type = self._flux.radiant_flux
             return self
 
         @property
@@ -688,18 +685,17 @@ class BaseSource:
 
         @value.setter
         def value(self, value: float) -> None:
-            if self._flux_type is None:
+            if self._flux.HasField("radiant_flux"):
+                self._flux_type = self._flux.radiant_flux
+                self._flux.radiant_flux.radiant_value = value
+            elif self._flux.HasField("luminous_flux"):
+                self._flux_type = self._flux.luminous_flux
                 self._flux.luminous_flux.luminous_value = value
+            elif self._flux.HasField("luminous_intensity_flux"):
+                self._flux_type = self._flux.luminous_intensity_flux
+                self._flux.luminous_intensity_flux.luminous_intensity_value = value
             else:
-                match self._flux_type.__name__:
-                    case "Luminous":
-                        self._flux.luminous_flux.luminous_value = value
-                    case "Radiant":
-                        self._flux.radiant_flux.radiant_value = value
-                    case "LuminousIntensity":
-                        self._flux.luminous_intensity_flux.luminous_intensity_value = value
-                    case _:
-                        raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
+                raise ValueError(f"Unsupported flux type: {self._flux.__name__}")
 
     class _Spectrum:
         def __init__(
@@ -1685,6 +1681,7 @@ class SourceSurface(BaseSource):
                 Flux object
 
             """
+            self._flux.luminous_intensity_flux.SetInParent()
             self._flux_type = self._flux.luminous_intensity_flux
             return self
 

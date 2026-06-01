@@ -33,6 +33,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
@@ -57,6 +58,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
+from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -113,11 +115,13 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
-    path : str
-        The project will be loaded from this speos file.
-        By default, ``""``, means create from empty.
+    path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = None
+        The project will be loaded from this speos file or lightbox instance.
+       By default, ``None``, means create from empty.
+    context : Optional[str]
+        For internal use only.
 
     Attributes
     ----------
@@ -125,16 +129,36 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
-        self.client = speos.client
+    def __init__(
+        self,
+        speos: Union[Speos, SpeosClient],
+        path: Optional[Union[str, Path, LightBoxFileInstance]] = "",
+        context: Optional[str] = None,
+    ):
+        match speos:
+            case Speos():
+                self.client = speos.client
+            case SpeosClient():
+                self.client = speos
+            case _:
+                raise TypeError(f"Incorrect type for speos: {type(speos)}")
         """Speos instance client."""
-        self.scene_link = speos.client.scenes().create()
+        self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
-        path = str(path)
-        if len(path):
-            self.scene_link.load_file(path)
-            self._fill_features()
+        match path:
+            case None | "":
+                pass
+            case str() | Path():
+                self.scene_link.load_file(str(path))
+                self._fill_features(context=context)
+            case LightBoxFileInstance():
+                self.scene_link.load_file(file_uri=str(path.file), password=path.password)
+                scene_data = self.scene_link.get()
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                    self._fill_features(context=context)
+            case _:
+                raise TypeError(f"Unsupported path type: {type(path)}")
 
     def remove_mesh_protection(self):
         """Remove mesh protection from the project loaded from *.speos file.
@@ -895,6 +919,38 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_lightbox(
+        self,
+        name: str,
+        lightbox: Optional[LightBoxFileInstance] = None,
+    ) -> LightBox:
+        """Create lightbox import features.
+
+        Parameters
+        ----------
+        name: str
+            name of the lightbox import
+        lightbox: Optional[ansys.speos.core.component.LightBoxFileInstance] = None
+            LightBoxFileInstance (file path, password, and axis_system) to import.
+            If None, an empty lightbox will be created.
+
+        Returns
+        -------
+        ansys.speos.core.component.LightBox
+            Lightbox feature.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
+            raise ValueError(msg)
+        feature = LightBox(
+            parent_project=self,
+            name=name,
+            instance=lightbox,
+        )
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -918,6 +974,7 @@ class Project:
             SimulationInverse,
             SimulationInteractive,
             SimulationVirtualBSDF,
+            LightBox,
             part.Part,
             body.Body,
             face.Face,
@@ -953,7 +1010,9 @@ class Project:
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
-        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.component.LightBox, \
+        ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
         ansys.speos.core.ground_plane.GroundPlane]]
@@ -1087,6 +1146,7 @@ class Project:
         # Delete each feature that was created
         for f in self._features:
             f.delete()
+            f = None
         self._features.clear()
 
         return self
@@ -1192,6 +1252,8 @@ class Project:
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
+            if not b_data.face_guids:
+                continue
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
@@ -1240,13 +1302,25 @@ class Project:
             if ssr_inst.metadata["UniqueId"] == "":
                 ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
+        for scene_inst in scene_data.scenes:
+            if scene_inst.metadata["UniqueId"] == "":
+                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
         for sim_inst in scene_data.simulations:
+            # Bug fix for Multi source blackbox issue
+            sources = []
+            for source in sim_inst.source_paths:
+                if source not in sources:
+                    sources.append(source)
+            sim_inst.source_paths[:] = sources
+            # end bug fix for multi source blackbox issue to be removed when 261 is no longer
+            # supported
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         self.scene_link.set(data=scene_data)
 
-    def _fill_features(self):
+    def _fill_features(self, context: Optional[str] = None):
         """Fill project features from a scene."""
         self._add_unique_ids()
 
@@ -1330,6 +1404,7 @@ class Project:
                         default_parameters=None,
                     )
             if src_feat is not None:
+                src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
 
         # ground plane
@@ -1387,6 +1462,14 @@ class Project:
                 )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
+
+        for scene_inst in scene_data.scenes:
+            lightbox_scene = LightBox(
+                parent_project=self,
+                name=scene_inst.name,
+                instance=scene_inst,
+            )
+            self._features.append(lightbox_scene)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
@@ -1525,6 +1608,7 @@ class Project:
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
+                LightBox,
             ),
         ):
             return plotter
@@ -1532,6 +1616,27 @@ class Project:
         ray_path_scale_factor = 0.2
 
         match speos_feature:
+            case LightBox():
+                for data in speos_feature.visual_data:
+                    if isinstance(data.data, list):
+                        for visual_ray in data.data:
+                            tmp = visual_ray._VisualArrow__data
+                            visual_ray._VisualArrow__data.points[1] = (
+                                ray_path_scale_factor
+                                * scene_seize
+                                * (tmp.points[1] - tmp.points[0])
+                                + tmp.points[0]
+                            )
+                            plotter.plot(visual_ray.data, color=visual_ray.color)
+                    else:
+                        plotter.plot(
+                            data.data,
+                            show_edges=True,
+                            line_width=2,
+                            edge_color="red",
+                            color="orange",
+                            opacity=0.5,
+                        )
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     display_ray = visual_ray.data.copy(deep=True)
@@ -1552,8 +1657,13 @@ class Project:
                     opacity=0.5,
                 )
 
-        if speos_feature.visual_data.coordinates is not None:
-            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+        visual_coordinate_data = (
+            speos_feature.visual_data.coordinates
+            if not isinstance(speos_feature.visual_data, list)
+            else speos_feature.visual_data[0].coordinates
+        )
+        if visual_coordinate_data is not None:
+            display_coordinates = copy.deepcopy(visual_coordinate_data)
             display_origin = display_coordinates.origin
             display_coordinates.x_axis.points[:] = (
                 display_coordinates.x_axis.points - display_origin
@@ -1575,6 +1685,7 @@ class Project:
                     | SensorCamera()
                     | SourceLuminaire()
                     | SourceRayFile()
+                    | LightBox()
                 ):
                     plotter.plot(display_coordinates.x_axis, color="red")
                     plotter.plot(display_coordinates.y_axis, color="green")
