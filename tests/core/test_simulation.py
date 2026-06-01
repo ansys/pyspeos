@@ -1904,6 +1904,114 @@ def test_simulation_nested_classes_errors():
         BaseSimulation.SourceSampling(None, stable_ctr=False)
 
 
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_no_stop_condition_direct(speos: Speos):
+    """Test _check_job warns and applies defaults when direct simulation has no stop condition.
+
+    Uses Prism.speos to load a direct simulation. After loading, the job has no
+    ``direct_mc_simulation_properties`` set. Setting ``automatic_save_frequency`` creates the
+    properties field without any stop condition, simulating the load/commit scenario where job
+    properties are created without stop conditions. Verifies that a ``UserWarning`` is emitted and
+    default stop conditions are then applied.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    # Touch direct_mc_simulation_properties by setting a non-stop-condition field.
+    # This creates the properties message without any stop condition fields.
+    sim.automatic_save_frequency = 1800
+
+    # Verify the job properties exist but have no stop conditions
+    assert sim._job.HasField("direct_mc_simulation_properties")
+    assert not sim._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number")
+    assert not sim._job.direct_mc_simulation_properties.HasField("stop_condition_duration")
+
+    # _check_job should warn and restore defaults
+    with pytest.warns(UserWarning, match="simulation stop condition"):
+        sim._check_job()
+
+    # After _check_job, default stop conditions should be applied
+    from ansys.speos.core.generic.parameters import DirectSimulationParameters
+
+    default_params = DirectSimulationParameters()
+    assert sim.stop_condition_rays_number == default_params.stop_condition_rays_number
+    assert sim.stop_condition_duration == default_params.stop_condition_duration
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_no_stop_condition_inverse(speos: Speos):
+    """Test _check_job warns and applies defaults when inverse simulation has no stop condition.
+
+    Uses Inverse_simu.speos to load an inverse simulation. Setting ``automatic_save_frequency``
+    creates the job properties without stop conditions, then verifies that ``_check_job`` emits
+    a warning and restores ``InverseSimulationParameters`` defaults.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Inverse_simu.speos" / "Inverse_simu.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+
+    # Touch inverse_mc_simulation_properties without setting any stop condition
+    sim.automatic_save_frequency = 1800
+
+    # Verify the job properties exist but have no stop conditions
+    assert sim._job.HasField("inverse_mc_simulation_properties")
+    assert not sim._job.inverse_mc_simulation_properties.HasField("stop_condition_duration")
+    assert not sim._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
+
+    # _check_job should warn and restore defaults
+    with pytest.warns(UserWarning, match="simulation stop condition"):
+        sim._check_job()
+
+    # After _check_job, default stop conditions should be applied
+    from ansys.speos.core.generic.parameters import InverseSimulationParameters
+
+    default_params = InverseSimulationParameters()
+    assert sim.stop_condition_passes_number == default_params.stop_condition_passes_number
+    assert sim.stop_condition_duration == default_params.stop_condition_duration
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_with_stop_conditions_no_warning(speos: Speos):
+    """Test _check_job does not warn when simulations already have stop conditions set.
+
+    Uses Prism.speos (direct) and Inverse_simu.speos (inverse) and ensures no warning is emitted
+    when stop conditions are present.
+    """
+    import warnings
+
+    # --- Direct simulation with stop condition set ---
+    p_direct = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim_direct = p_direct.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    # Setting stop_condition_rays_number creates direct_mc_simulation_properties with a valid
+    # stop condition
+    sim_direct.stop_condition_rays_number = 100000
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sim_direct._check_job()  # Should not raise
+
+    # --- Inverse simulation with stop condition set ---
+    p_inv = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Inverse_simu.speos" / "Inverse_simu.speos"),
+    )
+    sim_inv = p_inv.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    # Ensure stop condition via passes number
+    sim_inv.stop_condition_passes_number = 5
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sim_inv._check_job()  # Should not raise
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_texture_normalization(speos: Speos):
     """Test texture normalization set methods."""
