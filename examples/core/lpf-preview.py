@@ -10,6 +10,9 @@
 from pathlib import Path
 
 from ansys.speos.core import LightPathFinder, Project, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.simulation import SimulationInteractive
 
 # -
@@ -45,7 +48,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -65,7 +68,7 @@ p.preview(viz_args={"opacity": 0.7})
 # ## Retrieve the simulation feature, add light expert and run
 
 sim = p.find("Direct.1")[0]
-sim.set_light_expert(True)
+sim.light_expert = True
 sim.commit()
 sim.compute_CPU()
 
@@ -92,9 +95,9 @@ lxp.preview(project=p)
 
 
 interactive_sim = p.create_simulation("error", feature_type=SimulationInteractive)
-interactive_sim.set_light_expert(True)
-interactive_sim.set_sensor_paths(["Irradiance.1:70"])
-interactive_sim.set_source_paths(["Surface.1:4830"])
+interactive_sim.light_expert = True
+interactive_sim.sensor_paths = ["Irradiance.1:70"]
+interactive_sim.source_paths = ["Surface.1:4830"]
 interactive_sim.commit()
 
 # ## Preview the light expert result

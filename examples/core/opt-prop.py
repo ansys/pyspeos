@@ -17,6 +17,9 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 
 # -
 
@@ -34,13 +37,11 @@ def create_helper_geometries(project: Project):
     """Create bodies and faces."""
 
     def create_face(body):
-        face = (
-            body.create_face(name="TheFaceF")
-            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-            .set_facets([0, 1, 2])
-            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-            .commit()
-        )
+        face = body.create_face(name="TheFaceF")
+        face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+        face.facets = [0, 1, 2]
+        face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+        face.commit()
         return face
 
     data = {"bodies": [], "faces": []}
@@ -76,7 +77,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -97,15 +98,12 @@ faces = data["faces"]
 # The mention "local: " is added when printing the optical property.
 
 op1 = p.create_optical_property(name="Material.1")
-op1.set_surface_mirror(reflectance=80)  # SOP : mirror
+op1.set_surface_mirror()  # SOP : mirror
+op1.sop_mirror.reflectance = 80
 op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
-op1.set_geometries(
-    geometries=[
-        bodies[0],
-        bodies[1],
-    ]
-)
+op1.geometries = [bodies[0], bodies[1]]
+
 print(op1)
 
 
@@ -123,16 +121,12 @@ print(op1)
 
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
-op2.set_volume_library(
-    path=str(assets_data_path / "AIR.material")
+op2.set_volume_library()
+op2.vop_library.material_file_uri = (
+    assets_data_path / "AIR.material"
 )  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
-op2.set_geometries(
-    geometries=[
-        bodies[2],
-        bodies[3],
-    ]
-)
+op2.geometries = [bodies[2], bodies[3]]
 op2.commit()
 print(op2)
 
@@ -145,9 +139,10 @@ print(op2)
 # geometries.
 
 op3 = p.create_optical_property(name="Material.FOP")
-op3.set_surface_mirror(reflectance=90)  # SOP : mirror
+op3.set_surface_mirror()
+op3.sop_mirror.reflectance = 90  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
-op3.set_geometries(geometries=[faces[2]])
+op3.geometries = [faces[2]]
 op3.commit()
 print(op3)
 
@@ -212,7 +207,9 @@ print(p)
 
 
 print("op1 surface type before update: {}".format(op1.get(key="sops")[0]))
-op1.set_volume_optic().set_surface_opticalpolished().commit()
+op1.set_volume_optic()
+op1.set_surface_opticalpolished()
+op1.commit()
 print(op1)
 print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
 

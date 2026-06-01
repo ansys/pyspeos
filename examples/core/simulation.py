@@ -14,7 +14,14 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
+from ansys.speos.core.simulation import (
+    SimulationInteractive,
+    SimulationInverse,
+    SimulationVirtualBSDF,
+)
 
 # -
 
@@ -50,7 +57,7 @@ else:
 # be used to start a local instance of the service..
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -71,12 +78,10 @@ print(p)
 
 root_part = p.create_root_part()
 body_1 = root_part.create_body(name="Body.1")
-face_1 = (
-    body_1.create_face(name="Face.1")
-    .set_vertices([0, 1, 2, 0, 2, 2, 1, 2, 2])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-)
+face_1 = body_1.create_face(name="Face.1")
+face_1.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+face_1.facets = [0, 1, 2]
+face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
 root_part.commit()
 
 # ### Prepare an optical property
@@ -87,7 +92,7 @@ opt_prop.set_volume_opaque().set_surface_mirror()
 
 # Choose the geometry for this optical property : Body.1
 
-opt_prop.set_geometries(geometries=[body_1])
+opt_prop.geometries = [body_1]
 opt_prop.commit()
 
 
@@ -103,16 +108,17 @@ sensor1.commit()
 # ### Prepare a surface source
 
 source1 = p.create_source(name=SOURCE_NAME)
-source1.set_exitance_constant(geometries=[(face_1, True)])
+source1.set_exitance_constant().geometries = [(face_1, True)]
 # define a spectrum which is not monochromatic so it can be used in both direct and inverse
 # simulation
-source1.set_spectrum().set_blackbody()
+source1.spectrum.set_blackbody()
 source1.commit()
 
 # ## Create a simulation
 
 simulation1 = p.create_simulation(name="Simulation.1")
-simulation1.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME])
+simulation1.sensor_paths = [sensor1]  # use sensor instance object
+simulation1.source_paths = [source1]  # use source instance object
 print(simulation1)
 simulation1.commit()
 print(simulation1)
@@ -127,12 +133,13 @@ print(simulation1)
 
 
 simulation2_direct = p.create_simulation(name="Simulation.2")
-simulation2_direct.set_ambient_material_file_uri(
-    uri=str(assets_data_path / "AIR.material")
-).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(
-    0.01
-).set_max_impact(200).set_dispersion(False)
-simulation2_direct.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME]).commit()
+simulation2_direct.ambient_material_file_uri = assets_data_path / "AIR.material"
+simulation2_direct.set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion = False
+simulation2_direct.geom_distance_tolerance = 0.01
+simulation2_direct.max_impact = 200
+simulation2_direct.sensor_paths = [SENSOR_NAME]  # use sensor instance name
+simulation2_direct.source_paths = [SOURCE_NAME]  # use source instance name
+simulation2_direct.commit()
 print(simulation2_direct)
 
 
@@ -152,7 +159,7 @@ print(p)
 #
 # If you don't, you will still only watch what is committed on the server.
 
-simulation1.set_ambient_material_file_uri(uri=str(assets_data_path / "AIR.material"))
+simulation1.ambient_material_file_uri = assets_data_path / "AIR.material"
 simulation1.commit()
 print(simulation1)
 
@@ -161,7 +168,7 @@ print(simulation1)
 #
 # Possibility to reset local values from the one available in the server.
 
-simulation1.set_max_impact(1000)  # adjust max impact but no commit
+simulation1.max_impact = 1000  # adjust max impact but no commit
 simulation1.reset()  # reset -> this will apply the server value to the local value
 simulation1.delete()  # delete (to display the local value with the below print)
 print(simulation1)
@@ -172,15 +179,60 @@ print(simulation1)
 # ### Inverse simulation
 
 simulation3 = p.create_simulation(name="Simulation.3", feature_type=SimulationInverse)
-simulation3.set_sensor_paths(sensor_paths=[SENSOR_NAME]).set_source_paths(
-    source_paths=[SOURCE_NAME]
-).commit()
+simulation3.sensor_paths = [SENSOR_NAME]
+simulation3.source_paths = [source1]
+simulation3.commit()
 print(simulation3)
 
 # ### Interactive simulation
 
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
-simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
+simulation4.source_paths = [source1]
+simulation4.commit()
 print(simulation4)
+
+# ### Virtual BSDF Bench simulation
+
+# Change the material property from mirror to bsdf type
+opt_prop.set_surface_library()
+opt_prop.sop_library.file_uri = assets_data_path / "R_test.anisotropicbsdf"
+opt_prop.commit()
+vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
+vbb.axis_system = [
+    0.36,
+    1.73,
+    2.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+]  # change the coordinate VBSDF to body center
+vbb.commit()
+results = vbb.compute_CPU()
+print(results)
+
+# ## Simulation compute and stop
+#
+# The compute_CPU, compute_GPU calls are blocking.
+# Thus it will return only once the simulation compute is finished.
+#
+# If you want to have the possibility to stop it before it is finished, here an example.
+
+from threading import Thread
+from time import sleep
+
+# Launch the compute_CPU in a thread and start the thread.
+compute_thread = Thread(target=vbb.compute_CPU)
+compute_thread.start()
+# Wait 2 seconds then stop_computation
+sleep(2)
+vbb.stop_computation()
+# Join the compute_thread
+compute_thread.join()
 
 speos.close()

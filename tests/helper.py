@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -31,11 +31,13 @@ from pathlib import Path
 import subprocess
 import time
 
+import numpy as np
+
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import JobLink, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import SpeosClient
-from tests.conftest import config
+from tests.conftest import DOCKER_CONTAINER_NAME, IS_DOCKER
 
 
 def clean_all_dbs(speos_client: SpeosClient):
@@ -105,15 +107,10 @@ def does_file_exist(path):
     -----------
     bool
     """
-    if config.get("SpeosServerOnDocker"):
+    if IS_DOCKER:
         return (
             subprocess.call(
-                "docker exec "
-                + config.get("SpeosContainerName")
-                + ' test -f "'
-                + Path(path).as_posix()
-                + '"',
-                shell=True,
+                ["docker", "exec", DOCKER_CONTAINER_NAME, "test", "-f", Path(path).as_posix()]
             )
             == 0
         )
@@ -137,14 +134,19 @@ def remove_file(path):
                 rmtree(child)
             f.rmdir()
 
-    if config.get("SpeosServerOnDocker"):
+    if IS_DOCKER:
         subprocess.call(
-            "docker exec "
-            + config.get("SpeosContainerName")
-            + ' rm -rf "'
-            + Path(path).as_posix()
-            + '"',
-            shell=True,
+            ["docker", "exec", DOCKER_CONTAINER_NAME, "rm", "-rf", Path(path).as_posix()]
         )
     else:
         rmtree(Path(path))
+
+
+def approx_comparison(value1, value2):
+    """Approximation comparison for floats."""
+    return np.fabs(value1 - value2) < 1e-6
+
+
+def approx_arrays(value1, values2):
+    """Approximation comparison for arrays."""
+    return all(np.isclose(value1, values2, atol=1e-4).flatten())

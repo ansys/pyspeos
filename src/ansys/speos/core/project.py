@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
@@ -34,7 +35,27 @@ import numpy as np
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
+from ansys.speos.core.generic.parameters import (
+    AmbientEnvironmentParameters,
+    AmbientNaturalLightParameters,
+    AmbientUniformParameters,
+    CameraSensorParameters,
+    DirectSimulationParameters,
+    DisplayParameters,
+    IntensityXMPSensorParameters,
+    InteractiveSimulationParameters,
+    InverseSimulationParameters,
+    Irradiance3DSensorParameters,
+    IrradianceSensorParameters,
+    LuminaireSourceParameters,
+    OptPropParameters,
+    RadianceSensorParameters,
+    RayFileSourceParameters,
+    SurfaceSourceParameters,
+    VirtualBSDFSimulationParameters,
+)
 from ansys.speos.core.generic.visualization_methods import local2absolute
+from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -43,18 +64,26 @@ import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
+    BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
+    SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import (
+    BaseSimulation,
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
+    SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import (
+    BaseSource,
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -70,9 +99,8 @@ except ImportError as err:  # pragma: no cover
     raise err
 
 if TYPE_CHECKING:  # pragma: no cover
-    import pyvista as pv
-
     from ansys.tools.visualization_interface import Plotter
+    import pyvista as pv
 
 
 class Project:
@@ -107,18 +135,141 @@ class Project:
             self.scene_link.load_file(path)
             self._fill_features()
 
+    def remove_mesh_protection(self):
+        """Remove mesh protection from the project loaded from *.speos file.
+
+        But this removes all features unsupported by speos rpc server.
+        """
+        msg = self.scene_link.get()
+        self.scene_link = self.client.scenes().create()
+        self.scene_link.set(msg)
+        self._features = []
+        self._fill_features()
+
     # def list(self):
     #    """Return all feature key as a tree.
     #
     #    Can be used to list all features- Not yet implemented.
     #    """
     #    pass
+    @property
+    def root_part(self) -> Union[part.Part, None]:
+        """Property of root part of the project.
+
+        Returns
+        -------
+        Union[part.Part, None]
+            Project's root part if exists, otherwise None.
+
+        """
+        for feature in self._features:
+            if isinstance(feature, part.Part):
+                return feature
+        return None
+
+    @property
+    def optical_properties(self) -> List[opt_prop.OptProp]:
+        """Property of optical properties inside the project.
+
+        Returns
+        -------
+        List[ansys.speos.core.opt_prop.OptProp]
+            List of optical properties features.
+
+        """
+        props = []
+        for feature in self._features:
+            if isinstance(feature, opt_prop.OptProp):
+                props.append(feature)
+        return props
+
+    @property
+    def sources(
+        self,
+    ) -> List[
+        Union[
+            SourceSurface,
+            SourceLuminaire,
+            SourceRayFile,
+            SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
+            SourceAmbientUniform,
+        ]
+    ]:
+        """Property of project's sources inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.source.SourceSurface, \
+        ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceRayFile, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientUniform]]
+            List of source features.
+
+        """
+        srs = []
+        for feature in self._features:
+            if isinstance(feature, BaseSource):
+                srs.append(feature)
+        return srs
+
+    @property
+    def sensors(
+        self,
+    ) -> List[
+        Union[
+            Sensor3DIrradiance, SensorCamera, SensorIrradiance, SensorRadiance, SensorXMPIntensity
+        ]
+    ]:
+        """Property of project's sensors inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorRadiance, \
+        ansys.speos.core.sensor.SensorXMPIntensity]]
+            List of sensor features.
+
+        """
+        ssrs = []
+        for feature in self._features:
+            if isinstance(feature, BaseSensor):
+                ssrs.append(feature)
+        return ssrs
+
+    @property
+    def simulations(
+        self,
+    ) -> List[
+        Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]
+    ]:
+        """Property of project's simulations inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.simulation.SimulationDirect, \
+        ansys.speos.core.simulation.SimulationInteractive, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF]]
+            List of simulation features.
+
+        """
+        sims = []
+        for feature in self._features:
+            if isinstance(feature, BaseSimulation):
+                sims.append(feature)
+        return sims
 
     def create_optical_property(
         self,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -132,6 +283,9 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters]
+             Allows to provide parameters to overwrite default parameters.
+
 
         Returns
         -------
@@ -147,9 +301,28 @@ class Project:
 
         if metadata is None:
             metadata = {}
-        feature = opt_prop.OptProp(
-            project=self, name=name, description=description, metadata=metadata
-        )
+        if parameters:
+            if not isinstance(parameters, OptPropParameters):
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(parameters))} instead of OptPropParameters"
+                )
+
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=parameters,
+            )
+        else:
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=OptPropParameters(),
+            )
         self._features.append(feature)
         return feature
 
@@ -159,8 +332,27 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            Union[
+                LuminaireSourceParameters,
+                SurfaceSourceParameters,
+                RayFileSourceParameters,
+                SourceThermic,
+                AmbientNaturalLightParameters,
+                AmbientEnvironmentParameters,
+                AmbientUniformParameters,
+                DisplayParameters,
+            ]
+        ] = None,
     ) -> Union[
-        SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight, SourceThermic
+        SourceSurface,
+        SourceRayFile,
+        SourceLuminaire,
+        SourceThermic,
+        SourceAmbientNaturalLight,
+        SourceAmbientEnvironment,
+        SourceAmbientUniform,
+        SourceDisplay,
     ]:
         """Create a new Source feature.
 
@@ -177,15 +369,32 @@ class Project:
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
-            ansys.speos.core.source.SourceAmbientNaturalLight].
+            ansys.speos.core.source.SourceAmbientNaturalLight, \
+            ansys.speos.core.source.SourceAmbientEnvironment, \
+             ansys.speos.core.source.SourceAmbientUniform, \
+            ansys.speos.core.source.SourceDisplay].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
+        ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
+        ansys.speos.core.generic.parameters.RayFileSourceParameters,\
+        ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
+        ansys.speos.core.generic.parameters.AmbientUniformParameters,\
+        ansys.speos.core.generic.parameters.DisplayParamaters]]
+            Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight]
+        Union[ansys.speos.core.source.SourceSurface,\
+        ansys.speos.core.source.SourceRayFile,\
+        ansys.speos.core.source.SourceLuminaire,\
+        ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientEnvironment,\
+        ansys.speos.core.source.SourceAmbientUniform,\
+        ansys.speos.core.source.SourceDisplay]
             Source class instance.
         """
         if metadata is None:
@@ -200,32 +409,109 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SourceSurface":
+                if parameters is None:
+                    parameters = SurfaceSourceParameters()
+                elif not isinstance(parameters, SurfaceSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of SurfaceSourceParameters"
+                    )
                 feature = SourceSurface(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceRayFile":
+                if parameters is None:
+                    parameters = RayFileSourceParameters()
+                elif not isinstance(parameters, RayFileSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of RayFileSourceParameters"
+                    )
                 feature = SourceRayFile(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceLuminaire":
+                if parameters is None:
+                    parameters = LuminaireSourceParameters()
+                elif not isinstance(parameters, LuminaireSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of LuminaireSourceParameters"
+                    )
                 feature = SourceLuminaire(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceDisplay":
+                if parameters is None:
+                    parameters = DisplayParameters()
+                elif not isinstance(parameters, DisplayParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DisplayParameters"
+                    )
+                feature = SourceDisplay(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceAmbientNaturalLight":
+                if parameters is None:
+                    parameters = AmbientNaturalLightParameters()
+                elif not isinstance(parameters, AmbientNaturalLightParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientNaturalLightParameters"
+                    )
                 feature = SourceAmbientNaturalLight(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientEnvironment":
+                if parameters is None:
+                    parameters = AmbientEnvironmentParameters()
+                elif not isinstance(parameters, AmbientEnvironmentParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientEnvironmentParameters"
+                    )
+                feature = SourceAmbientEnvironment(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientUniform":
+                if parameters is None:
+                    parameters = AmbientUniformParameters()
+                elif not isinstance(parameters, AmbientUniformParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUniformParameters"
+                    )
+                feature = SourceAmbientUniform(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceThermic":
                 feature = SourceThermic(
@@ -236,7 +522,17 @@ class Project:
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile, SourceThermic]
+                    feature_type,
+                    [
+                        SourceSurface,
+                        SourceLuminaire,
+                        SourceRayFile,
+                        SourceThermic,
+                        SourceAmbientNaturalLight,
+                        SourceAmbientEnvironment,
+                        SourceAmbientUniform,
+                        SourceDisplay,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -248,7 +544,15 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse]:
+        parameters: Optional[
+            Union[
+                DirectSimulationParameters,
+                InteractiveSimulationParameters,
+                InverseSimulationParameters,
+                VirtualBSDFSimulationParameters,
+            ]
+        ] = None,
+    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]:
         """Create a new Simulation feature.
 
         Parameters
@@ -272,7 +576,8 @@ class Project:
         -------
         Union[ansys.speos.core.simulation.SimulationDirect,\
         ansys.speos.core.simulation.SimulationInteractive,\
-        ansys.speos.core.simulation.SimulationInverse]
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF]
             Simulation class instance
         """
         if metadata is None:
@@ -287,25 +592,64 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SimulationDirect":
+                if parameters is None:
+                    parameters = DirectSimulationParameters()
+                elif not isinstance(parameters, DirectSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DirectSimulationParameters"
+                    )
                 feature = SimulationDirect(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInverse":
+                if parameters is None:
+                    parameters = InverseSimulationParameters()
+                elif not isinstance(parameters, InverseSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InverseSimulationParameters"
+                    )
                 feature = SimulationInverse(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInteractive":
+                if parameters is None:
+                    parameters = InteractiveSimulationParameters()
+                elif not isinstance(parameters, InteractiveSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InteractiveSimulationParameters"
+                    )
                 feature = SimulationInteractive(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SimulationVirtualBSDF":
+                if parameters is None:
+                    parameters = VirtualBSDFSimulationParameters()
+                elif not isinstance(parameters, VirtualBSDFSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of VirtualBSDFSimulationParameters"
+                    )
+                feature = SimulationVirtualBSDF(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -314,6 +658,7 @@ class Project:
                         SimulationDirect,
                         SimulationInverse,
                         SimulationInteractive,
+                        SimulationVirtualBSDF,
                     ],
                 )
                 raise TypeError(msg)
@@ -326,7 +671,18 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
+        parameters: Optional[
+            Union[
+                IrradianceSensorParameters,
+                RadianceSensorParameters,
+                CameraSensorParameters,
+                Irradiance3DSensorParameters,
+                IntensityXMPSensorParameters,
+            ]
+        ] = None,
+    ) -> Union[
+        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+    ]:
         """Create a new Sensor feature.
 
         Parameters
@@ -342,16 +698,24 @@ class Project:
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
-            ansys.speos.core.sensor.Sensor3DIrradiance].
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters :  Optional[Union[\
+        ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
+        ansys.speos.core.generic.parameters.RadianceSensorParameters,\
+        ansys.speos.core.generic.parameters.CameraSensorParameters,\
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
+        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters]]
+            Allows to provide parameters to overwrite default parameters
 
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance]
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -366,37 +730,90 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SensorIrradiance":
+                if parameters is None:
+                    parameters = IrradianceSensorParameters()
+                elif not isinstance(parameters, IrradianceSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of IrradianceSensorParameters"
+                    )
                 feature = SensorIrradiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorXMPIntensity":
+                if parameters is None:
+                    parameters = IntensityXMPSensorParameters()
+                elif not isinstance(parameters, IntensityXMPSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of IntensityXMPSensorParameters"
+                    )
+                feature = SensorXMPIntensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SensorRadiance":
+                if parameters is None:
+                    parameters = RadianceSensorParameters()
+                elif not isinstance(parameters, RadianceSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of RadianceSensorParameters"
+                    )
                 feature = SensorRadiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SensorCamera":
+                if parameters is None:
+                    parameters = CameraSensorParameters()
+                elif not isinstance(parameters, CameraSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of CameraSensorParameters"
+                    )
                 feature = SensorCamera(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "Sensor3DIrradiance":
+                if parameters is None:
+                    parameters = Irradiance3DSensorParameters()
+                elif not isinstance(parameters, Irradiance3DSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of Irradiance3DSensorParameters"
+                    )
                 feature = Sensor3DIrradiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
-                    [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance],
+                    [
+                        SensorIrradiance,
+                        SensorRadiance,
+                        SensorCamera,
+                        Sensor3DIrradiance,
+                        SensorXMPIntensity,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -437,6 +854,25 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_ground_plane(self) -> GroundPlane:
+        """Create ground plane feature.
+
+        Only one ground plane per project.
+        Only usable when there is at least one Ambient Environment Source in the project.
+
+        Returns
+        -------
+        ansys.speos.core.ground_plane.GroundPlane
+            Ground plane feature.
+        """
+        existing_features = self.find(name="", feature_type=GroundPlane)
+        if len(existing_features) != 0:
+            return existing_features[0]
+
+        feature = GroundPlane(project=self)
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -449,16 +885,23 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceThermic,
+            SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
+            SourceAmbientUniform,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
+            Sensor3DIrradiance,
+            SensorXMPIntensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
+            SimulationVirtualBSDF,
             part.Part,
             body.Body,
             face.Face,
             part.Part.SubPart,
+            GroundPlane,
         ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
@@ -478,14 +921,21 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.Surface, \
-        ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire, \
-        ansys.speos.core.sensor.Camera, \
-        ansys.speos.core.sensor.Radiance, ansys.speos.core.sensor.Irradiance, \
-        ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, \
-        ansys.speos.core.simulation.Inverse, ansys.speos.core.part.Part, \
+        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
+        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientUniform, \
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF, \
+        ansys.speos.core.simulation.SimulationDirect, \
+        ansys.speos.core.simulation.SimulationInteractive, \
+        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
-        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
+        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
+        ansys.speos.core.ground_plane.GroundPlane]]
             Found features.
 
         Examples
@@ -647,6 +1097,11 @@ class Project:
                                 name=inside_dict["name"],
                                 feature_type=SimulationInteractive,
                             )
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(
+                                name=inside_dict["name"],
+                                feature_type=SimulationVirtualBSDF,
+                            )
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
                             inside_dict["simulation_properties"] = (
@@ -690,6 +1145,23 @@ class Project:
     def __str__(self):
         """Return the string representation of the project's scene."""
         return proto_message_utils.dict_to_str(dict=self._to_dict())
+
+    def _fill_subparts(
+        self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
+    ):
+        for sp in sub_parts:
+            sp_feat = feat_host.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
+            sp_feat.part_link = self.client[sp.part_guid]
+            part_data = sp_feat.part_link.get()
+            sp_feat._part_instance = sp
+            sp_feat._part = (
+                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            )
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+            self._fill_subparts(sub_parts=part_data.parts, feat_host=sp_feat)
 
     def _fill_bodies(
         self,
@@ -775,18 +1247,7 @@ class Project:
         root_part_feat._part = root_part_data
         # instead of root_part_feat.reset() - this avoid a useless read in server
 
-        for sp in root_part_data.parts:
-            sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
-            if sp.description.startswith("UniqueId_"):
-                idx = sp.description.find("_")
-                sp_feat._unique_id = sp.description[idx + 1 :]
-            sp_feat.part_link = self.client[sp.part_guid]
-            part_data = sp_feat.part_link.get()
-            sp_feat._part_instance = sp
-            sp_feat._part = (
-                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
-            )
-            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+        self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
 
         for mat_inst in scene_data.materials:
             if len(self.find(name=mat_inst.name)) == 0:
@@ -802,21 +1263,28 @@ class Project:
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("display_properties"):
+                src_feat = SourceDisplay(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("ambient_properties"):
                 if src_inst.ambient_properties.HasField("natural_light_properties"):
@@ -824,7 +1292,21 @@ class Project:
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
-                        default_values=False,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("environment_map_properties"):
+                    src_feat = SourceAmbientEnvironment(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
+                    src_feat = SourceAmbientUniform(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
                     )
             elif src_inst.HasField("thermic_properties"):
                 src_feat = SourceThermic(
@@ -836,6 +1318,13 @@ class Project:
             if src_feat is not None:
                 self._features.append(src_feat)
 
+        # ground plane
+        if scene_data.HasField("ground"):
+            ground_feat = GroundPlane(project=self, ground=scene_data.ground)
+
+            if ground_feat is not None:
+                self._features.append(ground_feat)
+
         for ssr_inst in scene_data.sensors:
             if ssr_inst.name in [_._name for _ in self._features]:
                 continue
@@ -845,30 +1334,38 @@ class Project:
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("radiance_properties"):
                 ssr_feat = SensorRadiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("irradiance_3d_properties"):
                 ssr_feat = Sensor3DIrradiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
-            self._features.append(ssr_feat)
+            elif ssr_inst.HasField("intensity_properties"):
+                ssr_feat = SensorXMPIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            if ssr_feat is not None:
+                self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
@@ -880,23 +1377,31 @@ class Project:
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
                 sim_feat = SimulationInverse(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
-            self._features.append(sim_feat)
+            elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
+                sim_feat = SimulationVirtualBSDF(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_parameters=None,
+                )
+            if sim_feat is not None:
+                self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
         self,
@@ -969,8 +1474,16 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
+        speos_feature: Union[\
+            ansys.speos.core.sensor.SensorCamera, \
+            ansys.speos.core.sensor.SensorRadiance, \
+            ansys.speos.core.sensor.SensorIrradiance, \
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.source.SourceLuminaire, \
+            ansys.speos.core.source.SourceRayFile, \
+            ansys.speos.core.source.SourceLuminaire
+        ]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -987,6 +1500,7 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                SensorXMPIntensity,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
@@ -999,12 +1513,14 @@ class Project:
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
+                    display_ray = visual_ray.data.copy(deep=True)
+                    display_ray.points[1] = (
+                        ray_path_scale_factor
+                        * scene_seize
+                        * (display_ray.points[1] - display_ray.points[0])
+                        + display_ray.points[0]
                     )
-                    plotter.plot(visual_ray.data, color=visual_ray.color)
+                    plotter.plot(display_ray, color=visual_ray.color)
             case _:
                 plotter.plot(
                     speos_feature.visual_data.data,
@@ -1016,26 +1532,32 @@ class Project:
                 )
 
         if speos_feature.visual_data.coordinates is not None:
-            tmp_origin = speos_feature.visual_data.coordinates.origin
-            tmp = speos_feature.visual_data.coordinates
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
-                tmp.x_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
-                tmp.y_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
-                tmp.z_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
+            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+            display_origin = display_coordinates.origin
+            display_coordinates.x_axis.points[:] = (
+                display_coordinates.x_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.y_axis.points[:] = (
+                display_coordinates.y_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.z_axis.points[:] = (
+                display_coordinates.z_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
+                case (
+                    SensorIrradiance()
+                    | SensorXMPIntensity()
+                    | SensorCamera()
+                    | SourceLuminaire()
+                    | SourceRayFile()
+                ):
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required
@@ -1051,9 +1573,8 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
-        import pyvista as pv
-
         from ansys.tools.visualization_interface import Plotter
+        import pyvista as pv
 
         def find_all_subparts(target_part):
             subparts = []

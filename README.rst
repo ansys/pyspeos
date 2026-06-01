@@ -1,6 +1,6 @@
 PySpeos library
 ================
-|pyansys| |python| |pypi| |codecov| |GH-CI| |MIT| |ruff|
+|pyansys| |python| |pypi| |codecov| |nightly| |MIT| |ruff|
 
 .. |pyansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://docs.pyansys.com/
@@ -18,8 +18,8 @@ PySpeos library
    :target: https://codecov.io/github/ansys/pyspeos
    :alt: Codecov
 
-.. |GH-CI| image:: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml
+.. |nightly| image:: https://github.com/ansys/pyspeos/actions/workflows/nightly.yml/badge.svg
+   :target: https://github.com/ansys/pyspeos/actions/workflows/nightly.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
@@ -73,7 +73,7 @@ All sources are located in `<src/>`_ folder.
 
    from ansys.speos.core.speos import Speos
 
-   speos = Speos(host="localhost", port=50098)
+   speos = Speos()
 
 Documentation and issues
 ------------------------
@@ -142,8 +142,8 @@ Then, to launch SpeosRPC server with product version 2025.1, you can run:
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
    cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
-   docker pull ghcr.io/ansys/speos-rpc:251
-   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+   docker pull ghcr.io/ansys/speos-rpc:261
+   docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:261 --transport_insecure --host 0.0.0.0
 
 .. note::
 

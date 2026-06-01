@@ -133,6 +133,7 @@ if BUILD_EXAMPLES:
     nbsphinx_thumbnails = {
         "examples/core/bsdf": "_static/thumbnails/bsdf.png",
         "examples/core/opt-prop": "_static/thumbnails/property_520x520.png",
+        "examples/core/texture": "_static/thumbnails/property_520x520.png",
         "examples/core/source": "_static/thumbnails/source_520x520.png",
         "examples/core/sensor": "_static/thumbnails/sensor_520x520.png",
         "examples/core/part": "_static/thumbnails/part_520x520.png",
@@ -295,16 +296,36 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     exception : Exception
         Exception encountered during the building of the documentation.
     """
-    if app.builder.name == "html":
-        SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
-        ASSETS_DIRECTORY = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
+    if app.builder.name != "html":
+        logger.info(
+            "Skip assets extraction with build %s.",
+            app.builder.name,
+        )
+        return
 
-        logger.info("Extracting assets to output directory...")
-        zip_path = pathlib.Path(shutil.make_archive("assets", "zip", ASSETS_DIRECTORY))
-        zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
-        logger.info(f"Extracted assets to {zip_path}.")
-    else:
-        logger.info(f"Skip assets extraction with build {app.builder.name}.")
+    source_assets = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
+
+    output_dir = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
+
+    if not source_assets.exists():
+        logger.warning(
+            "Assets directory not found at %s; skipping asset packaging.",
+            source_assets,
+        )
+        return
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Packaging assets for documentation output...")
+
+    archive_base = output_dir / "assets"
+    zip_path = shutil.make_archive(
+        base_name=str(archive_base),
+        format="zip",
+        root_dir=str(source_assets),
+    )
+
+    logger.info("Assets packaged at %s.", zip_path)
 
 
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):

@@ -1,6 +1,16 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
+    cooldown:
+      default-days: 10 # Fallback cooldown if no specific rule applies
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys-api-speos"
+        - "ansys-sphinx-theme"
+        - "ansys-tools-common"
+        - "ansys-tools-visualization-interface"
+        - "ansys-platform-instancemanagement"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -20,7 +30,7 @@ updates:
     groups:
       core-deps:
         patterns:
-          - "ansys-tools-path"
+          - "ansys-tools-common"
           - "numpy"
           - "comtypes"
       grpc-deps:
@@ -52,7 +62,14 @@ updates:
           - "ipywidgets"
           - "notebook"
           - "matplotlib"
+
   - package-ecosystem: "github-actions"
+    cooldown:
+      default-days: 10 # Fallback cooldown if no specific rule applies
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/actions"
     directory: "/"
     schedule:
       interval: "weekly"

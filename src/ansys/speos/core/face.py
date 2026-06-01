@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,10 +24,11 @@
 
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
+from ansys.speos.core.generic.parameters import MeshData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
@@ -86,53 +87,155 @@ class Face:
             geo_paths.insert(0, parent.geo_path.metadata["GeoPath"])
         return GeoRef.from_native_link("/".join(geo_paths))
 
-    def set_vertices(self, values: List[float]) -> Face:
-        """Set the face vertices.
-
-        Parameters
-        ----------
-        values : List[float]
-            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+    @property
+    def vertices(self) -> List[float]:
+        """Get face vertices.
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        List[float]
+            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
         """
-        self._face.vertices[:] = values
-        return self
+        return list(self._face.vertices)
 
-    def set_facets(self, values: List[int]) -> Face:
-        """Set the facets.
+    @vertices.setter
+    def vertices(self, values: List[Union[int, float]]) -> None:
+        """Set the face vertices with validation.
+
+        Parameters
+        ----------
+        values : List[Union[int, float]]
+            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+
+        Raises
+        ------
+        TypeError
+            If values is not a list/tuple or contains non-numeric entries.
+        ValueError
+            If length of values is not a multiple of 3.
+        """
+        if not isinstance(values, (list, tuple)):
+            raise TypeError("vertices must be a list or tuple of numeric values.")
+        if len(values) % 3 != 0:
+            raise ValueError("vertices length must be a multiple of 3.")
+        for v in values:
+            if not isinstance(v, (int, float)):
+                raise TypeError("vertices elements must be int or float.")
+        self._face.vertices[:] = list(values)
+
+    @property
+    def facets(self) -> List[int]:
+        """Get face facets.
+
+        Returns
+        -------
+        List[int]
+            Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...).
+        """
+        return list(self._face.facets)
+
+    @facets.setter
+    def facets(self, values: List[int]) -> None:
+        """Set the facets with validation.
 
         Parameters
         ----------
         values : List[int]
-            Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...)
+            Indexes of points for all triangles.
+
+        Raises
+        ------
+        TypeError
+            If values is not a list/tuple or contains non-integer entries.
+        ValueError
+            If indices are out of range relative to currently set vertices.
+        """
+        if not isinstance(values, (list, tuple)):
+            raise TypeError("facets must be a list or tuple of integers.")
+        for v in values:
+            if not isinstance(v, int):
+                raise TypeError("facets elements must be int.")
+        # optional range check when vertices are present
+        num_vertices = len(self._face.vertices) // 3
+        if num_vertices > 0:
+            if values:
+                max_idx = max(values)
+                if max_idx >= num_vertices or min(values) < 0:
+                    raise ValueError("facets contain index out of range relative to vertices.")
+        self._face.facets[:] = list(values)
+
+    @property
+    def normals(self) -> List[float]:
+        """Get face normals.
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        List[float]
+            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...].
         """
-        self._face.facets[:] = values
-        return self
+        return list(self._face.normals)
 
-    def set_normals(self, values: List[float]) -> Face:
-        """Set the face normals.
+    @normals.setter
+    def normals(self, values: List[Union[int, float]]) -> None:
+        """Set the face normals with validation.
 
         Parameters
         ----------
-        values : List[float]
-            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...]
+        values : List[Union[int, float]]
+            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...].
+
+        Raises
+        ------
+        TypeError
+            If values is not a list/tuple or contains non-numeric entries.
+        ValueError
+            If length of values is not a multiple of 3 or does not match vertices length
+            when vertices are present.
+        """
+        if not isinstance(values, (list, tuple)):
+            raise TypeError("normals must be a list or tuple of numeric values.")
+        if len(values) % 3 != 0:
+            raise ValueError("normals length must be a multiple of 3.")
+        for v in values:
+            if not isinstance(v, (int, float)):
+                raise TypeError("normals elements must be int or float.")
+        # when vertices are present, normals must match vertices length
+        if len(self._face.vertices) > 0:
+            if len(values) != len(self._face.vertices):
+                raise ValueError("normals length must match vertices length when vertices are set.")
+        self._face.normals[:] = list(values)
+
+    @property
+    def vertices_data(self) -> list[MeshData]:
+        """List of data applied to vertices (like texture coordinates uv).
+
+        Each MeshData will be stored in a specific channel. This data can be used for example to
+        apply a texture on the face by associating the uv coordinates to the vertices and then
+        applying a texture with UV mapping on the face.
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        list[ansys.speos.core.generic.parameters.MeshData]
+            List of MeshData
         """
-        self._face.normals[:] = values
-        return self
+        return [MeshData(i.name, i.data) for i in self._face.vertices_data]
+
+    @vertices_data.setter
+    def vertices_data(self, value: list[MeshData]) -> None:
+        """Set the data applied to vertices.
+
+        Parameters
+        ----------
+        value : list[ansys.speos.core.generic.parameters.MeshData]
+            List of MeshData for the face.
+        """
+        for i in value:
+            if not isinstance(i, MeshData):
+                raise TypeError("wrong type")
+        self._face.ClearField("vertices_data")
+        self._face.vertices_data.extend(
+            [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
+        )
 
     def _to_dict(self) -> dict:
         out_dict = ""

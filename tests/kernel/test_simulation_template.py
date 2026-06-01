@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,6 +23,7 @@
 """Test basic sop template database connection."""
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.speos import Speos
 

@@ -19,6 +19,9 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
@@ -57,7 +60,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -78,7 +81,7 @@ print(p)
 # #### Source
 
 source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-source1.set_intensity_file_uri(uri=str(assets_data_path / "IES_C_DETECTOR.ies"))
+source1.intensity_file_uri = assets_data_path / "IES_C_DETECTOR.ies"
 source1.commit()
 
 
@@ -193,7 +196,7 @@ src = features[1]
 
 # modify the surface source, e.g. surface source wavelength:
 
-src.set_spectrum().set_monochromatic(wavelength=550)
+src.spectrum.set_monochromatic().wavelength = 550
 src.commit()
 
 

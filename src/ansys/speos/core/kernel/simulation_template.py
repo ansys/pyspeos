@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,6 +28,7 @@ from ansys.api.speos.simulation.v1 import (
     simulation_template_pb2 as messages,
     simulation_template_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -57,7 +58,7 @@ class SimulationTemplateLink(CrudItem):
     >>> from ansys.speos.core.kernel.simulation_template import (
     ...     ProtoSimulationTemplate,
     ... )
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sim_t_db = speos.client.simulation_templates()
     >>> sim_t_message = ProtoSimulationTemplate(name="Direct")
     >>> sim_t_message.direct_mc_simulation_template.geom_distance_tolerance = 0.01
@@ -118,7 +119,7 @@ class SimulationTemplateStub(CrudStub):
     simulation_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sim_t_db = speos.client.simulation_templates()
 
     """

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,6 +29,7 @@ from ansys.api.speos.sensor.v1 import (
     common_pb2,
     irradiance_sensor_pb2,
 )
+
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path

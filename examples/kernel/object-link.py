@@ -1,5 +1,8 @@
 # # How to use an ObjectLink
 from ansys.speos.core import launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 
 # This tutorial demonstrates how to use speos objects in layer core.
 # ## What is an ObjectLink?
@@ -30,7 +33,7 @@ USE_DOCKER = True  # Set to False if you're running this example locally as a No
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 

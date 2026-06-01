@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,6 +29,7 @@ from ansys.api.speos.scene.v2 import (
     scene_pb2 as messages,
     scene_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
@@ -41,6 +42,10 @@ ProtoScene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.MaterialInstance.Texture.Layer.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.MaterialInstance.Texture.MappingOperator.__str__ = lambda self: protobuf_message_to_str(
+    self
+)
 
 
 class SceneLink(CrudItem):
@@ -58,7 +63,7 @@ class SceneLink(CrudItem):
     --------
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.scene import ProtoScene
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sce_db = speos.client.scenes()
     >>> sce_link = sce_db.create(message=ProtoScene(name="Empty_Scene"))
 
@@ -164,7 +169,7 @@ class SceneStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sce_db = speos.client.scenes()
 
     """

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -37,7 +37,8 @@ def test_vop_template(speos: Speos):
     """Test the vop template creation."""
     assert speos.client.healthy is True
     # Get DB
-    vop_t_db = speos.client.vop_templates()  # Create spectrum stub from client channel
+    # Create spectrum stub from client channel
+    vop_t_db = speos.client.vop_templates()
 
     # Opaque
     vop_t_opaque = vop_t_db.create(
