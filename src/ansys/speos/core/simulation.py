@@ -448,7 +448,7 @@ class BaseSimulation:
             if isinstance(path, str):
                 src_paths.append(path)
             elif isinstance(path, BaseSource):
-                src_paths.append(path._name)
+                src_paths.append(path._source_path)
         self._simulation_instance.source_paths[:] = src_paths
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:

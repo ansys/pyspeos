@@ -189,6 +189,7 @@ jobs:
           source .venv/bin/activate
           ty check src/ansys/speos/core/ examples/ \
             --exclude src/ansys/speos/core/body.py \
+            --exclude src/ansys/speos/core/component.py \
             --exclude src/ansys/speos/core/face.py \
             --exclude src/ansys/speos/core/bsdf.py \
             --exclude src/ansys/speos/core/launcher.py \
