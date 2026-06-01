@@ -5577,12 +5577,17 @@ class SensorImmersive(BaseSensor):
         Parameters
         ----------
         value : None | float
-            Stereo interocular distance in mm. By default, None.
+            Set stereo interocular distance in mm.
+            By default, None as deactivate the stereo setting.
+            Or, set value to stereo interocular distance value will activate
+            the stereo setting.
+
 
         Returns
         -------
         float
-            Current stereo interocular distance.
+            Current stereo interocular distance in mm.
+            If stereo setting is not activated, distance will be 0 mm.
         """
         return self._sensor_template.immersive_sensor_template.stereo.interocular_distance
 
