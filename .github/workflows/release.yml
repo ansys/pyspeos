@@ -30,7 +30,7 @@ jobs:
       contents: write        # Required to commit and push changelog updates to the repository
       pull-requests: write   # Required to create pull requests with changelog updates
     steps:
-      - uses: ansys/actions/doc-deploy-changelog@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+      - uses: ansys/actions/doc-deploy-changelog@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
@@ -42,7 +42,7 @@ jobs:
     permissions:
       contents: read   # Required to read repository content for vulnerability scanning
     steps:
-      - uses: ansys/actions/check-vulnerabilities@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+      - uses: ansys/actions/check-vulnerabilities@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           python-package-name: ${{ env.PACKAGE_NAME }}
@@ -118,7 +118,7 @@ jobs:
       contents: read   # Required to read documentation files for style checking
     steps:
       - name: PyAnsys documentation style checks
-        uses: ansys/actions/doc-style@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/doc-style@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -136,7 +136,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - name: Build wheelhouse and perform smoke test
-        uses: ansys/actions/build-wheelhouse@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/build-wheelhouse@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
@@ -174,7 +174,7 @@ jobs:
           docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
 
       - name: Run Ansys documentation building action
-        uses: ansys/actions/doc-build@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/doc-build@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
@@ -277,7 +277,7 @@ jobs:
       id-token: write       # Required for OIDC token generation (for provenance signing)
     steps:
       - name: Build library source and wheel artifacts
-        uses: ansys/actions/build-library@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/build-library@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -307,7 +307,7 @@ jobs:
           skip-existing: false
 
       - name: Release to GitHub
-        uses: ansys/actions/release-github@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/release-github@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -320,7 +320,7 @@ jobs:
       contents: write   # Required to commit and push documentation to gh-pages branch
     steps:
       - name: Deploy the stable documentation
-        uses: ansys/actions/doc-deploy-stable@12ca08fd7f0caa52076cca15c5621482646f8560 # v10.3.1
+        uses: ansys/actions/doc-deploy-stable@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
