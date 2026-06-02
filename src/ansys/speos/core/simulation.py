@@ -1473,13 +1473,12 @@ class SimulationInverse(BaseSimulation):
 
     @property
     def timeline(self) -> bool:
-        """Switch to enable/disable timeline for the simulation.
+        """Switch to enable/disable the simulation timeline.
 
         Returns
         -------
         bool
-            the state of timeline activation
-
+            State of timeline activation.
         """
         return self._job.inverse_mc_simulation_properties.HasField("timeline")
 
