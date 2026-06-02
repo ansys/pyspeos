@@ -2944,6 +2944,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
             self.set_sun_automatic().day = default_parameters.sun_type.day
             self.set_sun_automatic().hour = default_parameters.sun_type.hour
             self.set_sun_automatic().minute = default_parameters.sun_type.minute
+            self.set_sun_automatic().time_zone = default_parameters.sun_type.time_zone
         elif isinstance(default_parameters.sun_type, ManualSunParameters):
             self.set_sun_manual().direction = default_parameters.sun_type.direction
         else:
