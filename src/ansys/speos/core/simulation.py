@@ -540,7 +540,7 @@ class BaseSimulation:
             if isinstance(path, str):
                 normalized_paths.append(path)
             elif isinstance(path, BaseSource):
-                normalized_paths.append(path._name)
+                normalized_paths.append(path._source_path)
             else:
                 raise TypeError(
                     "source_paths values must be strings or BaseSource instances, "
