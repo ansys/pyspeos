@@ -2974,9 +2974,29 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
     def cie_type(self) -> CieType:
         """Get the CIE type.
 
+        Parameters
+        ----------
+        ansys.speos.core.generic.parameters.CieType
+            allowed type parameter values:
+                standard_overcast
+                overcast_steep_gradation
+                overcast_azimuthal_uniformity
+                overcast_slight_brightening
+                uniform_luminance
+                cloudy_slight_brightening
+                cloudy_nogradation_circumsolar
+                cloudy_solar_corona
+                cloudy_obscured_sun
+                cloudy_circumsolar_region
+                white_blue_distinct
+                standard_low_luminance
+                standard_polluted_atmosphere
+                cloudless_turbid_corona
+                white_blue_broad
+
         Returns
         -------
-        CieType
+        ansys.speos.core.generic.parameters.CieType
 
         """
         proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
