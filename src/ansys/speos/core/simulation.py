@@ -1394,7 +1394,8 @@ class SimulationInverse(BaseSimulation):
             self.set_weight().minimum_energy_percentage = (
                 default_parameters.minimum_energy_percentage
             )
-            self.timeline = default_parameters.timeline
+            if default_parameters.timeline:
+                self.start_time= default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
