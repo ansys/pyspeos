@@ -2899,7 +2899,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         By default, ``{}``.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters] = None
-        If defined the values in the SourceAmbientNaturalLight instance
+        If defined the values in the SourceAmbientCieStandardGeneralSky instance
          will be overwritten by the values of the data class.
     """
 
