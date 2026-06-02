@@ -2883,7 +2883,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
     By default, luminance is set to 1000 cd/m2
     [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
     Sun type is set to be automatic type.
-    CIE type is partly cloudy sky, no gradation towards zenith, slight brightnening
+    CIE type is partly cloudy sky, no gradation towards zenith, slight brightening
 
     Parameters
     ----------
@@ -2899,7 +2899,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         By default, ``{}``.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters] = None
-        If defined the values in the SourceAmbientNaturalLight instance
+        If defined the values in the SourceAmbientCieStandardGeneralSky instance
          will be overwritten by the values of the data class.
     """
 
