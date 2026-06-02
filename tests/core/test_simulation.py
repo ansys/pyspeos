@@ -193,9 +193,6 @@ def test_create_inverse(speos: Speos):
     assert sim1.automatic_save_frequency == 1800
     assert sim1.sensor_paths == []
     assert sim1.source_paths == []
-    assert not sim1._job.inverse_mc_simulation_properties.HasField("timeline")
-    assert not sim1.timeline
-    assert sim1.start_time is None
 
     # Change value
     # geom_distance_tolerance
@@ -279,37 +276,6 @@ def test_create_inverse(speos: Speos):
     #    ]
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
-
-    # timeline: enabled defaults
-    sim1.timeline = True
-    assert sim1.timeline is True
-    assert sim1.start_time == 0.0
-    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
-    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.0
-
-    # timeline: adjusting start_time
-    sim1.start_time = 0.1
-    assert sim1.start_time == 0.1
-    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.1
-
-    # timeline: disabling timeline clears field
-    sim1.timeline = False
-    assert sim1.timeline is False
-    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
-    assert sim1.start_time is None
-
-    # timeline: setting start time re-enables field
-    sim1.start_time = 0.2
-    assert sim1.timeline is True
-    assert sim1.start_time == 0.2
-    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
-    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.2
-
-    # timeline: setting start time to None removes field
-    sim1.start_time = None
-    assert sim1.timeline is False
-    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
-    assert sim1.start_time is None
 
     sim1.delete()
 
@@ -1910,3 +1876,46 @@ def test_texture_normalization(speos: Speos):
         sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization
         == simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
     )
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline(speos: Speos):
+    """Test Inverse Simulation Timeline functionality"""
+    p = Project(speos=speos)
+
+    # timeline: initalized defaults
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    assert not sim1._job.inverse_mc_simulation_properties.HasField("timeline")
+    assert not sim1.timeline
+    assert sim1.start_time is None
+
+    # timeline: enabled defaults
+    sim1.timeline = True
+    assert sim1.timeline is True
+    assert sim1.start_time == 0.0
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.0
+
+    # timeline: adjusting start_time
+    sim1.start_time = 0.1
+    assert sim1.start_time == 0.1
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.1
+
+    # timeline: disabling timeline clears field
+    sim1.timeline = False
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
+
+    # timeline: setting start time re-enables field
+    sim1.start_time = 0.2
+    assert sim1.timeline is True
+    assert sim1.start_time == 0.2
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.2
+
+    # timeline: setting start time to None removes field
+    sim1.start_time = None
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
