@@ -539,6 +539,7 @@ class Project:
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
+                        SourceAmbientCieStandardGeneralSky,
                         SourceDisplay,
                     ],
                 )
