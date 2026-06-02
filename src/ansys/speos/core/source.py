@@ -2883,7 +2883,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
     By default, luminance is set to 1000 cd/m2
     [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
     Sun type is set to be automatic type.
-    CIE type is partly cloudy sky, no gradation towards zenith, slight brightnening
+    CIE type is partly cloudy sky, no gradation towards zenith, slight brightening
 
     Parameters
     ----------
