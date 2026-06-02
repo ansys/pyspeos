@@ -90,7 +90,6 @@ def speos():
         channel = default_docker_channel(port=SERVER_PORT, message_size=message_size)
     else:
         channel = default_local_channel(port=SERVER_PORT, message_size=message_size)
-    # speos = launcher.launch_local_speos_rpc_server(version="261")
     speos = Speos(
         logging_level=logging.DEBUG,
         logging_file=log_file_path,
