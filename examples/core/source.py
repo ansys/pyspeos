@@ -191,6 +191,7 @@ print(source3)
 
 # +
 source3.flux.set_luminous()
+source3.flux.value = 55
 source3.commit()
 print(source3)
 # -
@@ -216,6 +217,7 @@ print(source4)
 
 # +
 source4.flux.set_luminous_intensity()
+source4.flux.value = 6
 source4.intensity.set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source4.commit()
 print(source4)

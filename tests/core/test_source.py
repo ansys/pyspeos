@@ -314,9 +314,8 @@ def test_create_surface_source(speos: Speos):
     root_part.commit()
 
     # Default value
-    # source1 = p.create_source(name="Surface.1")
-    source1 = SourceSurface(
-        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    source1 = p.create_source(
+        name="Surface.1", feature_type=SourceSurface, parameters=SurfaceSourceParameters()
     )
     source1.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source1.commit()
@@ -1816,9 +1815,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
         project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
     )
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source.commit()
     source.flux.set_luminous()
     # source.set_flux_luminous()
-    source.commit()
 
     # Ask for reset
     source.reset()
@@ -1896,11 +1895,11 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Create + commit
     source = p.create_source(name="1", feature_type=SourceRayFile)
-    # source.set_flux_luminous()
-    source.flux.set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
-    source.spectrum
+    source.spectrum.set_blackbody().temperature = 4000
     source.commit()
+    source.flux.set_luminous()
+    source.flux.value = 360
 
     # Ask for reset
     source.reset()

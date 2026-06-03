@@ -155,11 +155,14 @@ class GroundPlane:
 
         Parameters
         ----------
-        key : str
+        key : str, optional
+            Key prefix used to look up a value.
+            By default, ``""``, which returns the full dictionary.
 
         Returns
         -------
         str | dict
+            Value found for the given key, or the full dictionary when *key* is empty.
         """
         if key == "":
             return self._to_dict()
