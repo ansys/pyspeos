@@ -405,8 +405,8 @@ class BaseSimulation:
 
         @source_paths.setter
         def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
-            normalized_paths = self._simulation._normalize_source_group_paths(source_paths)
-            self._simulation._validate_source_group_paths(normalized_paths)
+            normalized_paths = self._simulation._normalize_source_paths(source_paths)
+            self._simulation._validate_source_paths(normalized_paths)
             self._source_group.source_paths[:] = normalized_paths
 
     def __init__(
@@ -513,10 +513,10 @@ class BaseSimulation:
 
     @source_paths.setter
     def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
-        src_paths = self._normalize_source_group_paths(source_paths)
+        src_paths = self._normalize_source_paths(source_paths)
         if hasattr(self._simulation_instance, "source_groups"):
             for source_group in self._simulation_instance.source_groups:
-                self._validate_source_group_paths(
+                self._validate_source_paths(
                     list(source_group.source_paths),
                     allowed_source_paths=src_paths,
                 )
@@ -525,9 +525,7 @@ class BaseSimulation:
     @min_speos_version(
         MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
     )
-    def _normalize_source_group_paths(
-        self, source_paths: List[Union[str, BaseSource]]
-    ) -> List[str]:
+    def _normalize_source_paths(self, source_paths: List[Union[str, BaseSource]]) -> List[str]:
         """Normalize source path values to their string representation.
 
         Raises
@@ -543,7 +541,7 @@ class BaseSimulation:
                 normalized_paths.append(path._source_path)
             else:
                 raise TypeError(
-                    "source_paths values must be strings or BaseSource instances, "
+                    "Source_paths values must be strings or BaseSource instances, "
                     f"got {type(path).__name__}: {path}"
                 )
         return normalized_paths
@@ -551,7 +549,7 @@ class BaseSimulation:
     @min_speos_version(
         MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
     )
-    def _validate_source_group_paths(
+    def _validate_source_paths(
         self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
     ) -> None:
         """Validate that source group paths are included in simulation source paths.
@@ -619,8 +617,8 @@ class BaseSimulation:
         ValueError
             If one of the given source paths is not included in the simulation.
         """
-        normalized_paths = self._normalize_source_group_paths(source_paths)
-        self._validate_source_group_paths(normalized_paths)
+        normalized_paths = self._normalize_source_paths(source_paths)
+        self._validate_source_paths(normalized_paths)
         source_group = self._simulation_instance.source_groups.add()
         source_group.name = name
         source_group.source_paths[:] = normalized_paths
