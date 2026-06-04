@@ -1235,7 +1235,8 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     with pytest.raises(
         TypeError,
         match="Incorrect parameter dataclass provided "
-        + f"{str(type(LuminaireSourceParameters()))} instead of AmbientCieStandardGeneralSkyParameters",
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientCieStandardGeneralSkyParameters",
     ):
         p.create_source(
             name="Luminaire.2",

@@ -2875,7 +2875,7 @@ class SourceAmbientUniform(BaseSourceAmbient):
 
 
 class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
-    """CIE Standard General Sky source
+    """CIE Standard General Sky source.
 
     By default, luminance is set to 1000 cd/m2
     [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
@@ -3043,7 +3043,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
     @property
     def reverse_zenith_direction(self) -> bool:
         """
-        Property whether reverse zenith direction of the ambient CIE standard general sky source
+        Property whether reverse zenith direction of the ambient CIE standard general sky source.
 
             default value to be False.
 
@@ -3066,7 +3066,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
 
     @property
     def north_direction(self) -> List[float]:
-        """Property north direction of the ambient CIE standard general sky
+        """Property north direction of the ambient CIE standard general sky.
 
             default value to be [0, 1, 0].
 
@@ -3091,7 +3091,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
 
     @property
     def reverse_north_direction(self) -> bool:
-        """Property whether reverse north direction of the ambient CIE standard general sky
+        """Property whether reverse north direction of the ambient CIE standard general sky.
 
             default value to be False.
 
