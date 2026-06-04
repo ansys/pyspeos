@@ -152,6 +152,8 @@ if BUILD_EXAMPLES:
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
 
+.. only:: html
+
     .. grid:: 5
 
         .. grid-item::
@@ -168,11 +170,11 @@ if BUILD_EXAMPLES:
         .. grid-item::
             :child-align: center
 
-            .. button-link:: {cname_pref}/{ipynb_zip_loc}
-               :color: primary
-               :shadow:
+            .. raw:: html
 
-                Download as Jupyter notebook :fas:`book`
+               <a class="sd-btn sd-btn-primary sd-shadow" download href="{cname_pref}/{ipynb_file_loc}">
+                 Download as Jupyter notebook <i class="fas fa-book"></i>
+               </a>
 
         .. grid-item::
             :child-align: center
@@ -185,12 +187,10 @@ if BUILD_EXAMPLES:
 
         .. grid-item::
 
-----
-
     """.format(
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
         python_file_loc="{{ env.docname }}.py",
-        ipynb_zip_loc="{{ env.docname }}.ipynb.zip",
+        ipynb_file_loc="{{ env.docname }}.ipynb",
         assets_loc="_static/assets/download/assets.zip",
     )
 
