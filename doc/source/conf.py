@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import pathlib
 import shutil
+import zipfile
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
 import sphinx
@@ -167,11 +168,11 @@ if BUILD_EXAMPLES:
         .. grid-item::
             :child-align: center
 
-            .. raw:: html
+            .. button-link:: {cname_pref}/{ipynb_zip_loc}
+               :color: primary
+               :shadow:
 
-               <a class="sd-btn sd-btn-primary sd-shadow" href="{cname_pref}/{ipynb_file_loc}" download>
-                 Download as Jupyter notebook <i class="fas fa-book"></i>
-               </a>
+                Download as Jupyter notebook :fas:`book`
 
         .. grid-item::
             :child-align: center
@@ -190,6 +191,7 @@ if BUILD_EXAMPLES:
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
         python_file_loc="{{ env.docname }}.py",
         ipynb_file_loc="{{ env.docname }}.ipynb",
+        ipynb_zip_loc="{{ env.docname }}.ipynb.zip",
         assets_loc="_static/assets/download/assets.zip",
     )
 
@@ -329,6 +331,25 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     logger.info("Assets packaged at %s.", zip_path)
 
 
+def zip_notebooks_in_output_dir(app: sphinx.application.Sphinx, exception: Exception):
+    """Zip each generated ``.ipynb`` file so that browsers trigger a download.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+    exception : Exception
+        Exception encountered during the building of the documentation.
+
+    """
+    if exception:
+        return
+    for ipynb in pathlib.Path(app.outdir).rglob("*.ipynb"):
+        zip_path = ipynb.with_name(ipynb.name + ".zip")
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.write(ipynb, arcname=ipynb.name)
+
+
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
     Remove the example files from the documentation source directory.
@@ -366,3 +387,4 @@ def setup(app: sphinx.application.Sphinx):
         app.connect("build-finished", remove_examples_from_source_dir)
         app.connect("build-finished", copy_assets_to_output_dir)
         app.connect("build-finished", copy_examples_to_output_dir)
+        app.connect("build-finished", zip_notebooks_in_output_dir)
