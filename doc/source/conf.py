@@ -333,26 +333,6 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     logger.info("Assets packaged at %s.", zip_path)
 
 
-def zip_notebooks_in_output_dir(app: sphinx.application.Sphinx, exception: Exception):
-    """Zip each generated ``.ipynb`` file so that browsers trigger a download.
-
-    Parameters
-    ----------
-    app : sphinx.application.Sphinx
-        Sphinx application instance containing the all the doc build configuration.
-    exception : Exception
-        Exception encountered during the building of the documentation.
-
-    """
-    if exception:
-        return
-    for ipynb in pathlib.Path(app.outdir).rglob("*.ipynb"):
-        logger.info("Zipping %s for download...", ipynb)
-        zip_path = ipynb.with_name(ipynb.name + ".zip")
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.write(ipynb, arcname=ipynb.name)
-
-
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
     Remove the example files from the documentation source directory.
@@ -390,4 +370,3 @@ def setup(app: sphinx.application.Sphinx):
         app.connect("build-finished", remove_examples_from_source_dir)
         app.connect("build-finished", copy_assets_to_output_dir)
         app.connect("build-finished", copy_examples_to_output_dir)
-        app.connect("build-finished", zip_notebooks_in_output_dir)
