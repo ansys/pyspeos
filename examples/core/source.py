@@ -290,16 +290,18 @@ ambient_uniform_source.delete()
 # ### Ambient CIE Standard General Sky light source
 
 # +
-ambient_cie_standard_general_sky_source = p.create_source(name="CieStandardGeneralSky.1", 
-    feature_type=SourceAmbientCieStandardGeneralSky)
+ambient_cie_standard_general_sky_source = p.create_source(
+    name="CieStandardGeneralSky.1", feature_type=SourceAmbientCieStandardGeneralSky
+)
 print(ambient_cie_standard_general_sky_source.luminance)  # default luminance value
 print(ambient_cie_standard_general_sky_source.zenith_direction)  # default zenith direction
 print(ambient_cie_standard_general_sky_source.north_direction)  # default north direction
-print(ambient_cie_standard_general_sky_source.cie_type) # default cie setting
+print(ambient_cie_standard_general_sky_source.cie_type)  # default cie setting
 ambient_cie_standard_general_sky_source.luminance = 500.0
 ambient_cie_standard_general_sky_source.north_direction = [1, 0, 0]
 ambient_cie_standard_general_sky_source.reverse_north_direction = True
 from ansys.speos.core.generic.parameters import CieType
+
 ambient_cie_standard_general_sky_source.cie_type = CieType.standard_overcast
 ambient_cie_standard_general_sky_source.commit()
 print(ambient_cie_standard_general_sky_source)
