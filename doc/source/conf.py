@@ -4,7 +4,6 @@ from datetime import datetime
 import os
 import pathlib
 import shutil
-import zipfile
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
 import sphinx
