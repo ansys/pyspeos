@@ -167,11 +167,11 @@ if BUILD_EXAMPLES:
         .. grid-item::
             :child-align: center
 
-            .. button-link:: {cname_pref}/{ipynb_file_loc}
-               :color: primary
-               :shadow:
+            .. raw:: html
 
-                Download as Jupyter notebook :fas:`book`
+               <a class="sd-btn sd-btn-primary sd-shadow" href="{cname_pref}/{ipynb_file_loc}" download>
+                 Download as Jupyter notebook <i class="fas fa-book"></i>
+               </a>
 
         .. grid-item::
             :child-align: center
