@@ -305,7 +305,7 @@ jobs:
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
           maximum-pr-doc-deployments: 5
-          
+
   # NOTE: Should this job be using ansys/actions/tests-pytest ?
   testing:
     name: Testing and coverage
