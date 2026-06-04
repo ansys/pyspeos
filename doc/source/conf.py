@@ -181,7 +181,7 @@ if BUILD_EXAMPLES:
                :color: primary
                :shadow:
 
-                Download example's assets :fa:`file`
+                Download all assets :fa:`file`
 
         .. grid-item::
 
@@ -345,6 +345,7 @@ def zip_notebooks_in_output_dir(app: sphinx.application.Sphinx, exception: Excep
     if exception:
         return
     for ipynb in pathlib.Path(app.outdir).rglob("*.ipynb"):
+        logger.info("Zipping %s for download...", ipynb)
         zip_path = ipynb.with_name(ipynb.name + ".zip")
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
             zf.write(ipynb, arcname=ipynb.name)
