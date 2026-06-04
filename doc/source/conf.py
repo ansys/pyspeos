@@ -172,7 +172,8 @@ if BUILD_EXAMPLES:
 
             .. raw:: html
 
-               <a class="sd-btn sd-btn-primary sd-shadow" download href="{cname_pref}/{ipynb_file_loc}">
+               <a class="sd-btn sd-btn-primary sd-shadow"
+                  download href="{cname_pref}/{ipynb_file_loc}">
                  Download as Jupyter notebook <i class="fas fa-book"></i>
                </a>
 
@@ -186,6 +187,8 @@ if BUILD_EXAMPLES:
                 Download all assets :fa:`file`
 
         .. grid-item::
+
+    ----
 
     """.format(
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
