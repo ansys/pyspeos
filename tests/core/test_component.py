@@ -55,7 +55,7 @@ def test_create_lightbox(speos: Speos):
     assert lightbox.__str__().startswith("local") is True
     assert lightbox.axis_system == ORIGIN
     assert len(lightbox.project._features) == 3
-    assert lightbox.trajectory_file_uri == ''
+    assert lightbox.trajectory_file_uri == ""
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
     assert lightbox_material[0].get(key="name") == "Material.2"
@@ -70,16 +70,15 @@ def test_create_lightbox(speos: Speos):
     assert lightbox_part[0].bodies[0].faces[0]._name == "face.1:3037138295"
     lightbox.trajectory_file_uri = Path(test_path) / "lightbox" / "Trajectory.json"
 
-
     lightbox.commit()
     assert lightbox.__str__().startswith("local") is False
     assert lightbox.trajectory_file_uri == str(Path(test_path) / "lightbox" / "Trajectory.json")
-    lightbox.trajectory_file_uri = ''
+    lightbox.trajectory_file_uri = ""
     lightbox_material[0].sop_mirror.reflectance = 90
     lightbox_material[0].commit()
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     assert lightbox_material.sop_mirror.reflectance == 90
-    assert lightbox.trajectory_file_uri == ''
+    assert lightbox.trajectory_file_uri == ""
 
     lightbox.create_optical_property(name="new material")
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
