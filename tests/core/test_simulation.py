@@ -1883,7 +1883,7 @@ def test_timeline(speos: Speos):
     """Test Inverse Simulation Timeline functionality"""
     p = Project(speos=speos)
 
-    # timeline: initalized defaults
+    # timeline: initialized defaults
     sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
     assert not sim1._job.inverse_mc_simulation_properties.HasField("timeline")
     assert not sim1.timeline
