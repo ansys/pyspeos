@@ -266,6 +266,32 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
+
+    @property
+    def trajectory_file_uri(self) -> str:
+        """Location of the trajectory file.
+
+        This property gets or sets the trajectory .JSON file applied
+        to the lightbox, which describes its motion.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            format file uri (json).
+            
+        Returns
+        -------
+        uri : str
+            format file uri (json).
+
+        """
+        return self._scene_instance.trajectory_file_uri
+    
+    @trajectory_file_uri.setter
+    def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
+        self._scene_instance.trajectory_file_uri = str(uri)
+
+
     def find(
         self,
         name: str,
