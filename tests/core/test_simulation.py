@@ -1880,7 +1880,7 @@ def test_texture_normalization(speos: Speos):
 
 @pytest.mark.supported_speos_versions(min=261)
 def test_timeline(speos: Speos):
-    """Test Inverse Simulation Timeline functionality"""
+    """Test Inverse Simulation Timeline functionality."""
     p = Project(speos=speos)
 
     # timeline: initialized defaults
