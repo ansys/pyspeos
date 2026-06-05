@@ -266,7 +266,6 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
-
     @property
     def trajectory_file_uri(self) -> str:
         """Location of the trajectory file.
@@ -278,7 +277,7 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
         ----------
         uri : Union[str, pathlib.Path]
             format file uri (json).
-            
+
         Returns
         -------
         uri : str
@@ -286,11 +285,10 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
 
         """
         return self._scene_instance.trajectory_file_uri
-    
+
     @trajectory_file_uri.setter
     def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
         self._scene_instance.trajectory_file_uri = str(uri)
-
 
     def find(
         self,
