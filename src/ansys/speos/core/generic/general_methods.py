@@ -38,6 +38,7 @@ from ansys.tools.common.path import get_available_ansys_installations
 import numpy as np
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
+from ansys.speos.core.generic.version_checker import server_version_checker
 
 _GRAPHICS_AVAILABLE = None
 
@@ -328,7 +329,18 @@ def min_speos_version(major: int, minor: int, service_pack: int):
                 name = function.__qualname__[:-9]
             else:
                 name = function.__qualname__
-            warnings.warn(VERSION_ERROR.format(version=version, feature_name=name), stacklevel=2)
+            is_error = not server_version_checker.is_version_supported(
+                2000 + major, minor, service_pack
+            )
+            if is_error:
+                if server_version_checker._version is None:
+                    warnings.warn(
+                        VERSION_ERROR.format(version=version, feature_name=name), stacklevel=2
+                    )
+                else:
+                    raise NotImplementedError(
+                        VERSION_ERROR.format(version=version, feature_name=name)
+                    )
             return function(*args, **kwargs)
 
         return wrapper
