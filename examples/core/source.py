@@ -11,7 +11,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import Face, Project, Speos, launcher
+from ansys.speos.core import Face, GeoRef, Project, Speos, launcher
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -23,6 +23,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 
 # -
@@ -260,6 +261,17 @@ print(source5)
 source5.delete()
 # -
 
+# ### Thermic source
+
+# +
+source_thermal = p.create_source(name="Thermic.1", feature_type=SourceThermic)
+source_thermal.set_emissive_faces(
+    geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
+)
+print(source_thermal)
+
+source_thermal.delete()
+# -
 # ### Ambient uniform light source
 
 # +

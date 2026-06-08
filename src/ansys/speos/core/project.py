@@ -89,6 +89,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from ansys.speos.core.speos import Speos
 
@@ -360,6 +361,7 @@ class Project:
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
                 RayFileSourceParameters,
+                SourceThermic,
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
@@ -370,6 +372,7 @@ class Project:
         SourceSurface,
         SourceRayFile,
         SourceLuminaire,
+        SourceThermic,
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
@@ -534,6 +537,13 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceThermic":
+                feature = SourceThermic(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -541,6 +551,7 @@ class Project:
                         SourceSurface,
                         SourceLuminaire,
                         SourceRayFile,
+                        SourceThermic,
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
@@ -929,6 +940,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceThermic,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
@@ -1370,6 +1382,13 @@ class Project:
                         source_instance=src_inst,
                         default_parameters=None,
                     )
+            elif src_inst.HasField("thermic_properties"):
+                src_feat = SourceThermic(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_values=False,
+                )
             if src_feat is not None:
                 src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
