@@ -853,6 +853,44 @@ class ManualSunParameters:
     """Manual sun direction vector."""
 
 
+class CieType(str, Enum):
+    """CIE Standard General Sky, CIE Type."""
+
+    standard_overcast = "standard_overcast"
+    overcast_steep_gradation = "overcast_steep_gradation"
+    overcast_azimuthal_uniformity = "overcast_azimuthal_uniformity"
+    overcast_slight_brightening = "overcast_slight_brightening"
+    uniform_luminance = "uniform_luminance"
+    cloudy_slight_brightening = "cloudy_slight_brightening"
+    cloudy_nogradation_circumsolar = "cloudy_nogradation_circumsolar"
+    cloudy_solar_corona = "cloudy_solar_corona"
+    cloudy_obscured_sun = "cloudy_obscured_sun"
+    cloudy_circumsolar_region = "cloudy_circumsolar_region"
+    white_blue_distinct = "white_blue_distinct"
+    standard_low_luminance = "standard_low_luminance"
+    standard_polluted_atmosphere = "standard_polluted_atmosphere"
+    cloudless_turbid_corona = "cloudless_turbid_corona"
+    white_blue_broad = "white_blue_broad"
+
+
+@dataclass
+class AmbientCieStandardGeneralSkyParameters:
+    """Ambient CIE Standard General Sky Parameters."""
+
+    cie_type: CieType = CieType.cloudy_slight_brightening
+    """sky type, from cie types list"""
+    luminance: float = 1000.0
+    """Luminance value in cd/m2"""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector"""
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector"""
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+    """Sun definition, automatic or manual"""
+
+
 @dataclass
 class AmbientNaturalLightParameters:
     """Ambient Natural Light Parameters."""
