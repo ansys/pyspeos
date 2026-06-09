@@ -498,6 +498,79 @@ class IntensityXMPSensorParameters:
     """Parameters used when the sensor is near field."""
 
 
+@dataclass
+class ImmersiveSensorParameters:
+    """Parameters for :class:`~ansys.speos.core.sensor.SensorImmersive`.
+
+    Parameters
+    ----------
+    sampling : int, optional
+        Horizontal and vertical number of pixels for a face.
+        By default, ``600``.
+    integration_angle : float, optional
+        Integration angle in degrees for direct simulations.
+        By default, ``5.0``.
+    wavelengths_range : ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
+        Spectral range to use for simulation.
+        By default, a range from 400nm to 700nm with sampling of 13.
+    axis_system : list[float], optional
+        Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
+        X corresponds to Front direction. Y corresponds to Top direction.
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
+    exclude_front : bool, optional
+        Exclude front face.
+        By default, ``False``.
+    exclude_back : bool, optional
+        Exclude back face.
+        By default, ``False``.
+    exclude_left : bool, optional
+        Exclude left face.
+        By default, ``False``.
+    exclude_right : bool, optional
+        Exclude right face.
+        By default, ``False``.
+    exclude_top : bool, optional
+        Exclude top face.
+        By default, ``False``.
+    exclude_bottom : bool, optional
+        Exclude bottom face.
+        By default, ``False``.
+    interocular_distance : float, optional
+         Distance between the left and right eyes, in millimeters.
+         By default, None.
+    """
+
+    sampling: int = 600
+    """Horizontal and vertical pixel count per face."""
+    integration_angle: float = 5.0
+    """Integration angle in degrees."""
+    wavelengths_range: WavelengthsRangeParameters = field(
+        default_factory=WavelengthsRangeParameters
+    )
+    """Spectral range."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
+    exclude_front: bool = False
+    """Exclude front face."""
+    exclude_back: bool = False
+    """Exclude back face."""
+    exclude_left: bool = False
+    """Exclude left face."""
+    exclude_right: bool = False
+    """Exclude right face."""
+    exclude_top: bool = False
+    """Exclude top face."""
+    exclude_bottom: bool = False
+    """Exclude bottom face."""
+    interocular_distance: Optional[float] = None
+    """Distance between viewpoints in mm."""
+
+
 # =============================================================================
 # Source parameters
 # =============================================================================
