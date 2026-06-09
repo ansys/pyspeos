@@ -32,7 +32,7 @@ If you are adapting to a new version of PySpeos, see the :ref:`migration_guide`.
         Understand PySpeos API endpoints, their capabilities,
         and how to interact with them programmatically.
 
-    .. grid-item-card:: Examples :fa:`clone`
+    .. grid-item-card:: Examples :fa:`scroll`
         :padding: 2 2 2 2
         :link: examples
         :link-type: doc
