@@ -27,6 +27,7 @@ from pathlib import Path
 import tempfile
 from typing import List, Union
 
+from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.part.v1 import face_pb2
 
 from ansys.speos.core.generic.file_transfer import FileTransfer
@@ -431,3 +432,62 @@ if os.name == "nt":
         # vtp_meshes = vtp_meshes.point_data_to_cell_data()
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
+
+
+def export_xmp_to_image(
+    simulation_feature: Union[SimulationDirect, SimulationInverse, SimulationInteractive],
+    result_name: str,
+) -> Result:
+    """Export an XMP result into a PNG file.
+
+    Parameters
+    ----------
+    simulation_feature : ansys.speos.core.simulation.Simulation
+        The simulation feature.
+    result_name : str
+        The result name to export as an image.
+
+    Returns
+    -------
+    ansys.api.speos.job.v2.job_pb2.Result
+        The exported image file.
+    """
+    if not str(result_name).lower().endswith(".xmp"):
+        # raise error if the result name does not end with .xmp,
+        # since only xmp result can be exported to image
+        raise ValueError(
+            "Only XMP result can be exported to image,\
+            please provide a valid result name ending with .xmp"
+        )
+
+    file_path = _find_correct_result(simulation_feature, result_name, download_if_distant=False)
+    if file_path == "":
+        raise ValueError(
+            "No result corresponding to " + result_name + " is found in " + simulation_feature._name
+        )
+
+    # Looking at file_path allows to know if server is distant.
+    # Example: if file_path is a file_uri from file transfer -> this is a distant server,
+    # if file_path is a local path -> this is a local server.
+    is_local_server = Path(file_path).is_file() is True
+
+    image_exported_path = ""
+    if is_local_server:
+        image_exported_path = Path(file_path).with_suffix(".png")
+    else:
+        # Book a file_uri
+        file_transfer = FileTransfer(simulation_feature._project.client)
+        image_exported_path = file_transfer.reserve()
+
+    simulation_feature._project.client.maps().export_xmp_to_image(
+        xmp_file_uri=file_path, image_file_uri=image_exported_path
+    )
+
+    image_exported = Result()
+    if is_local_server:
+        image_exported.path = str(image_exported_path)
+    else:
+        image_exported.upload_response.info.uri = image_exported_path
+        image_exported.upload_response.info.file_name = Path(result_name).with_suffix(".png").name
+
+    return image_exported
