@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Part, Speos, launcher
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -171,9 +172,11 @@ run_sim()  # Run the simulation
 
 # ## Check and review result
 #
-# Open result (only windows)
+# Open result
 
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
@@ -198,7 +201,9 @@ run_sim()
 
 # Review result:
 
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 
 # ## Modify camera property
@@ -212,7 +217,9 @@ cam1.commit()
 # Re-run the simulation and review result
 
 run_sim()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 
 speos.close()

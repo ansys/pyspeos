@@ -84,7 +84,7 @@ print(results)
 
 
 # ## Postprocessing
-# ### Open the results (MS Windows OS only):
+# ### Open the results:
 #
 # Display one result as image.
 #
