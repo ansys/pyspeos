@@ -29,6 +29,8 @@ from ansys.api.speos.results.v1 import (
     map_pb2_grpc as service,
 )
 
+from ansys.speos.core.generic.version_checker import server_version_checker
+
 
 class MapStub:
     """
@@ -51,6 +53,10 @@ class MapStub:
     """
 
     def __init__(self, channel):
+        if not server_version_checker.is_version_supported(2026, 1, 2):
+            raise NotImplementedError(
+                "Map actions are only supported with Speos 2026 R1.2 or higher."
+            )
         self._actions_stub = service.MapActionsStub(channel=channel)
 
     # Actions

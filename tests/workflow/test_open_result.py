@@ -24,14 +24,17 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.project import Project
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.speos import Speos
-from ansys.speos.core.workflow.open_result import export_xmp_to_image
+from ansys.speos.core.workflow.open_result import export_xmp_to_image, open_result_image
 from tests.conftest import local_test_path, test_path
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export_xmp_to_image(speos: Speos):
     """Test exporting XMP file to image."""
     p = Project(
@@ -71,3 +74,35 @@ def test_export_xmp_to_image(speos: Speos):
         downloaded_image = local_test_path / image_exported.upload_response.info.file_name
         assert downloaded_image.is_file() is True
         downloaded_image.unlink()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_open_result_image(speos: Speos):
+    """Test opening result as an image."""
+    p = Project(
+        speos=speos,
+        path=test_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5",
+    )
+    sim_feat: SimulationDirect = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[
+        0
+    ]
+    results = sim_feat.compute_CPU()
+    print(results)
+
+    # Look for the first XMP file encountered.
+    xmp_name_to_export = Path()
+    for result in results:
+        if result.HasField("path") and result.path.endswith(".xmp"):
+            xmp_name_to_export = Path(result.path).name
+            break
+        elif result.HasField("upload_response") and result.upload_response.info.file_name.endswith(
+            ".xmp"
+        ):
+            xmp_name_to_export = result.upload_response.info.file_name
+            break
+
+    image_exported_path = open_result_image(
+        simulation_feature=sim_feat, result_name=xmp_name_to_export
+    )
+    assert image_exported_path.is_file() is True
+    image_exported_path.unlink()

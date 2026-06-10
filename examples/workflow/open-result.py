@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -89,7 +90,9 @@ print(results)
 #
 # A full path can be given, or the name of the result.
 
-if os.name == "nt":  # Are we running on Windows OS?
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name=RESULT_NAME)
@@ -107,4 +110,23 @@ if os.name == "nt":
         simulation_feature=sim,
         result_name=RESULT_NAME,
     )
+
+
+# ### Export the XMP result to PNG image
+#
+# Export one result to a PNG image file.
+#
+# A full path can be given, or the name of the result.
+
+from ansys.speos.core.workflow.open_result import export_xmp_to_image
+
+exported_image = export_xmp_to_image(simulation_feature=sim, result_name=RESULT_NAME)
+if exported_image.HasField("path"):
+    print(exported_image.path)  # Local path of the exported image on the server.
+elif exported_image.HasField("upload_response"):
+    print(
+        exported_image.upload_response.info.uri
+    )  # URI of the exported image on the server, which can be used to download the file.
+
+
 speos.close()

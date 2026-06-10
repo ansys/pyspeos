@@ -22,11 +22,14 @@
 
 """Test map actions."""
 
+import pytest
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export_xmp_to_image(speos: Speos):
     """Test the export of XMP to PNG."""
     assert speos.client.healthy is True
