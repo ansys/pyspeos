@@ -976,6 +976,7 @@ def test_create_speos_feature_preview_3d_irradiance(speos: Speos):
     assert mock_plotter.plot.call_count >= 1
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_change_loaded_mesh(speos: Speos):
     """Test changed loaded mesh."""
     # load initial file
