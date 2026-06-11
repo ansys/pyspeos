@@ -46,6 +46,7 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
     IntensitySensorDimensionsXAsMeridianParameters,
@@ -1962,6 +1963,7 @@ class SensorCamera(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_camera_pos = np.array(feature_pos_info[:3])
             feature_camera_x_dir = np.array(feature_pos_info[3:6])
@@ -2504,6 +2506,7 @@ class SensorIrradiance(BaseSensor):
         if self._visual_data.updated is True:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_irradiance_pos = np.array(feature_pos_info[:3])
             feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
@@ -3270,6 +3273,7 @@ class SensorRadiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_radiance_pos = np.array(feature_pos_info[:3])
             feature_radiance_x_dir = np.array(feature_pos_info[3:6])
@@ -4212,6 +4216,7 @@ class Sensor3DIrradiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             mesh_geo_paths = self.get(key="geo_paths")
             for mesh_geo_path in mesh_geo_paths:
                 if len(self._project.find(name=mesh_geo_path, feature_type=core.face.Face)) != 0:
@@ -5441,3 +5446,340 @@ class SensorXMPIntensity(BaseSensor):
     @axis_system.setter
     def axis_system(self, value: list[float]):
         self._sensor_instance.intensity_properties.axis_system[:] = value
+
+
+class SensorImmersive(BaseSensor):
+    """Sensor feature: Immersive.
+
+    An immersive sensor wraps the observer inside a cube and collects light from all six faces.
+    By default, a sampling of 600 pixels per face, an integration angle of 5 degrees, a spectral
+    range from 400 nm to 700 nm (sampling 13), no layer separation, and no face exclusions are
+    chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : ansys.speos.core.generic.parameters.ImmersiveSensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[ImmersiveSensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        self._layer_type = None
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[ImmersiveSensorParameters] = None
+    ) -> None:
+        if default_parameters:
+            self.sampling = default_parameters.sampling
+            self.integration_angle = default_parameters.integration_angle
+            self.stereo_interocular_distance = default_parameters.interocular_distance
+            _wl = self.set_wavelengths_range()
+            _wl.start = default_parameters.wavelengths_range.start
+            _wl.end = default_parameters.wavelengths_range.end
+            _wl.sampling = default_parameters.wavelengths_range.sampling
+            self.axis_system = default_parameters.axis_system
+            if default_parameters.layer_type == LayerTypes.none:
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            self.exclude_front = default_parameters.exclude_front
+            self.exclude_back = default_parameters.exclude_back
+            self.exclude_left = default_parameters.exclude_left
+            self.exclude_right = default_parameters.exclude_right
+            self.exclude_top = default_parameters.exclude_top
+            self.exclude_bottom = default_parameters.exclude_bottom
+            return
+
+        # Load state from existing template/instance (reset path)
+        if self._sensor_instance.immersive_properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif self._sensor_instance.immersive_properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+
+    # ------------------------------------------------------------------
+    # Template-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def sampling(self) -> int:
+        """Pixel count (horizontal and vertical) per cube face.
+
+        Parameters
+        ----------
+        value : int
+            Pixel count per face. By default, ``600``.
+
+        Returns
+        -------
+        int
+            Current sampling value.
+        """
+        return self._sensor_template.immersive_sensor_template.sampling
+
+    @sampling.setter
+    def sampling(self, value: int) -> None:
+        self._sensor_template.immersive_sensor_template.sampling = int(value)
+
+    @property
+    def integration_angle(self) -> float:
+        """Integration angle in degrees for direct simulations.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle (degrees). By default, ``5.0``.
+
+        Returns
+        -------
+        float
+            Current integration angle.
+        """
+        return self._sensor_template.immersive_sensor_template.integration_angle
+
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> None:
+        self._sensor_template.immersive_sensor_template.integration_angle = float(value)
+
+    @property
+    def stereo_interocular_distance(self) -> float:
+        """Stereo interocular distance in mm.
+
+        Parameters
+        ----------
+        value : None | float
+            Set stereo interocular distance in mm.
+            By default, None as deactivate the stereo setting.
+            Or, set value to stereo interocular distance value will activate
+            the stereo setting.
+
+
+        Returns
+        -------
+        float
+            Current stereo interocular distance in mm.
+            If stereo setting is not activated, distance will be 0 mm.
+        """
+        return self._sensor_template.immersive_sensor_template.stereo.interocular_distance
+
+    @stereo_interocular_distance.setter
+    def stereo_interocular_distance(self, value: None | float) -> None:
+        if value is not None:
+            self._sensor_template.immersive_sensor_template.stereo.interocular_distance = value
+        else:
+            self._sensor_template.immersive_sensor_template.ClearField("stereo")
+
+    def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
+        """Configure the wavelength range of the sensor.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
+            Wavelength range object.
+        """
+        return BaseSensor.WavelengthsRange(
+            wavelengths_range=self._sensor_template.immersive_sensor_template.wavelengths_range,
+            stable_ctr=True,
+        )
+
+    @property
+    def exclude_front(self) -> bool:
+        """Whether the front face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.front
+
+    @exclude_front.setter
+    def exclude_front(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.front = bool(value)
+
+    @property
+    def exclude_back(self) -> bool:
+        """Whether the back face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.back
+
+    @exclude_back.setter
+    def exclude_back(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.back = bool(value)
+
+    @property
+    def exclude_left(self) -> bool:
+        """Whether the left face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.left
+
+    @exclude_left.setter
+    def exclude_left(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.left = bool(value)
+
+    @property
+    def exclude_right(self) -> bool:
+        """Whether the right face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.right
+
+    @exclude_right.setter
+    def exclude_right(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.right = bool(value)
+
+    @property
+    def exclude_top(self) -> bool:
+        """Whether the top face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.top
+
+    @exclude_top.setter
+    def exclude_top(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.top = bool(value)
+
+    @property
+    def exclude_bottom(self) -> bool:
+        """Whether the bottom face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.bottom
+
+    @exclude_bottom.setter
+    def exclude_bottom(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.bottom = bool(value)
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position of the sensor.
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            X is Front, Y is Top, Z is Right.
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+        """
+        return list(self._sensor_instance.immersive_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.immersive_properties.axis_system[:] = value
+
+    @property
+    def layer(self) -> Union[str, None]:
+        """Current layer separation type.
+
+        Returns
+        -------
+        Union[str, None]
+            ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+        """
+        return self._layer_type
+
+    def set_layer_type_none(self) -> SensorImmersive:
+        """Set layer separation to *None* (no layer separation).
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorImmersive
+            This immersive sensor.
+        """
+        self._sensor_instance.immersive_properties.layer_type_none.SetInParent()
+        self._layer_type = LayerTypes.none
+        return self
+
+    def set_layer_type_source(self) -> SensorImmersive:
+        """Set layer separation to *by source*.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorImmersive
+            This immersive sensor.
+        """
+        self._sensor_instance.immersive_properties.layer_type_source.SetInParent()
+        self._layer_type = LayerTypes.by_source
+        return self

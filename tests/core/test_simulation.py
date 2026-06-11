@@ -30,6 +30,7 @@ from threading import Thread
 from time import sleep
 from types import SimpleNamespace
 
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
@@ -48,6 +49,79 @@ from ansys.speos.core.simulation import (
 from ansys.speos.core.source import SourceLuminaire
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
+
+
+def _create_source_group_test_prerequisites(
+    p: Project,
+) -> tuple[SensorIrradiance, SourceLuminaire, SourceLuminaire]:
+    """Create prerequisites for source group simulation tests."""
+    root_part = p.create_root_part()
+    face_1 = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face_1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
+    opt_prop.commit()
+
+    sensor = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
+    sensor.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor.commit()
+
+    source_1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
+    source_1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source_1.commit()
+
+    source_2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
+    source_2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source_2.commit()
+
+    return sensor, source_1, source_2
+
+
+def _validate_source_groups_support_or_skip() -> None:
+    """Return the committed simulation or skip if the current server ignores source groups."""
+    check_version = server_version_checker.is_version_supported(2026, 1, 2)
+    if not check_version:
+        pytest.skip("Current Speos server is not supporting source group.")
+
+
+def test_source_group_api_local_validation(monkeypatch):
+    """Test source group API logic in isolation without any Speos server connection."""
+    monkeypatch.setattr(server_version_checker, "_version", None)
+
+    sim = BaseSimulation.__new__(BaseSimulation)
+    sim._project = None
+    sim._simulation_instance = messages.Scene.SimulationInstance(name="Direct.SourceGroups")
+
+    sim.source_paths = ["source.1", "source.2"]
+
+    source_group = sim.add_source_group(name="Group.1", source_paths=["source.1"])
+    assert source_group.name == "Group.1"
+    assert source_group.source_paths == ["source.1"]
+    assert len(sim.source_groups) == 1
+
+    sim.source_groups[0].source_paths = ["source.1", "source.2"]
+    assert sim.source_groups[0].source_paths == ["source.1", "source.2"]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.add_source_group(name="Group.2", source_paths=["source.3"])
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.source_paths = ["source.1"]
+    assert sim.source_paths == ["source.1", "source.2"]
+
+    sim.remove_source_group("Group.1")
+    assert sim.source_groups == []
+
+    monkeypatch.setattr(server_version_checker, "_version", "2025.2.0")
+    with pytest.raises(
+        NotImplementedError, match="needs a Speos Version of 2026 R1 SP2 or higher."
+    ):
+        sim.add_source_group(name="Group.Unsupported", source_paths=["source.1"])
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -149,6 +223,91 @@ def test_create_direct(speos: Speos):
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_source_groups_commit_and_reset(speos: Speos):
+    """Test source groups with commit, validation, and reset."""
+    _validate_source_groups_support_or_skip()
+    p = Project(speos=speos)
+    sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
+
+    sim = p.create_simulation(name="Direct.SourceGroups", feature_type=SimulationDirect)
+    sim.sensor_paths = [sensor]
+    sim.source_paths = [source_1, source_2]
+
+    source_group = sim.add_source_group(name="Group.1", source_paths=[source_1])
+    assert source_group.name == "Group.1"
+    assert source_group.source_paths == [source_1._name]
+    assert len(sim.source_groups) == 1
+    assert sim.source_groups[0].name == "Group.1"
+
+    sim.source_groups[0].source_paths = [source_1, source_2]
+    assert sim.source_groups[0].source_paths == [
+        source_1._name,
+        source_2._name,
+    ]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.add_source_group(name="Group.2", source_paths=["Unknown.Source"])
+
+    sim.commit()
+    assert sim.source_groups[0].source_paths == [
+        source_1._name,
+        source_2._name,
+    ]
+
+    sim.clear_source_groups()
+    assert sim.source_groups == []
+
+    sim.reset()
+    assert len(sim.source_groups) == 1
+    assert sim.source_groups[0].name == "Group.1"
+    assert sim.source_groups[0].source_paths == [source_1._name, source_2._name]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.source_paths = [source_1._name]
+
+    sim.remove_source_group("Group.1")
+    assert sim.source_groups == []
+    sim.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_load_source_groups_from_exported_file(speos: Speos):
+    """Test loading source groups from an exported simulation file."""
+    export_root = Path(test_path) / "source_group_export"
+    remove_file(str(export_root))
+
+    try:
+        _validate_source_groups_support_or_skip()
+        p = Project(speos=speos)
+        sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
+
+        sim = p.create_simulation(name="Direct.SourceGroups.Export", feature_type=SimulationDirect)
+        sim.sensor_paths = [sensor]
+        sim.source_paths = [source_1, source_2]
+        sim.add_source_group(name="Group.Export", source_paths=[source_1, source_2])
+        sim.commit()
+        sim.export(export_path=export_root)
+
+        exported_path = (
+            export_root / f"{sim.get(key='name')}.speos" / f"{sim.get(key='name')}.speos"
+        )
+        assert does_file_exist(str(exported_path))
+
+        loaded_project = Project(speos=speos, path=str(exported_path))
+        loaded_sim = loaded_project.find(
+            name="Direct.SourceGroups.Export",
+            feature_type=SimulationDirect,
+        )[0]
+
+        assert loaded_sim.source_paths == [source_1._name, source_2._name]
+        assert len(loaded_sim.source_groups) == 1
+        assert loaded_sim.source_groups[0].name == "Group.Export"
+        assert loaded_sim.source_groups[0].source_paths == [source_1._name, source_2._name]
+    finally:
+        remove_file(str(export_root))
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -1143,6 +1302,7 @@ def test_stop_computation(speos: Speos):
     assert difference.seconds < 25
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(

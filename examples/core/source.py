@@ -16,6 +16,7 @@ from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.source import (
+    SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
@@ -191,6 +192,7 @@ print(source3)
 
 # +
 source3.flux.set_luminous()
+source3.flux.value = 55
 source3.commit()
 print(source3)
 # -
@@ -216,6 +218,7 @@ print(source4)
 
 # +
 source4.flux.set_luminous_intensity()
+source4.flux.value = 6
 source4.intensity.set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source4.commit()
 print(source4)
@@ -282,6 +285,37 @@ print(ambient_uniform_source)
 
 # +
 ambient_uniform_source.delete()
+# -
+
+# ### Ambient CIE Standard General Sky light source
+
+# +
+ambient_cie_standard_general_sky_source = p.create_source(
+    name="CieStandardGeneralSky.1", feature_type=SourceAmbientCieStandardGeneralSky
+)
+print(ambient_cie_standard_general_sky_source.luminance)  # default luminance value
+print(ambient_cie_standard_general_sky_source.zenith_direction)  # default zenith direction
+print(ambient_cie_standard_general_sky_source.north_direction)  # default north direction
+print(ambient_cie_standard_general_sky_source.cie_type)  # default cie setting
+ambient_cie_standard_general_sky_source.luminance = 500.0
+ambient_cie_standard_general_sky_source.north_direction = [1, 0, 0]
+ambient_cie_standard_general_sky_source.reverse_north_direction = True
+from ansys.speos.core.generic.parameters import CieType
+
+ambient_cie_standard_general_sky_source.cie_type = CieType.standard_overcast
+ambient_cie_standard_general_sky_source.commit()
+print(ambient_cie_standard_general_sky_source)
+# -
+
+# +
+ambient_cie_standard_general_sky_source.set_sun_manual().direction = [0, 0.707, 0.707]
+ambient_cie_standard_general_sky_source.set_sun_manual().reverse_sun = True
+ambient_cie_standard_general_sky_source.commit()
+print(ambient_cie_standard_general_sky_source)
+# -
+
+# +
+ambient_cie_standard_general_sky_source.delete()
 # -
 
 # ### Ambient environment light source
