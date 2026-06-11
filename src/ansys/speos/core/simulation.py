@@ -1998,7 +1998,7 @@ class SimulationInteractive(BaseSimulation):
         if default_parameters is not None:
             self.ambient_material_file_uri = default_parameters.ambient_material_uri
             # Default job parameters
-            self.light_expert = default_parameters.light_expoert
+            self.light_expert = default_parameters.light_expert
             self.impact_report = default_parameters.impact_report
             # Default values
             self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
