@@ -41,10 +41,12 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
     AutomaticSunParameters,
+    CieType,
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
@@ -2870,6 +2872,300 @@ class SourceAmbientUniform(BaseSourceAmbient):
         """
         super().delete()
         return self
+
+
+class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
+    """CIE Standard General Sky source.
+
+    By default, luminance is set to 1000 cd/m2
+    [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+    Sun type is set to be automatic type.
+    CIE type is partly cloudy sky, no gradation towards zenith, slight brightening
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters] = None
+        If defined the values in the SourceAmbientCieStandardGeneralSky instance
+         will be overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.cie_type = default_parameters.cie_type
+        self.luminance = default_parameters.luminance
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+            self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+            self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+            self.set_sun_automatic().year = default_parameters.sun_type.year
+            self.set_sun_automatic().month = default_parameters.sun_type.month
+            self.set_sun_automatic().day = default_parameters.sun_type.day
+            self.set_sun_automatic().hour = default_parameters.sun_type.hour
+            self.set_sun_automatic().minute = default_parameters.sun_type.minute
+            self.set_sun_automatic().time_zone = default_parameters.sun_type.time_zone
+        elif isinstance(default_parameters.sun_type, ManualSunParameters):
+            self.set_sun_manual().direction = default_parameters.sun_type.direction
+        else:
+            raise ValueError(f"Unsupported sun type: {type(default_parameters.sun_type).__name__}")
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the ambient CIE standard general sky source.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+
+        Returns
+        -------
+        float
+            Luminance value in cd/m^2.
+        """
+        return self._source_template.ambient.cie_general.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.cie_general.luminance = value
+
+    @property
+    def cie_type(self) -> CieType:
+        """Get the CIE type.
+
+        Parameters
+        ----------
+        ansys.speos.core.generic.parameters.CieType
+            allowed type parameter values:
+                standard_overcast
+                overcast_steep_gradation
+                overcast_azimuthal_uniformity
+                overcast_slight_brightening
+                uniform_luminance
+                cloudy_slight_brightening
+                cloudy_nogradation_circumsolar
+                cloudy_solar_corona
+                cloudy_obscured_sun
+                cloudy_circumsolar_region
+                white_blue_distinct
+                standard_low_luminance
+                standard_polluted_atmosphere
+                cloudless_turbid_corona
+                white_blue_broad
+
+        Returns
+        -------
+        ansys.speos.core.generic.parameters.CieType
+
+        """
+        proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
+
+        value = self._source_template.ambient.cie_general.cie_type
+        name = proto_enum.Name(value)  # int → string
+
+        return CieType(name)
+
+    @cie_type.setter
+    def cie_type(self, value: CieType) -> None:
+        proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
+
+        if not isinstance(value, CieType):
+            raise TypeError(f"cie_type must be a CieType enum, got {type(value)}")
+
+        try:
+            enum_value = proto_enum.Value(value.value)
+        except ValueError:
+            raise ValueError(f"Invalid CieType value: {value}")
+
+        self._source_template.ambient.cie_general.cie_type = enum_value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Property zenith direction of the ambient source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the zenith direction of the ambient sky
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the ambient sky
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """
+        Property whether reverse zenith direction of the ambient CIE standard general sky source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """Property north direction of the ambient CIE standard general sky.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the north direction of the ambient CIE standard general sky
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the ambient CIE standard general sky
+
+        """
+        return self._source_instance.ambient_properties.cie_general_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.cie_general_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Property whether reverse north direction of the ambient CIE standard general sky.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.cie_general_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.cie_general_properties.reverse_north = value
+
+    def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
+        """Set sun type as automatic.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+            Sun automatic type feature to complete.
+
+        """
+        cie_properties = self._source_instance.ambient_properties.cie_general_properties
+        if self._type is None and cie_properties.sun_axis_system.HasField("automatic_sun"):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                cie_properties.sun_axis_system.automatic_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.AutomaticSun(
+                cie_properties.sun_axis_system.automatic_sun,
+                default_parameters=AutomaticSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not cie_properties.sun_axis_system.automatic_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = cie_properties.sun_axis_system.automatic_sun
+        return self._type
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set cie standard general sky sun type as manual.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Sun Manual type feature to complete.
+        """
+        cie_properties = self._source_instance.ambient_properties.cie_general_properties
+        if self._type is None and cie_properties.sun_axis_system.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                cie_properties.sun_axis_system.manual_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.Manual(
+                cie_properties.sun_axis_system.manual_sun,
+                default_parameters=ManualSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not cie_properties.sun_axis_system.manual_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = cie_properties.sun_axis_system.manual_sun
+        return self._type
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):
