@@ -98,7 +98,7 @@ To build it manually :
 .. code:: bash
 
    pip install -U pip tox
-   pip install .[doc]
+   pip install .[graphics] --group doc
    tox -e doc && your_browser_name .tox/doc_out/index.html
 
 
@@ -178,7 +178,7 @@ Launch unit tests
 
 .. code:: bash
 
-   pip install .[tests]
+   pip install . --group tests
    pytest -vx
 
 Use jupyter notebook
@@ -186,7 +186,7 @@ Use jupyter notebook
 
 .. code:: bash
 
-   pip install .[jupyter]
+   pip install . --group jupyter
    jupyter notebook
 
 jupyter notebook can be downloaded from the documentations example section.
