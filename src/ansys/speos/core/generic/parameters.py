@@ -1057,7 +1057,7 @@ class InverseSimulationParameters:
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
     light_expert: bool = False
-    """Whether light export is enabled."""
+    """Whether light expert is enabled."""
     timeline: bool = False
     """whether timeline is enabled"""
     start_time: Optional[float] = None
@@ -1093,7 +1093,7 @@ class InteractiveSimulationParameters:
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
     light_expert: bool = False
-    """Whether light export is enabled."""
+    """Whether light expert is enabled."""
     impact_report: bool = False
     """Whether impact reporting is enabled."""
     geom_distance_tolerance = 0.01
