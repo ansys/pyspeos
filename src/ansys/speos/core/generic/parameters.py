@@ -1030,8 +1030,8 @@ class DirectSimulationParameters:
 
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
-    light_expoert: bool = False
-    """Whether light export is enabled."""
+    light_expert: bool = False
+    """Whether light expert is enabled."""
     stop_condition_rays_number: int = 200000
     """Maximum number of rays before stopping the simulation."""
     stop_condition_duration: Optional[int] = None
