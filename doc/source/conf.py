@@ -109,6 +109,11 @@ numpydoc_validation_checks = {
 # static path
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
+# Extra JavaScript files to include in the HTML output. They are included to ensure that
+# the download button in the admonition is working correctly.
+html_js_files = [
+    "js/download_notebooks.js",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -149,50 +154,33 @@ if BUILD_EXAMPLES:
         "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
     }
     nbsphinx_prompt_width = ""
-    nbsphinx_prolog = """
-
-.. only:: html
-
-    .. grid:: 5
-
-        .. grid-item::
-
-        .. grid-item::
-            :child-align: center
-
-            .. button-link:: {cname_pref}/{python_file_loc}
-                :color: primary
-                :shadow:
-
-                Download as Python script :fab:`python`
-
-        .. grid-item::
-            :child-align: center
-
-            .. raw:: html
-
-               <a class="sd-btn sd-btn-primary sd-shadow"
-                  download href="{cname_pref}/{ipynb_file_loc}">
-                 Download as Jupyter notebook <i class="fas fa-book"></i>
-               </a>
-
-        .. grid-item::
-            :child-align: center
-
-            .. button-link:: {cname_pref}/{assets_loc}
-               :color: primary
-               :shadow:
-
-                Download all assets :fa:`file`
-
-        .. grid-item::
-
+    nbsphinx_epilog = """
     ----
+
+    .. admonition:: Download this example
+
+        Download this example as a `Jupyter Notebook <{cname_pref}/{ipynb_file_loc}>`_
+        or as a `Python script <{cname_pref}/{py_file_loc}>`_. All assets used in the
+        examples can be downloaded as a `ZIP archive <{cname_pref}/{assets_loc}>`_.
 
     """.format(
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
-        python_file_loc="{{ env.docname }}.py",
         ipynb_file_loc="{{ env.docname }}.ipynb",
+        py_file_loc="{{ env.docname }}.py",
+        assets_loc="_static/assets/download/assets.zip",
+    )
+    nbsphinx_prolog = """
+
+    .. admonition:: Download this example
+
+        Download this example as a `Jupyter Notebook <{cname_pref}/{ipynb_file_loc}>`_
+        or as a `Python script <{cname_pref}/{py_file_loc}>`_. All assets used in the
+        examples can be downloaded as a `ZIP archive <{cname_pref}/{assets_loc}>`_.
+
+    """.format(
+        cname_pref=f"https://{cname}/version/{get_version_match(version)}",
+        ipynb_file_loc="{{ env.docname }}.ipynb",
+        py_file_loc="{{ env.docname }}.py",
         assets_loc="_static/assets/download/assets.zip",
     )
 
