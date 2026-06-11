@@ -1030,8 +1030,8 @@ class DirectSimulationParameters:
 
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
-    light_expoert: bool = False
-    """Whether light export is enabled."""
+    light_expert: bool = False
+    """Whether light expert is enabled."""
     stop_condition_rays_number: int = 200000
     """Maximum number of rays before stopping the simulation."""
     stop_condition_duration: Optional[int] = None
@@ -1056,7 +1056,7 @@ class InverseSimulationParameters:
 
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
-    light_expoert: bool = False
+    light_expert: bool = False
     """Whether light export is enabled."""
     stop_condition_passes_number: int = 5
     """Maximum number of inverse passes before stopping."""
@@ -1088,7 +1088,7 @@ class InteractiveSimulationParameters:
 
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
-    light_expoert: bool = False
+    light_expert: bool = False
     """Whether light export is enabled."""
     impact_report: bool = False
     """Whether impact reporting is enabled."""

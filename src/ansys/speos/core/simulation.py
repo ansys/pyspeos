@@ -1321,7 +1321,7 @@ class SimulationDirect(BaseSimulation):
             self.set_weight().minimum_energy_percentage = (
                 default_parameters.minimum_energy_percentage
             )
-            self.light_expert = default_parameters.light_expoert
+            self.light_expert = default_parameters.light_expert
             self.stop_condition_rays_number = default_parameters.stop_condition_rays_number
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
@@ -1998,7 +1998,7 @@ class SimulationInteractive(BaseSimulation):
         if default_parameters is not None:
             self.ambient_material_file_uri = default_parameters.ambient_material_uri
             # Default job parameters
-            self.light_expert = default_parameters.light_expoert
+            self.light_expert = default_parameters.light_expert
             self.impact_report = default_parameters.impact_report
             # Default values
             self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
