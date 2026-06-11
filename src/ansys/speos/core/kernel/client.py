@@ -33,6 +33,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 
 from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel.map import MapStub
 
 try:
     from ansys.api.speos.server_info.v1 import server_info_pb2, server_info_pb2_grpc
@@ -247,6 +248,7 @@ class SpeosClient:
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
+        self._maps = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -370,6 +372,14 @@ class SpeosClient:
         if self._jobDB is None:
             self._jobDB = JobStub(self._channel)
         return self._jobDB
+
+    def maps(self) -> MapStub:
+        """Get map actions access."""
+        self.__closed_error()
+        # connect to database
+        if self._maps is None:
+            self._maps = MapStub(self._channel)
+        return self._maps
 
     def __closed_error(self):
         """Check if closed."""
