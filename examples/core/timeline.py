@@ -15,15 +15,16 @@
 # ### Perform imports
 
 # +
+import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
 from ansys.speos.core.component import LightBox
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import default_docker_channel
 from ansys.speos.core.sensor import SensorCamera
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import SourceSurface
-from ansys.speos.core.workflow import open_result_image
 
 # -
 
@@ -80,7 +81,12 @@ simu_feat: SimulationInverse = p.find(name=".*", name_regex=True, feature_type=S
 
 # Compute and display the result.
 simu_feat.compute_CPU()
-open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Irradiance.xmp")
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Irradiance.xmp")
 
 # ### Timeline activated on the simulation but no timeline data in the features
 # Now, let's activate timeline on the simulation feature,
@@ -92,7 +98,12 @@ simu_feat.commit()
 
 # Compute and display the result.
 simu_feat.compute_CPU()
-open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
 
 
 # ### Timeline on camera feature
@@ -107,7 +118,12 @@ camera_feat.commit()
 
 # Compute and display the result.
 simu_feat.compute_CPU()
-open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
 
 # Deactivate timeline for camera feature (not to pollute next results)
 camera_feat.photometric.trajectory_file_uri = ""
@@ -129,7 +145,12 @@ for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface
 
 # Compute and display the result.
 simu_feat.compute_CPU()
-open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
 
 # Deactivate timeline for surface source features (not to pollute next results)
 for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface):
@@ -146,7 +167,12 @@ lb_feat.commit()
 
 # Compute and display the result.
 simu_feat.compute_CPU()
-open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=simu_feat, result_name="Inverse.1.Camera.1.Exposure.xmp")
 
 # Deactivate timeline for light box feature
 lb_feat.trajectory_file_uri = ""
