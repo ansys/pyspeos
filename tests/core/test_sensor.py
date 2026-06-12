@@ -2949,6 +2949,15 @@ def test_load_camera_hydrates_nested_modes(speos: Speos):
 
     sensor_camera = p.create_sensor(name="Camera.LoadHydration", feature_type=SensorCamera)
     color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    color_mode.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    color_mode.green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    color_mode.blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
     user_white = color_mode.set_balance_mode_user_white()
     user_white.red_gain = 1.3
     user_white.green_gain = 0.9
@@ -2984,29 +2993,23 @@ def test_load_camera_hydrates_nested_modes(speos: Speos):
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
     """Ensure 3D irradiance load path keeps radial integration helper state."""
-    p = Project(speos=speos)
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
 
     sensor_photo = p.create_sensor(
         name="Irr3D.Photo.LoadHydration", feature_type=Sensor3DIrradiance
     )
+    sensor_photo.geometries = [body]
     sensor_photo.set_type_photometric().set_integration_radial()
     sensor_photo.commit()
-
-    sensor_radiometric = p.create_sensor(
-        name="Irr3D.Rad.LoadHydration", feature_type=Sensor3DIrradiance
-    )
-    sensor_radiometric.set_type_radiometric().set_integration_radial()
-    sensor_radiometric.commit()
 
     scene_photo = next(
         sensor_instance
         for sensor_instance in p.scene_link.get().sensors
         if sensor_instance.name == "Irr3D.Photo.LoadHydration"
-    )
-    scene_radiometric = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Irr3D.Rad.LoadHydration"
     )
 
     loaded_photo = Sensor3DIrradiance(
@@ -3015,17 +3018,18 @@ def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
         sensor_instance=scene_photo,
         default_parameters=None,
     )
-    loaded_radiometric = Sensor3DIrradiance(
-        project=p,
-        name=scene_radiometric.name,
-        sensor_instance=scene_radiometric,
-        default_parameters=None,
-    )
-
     assert isinstance(loaded_photo.photometric, Sensor3DIrradiance.Photometric)
     assert loaded_photo.photometric._integration_type == "Radial"
+
+    sensor_photo.set_type_radiometric().set_integration_radial()
+    sensor_photo.commit()
+    loaded_radiometric = Sensor3DIrradiance(
+        project=p,
+        name=scene_photo.name,
+        sensor_instance=scene_photo,
+        default_parameters=None,
+    )
     assert isinstance(loaded_radiometric.radiometric, Sensor3DIrradiance.Radiometric)
     assert loaded_radiometric.radiometric._integration_type == "Radial"
 
     sensor_photo.delete()
-    sensor_radiometric.delete()

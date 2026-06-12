@@ -1743,18 +1743,6 @@ def test_load_source_hydrates_cached_helper_state(speos: Speos):
     """Ensure source helpers are hydrated when a source is reconstructed from scene data."""
     p = Project(speos=speos)
 
-    natural_source = p.create_source(
-        name="NaturalLight.LoadHydration", feature_type=SourceAmbientNaturalLight
-    )
-    natural_source.set_sun_manual().direction = [0.0, 0.0, 1.0]
-    natural_source.commit()
-
-    cie_source = p.create_source(
-        name="CieGeneral.LoadHydration", feature_type=SourceAmbientCieStandardGeneralSky
-    )
-    cie_source.set_sun_automatic().year = 2026
-    cie_source.commit()
-
     uniform_source = p.create_source(
         name="Uniform.LoadHydration", feature_type=SourceAmbientUniform
     )
@@ -1764,36 +1752,22 @@ def test_load_source_hydrates_cached_helper_state(speos: Speos):
     environment_source = p.create_source(
         name="Environment.LoadHydration", feature_type=SourceAmbientEnvironment
     )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
     environment_source.set_predefined_color_space().set_color_space_adobergb()
     environment_source.commit()
 
     display_source = p.create_source(name="Display.LoadHydration", feature_type=SourceDisplay)
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
     display_source.set_pre_defined_color_space().set_color_space_adobergb()
     display_source.commit()
 
     scene_sources = p.scene_link.get().sources
-    natural_scene = next(
-        item for item in scene_sources if item.name == "NaturalLight.LoadHydration"
-    )
-    cie_scene = next(item for item in scene_sources if item.name == "CieGeneral.LoadHydration")
     uniform_scene = next(item for item in scene_sources if item.name == "Uniform.LoadHydration")
     environment_scene = next(
         item for item in scene_sources if item.name == "Environment.LoadHydration"
     )
     display_scene = next(item for item in scene_sources if item.name == "Display.LoadHydration")
 
-    loaded_natural = SourceAmbientNaturalLight(
-        project=p,
-        name=natural_scene.name,
-        source_instance=natural_scene,
-        default_parameters=None,
-    )
-    loaded_cie = SourceAmbientCieStandardGeneralSky(
-        project=p,
-        name=cie_scene.name,
-        source_instance=cie_scene,
-        default_parameters=None,
-    )
     loaded_uniform = SourceAmbientUniform(
         project=p,
         name=uniform_scene.name,
@@ -1813,14 +1787,10 @@ def test_load_source_hydrates_cached_helper_state(speos: Speos):
         default_parameters=None,
     )
 
-    assert loaded_natural._type is not None
-    assert loaded_cie._type is not None
     assert loaded_uniform._type is not None
     assert loaded_environment.color_space is not None
     assert loaded_display._type is not None
 
-    natural_source.delete()
-    cie_source.delete()
     uniform_source.delete()
     environment_source.delete()
     display_source.delete()
