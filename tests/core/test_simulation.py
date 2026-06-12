@@ -47,9 +47,10 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
+from ansys.speos.core.workflow.open_result import export_xmp_vtp
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
-from ansys.speos.core.workflow.open_result import export_xmp_vtp
+
 
 def _create_source_group_test_prerequisites(
     p: Project,
@@ -2076,7 +2077,6 @@ def test_timeline(speos: Speos):
     assert sim1.timeline is False
     assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
     assert sim1.start_time is None
-
 
 
 @pytest.mark.supported_speos_versions(min=261)
