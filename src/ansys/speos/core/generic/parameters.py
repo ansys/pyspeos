@@ -949,7 +949,7 @@ class InverseSimulationParameters:
     """Whether light export is enabled."""
     timeline: bool = False
     """whether timeline is enabled"""
-    start_time: Optional[float] = None
+    start_time: Optional[float] = 0.0
     """Timeline start time in seconds. Set to ``None`` to disable the simulation timeline."""
     stop_condition_passes_number: int = 5
     """Maximum number of inverse passes before stopping."""

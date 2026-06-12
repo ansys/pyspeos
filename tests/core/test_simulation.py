@@ -48,7 +48,7 @@ from ansys.speos.core.simulation import (
 from ansys.speos.core.source import SourceLuminaire
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
-
+from ansys.speos.core.workflow.open_result import export_xmp_vtp
 
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_direct(speos: Speos):
@@ -1907,15 +1907,57 @@ def test_timeline(speos: Speos):
     assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
     assert sim1.start_time is None
 
-    # timeline: setting start time re-enables field
-    sim1.start_time = 0.2
-    assert sim1.timeline is True
-    assert sim1.start_time == 0.2
-    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
-    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.2
+    # timeline: setting start time with timeline disabled throws error
+    with pytest.raises(TypeError, match="Timeline must be enabled to set start_time"):
+        sim1.start_time = 0.2
 
     # timeline: setting start time to None removes field
+    sim1.timeline = True
     sim1.start_time = None
     assert sim1.timeline is False
     assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
     assert sim1.start_time is None
+
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline_results(speos: Speos):
+    """Test Inverse Simulation Timeline XMP results."""
+    import numpy as np
+    import pyvista as pv
+
+    # timeline: check simulation results based on timeline setting
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Timeline.speos" / "Timeline.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    sens = p.find(name=".*", name_regex=True, feature_type=SensorRadiance)[0]
+    sim.stop_condition_passes_number = 3
+
+    # rebase to get new direct png export function (from job, in kernel layer)
+    # export result to png
+    # check the png file size
+    def _has_nonzero_result(simulation, sensor, result_name):
+        vtp_path = export_xmp_vtp(simulation, sensor, result_name)
+        mesh = pv.read(vtp_path)
+        return np.any(mesh.point_data["Radiometric"])
+
+    # the target moves within camera FOV -> nonzero result
+    sim.timeline = True
+    sim.start_time = 0.5
+    speos_results = sim.compute_CPU()
+    assert does_file_exist(speos_results[0].path)
+    assert _has_nonzero_result(sim, sens, speos_results[0].path)
+
+    # the target is outside camera FOV -> zero result
+    sim.start_time = 0.0
+    speos_results = sim.compute_CPU()
+    assert does_file_exist(speos_results[0].path)
+    assert not _has_nonzero_result(sim, sens, speos_results[0].path)
+
+    # the target is nominally within camera FOV -> nonzero result
+    sim.timeline = False
+    speos_results = sim.compute_CPU()
+    assert does_file_exist(speos_results[0].path)
+    assert _has_nonzero_result(sim, sens, speos_results[0].path)
