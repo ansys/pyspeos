@@ -2036,6 +2036,23 @@ class SensorCamera(BaseSensor):
             self._visual_data.coordinates.y_axis = feature_camera_y_dir
             self._visual_data.coordinates.z_axis = feature_camera_z_dir
 
+            # camera trajectory path
+            if self.photometric.trajectory_file_uri != "":
+                import json
+
+                json_info = None
+                with Path(self.photometric.trajectory_file_uri).open("r") as f:
+                    json_info = json.load(f)
+                trajectory_points = [
+                    [
+                        item["Origin"].get("X", 0.0) + feature_camera_pos[0],
+                        item["Origin"].get("Y", 0.0) + feature_camera_pos[1],
+                        item["Origin"].get("Z", 0.0) + feature_camera_pos[2],
+                    ]
+                    for item in json_info.get("Trajectory", [])
+                ]
+                self._visual_data.add_data_polyline(points=trajectory_points)
+
             self._visual_data.updated = True
             return self._visual_data
 
