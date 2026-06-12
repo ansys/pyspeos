@@ -2038,7 +2038,7 @@ class SourceSurface(BaseSource):
                 )
 
         self.flux_variation_file_uri = default_parameters.flux_variation_file_uri
-        if self.flux_variation_file_uri != "":
+        if self.flux_variation_file_uri is not None:
             self.relative_lag = default_parameters.relative_lag
 
     @property
