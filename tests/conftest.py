@@ -104,7 +104,7 @@ def speos():
 # set test_path var depending on if we are using the servers in a docker container or not
 local_test_path = local_path / "assets"
 if IS_DOCKER:
-    test_path = "/app/assets/"
+    test_path = Path("/app/assets/")
 else:
     test_path = local_test_path
 

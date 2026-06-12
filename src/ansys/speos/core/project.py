@@ -37,12 +37,14 @@ from ansys.speos.core.component import LightBox, LightBoxFileInstance
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
+    ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
@@ -69,6 +71,7 @@ from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorImmersive,
     SensorIrradiance,
     SensorRadiance,
     SensorXMPIntensity,
@@ -82,6 +85,7 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import (
     BaseSource,
+    SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
@@ -243,7 +247,12 @@ class Project:
         self,
     ) -> List[
         Union[
-            Sensor3DIrradiance, SensorCamera, SensorIrradiance, SensorRadiance, SensorXMPIntensity
+            Sensor3DIrradiance,
+            SensorCamera,
+            SensorImmersive,
+            SensorIrradiance,
+            SensorRadiance,
+            SensorXMPIntensity,
         ]
     ]:
         """Property of project's sensors inside.
@@ -252,6 +261,7 @@ class Project:
         -------
         List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
@@ -363,6 +373,7 @@ class Project:
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
+                AmbientCieStandardGeneralSkyParameters,
                 DisplayParameters,
             ]
         ] = None,
@@ -373,6 +384,7 @@ class Project:
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
+        SourceAmbientCieStandardGeneralSky,
         SourceDisplay,
     ]:
         """Create a new Source feature.
@@ -534,6 +546,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientCieStandardGeneralSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardGeneralSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardGeneralSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientCieStandardGeneralSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardGeneralSky(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -544,6 +571,7 @@ class Project:
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
+                        SourceAmbientCieStandardGeneralSky,
                         SourceDisplay,
                     ],
                 )
@@ -691,10 +719,16 @@ class Project:
                 CameraSensorParameters,
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
+                ImmersiveSensorParameters,
             ]
         ] = None,
     ) -> Union[
-        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+        SensorCamera,
+        SensorRadiance,
+        SensorIrradiance,
+        Sensor3DIrradiance,
+        SensorXMPIntensity,
+        SensorImmersive,
     ]:
         """Create a new Sensor feature.
 
@@ -712,7 +746,8 @@ class Project:
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
-            ansys.speos.core.sensor.SensorXMPIntensity].
+            ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SensorImmersive].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -721,14 +756,16 @@ class Project:
         ansys.speos.core.generic.parameters.RadianceSensorParameters,\
         ansys.speos.core.generic.parameters.CameraSensorParameters,\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
-        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters]]
+        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
+        ansys.speos.core.generic.parameters.ImmersiveSensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.sensor.SensorImmersive]
             Sensor class instance.
         """
         if metadata is None:
@@ -817,6 +854,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorImmersive":
+                if parameters is None:
+                    parameters = ImmersiveSensorParameters()
+                elif not isinstance(parameters, ImmersiveSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ImmersiveSensorParameters"
+                    )
+                feature = SensorImmersive(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -826,6 +878,7 @@ class Project:
                         SensorCamera,
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
+                        SensorImmersive,
                     ],
                 )
                 raise TypeError(msg)
@@ -1370,6 +1423,13 @@ class Project:
                         source_instance=src_inst,
                         default_parameters=None,
                     )
+                elif src_inst.ambient_properties.HasField("cie_general_properties"):
+                    src_feat = SourceAmbientCieStandardGeneralSky(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
             if src_feat is not None:
                 src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
@@ -1415,6 +1475,13 @@ class Project:
                 )
             elif ssr_inst.HasField("intensity_properties"):
                 ssr_feat = SensorXMPIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("immersive_properties"):
+                ssr_feat = SensorImmersive(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
