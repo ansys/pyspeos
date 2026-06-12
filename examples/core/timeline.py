@@ -78,6 +78,8 @@ p.preview()
 # to have a baseline result to compare with.
 
 simu_feat: SimulationInverse = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+simu_feat.stop_condition_passes_number = 5
+simu_feat.commit()
 
 # Compute and display the result.
 simu_feat.compute_CPU()
@@ -133,6 +135,7 @@ camera_feat.commit()
 # ### Timeline on surface source features
 # Let's activate timeline on the surface source features by setting a flux variation file.
 # Same json but different relative lag for each source feature (0, 33, 66).
+
 i = 0
 for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface):
     source_feat: SourceSurface
@@ -161,6 +164,7 @@ for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface
 
 # ### Timeline on light box feature
 # Let's activate timeline on the light box feature by setting a trajectory file.
+
 lb_feat: LightBox = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
 lb_feat.trajectory_file_uri = assets_data_path / "TimelineExample.speos" / "LightBoxTrajectory.json"
 lb_feat.commit()
