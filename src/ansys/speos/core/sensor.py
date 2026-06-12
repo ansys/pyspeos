@@ -1878,7 +1878,7 @@ class SensorCamera(BaseSensor):
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
-            self._camera_props.trajectory_file_uri = str(Path(uri))
+            self._camera_props.trajectory_file_uri = str(uri)
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.

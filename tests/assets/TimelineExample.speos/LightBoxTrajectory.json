@@ -1,0 +1,70 @@
+{
+    "Trajectory": [
+        {
+            "Time": 0.0,
+            "Origin": {
+                "X": 6.52,
+                "Y": 7.26,
+                "Z": 0.0
+            },
+            "Direction_X": {
+                "X": 1.0,
+                "Y": 0.0,
+                "Z": 0.0
+            },
+            "Direction_Y": {
+                "X": 0.0,
+                "Y": 1.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "Time": 0.05,
+            "Origin": {
+                "X": 0.0,
+                "Y": -9.76,
+                "Z": 0.0
+            },
+            "Direction_X": {
+                "X": 1.0,
+                "Y": 0.0,
+                "Z": 0.0
+            },
+            "Direction_Y": {
+                "X": 0.0,
+                "Y": 1.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "Time": 0.1,
+            "Origin": {
+                "X": -9.48,
+                "Y": 2.32,
+                "Z": 0.0
+            },
+            "Direction_X": {
+                "X": 1.0,
+                "Y": 0.0,
+                "Z": 0.0
+            },
+            "Direction_Y": {
+                "X": 0.0,
+                "Y": 1.0,
+                "Z": 0.0
+            }
+        }
+    ],
+    "VersionsDictionary": [
+        {
+            "Name": "DAxisSystemTrajectory\u0000",
+            "Id": -605022505,
+            "Version": 1
+        },
+        {
+            "Name": "DAxisSystemData\u0000",
+            "Id": -1507247392,
+            "Version": 1
+        }
+    ]
+}
