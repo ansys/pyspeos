@@ -2037,7 +2037,7 @@ class SensorCamera(BaseSensor):
             self._visual_data.coordinates.z_axis = feature_camera_z_dir
 
             # camera trajectory path
-            if self.photometric.trajectory_file_uri != "":
+            if not self.photometric and self.photometric.trajectory_file_uri != "":
                 import json
 
                 json_info = None
