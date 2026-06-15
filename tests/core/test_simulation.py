@@ -2095,7 +2095,7 @@ def test_timeline_results(speos: Speos):
     def _has_nonzero_result(simulation, result_name):
         img_path = export_xmp_to_image(simulation, result_name)
         filesize = Path(img_path.path).stat().st_size #bytes
-        if filesize > 1000:
+        if filesize > 2000:
             return True
         else:
             return False
