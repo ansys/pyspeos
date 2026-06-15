@@ -28,6 +28,7 @@ directory as this module.
 """
 
 import json
+import logging
 import logging as deflogging  # Default logging
 import os
 from pathlib import Path
@@ -37,7 +38,7 @@ import pytest
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
 from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
-from ansys.speos.core.launcher import launch_local_speos_rpc_server
+from ansys.speos.core.speos import Speos
 
 try:
     import pyvista as pv
@@ -89,12 +90,11 @@ def speos():
         channel = default_docker_channel(port=SERVER_PORT, message_size=message_size)
     else:
         channel = default_local_channel(port=SERVER_PORT, message_size=message_size)
-    # speos = Speos(
-    #    logging_level=logging.DEBUG,
-    #    logging_file=log_file_path,
-    #    channel=channel,
-    # )
-    speos = launch_local_speos_rpc_server(port=SERVER_PORT)
+    speos = Speos(
+        logging_level=logging.DEBUG,
+        logging_file=log_file_path,
+        channel=channel,
+    )
 
     yield speos
 

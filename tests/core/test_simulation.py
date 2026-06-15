@@ -47,7 +47,7 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
-from ansys.speos.core.workflow.open_result import export_xmp_vtp
+from ansys.speos.core.workflow.open_result import export_xmp_to_image
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
 
@@ -2082,41 +2082,38 @@ def test_timeline(speos: Speos):
 @pytest.mark.supported_speos_versions(min=261)
 def test_timeline_results(speos: Speos):
     """Test Inverse Simulation Timeline XMP results."""
-    import numpy as np
-    import pyvista as pv
-
     # timeline: check simulation results based on timeline setting
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "Timeline.speos" / "Timeline.speos"),
     )
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
-    sens = p.find(name=".*", name_regex=True, feature_type=SensorRadiance)[0]
     sim.stop_condition_passes_number = 3
 
-    # rebase to get new direct png export function (from job, in kernel layer)
-    # export result to png
     # check the png file size
-    def _has_nonzero_result(simulation, sensor, result_name):
-        vtp_path = export_xmp_vtp(simulation, sensor, result_name)
-        mesh = pv.read(vtp_path)
-        return np.any(mesh.point_data["Radiometric"])
+    def _has_nonzero_result(simulation, result_name):
+        img_path = export_xmp_to_image(simulation, result_name)
+        filesize = Path(img_path.path).stat().st_size  # bytes
+        if filesize > 2000:
+            return True
+        else:
+            return False
 
     # the target moves within camera FOV -> nonzero result
     sim.timeline = True
     sim.start_time = 0.5
     speos_results = sim.compute_CPU()
     assert does_file_exist(speos_results[0].path)
-    assert _has_nonzero_result(sim, sens, speos_results[0].path)
+    assert _has_nonzero_result(sim, speos_results[0].path)
 
     # the target is outside camera FOV -> zero result
     sim.start_time = 0.0
     speos_results = sim.compute_CPU()
     assert does_file_exist(speos_results[0].path)
-    assert not _has_nonzero_result(sim, sens, speos_results[0].path)
+    assert not _has_nonzero_result(sim, speos_results[0].path)
 
     # the target is nominally within camera FOV -> nonzero result
     sim.timeline = False
     speos_results = sim.compute_CPU()
     assert does_file_exist(speos_results[0].path)
-    assert _has_nonzero_result(sim, sens, speos_results[0].path)
+    assert _has_nonzero_result(sim, speos_results[0].path)
