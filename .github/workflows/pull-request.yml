@@ -179,7 +179,7 @@ jobs:
         run: |
           uv sync --frozen --only-group quality --no-install-project
 
-      # NOTE: At the moment this will only run on a subset of files like ansys/aedt/core/speos.py
+      # NOTE: At the moment this will only run on a subset of files like ansys/speos/core/speos.py
       # See the pyproject.toml configuration for more information on excluded files/folders
       - name: Run Ty on selected files
         run: |
