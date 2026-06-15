@@ -47,9 +47,9 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
+from ansys.speos.core.workflow.open_result import export_xmp_to_image
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
-from ansys.speos.core.workflow.open_result import export_xmp_to_image
 
 def _create_source_group_test_prerequisites(
     p: Project,
@@ -2082,8 +2082,6 @@ def test_timeline(speos: Speos):
 @pytest.mark.supported_speos_versions(min=261)
 def test_timeline_results(speos: Speos):
     """Test Inverse Simulation Timeline XMP results."""
-    import numpy as np
-    import pyvista as pv
 
     # timeline: check simulation results based on timeline setting
     p = Project(
@@ -2091,7 +2089,6 @@ def test_timeline_results(speos: Speos):
         path=str(Path(test_path) / "Timeline.speos" / "Timeline.speos"),
     )
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
-    sens = p.find(name=".*", name_regex=True, feature_type=SensorRadiance)[0]
     sim.stop_condition_passes_number = 3
 
     # check the png file size
