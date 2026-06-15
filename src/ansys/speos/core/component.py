@@ -170,6 +170,24 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
             return self._visual_data
         else:
             self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
+            if self.trajectory_file_uri != "":
+                import json
+
+                json_info = None
+                with Path(self.trajectory_file_uri).open("r") as f:
+                    json_info = json.load(f)
+                trajectory_points = [
+                    [
+                        item["Origin"].get("X", 0.0) + self.axis_system[0],
+                        item["Origin"].get("Y", 0.0) + self.axis_system[1],
+                        item["Origin"].get("Z", 0.0) + self.axis_system[2],
+                    ]
+                    for item in json_info.get("Trajectory", [])
+                ]
+                self._visual_data.append(_VisualData())
+                self._visual_data[-1].add_data_polyline(points=trajectory_points)
+                self._visual_data[-1].updated = True
+
             feature_pos_info = self.get(key="axis_system")
             for visual_body in self.get(key="bodys"):
                 self._visual_data.append(_VisualData())
