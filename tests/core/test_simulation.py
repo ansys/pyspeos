@@ -47,16 +47,10 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
-<<<<<<< HEAD
 from ansys.speos.core.workflow.open_result import export_xmp_to_image
 from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
-=======
-from ansys.speos.core.workflow.open_result import export_xmp_vtp
-from tests.conftest import IS_DOCKER, test_path
-from tests.helper import does_file_exist, remove_file
 
->>>>>>> f32caee295ba00dd2b4eb005617eb13449df6ea9
 
 def _create_source_group_test_prerequisites(
     p: Project,
@@ -2088,7 +2082,6 @@ def test_timeline(speos: Speos):
 @pytest.mark.supported_speos_versions(min=261)
 def test_timeline_results(speos: Speos):
     """Test Inverse Simulation Timeline XMP results."""
-
     # timeline: check simulation results based on timeline setting
     p = Project(
         speos=speos,
@@ -2100,7 +2093,7 @@ def test_timeline_results(speos: Speos):
     # check the png file size
     def _has_nonzero_result(simulation, result_name):
         img_path = export_xmp_to_image(simulation, result_name)
-        filesize = Path(img_path.path).stat().st_size #bytes
+        filesize = Path(img_path.path).stat().st_size  # bytes
         if filesize > 2000:
             return True
         else:
