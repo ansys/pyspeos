@@ -1928,6 +1928,11 @@ class SensorCamera(BaseSensor):
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         if not default_parameters:
+            template = self._sensor_template.camera_sensor_template
+            if template.HasField("sensor_mode_photometric"):
+                self.set_mode_photometric()
+            elif template.HasField("sensor_mode_geometric"):
+                self.set_mode_geometric()
             return
         if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
             self._type = SensorCamera.Photometric(

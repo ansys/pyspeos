@@ -112,7 +112,6 @@ if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
 # Let's activate timeline on the camera feature by setting a trajectory file.
 
 camera_feat: SensorCamera = p.find(name=".*", name_regex=True, feature_type=SensorCamera)[0]
-camera_feat.set_mode_photometric()
 camera_feat.photometric.trajectory_file_uri = (
     assets_data_path / "TimelineExample.speos" / "CameraTrajectory.json"
 )
