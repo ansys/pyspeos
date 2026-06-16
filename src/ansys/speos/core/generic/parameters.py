@@ -810,6 +810,11 @@ class SurfaceSourceParameters:
         ]
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
     """Spectrum definition used by the source."""
+    flux_variation_file_uri: Union[str, Path] = ""
+    """Path to the flux variation file. When empty, no flux variation is applied."""
+    relative_lag: float = 0.0
+    """Relative lag for the flux variation. Has no impact if ``flux_variation_file_uri``\
+    is empty."""
 
 
 @dataclass

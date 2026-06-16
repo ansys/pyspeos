@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
+import tempfile
 from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
@@ -37,6 +38,7 @@ import numpy as np
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     BalanceModeDisplayPrimariesParameters,
@@ -1888,7 +1890,7 @@ class SensorCamera(BaseSensor):
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
-            self._camera_props.trajectory_file_uri = str(Path(uri))
+            self._camera_props.trajectory_file_uri = str(uri)
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
@@ -2052,21 +2054,40 @@ class SensorCamera(BaseSensor):
             self._visual_data.coordinates.z_axis = feature_camera_z_dir
 
             # camera trajectory path
-            if not self.photometric and self.photometric.trajectory_file_uri != "":
-                import json
+            if self.photometric is not None and self.photometric.trajectory_file_uri != "":
+                trajectory_path = Path(self.photometric.trajectory_file_uri)
+                skip_trajectory = False
 
-                json_info = None
-                with Path(self.photometric.trajectory_file_uri).open("r") as f:
-                    json_info = json.load(f)
-                trajectory_points = [
-                    [
-                        item["Origin"].get("X", 0.0) + feature_camera_pos[0],
-                        item["Origin"].get("Y", 0.0) + feature_camera_pos[1],
-                        item["Origin"].get("Z", 0.0) + feature_camera_pos[2],
+                # For distant server, the client used file transfer to upload the trajectory file.
+                # Then we need to download it to be able to read it and display the trajectory.
+                if not trajectory_path.is_file():
+                    try:
+                        file_transfer = FileTransfer(self._project.client)
+                        down_res = file_transfer.download_file(
+                            file_uri=self.photometric.trajectory_file_uri,
+                            download_location=Path(tempfile.gettempdir()),
+                        )
+                        trajectory_path = Path(tempfile.gettempdir()) / down_res.info.file_name
+                    except Exception:
+                        # If the download fails, just skip the trajectory display without failing
+                        # the whole visualization.
+                        skip_trajectory = True
+
+                if not skip_trajectory:
+                    import json
+
+                    json_info = None
+                    with trajectory_path.open("r") as f:
+                        json_info = json.load(f)
+                    trajectory_points = [
+                        [
+                            item["Origin"].get("X", 0.0) + feature_camera_pos[0],
+                            item["Origin"].get("Y", 0.0) + feature_camera_pos[1],
+                            item["Origin"].get("Z", 0.0) + feature_camera_pos[2],
+                        ]
+                        for item in json_info.get("Trajectory", [])
                     ]
-                    for item in json_info.get("Trajectory", [])
-                ]
-                self._visual_data.add_data_polyline(points=trajectory_points)
+                    self._visual_data.add_data_polyline(points=trajectory_points)
 
             self._visual_data.updated = True
             return self._visual_data
