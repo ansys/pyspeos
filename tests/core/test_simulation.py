@@ -30,6 +30,7 @@ from threading import Thread
 from time import sleep
 from types import SimpleNamespace
 
+from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
@@ -2092,20 +2093,30 @@ def test_timeline_results(speos: Speos):
     sim.stop_condition_passes_number = 3
 
     # check the png file size
-    def _has_nonzero_result(simulation, result_name):
-        img_path = export_xmp_to_image(simulation, Path(result_name).name)
+    def _has_nonzero_result(simulation: SimulationInverse, result: Result) -> bool:
+        # Retrieve result name (needed to call export_xmp_to_image)
+        result_name = ""
+        if result.HasField("path"):
+            result_name = Path(result.path).name
+        elif result.HasField("upload_response"):
+            result_name = result.upload_response.info.file_name
+        else:
+            assert False, "Result does not have a valid path or upload_response field"
+
+        # Export the xmp into image, and check the file size to determine if the result is nonzero
+        img_path = export_xmp_to_image(simulation, result_name)
+        filesize = None
         if img_path.HasField("path"):
             filesize = Path(img_path.path).stat().st_size
         elif img_path.HasField("upload_response"):
             file_transfer_1 = FileTransfer(speos.client)
-            file_transfer_1.download_file(
+            res = file_transfer_1.download_file(
                 file_uri=img_path.upload_response.info.uri, download_location=local_test_path
             )
-            filesize = (
-                Path(local_test_path / Path(result_name).with_suffix(".png").name).stat().st_size
-            )
+            filesize = res.info.file_size
         else:
-            return False
+            assert False, "Result does not have a valid path or upload_response field"
+
         if filesize > 2000:
             return True
         else:
@@ -2115,56 +2126,14 @@ def test_timeline_results(speos: Speos):
     sim.timeline = True
     sim.start_time = 0.5
     speos_results = sim.compute_CPU()
-    result_file = speos_results[0]
-    if result_file.HasField("path"):
-        downloaded_result = Path(result_file.path)
-        assert downloaded_result.is_file() is True
-        assert _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
-    elif result_file.HasField("upload_response"):
-        file_transfer = FileTransfer(speos.client)
-        file_transfer.download_file(
-            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
-        )
-        downloaded_result = local_test_path / result_file.upload_response.info.file_name
-        assert downloaded_result.is_file() is True
-        assert _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
+    assert _has_nonzero_result(sim, speos_results[0])
 
     # the target is outside camera FOV -> zero result
     sim.start_time = 0.0
     speos_results = sim.compute_CPU()
-    result_file = speos_results[0]
-    if result_file.HasField("path"):
-        downloaded_result = Path(result_file.path)
-        assert downloaded_result.is_file() is True
-        assert not _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
-    elif result_file.HasField("upload_response"):
-        file_transfer = FileTransfer(speos.client)
-        file_transfer.download_file(
-            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
-        )
-        downloaded_result = local_test_path / result_file.upload_response.info.file_name
-        assert downloaded_result.is_file() is True
-        assert not _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
+    assert not _has_nonzero_result(sim, speos_results[0])
 
     # the target is nominally within camera FOV -> nonzero result
     sim.timeline = False
     speos_results = sim.compute_CPU()
-    result_file = speos_results[0]
-    if result_file.HasField("path"):
-        downloaded_result = Path(result_file.path)
-        assert downloaded_result.is_file() is True
-        assert _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
-    elif result_file.HasField("upload_response"):
-        file_transfer = FileTransfer(speos.client)
-        file_transfer.download_file(
-            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
-        )
-        downloaded_result = local_test_path / result_file.upload_response.info.file_name
-        assert downloaded_result.is_file() is True
-        assert _has_nonzero_result(sim, str(downloaded_result))
-        downloaded_result.unlink()
+    assert _has_nonzero_result(sim, speos_results[0])
