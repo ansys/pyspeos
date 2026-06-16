@@ -2094,7 +2094,18 @@ def test_timeline_results(speos: Speos):
     # check the png file size
     def _has_nonzero_result(simulation, result_name):
         img_path = export_xmp_to_image(simulation, Path(result_name).name)
-        filesize = Path(img_path.path).stat().st_size  # bytes
+        if img_path.HasField("path"):
+            filesize = Path(img_path.path).stat().st_size
+        elif img_path.HasField("upload_response"):
+            file_transfer_1 = FileTransfer(speos.client)
+            file_transfer_1.download_file(
+                file_uri=img_path.upload_response.info.uri, download_location=local_test_path
+            )
+            filesize = (
+                Path(local_test_path / Path(result_name).with_suffix(".png").name).stat().st_size
+            )
+        else:
+            return False
         if filesize > 2000:
             return True
         else:
