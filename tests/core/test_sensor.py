@@ -2940,3 +2940,251 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
 
     assert sensor.layer == LayerTypes.none
     assert sensor._sensor_instance.immersive_properties.HasField("layer_type_none")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_camera_hydrates_nested_modes(speos: Speos):
+    """Ensure camera load path hydrates photometric and nested color balance helpers."""
+    p = Project(speos=speos)
+
+    sensor_camera = p.create_sensor(name="Camera.LoadHydration", feature_type=SensorCamera)
+    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    color_mode.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    color_mode.green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    color_mode.blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
+    user_white = color_mode.set_balance_mode_user_white()
+    user_white.red_gain = 1.3
+    user_white.green_gain = 0.9
+    user_white.blue_gain = 1.1
+    sensor_camera.commit()
+
+    scene_sensor = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == "Camera.LoadHydration"
+    )
+    loaded_sensor = SensorCamera(
+        project=p,
+        name=scene_sensor.name,
+        sensor_instance=scene_sensor,
+        default_parameters=None,
+    )
+
+    assert isinstance(loaded_sensor.photometric, SensorCamera.Photometric)
+    assert isinstance(loaded_sensor.photometric._mode, SensorCamera.Photometric.Color)
+    loaded_color_mode = loaded_sensor.photometric._mode
+    assert isinstance(
+        loaded_color_mode._mode,
+        SensorCamera.Photometric.Color.BalanceModeUserWhite,
+    )
+    assert loaded_color_mode._mode.red_gain == pytest.approx(1.3)
+    assert loaded_color_mode._mode.green_gain == pytest.approx(0.9)
+    assert loaded_color_mode._mode.blue_gain == pytest.approx(1.1)
+
+    sensor_camera.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
+    """Ensure 3D irradiance load path keeps radial integration helper state."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+
+    sensor_photo = p.create_sensor(
+        name="Irr3D.Photo.LoadHydration", feature_type=Sensor3DIrradiance
+    )
+    sensor_photo.geometries = [body]
+    sensor_photo.set_type_photometric().set_integration_radial()
+    sensor_photo.commit()
+
+    scene_photo = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == "Irr3D.Photo.LoadHydration"
+    )
+
+    loaded_photo = Sensor3DIrradiance(
+        project=p,
+        name=scene_photo.name,
+        sensor_instance=scene_photo,
+        default_parameters=None,
+    )
+    assert isinstance(loaded_photo.photometric, Sensor3DIrradiance.Photometric)
+    assert loaded_photo.photometric._integration_type == "Radial"
+
+    sensor_photo.set_type_radiometric().set_integration_radial()
+    sensor_photo.commit()
+    loaded_radiometric = Sensor3DIrradiance(
+        project=p,
+        name=scene_photo.name,
+        sensor_instance=scene_photo,
+        default_parameters=None,
+    )
+    assert isinstance(loaded_radiometric.radiometric, Sensor3DIrradiance.Radiometric)
+    assert loaded_radiometric.radiometric._integration_type == "Radial"
+
+    sensor_photo.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_camera_hydrates_geometric_mode(speos: Speos):
+    """Ensure camera load path hydrates geometric mode branch."""
+    p = Project(speos=speos)
+
+    sensor_camera = p.create_sensor(name="Camera.LoadGeometric", feature_type=SensorCamera)
+    sensor_camera.set_mode_geometric()
+    sensor_camera.commit()
+
+    scene_sensor = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == "Camera.LoadGeometric"
+    )
+    loaded_sensor = SensorCamera(
+        project=p,
+        name=scene_sensor.name,
+        sensor_instance=scene_sensor,
+        default_parameters=None,
+    )
+
+    assert loaded_sensor._sensor_template.camera_sensor_template.HasField("sensor_mode_geometric")
+    assert loaded_sensor._type is None
+
+    sensor_camera.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.parametrize(
+    ("balance_setter", "expected_field", "expected_mode_type"),
+    [
+        (
+            "set_balance_mode_display_primaries",
+            "balance_mode_display",
+            SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries,
+        ),
+        ("set_balance_mode_grey_world", "balance_mode_greyworld", None),
+        ("set_balance_mode_none", "balance_mode_none", None),
+    ],
+)
+def test_load_camera_hydrates_other_balance_modes(
+    speos: Speos,
+    balance_setter: str,
+    expected_field: str,
+    expected_mode_type: type | None,
+):
+    """Ensure camera load path hydrates all color balance mode branches."""
+    p = Project(speos=speos)
+
+    sensor_name = f"Camera.LoadBalance.{balance_setter}"
+    sensor_camera = p.create_sensor(name=sensor_name, feature_type=SensorCamera)
+    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    color_mode.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    color_mode.green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    color_mode.blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
+
+    balance_mode = getattr(color_mode, balance_setter)()
+    if expected_mode_type is SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+        balance_mode.red_display_file_uri = str(
+            Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+        )
+        balance_mode.green_display_file_uri = str(
+            Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+        )
+        balance_mode.blue_display_file_uri = str(
+            Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+        )
+    sensor_camera.commit()
+
+    scene_sensor = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == sensor_name
+    )
+    loaded_sensor = SensorCamera(
+        project=p,
+        name=scene_sensor.name,
+        sensor_instance=scene_sensor,
+        default_parameters=None,
+    )
+
+    loaded_color_mode = loaded_sensor.photometric._mode
+    assert loaded_color_mode._mode_color.HasField(expected_field)
+    if expected_mode_type is None:
+        assert loaded_color_mode._mode is None
+    else:
+        assert isinstance(loaded_color_mode._mode, expected_mode_type)
+
+    sensor_camera.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
+    """Ensure 3D irradiance load path keeps planar integration helper state."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+
+    sensor_3d = p.create_sensor(name="Irr3D.Planar.LoadHydration", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+
+    photo_measures = sensor_3d.set_type_photometric().set_integration_planar()
+    photo_measures.absorption = False
+    sensor_3d.commit()
+
+    scene_sensor = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == "Irr3D.Planar.LoadHydration"
+    )
+    loaded_photo = Sensor3DIrradiance(
+        project=p,
+        name=scene_sensor.name,
+        sensor_instance=scene_sensor,
+        default_parameters=None,
+    )
+    assert isinstance(loaded_photo.photometric, Sensor3DIrradiance.Photometric)
+    assert isinstance(loaded_photo.photometric._integration_type, Sensor3DIrradiance.Measures)
+    assert loaded_photo.photometric._integration_type.reflection is True
+    assert loaded_photo.photometric._integration_type.transmission is True
+    assert loaded_photo.photometric._integration_type.absorption is False
+
+    radio_measures = sensor_3d.set_type_radiometric().set_integration_planar()
+    radio_measures.reflection = False
+    radio_measures.transmission = False
+    sensor_3d.commit()
+
+    scene_sensor = next(
+        sensor_instance
+        for sensor_instance in p.scene_link.get().sensors
+        if sensor_instance.name == "Irr3D.Planar.LoadHydration"
+    )
+    loaded_radiometric = Sensor3DIrradiance(
+        project=p,
+        name=scene_sensor.name,
+        sensor_instance=scene_sensor,
+        default_parameters=None,
+    )
+    assert isinstance(loaded_radiometric.radiometric, Sensor3DIrradiance.Radiometric)
+    assert isinstance(loaded_radiometric.radiometric._integration_type, Sensor3DIrradiance.Measures)
+    assert loaded_radiometric.radiometric._integration_type.reflection is False
+    assert loaded_radiometric.radiometric._integration_type.transmission is False
+    assert loaded_radiometric.radiometric._integration_type.absorption is True
+
+    sensor_3d.delete()

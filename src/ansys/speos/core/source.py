@@ -2762,6 +2762,9 @@ class SourceAmbientUniform(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientUniformParameters] = None
     ) -> None:
         if default_parameters is None:
+            uniform_props = self._source_instance.ambient_properties.uniform_ambient_properties
+            if uniform_props.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.luminance = default_parameters.luminance
         self.mirrored_extent = default_parameters.mirrored_extent
@@ -2988,6 +2991,13 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None
     ) -> None:
         if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.cie_general_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.cie_type = default_parameters.cie_type
         self.luminance = default_parameters.luminance
@@ -3281,6 +3291,13 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientNaturalLightParameters] = None
     ) -> None:
         if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.natural_light_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.with_sky = default_parameters.with_sky
         self.turbidity = default_parameters.turbidity
@@ -3554,6 +3571,11 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientEnvironmentParameters] = None
     ) -> None:
         if default_parameters is None:
+            env_map = self._source_template.ambient.environment_map
+            if env_map.HasField("predefined_color_space"):
+                self.set_predefined_color_space()
+            elif env_map.HasField("user_defined_rgb_space"):
+                self.set_userdefined_color_space()
             return
         self.zenith_direction = default_parameters.zenith_direction
         self.north_direction = default_parameters.north_direction
@@ -3966,6 +3988,10 @@ class SourceDisplay(BaseSource):
 
         if default_parameters is not None:
             self._fill_parameters(default_parameters)
+        elif self._source_template.display.HasField("pre_defined_color_space"):
+            self.set_pre_defined_color_space()
+        elif self._source_template.display.HasField("user_defined_rbg_space"):
+            self.set_userdefined_color_space()
 
     def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
         """Populate the Display source from defaults.
