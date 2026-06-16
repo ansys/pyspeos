@@ -117,9 +117,6 @@ camera_feat.photometric.trajectory_file_uri = (
 )
 camera_feat.commit()
 
-# The trajectory of the camera should now be visible in the preview.
-p.preview()
-
 # Compute and display the result.
 simu_feat.compute_CPU()
 # Method available only on Windows OS or with Speos 2026 R1.2 or higher,
@@ -170,9 +167,6 @@ for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface
 lb_feat: LightBox = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
 lb_feat.trajectory_file_uri = assets_data_path / "TimelineExample.speos" / "LightBoxTrajectory.json"
 lb_feat.commit()
-
-# The trajectory of the light box should now be visible in the preview.
-p.preview()
 
 # Compute and display the result.
 simu_feat.compute_CPU()
