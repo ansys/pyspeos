@@ -35,10 +35,10 @@ from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
+from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.generic.general_methods import normalize_vector
 from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.generic.version_checker import server_version_checker
-from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     BaseSimulation,
@@ -49,8 +49,7 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import SourceLuminaire
 from ansys.speos.core.workflow.open_result import export_xmp_to_image
-from tests.conftest import IS_DOCKER, test_path
-from tests.conftest import local_test_path
+from tests.conftest import IS_DOCKER, local_test_path, test_path
 from tests.helper import does_file_exist, remove_file
 
 
