@@ -1738,6 +1738,130 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_cached_helper_state(speos: Speos):
+    """Ensure source helpers are hydrated when a source is reconstructed from scene data."""
+    p = Project(speos=speos)
+
+    uniform_source = p.create_source(
+        name="Uniform.LoadHydration", feature_type=SourceAmbientUniform
+    )
+    uniform_source.set_sun_manual().direction = [1.0, 0.0, 0.0]
+    uniform_source.commit()
+
+    environment_source = p.create_source(
+        name="Environment.LoadHydration", feature_type=SourceAmbientEnvironment
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    environment_source.set_predefined_color_space().set_color_space_adobergb()
+    environment_source.commit()
+
+    display_source = p.create_source(name="Display.LoadHydration", feature_type=SourceDisplay)
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_source.set_pre_defined_color_space().set_color_space_adobergb()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    uniform_scene = next(item for item in scene_sources if item.name == "Uniform.LoadHydration")
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.LoadHydration"
+    )
+    display_scene = next(item for item in scene_sources if item.name == "Display.LoadHydration")
+
+    loaded_uniform = SourceAmbientUniform(
+        project=p,
+        name=uniform_scene.name,
+        source_instance=uniform_scene,
+        default_parameters=None,
+    )
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_uniform._type is not None
+    assert loaded_environment.color_space is not None
+    assert loaded_display._type is not None
+
+    uniform_source.delete()
+    environment_source.delete()
+    display_source.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_userdefined_color_space_helpers(speos: Speos):
+    """Ensure user-defined color space helpers are hydrated on source reconstruction."""
+    p = Project(speos=speos)
+
+    spectrum_file = str(Path(test_path) / "R04.spectrum")
+
+    environment_source = p.create_source(
+        name="Environment.UserDefined.LoadHydration",
+        feature_type=SourceAmbientEnvironment,
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    env_color_space = environment_source.set_userdefined_color_space()
+    env_color_space.red_spectrum = spectrum_file
+    env_color_space.green_spectrum = spectrum_file
+    env_color_space.blue_spectrum = spectrum_file
+    env_color_space.set_white_point_type_d50()
+    environment_source.commit()
+
+    display_source = p.create_source(
+        name="Display.UserDefined.LoadHydration",
+        feature_type=SourceDisplay,
+    )
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_color_space = display_source.set_userdefined_color_space()
+    display_color_space.red_spectrum = spectrum_file
+    display_color_space.green_spectrum = spectrum_file
+    display_color_space.blue_spectrum = spectrum_file
+    display_color_space.set_white_point_type_e()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.UserDefined.LoadHydration"
+    )
+    display_scene = next(
+        item for item in scene_sources if item.name == "Display.UserDefined.LoadHydration"
+    )
+
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_environment._source_template.ambient.environment_map.HasField(
+        "user_defined_rgb_space"
+    )
+    assert loaded_environment.color_space is not None
+    assert loaded_environment.set_userdefined_color_space().white_point_type == 1
+
+    assert loaded_display._source_template.display.HasField("user_defined_rbg_space")
+    assert loaded_display._type is not None
+    assert loaded_display.set_userdefined_color_space().white_point_type == 3
+
+    environment_source.delete()
+    display_source.delete()
+
+
 def test_commit_source(speos: Speos):
     """Test commit of source."""
     p = Project(speos=speos)

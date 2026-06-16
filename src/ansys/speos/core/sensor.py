@@ -1404,6 +1404,14 @@ class SensorCamera(BaseSensor):
                 self, default_parameters: Optional[ColorParameters] = None
             ) -> None:
                 if not default_parameters:
+                    if self._mode_color.HasField("balance_mode_userwhite"):
+                        self.set_balance_mode_user_white()
+                    elif self._mode_color.HasField("balance_mode_display"):
+                        self.set_balance_mode_display_primaries()
+                    elif self._mode_color.HasField("balance_mode_greyworld"):
+                        self.set_balance_mode_grey_world()
+                    elif self._mode_color.HasField("balance_mode_none"):
+                        self.set_balance_mode_none()
                     return
                 if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
@@ -1662,6 +1670,8 @@ class SensorCamera(BaseSensor):
                 default_parameters=None,
                 stable_ctr=stable_ctr,
             )
+            if self._mode_photometric.HasField("color_mode_color"):
+                self.set_mode_color()
 
         @property
         def acquisition_integration(self) -> float:
@@ -1928,6 +1938,11 @@ class SensorCamera(BaseSensor):
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         if not default_parameters:
+            template = self._sensor_template.camera_sensor_template
+            if template.HasField("sensor_mode_photometric"):
+                self.set_mode_photometric()
+            elif template.HasField("sensor_mode_geometric"):
+                self.set_mode_geometric()
             return
         if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
             self._type = SensorCamera.Photometric(
@@ -3874,11 +3889,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_radiometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3962,11 +3980,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_photometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
