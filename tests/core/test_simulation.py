@@ -2103,17 +2103,56 @@ def test_timeline_results(speos: Speos):
     sim.timeline = True
     sim.start_time = 0.5
     speos_results = sim.compute_CPU()
-    assert does_file_exist(speos_results[0].path)
-    assert _has_nonzero_result(sim, speos_results[0].path)
+    result_file = speos_results[0]
+    if result_file.HasField("path"):
+        downloaded_result = Path(result_file.path)
+        assert downloaded_result.is_file() is True
+        assert _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
+    elif result_file.HasField("upload_response"):
+        file_transfer = FileTransfer(speos.client)
+        file_transfer.download_file(
+            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
+        )
+        downloaded_result = local_test_path / result_file.upload_response.info.file_name
+        assert downloaded_result.is_file() is True
+        assert _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
 
     # the target is outside camera FOV -> zero result
     sim.start_time = 0.0
     speos_results = sim.compute_CPU()
-    assert does_file_exist(speos_results[0].path)
-    assert not _has_nonzero_result(sim, speos_results[0].path)
+    result_file = speos_results[0]
+    if result_file.HasField("path"):
+        downloaded_result = Path(result_file.path)
+        assert downloaded_result.is_file() is True
+        assert not _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
+    elif result_file.HasField("upload_response"):
+        file_transfer = FileTransfer(speos.client)
+        file_transfer.download_file(
+            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
+        )
+        downloaded_result = local_test_path / result_file.upload_response.info.file_name
+        assert downloaded_result.is_file() is True
+        assert not _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
 
     # the target is nominally within camera FOV -> nonzero result
     sim.timeline = False
     speos_results = sim.compute_CPU()
-    assert does_file_exist(speos_results[0].path)
-    assert _has_nonzero_result(sim, speos_results[0].path)
+    result_file = speos_results[0]
+    if result_file.HasField("path"):
+        downloaded_result = Path(result_file.path)
+        assert downloaded_result.is_file() is True
+        assert _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
+    elif result_file.HasField("upload_response"):
+        file_transfer = FileTransfer(speos.client)
+        file_transfer.download_file(
+            file_uri=result_file.upload_response.info.uri, download_location=local_test_path
+        )
+        downloaded_result = local_test_path / result_file.upload_response.info.file_name
+        assert downloaded_result.is_file() is True
+        assert _has_nonzero_result(sim, str(downloaded_result))
+        downloaded_result.unlink()
