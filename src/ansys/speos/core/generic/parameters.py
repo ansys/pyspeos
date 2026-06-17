@@ -810,6 +810,11 @@ class SurfaceSourceParameters:
         ]
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
     """Spectrum definition used by the source."""
+    flux_variation_file_uri: Union[str, Path] = ""
+    """Path to the flux variation file. When empty, no flux variation is applied."""
+    relative_lag: float = 0.0
+    """Relative lag for the flux variation. Has no impact if ``flux_variation_file_uri``\
+    is empty."""
 
 
 @dataclass
@@ -1057,7 +1062,11 @@ class InverseSimulationParameters:
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
     light_expert: bool = False
-    """Whether light export is enabled."""
+    """Whether light expert is enabled."""
+    timeline: bool = False
+    """whether timeline is enabled"""
+    start_time: Optional[float] = 0.0
+    """Timeline start time in seconds. Set to ``None`` to disable the simulation timeline."""
     stop_condition_passes_number: int = 5
     """Maximum number of inverse passes before stopping."""
     stop_condition_duration: Optional[int] = None
@@ -1089,7 +1098,7 @@ class InteractiveSimulationParameters:
     ambient_material_uri: Union[str, Path] = ""
     """Path to the ambient material file."""
     light_expert: bool = False
-    """Whether light export is enabled."""
+    """Whether light expert is enabled."""
     impact_report: bool = False
     """Whether impact reporting is enabled."""
     geom_distance_tolerance = 0.01

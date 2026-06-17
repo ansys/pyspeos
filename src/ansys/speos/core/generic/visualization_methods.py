@@ -336,6 +336,26 @@ class _VisualData:
         faces = [[3, 0, 1, 2]]
         self._data = self._data.append_polydata(pv.PolyData(triangle_vertices, faces))
 
+    def add_data_polyline(self, points: List[List[float]]) -> None:
+        """
+        Add a polyline to Visualization data.
+
+        Parameters
+        ----------
+        points: List[List[float]]
+            List of [x, y, z] points defining the polyline.
+
+        Returns
+        -------
+        None
+        """
+        import pyvista as pv
+
+        if len(points) < 2 or any(len(p) != 3 for p in points):
+            raise ValueError("points must contain at least 2 vertices with 3 elements each.")
+        points = np.array(points)
+        self._data = self._data.append_polydata(pv.lines_from_points(points))
+
     def add_data_rectangle(self, rectangle_vertices: List[List[float]]) -> None:
         """
         Add surface data rectangle to Visualization data.

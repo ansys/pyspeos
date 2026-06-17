@@ -2037,6 +2037,10 @@ class SourceSurface(BaseSource):
                     )
                 )
 
+        self.flux_variation_file_uri = default_parameters.flux_variation_file_uri
+        if self.flux_variation_file_uri is not None:
+            self.relative_lag = default_parameters.relative_lag
+
     @property
     def visual_data(self) -> _VisualData:
         """Property containing Surface source visualization data.
@@ -2137,6 +2141,62 @@ class SourceSurface(BaseSource):
             )
 
         return self._intensity
+
+    @property
+    def flux_variation_file_uri(self) -> str:
+        """Location of the flux variation file.
+
+        This property gets or sets the flux variation file applied to the surface source.\
+        If the file uri is empty, no flux variation is applied.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            Flux variation file uri.
+
+        Returns
+        -------
+        str
+            Flux variation file uri.
+        """
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.flux_variation_file_uri
+        return None
+
+    @flux_variation_file_uri.setter
+    def flux_variation_file_uri(self, uri: Union[str, Path]) -> None:
+        if uri == "":
+            self._source_template.surface.ClearField("timeline")
+        else:
+            self._source_template.surface.timeline.flux_variation_file_uri = str(uri)
+
+    @property
+    def relative_lag(self) -> float:
+        """Relative lag.
+
+        This property gets or sets the relative lag applied to the surface source.\
+        If the flux_variation_file_uri is not set, setting the relative lag will raise an error.
+
+        Parameters
+        ----------
+        relative_lag : float
+            Relative lag value to apply to the surface source.
+
+        Returns
+        -------
+        float
+            Relative lag.
+        """
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.relative_lag
+        return None
+
+    @relative_lag.setter
+    def relative_lag(self, relative_lag: float) -> None:
+        if self._source_template.surface.HasField("timeline"):
+            self._source_template.surface.timeline.relative_lag = relative_lag
+        else:
+            raise ValueError("Can't set relative_lag if flux_variation_file_uri is not set.")
 
     def set_exitance_constant(self) -> SourceSurface.ExitanceConstant:
         """Set existence constant.
@@ -2702,6 +2762,9 @@ class SourceAmbientUniform(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientUniformParameters] = None
     ) -> None:
         if default_parameters is None:
+            uniform_props = self._source_instance.ambient_properties.uniform_ambient_properties
+            if uniform_props.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.luminance = default_parameters.luminance
         self.mirrored_extent = default_parameters.mirrored_extent
@@ -2928,6 +2991,13 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None
     ) -> None:
         if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.cie_general_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.cie_type = default_parameters.cie_type
         self.luminance = default_parameters.luminance
@@ -3221,6 +3291,13 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientNaturalLightParameters] = None
     ) -> None:
         if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.natural_light_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
             return
         self.with_sky = default_parameters.with_sky
         self.turbidity = default_parameters.turbidity
@@ -3494,6 +3571,11 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self, default_parameters: Optional[AmbientEnvironmentParameters] = None
     ) -> None:
         if default_parameters is None:
+            env_map = self._source_template.ambient.environment_map
+            if env_map.HasField("predefined_color_space"):
+                self.set_predefined_color_space()
+            elif env_map.HasField("user_defined_rgb_space"):
+                self.set_userdefined_color_space()
             return
         self.zenith_direction = default_parameters.zenith_direction
         self.north_direction = default_parameters.north_direction
@@ -3906,6 +3988,10 @@ class SourceDisplay(BaseSource):
 
         if default_parameters is not None:
             self._fill_parameters(default_parameters)
+        elif self._source_template.display.HasField("pre_defined_color_space"):
+            self.set_pre_defined_color_space()
+        elif self._source_template.display.HasField("user_defined_rbg_space"):
+            self.set_userdefined_color_space()
 
     def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
         """Populate the Display source from defaults.
