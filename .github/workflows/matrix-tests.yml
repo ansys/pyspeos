@@ -8,6 +8,10 @@ on:
       CODECOV_TOKEN:
         required: true
 
+# Disable all default permissions at workflow level for security (least privilege principle)
+# Individual jobs will explicitly request only the permissions they need
+permissions: {}
+
 jobs:
   testing:
     name: Testing and coverage
