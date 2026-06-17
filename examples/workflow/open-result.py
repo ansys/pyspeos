@@ -1,4 +1,4 @@
-# # How to open result (MS Windows OS only)
+# # How to open result
 
 # This tutorial demonstrates how to open and review results using workflow method.
 

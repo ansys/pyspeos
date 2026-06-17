@@ -64,6 +64,8 @@ from ansys.speos.core.generic.parameters import (
     VariableExitanceParameters,
     WhitePointType,
 )
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import (
     SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
@@ -75,6 +77,7 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from tests.conftest import test_path
+from tests.helper import remove_file
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -1738,6 +1741,130 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_cached_helper_state(speos: Speos):
+    """Ensure source helpers are hydrated when a source is reconstructed from scene data."""
+    p = Project(speos=speos)
+
+    uniform_source = p.create_source(
+        name="Uniform.LoadHydration", feature_type=SourceAmbientUniform
+    )
+    uniform_source.set_sun_manual().direction = [1.0, 0.0, 0.0]
+    uniform_source.commit()
+
+    environment_source = p.create_source(
+        name="Environment.LoadHydration", feature_type=SourceAmbientEnvironment
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    environment_source.set_predefined_color_space().set_color_space_adobergb()
+    environment_source.commit()
+
+    display_source = p.create_source(name="Display.LoadHydration", feature_type=SourceDisplay)
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_source.set_pre_defined_color_space().set_color_space_adobergb()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    uniform_scene = next(item for item in scene_sources if item.name == "Uniform.LoadHydration")
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.LoadHydration"
+    )
+    display_scene = next(item for item in scene_sources if item.name == "Display.LoadHydration")
+
+    loaded_uniform = SourceAmbientUniform(
+        project=p,
+        name=uniform_scene.name,
+        source_instance=uniform_scene,
+        default_parameters=None,
+    )
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_uniform._type is not None
+    assert loaded_environment.color_space is not None
+    assert loaded_display._type is not None
+
+    uniform_source.delete()
+    environment_source.delete()
+    display_source.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_userdefined_color_space_helpers(speos: Speos):
+    """Ensure user-defined color space helpers are hydrated on source reconstruction."""
+    p = Project(speos=speos)
+
+    spectrum_file = str(Path(test_path) / "R04.spectrum")
+
+    environment_source = p.create_source(
+        name="Environment.UserDefined.LoadHydration",
+        feature_type=SourceAmbientEnvironment,
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    env_color_space = environment_source.set_userdefined_color_space()
+    env_color_space.red_spectrum = spectrum_file
+    env_color_space.green_spectrum = spectrum_file
+    env_color_space.blue_spectrum = spectrum_file
+    env_color_space.set_white_point_type_d50()
+    environment_source.commit()
+
+    display_source = p.create_source(
+        name="Display.UserDefined.LoadHydration",
+        feature_type=SourceDisplay,
+    )
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_color_space = display_source.set_userdefined_color_space()
+    display_color_space.red_spectrum = spectrum_file
+    display_color_space.green_spectrum = spectrum_file
+    display_color_space.blue_spectrum = spectrum_file
+    display_color_space.set_white_point_type_e()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.UserDefined.LoadHydration"
+    )
+    display_scene = next(
+        item for item in scene_sources if item.name == "Display.UserDefined.LoadHydration"
+    )
+
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_environment._source_template.ambient.environment_map.HasField(
+        "user_defined_rgb_space"
+    )
+    assert loaded_environment.color_space is not None
+    assert loaded_environment.set_userdefined_color_space().white_point_type == 1
+
+    assert loaded_display._source_template.display.HasField("user_defined_rbg_space")
+    assert loaded_display._type is not None
+    assert loaded_display.set_userdefined_color_space().white_point_type == 3
+
+    environment_source.delete()
+    display_source.delete()
+
+
 def test_commit_source(speos: Speos):
     """Test commit of source."""
     p = Project(speos=speos)
@@ -2412,3 +2539,75 @@ def test_load_uniform_ambient_source(speos: Speos):
         else:
             assert spectrum.HasField("library")
             assert spectrum.library.file_uri.endswith(".spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_source_timeline(speos: Speos):
+    """Test source timeline."""
+    # Import a speos file (timeline deactivated)
+    p = Project(
+        speos=speos, path=Path(test_path) / "TimelineExample.speos" / "TimelineExample.speos"
+    )
+
+    # Retrieve all sources and check that flux variation file are no set.
+    # Then, set flux variation file and relative lag, and commit.
+    # The, check that flux variation file and relative lag are correctly set on server
+    i = 0
+    for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that no flux variation file is set, neither relative lag
+        assert source_feat.flux_variation_file_uri is None
+        assert source_feat.relative_lag is None
+
+        # Set flux variation file
+        source_feat.flux_variation_file_uri = (
+            test_path / "TimelineExample.speos" / "flux_variation.json"
+        )
+
+        # Set relative lag
+        source_feat.relative_lag = i * 10
+
+        source_feat.commit()
+
+        # Check data on server
+        source_on_server: ProtoSourceTemplate = speos.client[
+            source_feat.source_template_link.key
+        ].get()
+        assert source_on_server.HasField("surface")
+        assert source_on_server.surface.HasField("timeline")
+        assert source_on_server.surface.timeline.flux_variation_file_uri != ""
+        assert source_on_server.surface.timeline.relative_lag == i * 10
+
+        i = i + 1
+
+    # Export simulation into .speos file (so that we load it after to check source timelines)
+    simu_feat: SimulationInverse = p.find(
+        name=".*", name_regex=True, feature_type=SimulationInverse
+    )[0]
+    simu_feat.stop_condition_passes_number = 5
+    simu_feat.commit()
+    simu_name = simu_feat._name
+    path_for_export = Path(test_path) / "TimelineExample.speos" / "TimelineExample_exported"
+    simu_feat.export(export_path=path_for_export)
+
+    # Load exported file and check that timeline data are correctly loaded
+    p2 = Project(
+        speos=speos, path=path_for_export / (simu_name + ".speos") / (simu_name + ".speos")
+    )
+
+    # Retrieve all sources and check that flux variation file and relative lag are set.
+    j = 0
+    for source_feat in p2.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that flux variation file is set
+        assert source_feat.flux_variation_file_uri is not None
+        assert source_feat.flux_variation_file_uri != ""
+
+        # check that relative lag is set
+        assert source_feat.relative_lag == j * 10
+
+        j = j + 1
+
+    remove_file(str(path_for_export))
