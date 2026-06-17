@@ -211,6 +211,7 @@ print_lightbox_compact(lightbox)
 print(lightbox.name)
 print(lightbox.axis_system)
 print(lightbox.source_paths)
+print(lightbox.trajectory_file_uri)
 lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 print_lightbox_compact(lightbox)
 # -

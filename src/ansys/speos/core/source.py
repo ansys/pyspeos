@@ -2037,6 +2037,10 @@ class SourceSurface(BaseSource):
                     )
                 )
 
+        self.flux_variation_file_uri = default_parameters.flux_variation_file_uri
+        if self.flux_variation_file_uri is not None:
+            self.relative_lag = default_parameters.relative_lag
+
     @property
     def visual_data(self) -> _VisualData:
         """Property containing Surface source visualization data.
@@ -2137,6 +2141,62 @@ class SourceSurface(BaseSource):
             )
 
         return self._intensity
+
+    @property
+    def flux_variation_file_uri(self) -> str:
+        """Location of the flux variation file.
+
+        This property gets or sets the flux variation file applied to the surface source.\
+        If the file uri is empty, no flux variation is applied.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            Flux variation file uri.
+
+        Returns
+        -------
+        str
+            Flux variation file uri.
+        """
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.flux_variation_file_uri
+        return None
+
+    @flux_variation_file_uri.setter
+    def flux_variation_file_uri(self, uri: Union[str, Path]) -> None:
+        if uri == "":
+            self._source_template.surface.ClearField("timeline")
+        else:
+            self._source_template.surface.timeline.flux_variation_file_uri = str(uri)
+
+    @property
+    def relative_lag(self) -> float:
+        """Relative lag.
+
+        This property gets or sets the relative lag applied to the surface source.\
+        If the flux_variation_file_uri is not set, setting the relative lag will raise an error.
+
+        Parameters
+        ----------
+        relative_lag : float
+            Relative lag value to apply to the surface source.
+
+        Returns
+        -------
+        float
+            Relative lag.
+        """
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.relative_lag
+        return None
+
+    @relative_lag.setter
+    def relative_lag(self, relative_lag: float) -> None:
+        if self._source_template.surface.HasField("timeline"):
+            self._source_template.surface.timeline.relative_lag = relative_lag
+        else:
+            raise ValueError("Can't set relative_lag if flux_variation_file_uri is not set.")
 
     def set_exitance_constant(self) -> SourceSurface.ExitanceConstant:
         """Set existence constant.

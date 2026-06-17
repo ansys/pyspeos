@@ -26,6 +26,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 import os
 from pathlib import Path
+import tempfile
 from typing import List, Mapping, Optional, Tuple, Union
 import uuid
 
@@ -33,6 +34,7 @@ import numpy as np
 
 from ansys.speos.core import body, face, opt_prop, part
 from ansys.speos.core.generic.constants import ORIGIN
+from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     DisplayParameters,
@@ -170,6 +172,45 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
             return self._visual_data
         else:
             self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
+
+            # Trajectory data.
+            if self.trajectory_file_uri != "":
+                trajectory_path = Path(self.trajectory_file_uri)
+                skip_trajectory = False
+
+                # For distant server, the client used file transfer to upload the trajectory file.
+                # Then we need to download it to be able to read it and display the trajectory.
+                if not trajectory_path.is_file():
+                    try:
+                        file_transfer = FileTransfer(self._parent_project.client)
+                        down_res = file_transfer.download_file(
+                            file_uri=self.trajectory_file_uri,
+                            download_location=Path(tempfile.gettempdir()),
+                        )
+                        trajectory_path = Path(tempfile.gettempdir()) / down_res.info.file_name
+                    except Exception:
+                        # If the download fails, just skip the trajectory display without failing
+                        # the whole visualization.
+                        skip_trajectory = True
+
+                if not skip_trajectory:
+                    import json
+
+                    json_info = None
+                    with trajectory_path.open("r") as f:
+                        json_info = json.load(f)
+                    trajectory_points = [
+                        [
+                            item["Origin"].get("X", 0.0) + self.axis_system[0],
+                            item["Origin"].get("Y", 0.0) + self.axis_system[1],
+                            item["Origin"].get("Z", 0.0) + self.axis_system[2],
+                        ]
+                        for item in json_info.get("Trajectory", [])
+                    ]
+                    self._visual_data.append(_VisualData())
+                    self._visual_data[-1].add_data_polyline(points=trajectory_points)
+                    self._visual_data[-1].updated = True
+
             feature_pos_info = self.get(key="axis_system")
             for visual_body in self.get(key="bodys"):
                 self._visual_data.append(_VisualData())
@@ -265,6 +306,30 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
+
+    @property
+    def trajectory_file_uri(self) -> str:
+        """Location of the trajectory file.
+
+        This property gets or sets the trajectory .JSON file applied
+        to the lightbox, which describes its motion.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            format file uri (json).
+
+        Returns
+        -------
+        uri : str
+            format file uri (json).
+
+        """
+        return self._scene_instance.trajectory_file_uri
+
+    @trajectory_file_uri.setter
+    def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
+        self._scene_instance.trajectory_file_uri = str(uri)
 
     def find(
         self,

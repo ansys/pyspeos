@@ -30,11 +30,13 @@ from threading import Thread
 from time import sleep
 from types import SimpleNamespace
 
+from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
+from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.generic.general_methods import normalize_vector
 from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.generic.version_checker import server_version_checker
@@ -47,7 +49,8 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import IS_DOCKER, test_path
+from ansys.speos.core.workflow.open_result import export_xmp_to_image
+from tests.conftest import IS_DOCKER, local_test_path, test_path
 from tests.helper import does_file_exist, remove_file
 
 
@@ -2035,3 +2038,102 @@ def test_texture_normalization(speos: Speos):
         sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization
         == simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
     )
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline(speos: Speos):
+    """Test Inverse Simulation Timeline functionality."""
+    p = Project(speos=speos)
+
+    # timeline: initialized defaults
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    assert not sim1._job.inverse_mc_simulation_properties.HasField("timeline")
+    assert not sim1.timeline
+    assert sim1.start_time is None
+
+    # timeline: enabled defaults
+    sim1.timeline = True
+    assert sim1.timeline is True
+    assert sim1.start_time == 0.0
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.0
+
+    # timeline: adjusting start_time
+    sim1.start_time = 0.1
+    assert sim1.start_time == 0.1
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.1
+
+    # timeline: disabling timeline clears field
+    sim1.timeline = False
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
+
+    # timeline: setting start time with timeline disabled throws error
+    with pytest.raises(TypeError, match="Timeline must be enabled to set start_time"):
+        sim1.start_time = 0.2
+
+    # timeline: setting start time to None removes field
+    sim1.timeline = True
+    sim1.start_time = None
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline_results(speos: Speos):
+    """Test Inverse Simulation Timeline XMP results."""
+    # timeline: check simulation results based on timeline setting
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Timeline.speos" / "Timeline.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    sim.stop_condition_passes_number = 3
+
+    # check the png file size
+    def _has_nonzero_result(simulation: SimulationInverse, result: Result) -> bool:
+        # Retrieve result name (needed to call export_xmp_to_image)
+        result_name = ""
+        if result.HasField("path"):
+            result_name = Path(result.path).name
+        elif result.HasField("upload_response"):
+            result_name = result.upload_response.info.file_name
+        else:
+            assert False, "Result does not have a valid path or upload_response field"
+
+        # Export the xmp into image, and check the file size to determine if the result is nonzero
+        img_path = export_xmp_to_image(simulation, result_name)
+        filesize = None
+        if img_path.HasField("path"):
+            filesize = Path(img_path.path).stat().st_size
+        elif img_path.HasField("upload_response"):
+            file_transfer_1 = FileTransfer(speos.client)
+            res = file_transfer_1.download_file(
+                file_uri=img_path.upload_response.info.uri, download_location=local_test_path
+            )
+            filesize = res.info.file_size
+        else:
+            assert False, "Result does not have a valid path or upload_response field"
+
+        if filesize > 2000:
+            return True
+        else:
+            return False
+
+    # the target moves within camera FOV -> nonzero result
+    sim.timeline = True
+    sim.start_time = 0.5
+    speos_results = sim.compute_CPU()
+    assert _has_nonzero_result(sim, speos_results[0])
+
+    # the target is outside camera FOV -> zero result
+    sim.start_time = 0.0
+    speos_results = sim.compute_CPU()
+    assert not _has_nonzero_result(sim, speos_results[0])
+
+    # the target is nominally within camera FOV -> nonzero result
+    sim.timeline = False
+    speos_results = sim.compute_CPU()
+    assert _has_nonzero_result(sim, speos_results[0])
