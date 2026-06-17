@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
+import tempfile
 from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
@@ -37,6 +38,7 @@ import numpy as np
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     BalanceModeDisplayPrimariesParameters,
@@ -1404,6 +1406,14 @@ class SensorCamera(BaseSensor):
                 self, default_parameters: Optional[ColorParameters] = None
             ) -> None:
                 if not default_parameters:
+                    if self._mode_color.HasField("balance_mode_userwhite"):
+                        self.set_balance_mode_user_white()
+                    elif self._mode_color.HasField("balance_mode_display"):
+                        self.set_balance_mode_display_primaries()
+                    elif self._mode_color.HasField("balance_mode_greyworld"):
+                        self.set_balance_mode_grey_world()
+                    elif self._mode_color.HasField("balance_mode_none"):
+                        self.set_balance_mode_none()
                     return
                 if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
@@ -1662,6 +1672,8 @@ class SensorCamera(BaseSensor):
                 default_parameters=None,
                 stable_ctr=stable_ctr,
             )
+            if self._mode_photometric.HasField("color_mode_color"):
+                self.set_mode_color()
 
         @property
         def acquisition_integration(self) -> float:
@@ -1878,7 +1890,7 @@ class SensorCamera(BaseSensor):
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
-            self._camera_props.trajectory_file_uri = str(Path(uri))
+            self._camera_props.trajectory_file_uri = str(uri)
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
@@ -1928,6 +1940,11 @@ class SensorCamera(BaseSensor):
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         if not default_parameters:
+            template = self._sensor_template.camera_sensor_template
+            if template.HasField("sensor_mode_photometric"):
+                self.set_mode_photometric()
+            elif template.HasField("sensor_mode_geometric"):
+                self.set_mode_geometric()
             return
         if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
             self._type = SensorCamera.Photometric(
@@ -2035,6 +2052,42 @@ class SensorCamera(BaseSensor):
             self._visual_data.coordinates.x_axis = feature_camera_x_dir
             self._visual_data.coordinates.y_axis = feature_camera_y_dir
             self._visual_data.coordinates.z_axis = feature_camera_z_dir
+
+            # camera trajectory path
+            if self.photometric is not None and self.photometric.trajectory_file_uri != "":
+                trajectory_path = Path(self.photometric.trajectory_file_uri)
+                skip_trajectory = False
+
+                # For distant server, the client used file transfer to upload the trajectory file.
+                # Then we need to download it to be able to read it and display the trajectory.
+                if not trajectory_path.is_file():
+                    try:
+                        file_transfer = FileTransfer(self._project.client)
+                        down_res = file_transfer.download_file(
+                            file_uri=self.photometric.trajectory_file_uri,
+                            download_location=Path(tempfile.gettempdir()),
+                        )
+                        trajectory_path = Path(tempfile.gettempdir()) / down_res.info.file_name
+                    except Exception:
+                        # If the download fails, just skip the trajectory display without failing
+                        # the whole visualization.
+                        skip_trajectory = True
+
+                if not skip_trajectory:
+                    import json
+
+                    json_info = None
+                    with trajectory_path.open("r") as f:
+                        json_info = json.load(f)
+                    trajectory_points = [
+                        [
+                            item["Origin"].get("X", 0.0) + feature_camera_pos[0],
+                            item["Origin"].get("Y", 0.0) + feature_camera_pos[1],
+                            item["Origin"].get("Z", 0.0) + feature_camera_pos[2],
+                        ]
+                        for item in json_info.get("Trajectory", [])
+                    ]
+                    self._visual_data.add_data_polyline(points=trajectory_points)
 
             self._visual_data.updated = True
             return self._visual_data
@@ -3857,11 +3910,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_radiometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3945,11 +4001,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_photometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
