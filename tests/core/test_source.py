@@ -64,6 +64,8 @@ from ansys.speos.core.generic.parameters import (
     VariableExitanceParameters,
     WhitePointType,
 )
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import (
     SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
@@ -75,6 +77,7 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from tests.conftest import test_path
+from tests.helper import remove_file
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -2536,3 +2539,75 @@ def test_load_uniform_ambient_source(speos: Speos):
         else:
             assert spectrum.HasField("library")
             assert spectrum.library.file_uri.endswith(".spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_source_timeline(speos: Speos):
+    """Test source timeline."""
+    # Import a speos file (timeline deactivated)
+    p = Project(
+        speos=speos, path=Path(test_path) / "TimelineExample.speos" / "TimelineExample.speos"
+    )
+
+    # Retrieve all sources and check that flux variation file are no set.
+    # Then, set flux variation file and relative lag, and commit.
+    # The, check that flux variation file and relative lag are correctly set on server
+    i = 0
+    for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that no flux variation file is set, neither relative lag
+        assert source_feat.flux_variation_file_uri is None
+        assert source_feat.relative_lag is None
+
+        # Set flux variation file
+        source_feat.flux_variation_file_uri = (
+            test_path / "TimelineExample.speos" / "flux_variation.json"
+        )
+
+        # Set relative lag
+        source_feat.relative_lag = i * 10
+
+        source_feat.commit()
+
+        # Check data on server
+        source_on_server: ProtoSourceTemplate = speos.client[
+            source_feat.source_template_link.key
+        ].get()
+        assert source_on_server.HasField("surface")
+        assert source_on_server.surface.HasField("timeline")
+        assert source_on_server.surface.timeline.flux_variation_file_uri != ""
+        assert source_on_server.surface.timeline.relative_lag == i * 10
+
+        i = i + 1
+
+    # Export simulation into .speos file (so that we load it after to check source timelines)
+    simu_feat: SimulationInverse = p.find(
+        name=".*", name_regex=True, feature_type=SimulationInverse
+    )[0]
+    simu_feat.stop_condition_passes_number = 5
+    simu_feat.commit()
+    simu_name = simu_feat._name
+    path_for_export = Path(test_path) / "TimelineExample.speos" / "TimelineExample_exported"
+    simu_feat.export(export_path=path_for_export)
+
+    # Load exported file and check that timeline data are correctly loaded
+    p2 = Project(
+        speos=speos, path=path_for_export / (simu_name + ".speos") / (simu_name + ".speos")
+    )
+
+    # Retrieve all sources and check that flux variation file and relative lag are set.
+    j = 0
+    for source_feat in p2.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that flux variation file is set
+        assert source_feat.flux_variation_file_uri is not None
+        assert source_feat.flux_variation_file_uri != ""
+
+        # check that relative lag is set
+        assert source_feat.relative_lag == j * 10
+
+        j = j + 1
+
+    remove_file(str(path_for_export))

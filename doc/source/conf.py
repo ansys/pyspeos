@@ -147,6 +147,7 @@ if BUILD_EXAMPLES:
         "examples/core/project": "_static/thumbnails/how_to_create_a_project.PNG",
         "examples/core/lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
         "examples/core/prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
+        "examples/core/timeline": "_static/thumbnails/timeline_on_camera.png",
         "examples/kernel/object-link": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/scene-job": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/modify-scene": "_static/thumbnails/pySpeos_520x520.png",
