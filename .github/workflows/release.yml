@@ -182,6 +182,8 @@ jobs:
           checkout: false
           dependencies: "pandoc texlive-latex-extra latexmk texlive-luatex texlive-fonts-extra"
           needs-quarto: true
+          optional-dependencies-name: 'graphics'
+          group-dependencies-name: 'doc'
 
       - name: Stop container
         shell: bash
@@ -193,13 +195,13 @@ jobs:
   testing:
     name: Testing and coverage
     needs: [smoke-tests]
-    uses: ./.github/workflows/reusable-speos-tests.yml
     permissions:
       contents: read   # Required to read repository content for testing
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    uses: ./.github/workflows/reusable-speos-tests.yml
 
   build-library:
     name: Build library

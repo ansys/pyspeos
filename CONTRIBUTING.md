@@ -38,7 +38,7 @@ Use the same GHCR access process documented in `README.rst` before starting the 
 Then install the test dependencies and run pytest:
 
 ```bash
-python -m pip install -e '.[tests]'
+python -m pip install -e . --group tests
 pytest -xs
 ```
 

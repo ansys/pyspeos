@@ -106,7 +106,7 @@ Build the documentation
 To build the documentation locally, you must run this command to install the
 documentation dependencies::
 
-  pip install -e .[doc]
+  pip install -e . --groups doc
 
 Then, navigate to the ``docs`` directory and run this command::
 
@@ -136,7 +136,7 @@ Prerequisites
 
 Prior to running the tests, you must run this command to install the test dependencies::
 
-  pip install -e .[tests]
+  pip install -e . --groups tests
 
 
 Running tests

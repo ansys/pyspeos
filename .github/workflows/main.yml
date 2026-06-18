@@ -61,6 +61,8 @@ jobs:
           checkout: false
           dependencies: "pandoc"
           needs-quarto: true
+          optional-dependencies-name: 'graphics'
+          group-dependencies-name: 'doc'
 
       - name: Stop container
         shell: bash

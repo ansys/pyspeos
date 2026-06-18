@@ -42,36 +42,47 @@ graphics = [
     "pyvista>=0.45,<0.49",
     "ansys-tools-visualization-interface>=0.8.3"
 ]
-tests = [
-    "psutil==7.2.2",
-    "pytest==9.0.3",
-    "pyvista>=0.45,<0.49",
-    "ansys-tools-visualization-interface>=0.8.3",
-    "ansys-platform-instancemanagement>=1.0.3",
-    "pytest-cov==7.1.0"
-]
 jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
     "pyvista[jupyter]>=0.45,<0.49",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.5.7"
+    "notebook"
+]
+all = [
+    "pyvista>=0.45,<0.49",
+    "ansys-tools-visualization-interface>=0.8.3",
+    "ansys-platform-instancemanagement"
+]
+
+[dependency-groups]
+dev = [
+  { include-group = "doc" },
+  { include-group = "quality" },
+  { include-group = "tests" },
 ]
 doc = [
-    "ansys-sphinx-theme[autoapi]==1.8.2",
-    "ansys-tools-visualization-interface>=0.8.3",
-    "numpydoc==1.10.0",
-    "Sphinx==8.1.3",
-    "sphinx-copybutton==0.5.2",
-    "sphinxcontrib-mermaid==2.0.2",
-    "myst-parser==4.0.1",
-    "nbsphinx==0.9.8",
-    "jupytext==1.19.3",
-    "jupyterlab==4.5.8",
-    "jupyter-server==2.19.0",
-    "nbconvert==7.17.1",
-    "pyvista[jupyter]>=0.45,<0.49"
+    "ansys-sphinx-theme[autoapi]>=1.8.2",
+    "ipykernel",
+    "jupytext>=1.19.3",
+    "nbconvert>=7.17.0",
+    "nbsphinx>=0.9.8",
+    "numpydoc>=1.10.0",
+    "myst-parser>=4.0.1",
+    "Sphinx>=8.1.3",
+    "sphinx-copybutton>=0.5.2",
+    "sphinxcontrib-mermaid>=2.0.2",
+]
+quality = [
+  "prek==0.4.3",
+  "ruff==0.15.15",
+  "ty==0.0.44",
+]
+tests = [
+    "psutil",
+    "pytest",
+    "pytest-cov"
 ]
 
 [project.urls]
@@ -137,6 +148,41 @@ known-first-party = ["ansys.speos.core"]
 
 [tool.coverage.run]
 source = ["ansys.speos.core"]
+
+[tool.ty.environment]
+root = ["src", "examples"]
+
+[tool.ty.src]
+exclude = [
+    "src/ansys/speos/core/body.py",
+    "src/ansys/speos/core/component.py",
+    "src/ansys/speos/core/face.py",
+    "src/ansys/speos/core/bsdf.py",
+    "src/ansys/speos/core/launcher.py",
+    "src/ansys/speos/core/intensity.py",
+    "src/ansys/speos/core/ground_plane.py",
+    "src/ansys/speos/core/geo_ref.py",
+    "src/ansys/speos/core/logger.py",
+    "src/ansys/speos/core/lxp.py",
+    "src/ansys/speos/core/part.py",
+    "src/ansys/speos/core/opt_prop.py",
+    "src/ansys/speos/core/project.py",
+    "src/ansys/speos/core/proto_message_utils.py",
+    "src/ansys/speos/core/source.py",
+    "src/ansys/speos/core/spectrum.py",
+    "src/ansys/speos/core/simulation.py",
+    "src/ansys/speos/core/sensor.py",
+    "src/ansys/speos/core/generic",
+    "src/ansys/speos/core/kernel",
+    "src/ansys/speos/core/workflow",
+    "examples/core",
+    "examples/kernel",
+    "examples/workflow",
+    "tests",
+]
+
+[tool.ty.rules]
+unresolved-import = "ignore"
 
 [tool.coverage.report]
 show_missing = true
