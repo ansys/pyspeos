@@ -75,7 +75,7 @@ doc = [
     "sphinxcontrib-mermaid>=2.0.2",
 ]
 quality = [
-  "prek==0.4.3",
+  "prek==0.4.4",
   "ruff==0.15.15",
   "ty==0.0.44",
 ]
