@@ -175,44 +175,16 @@ jobs:
           enable-cache: false
           prune-cache: true
 
-      - name: Create virtual environment
-        run: uv venv .venv
-
       - name: Install dependencies
         run: |
-          source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+          uv sync --frozen --only-group quality --no-install-project
 
-      # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
+      # NOTE: At the moment this will only run on a subset of files like ansys/speos/core/speos.py
+      # See the pyproject.toml configuration for more information on excluded files/folders
       - name: Run Ty on selected files
         run: |
           source .venv/bin/activate
-          ty check src/ansys/speos/core/ examples/ \
-            --exclude src/ansys/speos/core/body.py \
-            --exclude src/ansys/speos/core/component.py \
-            --exclude src/ansys/speos/core/face.py \
-            --exclude src/ansys/speos/core/bsdf.py \
-            --exclude src/ansys/speos/core/launcher.py \
-            --exclude src/ansys/speos/core/intensity.py \
-            --exclude src/ansys/speos/core/ground_plane.py \
-            --exclude src/ansys/speos/core/geo_ref.py \
-            --exclude src/ansys/speos/core/logger.py \
-            --exclude src/ansys/speos/core/lxp.py \
-            --exclude src/ansys/speos/core/part.py \
-            --exclude src/ansys/speos/core/opt_prop.py \
-            --exclude src/ansys/speos/core/project.py \
-            --exclude src/ansys/speos/core/proto_message_utils.py \
-            --exclude src/ansys/speos/core/source.py \
-            --exclude src/ansys/speos/core/spectrum.py \
-            --exclude src/ansys/speos/core/simulation.py \
-            --exclude src/ansys/speos/core/sensor.py \
-            --exclude src/ansys/speos/core/__init__.py \
-            --exclude src/ansys/speos/core/generic \
-            --exclude src/ansys/speos/core/kernel \
-            --exclude src/ansys/speos/core/workflow \
-            --exclude examples/core \
-            --exclude examples/kernel \
-            --exclude examples/workflow
+          ty check
 
   doc-style:
     name: Documentation style check
@@ -286,6 +258,8 @@ jobs:
           checkout: false
           dependencies: "pandoc"
           needs-quarto: true
+          optional-dependencies-name: 'graphics'
+          group-dependencies-name: 'doc'
 
       - name: Stop container
         shell: bash
@@ -331,20 +305,15 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-      - name: Create Python virtual environment
-        shell: bash
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -c "import sys; print(sys.executable)"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: false
+          prune-cache: true
 
-      - name: Install packages for testing
-        shell: bash
+      - name: Install package with test dependencies
         run: |
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install --upgrade build wheel
-          pip install .[tests]
+          uv sync --frozen --group tests --extra graphics --no-dev
 
       - name: Login to GitHub Packages
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0

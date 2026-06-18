@@ -39,18 +39,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Create Python virtual environment
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -c "import sys; print(sys.executable)"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: false
+          prune-cache: true
 
-      - name: Install packages for testing
+      - name: Install package with test dependencies
         run: |
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install --upgrade build wheel
-          pip install .[tests]
+          uv sync --frozen --group tests --extra graphics --no-dev
 
       - name: Login to GitHub Packages
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0

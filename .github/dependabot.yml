@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     cooldown:
       default-days: 10 # Fallback cooldown if no specific rule applies
       include:
@@ -21,12 +21,15 @@ updates:
       - "maintenance"
       - "dependencies"
     assignees:
-      - "pyansys-ci-bot"
+      - "StefanThoene"
+      - "pluAtAnsys"
+      - "echambla"
+      - "jomadec"
     ignore:
       - dependency-name: "grpcio-tools"
       - dependency-name: "grpcio-health-checking"
     commit-message:
-      prefix: "build(pip)"
+      prefix: "build(uv)"
     groups:
       core-deps:
         patterns:
@@ -79,6 +82,9 @@ updates:
     labels:
       - "maintenance"
     assignees:
-      - "pyansys-ci-bot"
+      - "StefanThoene"
+      - "pluAtAnsys"
+      - "echambla"
+      - "jomadec"
     commit-message:
-      prefix: "ci"
+      prefix: "build(ci)"
