@@ -68,7 +68,7 @@ p.preview(viz_args={"opacity": 0.7})
 # ## Retrieve the simulation feature, add light expert and run
 
 sim = p.find("Direct.1")[0]
-sim.set_light_expert(True)
+sim.light_expert = True
 sim.commit()
 sim.compute_CPU()
 
@@ -95,9 +95,9 @@ lxp.preview(project=p)
 
 
 interactive_sim = p.create_simulation("error", feature_type=SimulationInteractive)
-interactive_sim.set_light_expert(True)
-interactive_sim.set_sensor_paths(["Irradiance.1:70"])
-interactive_sim.set_source_paths(["Surface.1:4830"])
+interactive_sim.light_expert = True
+interactive_sim.sensor_paths = ["Irradiance.1:70"]
+interactive_sim.source_paths = ["Surface.1:4830"]
 interactive_sim.commit()
 
 # ## Preview the light expert result

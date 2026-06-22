@@ -186,6 +186,18 @@ class JobLink(CrudItem):
         for rp in self._actions_stub.GetRayPaths(messages.GetRayPaths_Request(guid=self.key)):
             yield rp
 
+    def save_file(self, file_path: str | Path) -> None:
+        """
+        Save job results to a SPEOS file.
+
+        Parameters
+        ----------
+        file_path : str | Path
+            Path to the file where results will be saved.
+        """
+        file_path = str(file_path)
+        self._actions_stub.SaveFile(messages.SaveFile_Request(guid=self.key, file_uri=file_path))
+
 
 class JobStub(CrudStub):
     """

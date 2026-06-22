@@ -31,6 +31,8 @@ from pathlib import Path
 import subprocess
 import time
 
+import numpy as np
+
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import JobLink, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -137,4 +139,15 @@ def remove_file(path):
             ["docker", "exec", DOCKER_CONTAINER_NAME, "rm", "-rf", Path(path).as_posix()]
         )
     else:
-        rmtree(Path(path))
+        if Path(path).exists():
+            rmtree(Path(path))
+
+
+def approx_comparison(value1, value2):
+    """Approximation comparison for floats."""
+    return np.fabs(value1 - value2) < 1e-6
+
+
+def approx_arrays(value1, values2):
+    """Approximation comparison for arrays."""
+    return all(np.isclose(value1, values2, atol=1e-4).flatten())

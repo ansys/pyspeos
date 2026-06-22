@@ -11,13 +11,16 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.source import (
+    SourceAmbientCieStandardGeneralSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -40,13 +43,11 @@ def create_helper_geometries(project: Project):
     """Create bodies and faces."""
 
     def create_face(body):
-        (
-            body.create_face(name="TheFaceF")
-            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-            .set_facets([0, 1, 2])
-            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-            .commit()
-        )
+        f = body.create_face(name="TheFaceF")
+        f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+        f.facets = [0, 1, 2]
+        f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+        f.commit()
 
     root_part = project.create_root_part().commit()
     body_b1 = root_part.create_body(name="TheBodyB").commit()
@@ -98,9 +99,9 @@ print(p)
 # The mention "local: " is added when printing the source data and information is not yet
 # pushed to the RPC server
 
-intensity_file_path = str(assets_data_path / IES)
+intensity_file_path = assets_data_path / IES
 source1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)  # type luminaire
-source1.set_intensity_file_uri(uri=intensity_file_path)
+source1.intensity_file_uri = intensity_file_path
 print(source1)
 
 # **Push it to the server.**
@@ -116,13 +117,14 @@ print(source1)
 # Setting several more characteristics.
 
 
-intensity_file_path = str(assets_data_path / IES)
+intensity_file_path = assets_data_path / IES
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
-source2.set_intensity_file_uri(uri=intensity_file_path)
-source2.set_flux_radiant()  # select flux radiant with default value
+source2.intensity_file_uri = intensity_file_path
+source2.flux.set_radiant()
+source2.flux.value = 1.0  # select flux radiant
 # choose the source location [Origin, Xvector, Yvector, Zvector]
-source2.set_axis_system(axis_system=[20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-source2.set_spectrum().set_blackbody()  # choose blackbody with default value for the spectrum
+source2.axis_system = [20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+source2.spectrum.set_blackbody()  # choose blackbody with default value for the spectrum
 source2.commit()  # Push to the server
 print(source2)
 
@@ -144,9 +146,10 @@ print(p)
 # > changes.
 # > If you don't, you will still only watch what is committed on the server.
 
-source1.set_flux_radiant(value=1.2)  # modify radiant flux value
-source1.set_axis_system(axis_system=[17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])  # modify axis system
-source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
+source1.flux.set_radiant()
+source1.flux.value = 1.2  # modify radiant flux value
+source1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # modify axis system
+source1.spectrum.set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server
 print(source1)
 
@@ -154,7 +157,7 @@ print(source1)
 #
 # Possibility to reset local values from the one available in the server.
 
-source1.set_flux_luminous()  # modify to luminous flux BUT no commit
+source1.flux.set_luminous().value = 683.0  # modify to luminous flux BUT no commit
 source1.reset()
 # reset -> this will apply the server value to the local value the local value will be back to
 # halogen
@@ -179,16 +182,17 @@ print(p)
 # ### Ray-file source
 
 # +
-ray_file_path = str(assets_data_path / "Rays.ray")
+ray_file_path = assets_data_path / "Rays.ray"
 
 source3 = p.create_source(name="Ray-file.1", feature_type=SourceRayFile)  # type ray file
-source3.set_ray_file_uri(uri=ray_file_path)
+source3.ray_file_uri = ray_file_path
 source3.commit()
 print(source3)
 # -
 
 # +
-source3.set_flux_luminous()
+source3.flux.set_luminous()
+source3.flux.value = 55
 source3.commit()
 print(source3)
 # -
@@ -202,21 +206,20 @@ source3.delete()
 # +
 create_helper_geometries(p)
 source4 = p.create_source(name="Surface.1", feature_type=SourceSurface)
-source4.set_exitance_constant(
-    geometries=[
-        (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
-        (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
-    ]
-)
+face1 = p.find(name="TheBodyB/TheFaceF", feature_type=Face)[0]
+face2 = p.find(name="TheBodyC/TheFaceF", feature_type=Face)[0]
+source4.set_exitance_constant().geometries = [
+    (face1, False),
+    (face2, True),
+]
 source4.commit()
 print(source4)
 # -
 
 # +
-source4.set_flux_luminous_intensity()
-source4.set_intensity().set_gaussian().set_axis_system(
-    axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-)
+source4.flux.set_luminous_intensity()
+source4.flux.value = 6
+source4.intensity.set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source4.commit()
 print(source4)
 # -
@@ -258,11 +261,68 @@ print(source5)
 source5.delete()
 # -
 
+# ### Ambient uniform light source
+
+# +
+ambient_uniform_source = p.create_source(name="Uniform.1", feature_type=SourceAmbientUniform)
+print(ambient_uniform_source.luminance)  # default luminance value
+print(ambient_uniform_source.zenith_direction)  # default zenith direction
+ambient_uniform_source.mirrored_extent = True
+ambient_uniform_source.luminance = 500.0
+ambient_uniform_source.zenith_direction = [0, 1, 0]
+ambient_uniform_source.reverse_zenith_direction = True
+ambient_uniform_source.spectrum.set_blackbody().temperature = 5500
+ambient_uniform_source.commit()
+print(ambient_uniform_source)
+# -
+
+# +
+ambient_uniform_source.set_sun_manual().direction = [1, 0, 0]
+ambient_uniform_source.set_sun_manual().reverse_sun = True
+ambient_uniform_source.commit()
+print(ambient_uniform_source)
+# -
+
+# +
+ambient_uniform_source.delete()
+# -
+
+# ### Ambient CIE Standard General Sky light source
+
+# +
+ambient_cie_standard_general_sky_source = p.create_source(
+    name="CieStandardGeneralSky.1", feature_type=SourceAmbientCieStandardGeneralSky
+)
+print(ambient_cie_standard_general_sky_source.luminance)  # default luminance value
+print(ambient_cie_standard_general_sky_source.zenith_direction)  # default zenith direction
+print(ambient_cie_standard_general_sky_source.north_direction)  # default north direction
+print(ambient_cie_standard_general_sky_source.cie_type)  # default cie setting
+ambient_cie_standard_general_sky_source.luminance = 500.0
+ambient_cie_standard_general_sky_source.north_direction = [1, 0, 0]
+ambient_cie_standard_general_sky_source.reverse_north_direction = True
+from ansys.speos.core.generic.parameters import CieType
+
+ambient_cie_standard_general_sky_source.cie_type = CieType.standard_overcast
+ambient_cie_standard_general_sky_source.commit()
+print(ambient_cie_standard_general_sky_source)
+# -
+
+# +
+ambient_cie_standard_general_sky_source.set_sun_manual().direction = [0, 0.707, 0.707]
+ambient_cie_standard_general_sky_source.set_sun_manual().reverse_sun = True
+ambient_cie_standard_general_sky_source.commit()
+print(ambient_cie_standard_general_sky_source)
+# -
+
+# +
+ambient_cie_standard_general_sky_source.delete()
+# -
+
 # ### Ambient environment light source
 
 # +
 source6 = p.create_source(name="Environment.1", feature_type=SourceAmbientEnvironment)
-image_file_uri = str(assets_data_path / "stars.exr")
+image_file_uri = assets_data_path / "stars.exr"
 source6.image_file_uri = image_file_uri
 print(source6.zenith_direction)  # default zenith direction
 print(source6.north_direction)  # default north direction
@@ -273,13 +333,13 @@ source6.set_predefined_color_space().set_color_space_srgb()
 print(source6.color_space)
 source6.set_userdefined_color_space().set_white_point_type_d50()
 print(source6.set_userdefined_color_space().white_point_type)
-source6.set_userdefined_color_space().red_spectrum = str(
+source6.set_userdefined_color_space().red_spectrum = (
     assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
 )
-source6.set_userdefined_color_space().blue_spectrum = str(
+source6.set_userdefined_color_space().blue_spectrum = (
     assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
 )
-source6.set_userdefined_color_space().green_spectrum = str(
+source6.set_userdefined_color_space().green_spectrum = (
     assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
 )
 source6.commit()
@@ -306,6 +366,21 @@ print(p)  # only 1 ground plane is taken per project, the second overwrites the 
 ground_plane.delete()
 source6.delete()
 # -
+
+# ### Display Source
+
+d_src = p.create_source(name="Display.1", feature_type=SourceDisplay)
+assert isinstance(d_src, SourceDisplay)
+d_src.x_start = -6
+d_src.x_end = 6
+d_src.y_start = -5
+d_src.y_end = 5
+d_src.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+d_src.image_file_uri = assets_data_path / "test_display_source.1.speos" / "pyspeos.png"
+d_src.commit()
+print(d_src)
+
+# ### Clean up
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
 #

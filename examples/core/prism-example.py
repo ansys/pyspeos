@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Body, Project, Speos
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -82,8 +83,9 @@ sim.compute_CPU()
 
 # Use the open_result_image method to review the result
 
-
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
@@ -108,14 +110,16 @@ body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
 sensor_3d = p.create_sensor(name="3d_irradiance", feature_type=Sensor3DIrradiance)
 sensor_3d.geometries = [body.geo_path]
 sensor_3d.commit()
-sim.set_sensor_paths(["Irradiance.1:564", "3d_irradiance"])
+sim.sensor_paths == ["Irradiance.1:564", "3d_irradiance"]
 sim.commit()
 p.preview()
 
 # ## Re-run the simulation with new sensor definition.
 
 sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
 
 speos.close()

@@ -70,7 +70,7 @@ def test_transfer_file(speos: Speos):
 def _check_uploaded_files(
     upload_responses, expected_file_names, speos_file_name, reserved_file_uri=""
 ):
-    assert len(upload_responses) == 3
+    assert len(upload_responses) == len(expected_file_names)
     speos_file_upload_res = None
     for upload_response in upload_responses:
         assert upload_response.info.uri != ""
@@ -88,7 +88,7 @@ def _check_uploaded_files(
 
 
 def _check_downloaded_files(download_responses, expected_file_names, download_location):
-    assert len(download_responses) == 3
+    assert len(download_responses) == len(expected_file_names)
     for download_response in download_responses:
         assert download_response.info.uri != ""
         assert download_response.info.file_name in expected_file_names
@@ -115,6 +115,7 @@ def test_transfer_folder(speos: Speos):
         "LG_50M_Colorimetric_short.sv5",
         "Blue Spectrum.spectrum",
         "Red Spectrum.spectrum",
+        "Green Spectrum.spectrum",
     ]
     speos_file_upload_res = _check_uploaded_files(
         upload_responses, expected_file_names, speos_file_path.name
@@ -130,6 +131,7 @@ def test_transfer_folder(speos: Speos):
         "LG_50M_Colorimetric_short.sv5",
         "Blue Spectrum.spectrum",
         "Red Spectrum.spectrum",
+        "Green Spectrum.spectrum",
     ]
     _check_uploaded_files(
         upload_responses, expected_file_names, speos_file_path.name, reserved_uri1
@@ -146,6 +148,7 @@ def test_transfer_folder(speos: Speos):
         "LG_50M_Colorimetric_short.sv5",
         "Blue Spectrum.spectrum",
         "Red Spectrum.spectrum",
+        "Green Spectrum.spectrum",
     ]
     _check_downloaded_files(download_responses, expected_file_names, download_location)
 

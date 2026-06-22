@@ -37,6 +37,14 @@ from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 from ansys.speos.core.generic.general_methods import min_speos_version
+from ansys.speos.core.generic.parameters import (
+    ColorimetricStandardTypes,
+    DirectSimulationParameters,
+    InteractiveSimulationParameters,
+    InverseSimulationParameters,
+    TextureNormalizationTypes,
+    VirtualBSDFSimulationParameters,
+)
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -46,6 +54,9 @@ from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
+from ansys.speos.core.source import BaseSource
+
+MIN_SOURCE_GROUPS_VERSION = (26, 1, 2)
 
 
 class BaseSimulation:
@@ -78,10 +89,9 @@ class BaseSimulation:
 
         Parameters
         ----------
-        source_sampling : Union[
-                simulation_template_pb2.RoughnessOnly,
-                simulation_template_pb2.Iridescence,
-                simulation_template_pb2.Isotropic,
+        source_sampling : Union[simulation_template_pb2.RoughnessOnly,\
+                simulation_template_pb2.Iridescence,\
+                simulation_template_pb2.Isotropic,\
                 simulation_template_pb2.Anisotropic] to complete.
         default_values: bool
             True to use the default values as uniform source sampling.
@@ -134,7 +144,7 @@ class BaseSimulation:
 
                 Parameters
                 ----------
-                uri: Union[Path | str]
+                uri: Union[Path, str]
                     Adaptive sampling file uri to assign.
 
                 Returns
@@ -145,7 +155,7 @@ class BaseSimulation:
                 return self._adaptive.file_uri
 
             @adaptive_uri.setter
-            def adaptive_uri(self, uri: Union[Path | str]) -> None:
+            def adaptive_uri(self, uri: Union[Path, str]) -> None:
                 self._adaptive.file_uri = str(uri)
 
         class Uniform:
@@ -305,24 +315,99 @@ class BaseSimulation:
                 raise RuntimeError(msg)
             self._weight = weight
             # Default values
-            self.set_minimum_energy_percentage()
+            self.minimum_energy_percentage = 0.005
 
-        def set_minimum_energy_percentage(self, value: float = 0.005) -> BaseSimulation.Weight:
-            """Set the minimum energy percentage.
+        @property
+        def minimum_energy_percentage(self) -> float:
+            """
+            Minimum energy percentage.
+
+            This property gets or sets the minimum energy percentage
+            used by the weight.
 
             Parameters
             ----------
             value : float
-                The Minimum energy percentage parameter defines the minimum energy ratio to continue
-                to propagate a ray with weight. By default, ``0.005``.
+                The minimum energy percentage to assign.
 
             Returns
             -------
-            ansys.speos.core.simulation.BaseSimulation.Weight
-                Weight.
+            float
+                The minimum energy percentage.
             """
+            return self._weight.minimum_energy_percentage
+
+        @minimum_energy_percentage.setter
+        def minimum_energy_percentage(self, value: float) -> None:
             self._weight.minimum_energy_percentage = value
-            return self
+
+    class SourceGroup:
+        """Source group for simulation source layering.
+
+        Parameters
+        ----------
+        simulation : BaseSimulation
+            Simulation owning the source group.
+        source_group : messages.Scene.SimulationInstance.SourceGroup
+            Source group message to wrap.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope.
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use ``add_source_group()`` or
+        ``source_groups`` on simulation classes.
+        """
+
+        @min_speos_version(
+            MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+        )
+        def __init__(
+            self,
+            simulation: BaseSimulation,
+            source_group: messages.Scene.SimulationInstance.SourceGroup,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = (
+                    "Use simulation.add_source_group() or simulation.source_groups "
+                    "to access SourceGroup instances."
+                )
+                raise RuntimeError(msg)
+            self._simulation = simulation
+            self._source_group = source_group
+
+        @property
+        def name(self) -> str:
+            """Name of the source group.
+
+            Returns
+            -------
+            str
+                Group name.
+            """
+            return self._source_group.name
+
+        @name.setter
+        def name(self, value: str) -> None:
+            self._source_group.name = value
+
+        @property
+        def source_paths(self) -> List[str]:
+            """Source paths assigned to the group.
+
+            Returns
+            -------
+            List[str]
+                Grouped source paths.
+            """
+            return list(self._source_group.source_paths)
+
+        @source_paths.setter
+        def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
+            normalized_paths = self._simulation._normalize_source_paths(source_paths)
+            self._simulation._validate_source_paths(normalized_paths)
+            self._source_group.source_paths[:] = normalized_paths
 
     def __init__(
         self,
@@ -378,8 +463,12 @@ class BaseSimulation:
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
-    def set_sensor_paths(self, sensor_paths: List[str]) -> BaseSimulation:
-        """Set the sensors that the simulation will take into account.
+    @property
+    def sensor_paths(self) -> List[str]:
+        """
+        Sensor paths.
+
+        This property gets or sets the sensor paths that the simulation will take into account.
 
         Parameters
         ----------
@@ -388,14 +477,27 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.core.simulation.BaseSimulation
-            Simulation feature.
+        List[str]
+            The sensor paths.
         """
-        self._simulation_instance.sensor_paths[:] = sensor_paths
-        return self
+        return list(self._simulation_instance.sensor_paths)
 
-    def set_source_paths(self, source_paths: List[str]) -> BaseSimulation:
-        """Set the sources that the simulation will take into account.
+    @sensor_paths.setter
+    def sensor_paths(self, sensor_paths: List[Union[str, BaseSensor]]) -> None:
+        ssr_paths = []
+        for path in sensor_paths:
+            if isinstance(path, str):
+                ssr_paths.append(path)
+            elif isinstance(path, BaseSensor):
+                ssr_paths.append(path._name)
+        self._simulation_instance.sensor_paths[:] = ssr_paths
+
+    @property
+    def source_paths(self) -> List[str]:
+        """
+        Source paths.
+
+        This property gets or sets the source paths that the simulation will take into account.
 
         Parameters
         ----------
@@ -404,10 +506,163 @@ class BaseSimulation:
 
         Returns
         -------
+        List[str]
+            The source paths.
+        """
+        return list(self._simulation_instance.source_paths)
+
+    @source_paths.setter
+    def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
+        src_paths = self._normalize_source_paths(source_paths)
+        if hasattr(self._simulation_instance, "source_groups"):
+            for source_group in self._simulation_instance.source_groups:
+                self._validate_source_paths(
+                    list(source_group.source_paths),
+                    allowed_source_paths=src_paths,
+                )
+        self._simulation_instance.source_paths[:] = src_paths
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def _normalize_source_paths(self, source_paths: List[Union[str, BaseSource]]) -> List[str]:
+        """Normalize source path values to their string representation.
+
+        Raises
+        ------
+        TypeError
+            If any element in ``source_paths`` is not a string or ``BaseSource`` instance.
+        """
+        normalized_paths = []
+        for path in source_paths:
+            if isinstance(path, str):
+                normalized_paths.append(path)
+            elif isinstance(path, BaseSource):
+                normalized_paths.append(path._source_path)
+            else:
+                raise TypeError(
+                    "Source_paths values must be strings or BaseSource instances, "
+                    f"got {type(path).__name__}: {path}"
+                )
+        return normalized_paths
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def _validate_source_paths(
+        self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
+    ) -> None:
+        """Validate that source group paths are included in simulation source paths.
+
+        Raises
+        ------
+        ValueError
+            If any source path is not included in ``allowed_source_paths``.
+        """
+        if allowed_source_paths is None:
+            allowed_source_paths = self.source_paths
+        allowed_source_paths_set = set(allowed_source_paths)
+        invalid_paths = [path for path in source_paths if path not in allowed_source_paths_set]
+        if invalid_paths:
+            invalid_source_paths = ", ".join(invalid_paths)
+            msg = (
+                "Source group paths must be included in simulation source_paths. "
+                f"Invalid source paths: {invalid_source_paths}"
+            )
+            raise ValueError(msg)
+
+    @property
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def source_groups(self) -> List[BaseSimulation.SourceGroup]:
+        """Source groups assigned to the simulation.
+
+        Returns
+        -------
+        List[ansys.speos.core.simulation.BaseSimulation.SourceGroup]
+            Source groups bound to the simulation instance.
+        """
+        if hasattr(self._simulation_instance, "source_groups"):
+            return [
+                BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+                for source_group in self._simulation_instance.source_groups
+            ]
+        else:
+            return None
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def add_source_group(
+        self, name: str, source_paths: List[Union[str, BaseSource]]
+    ) -> BaseSimulation.SourceGroup:
+        """Add a source group to the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group.
+        source_paths : List[Union[str, BaseSource]]
+            Sources to add to the group. Each path must already belong to
+            ``source_paths`` of the simulation.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation.SourceGroup
+            Added source group wrapper.
+
+        Raises
+        ------
+        ValueError
+            If one of the given source paths is not included in the simulation.
+        """
+        normalized_paths = self._normalize_source_paths(source_paths)
+        self._validate_source_paths(normalized_paths)
+        source_group = self._simulation_instance.source_groups.add()
+        source_group.name = name
+        source_group.source_paths[:] = normalized_paths
+        return BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def remove_source_group(self, name: str) -> BaseSimulation:
+        """Remove a source group from the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group to remove.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+
+        Raises
+        ------
+        ValueError
+            If no source group with the provided name exists.
+        """
+        for index, source_group in enumerate(self._simulation_instance.source_groups):
+            if source_group.name == name:
+                del self._simulation_instance.source_groups[index]
+                return self
+        raise ValueError(f"Source group '{name}' not found.")
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def clear_source_groups(self) -> BaseSimulation:
+        """Remove all source groups from the simulation.
+
+        Returns
+        -------
         ansys.speos.core.simulation.BaseSimulation
             Simulation feature.
         """
-        self._simulation_instance.source_paths[:] = source_paths
+        del self._simulation_instance.source_groups[:]
         return self
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
@@ -504,29 +759,39 @@ class BaseSimulation:
         None
 
         """
-        simulation_features = [
-            _
-            for _ in self._project._features
-            if isinstance(_, (SimulationDirect, SimulationInverse))
-        ]
-        if len(simulation_features) > 1:
-            warnings.warn(
-                "Limitation : only the first inverse/direct simulation is "
-                "exported and stop conditions are not exported.",
-                stacklevel=2,
-            )
-        if self is simulation_features[0]:
+        if server_version_checker.is_version_supported(2026, 1, 1):  # >= 26r1 sp1
+            # Save or Update the job
+            if self.job_link is None:
+                self.job_link = self._project.client.jobs().create(message=self._job)
+            elif self.job_link.get() != self._job:
+                self.job_link.set(data=self._job)  # Update only if job data has changed
+
             export_path = Path(export_path)
-            self._project.scene_link.stub._actions_stub.SaveFile(
-                messages.SaveFile_Request(
-                    guid=self._project.scene_link.key,
-                    file_uri=str(export_path / (self._name + ".speos")),
+            self.job_link.save_file(file_path=str(export_path / (self._name + ".speos")))
+        else:  # < 26r1 sp1
+            simulation_features = [
+                _
+                for _ in self._project._features
+                if isinstance(_, (SimulationDirect, SimulationInverse))
+            ]
+            if len(simulation_features) > 1:
+                warnings.warn(
+                    "Limitation : only the first inverse/direct simulation is "
+                    "exported and stop conditions are not exported.",
+                    stacklevel=2,
                 )
-            )
-        else:
-            raise ValueError(
-                "Selected simulation is not the first simulation feature, it can't be exported."
-            )
+            if self is simulation_features[0]:
+                export_path = Path(export_path)
+                self._project.scene_link.stub._actions_stub.SaveFile(
+                    messages.SaveFile_Request(
+                        guid=self._project.scene_link.key,
+                        file_uri=str(export_path / (self._name + ".speos")),
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Selected simulation is not the first simulation feature, it can't be exported."
+                )
 
     def _export_vtp(self) -> List[Path]:
         """Export the simulation results into vtp files.
@@ -586,9 +851,62 @@ class BaseSimulation:
             vtp_files.append(merge_vtp(vtp_paths=vtp_files))
         return vtp_files
 
+    @property
+    def texture_normalization(self) -> Union[TextureNormalizationTypes]:
+        """Return Texture Normalization Type of the Simulation.
+
+        Returns
+        -------
+        Union[TextureNormalizationTypes]
+            Provides clear text readable texture normalization applied during simulation.
+        """
+        match getattr(
+            self._simulation_template, self._template_class
+        ).texture.texture_normalization:
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE:
+                return TextureNormalizationTypes.none
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED:
+                return TextureNormalizationTypes.unspecified
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE:
+                return TextureNormalizationTypes.color_from_texture
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
+                return TextureNormalizationTypes.color_from_bsdf
+
+    def set_texture_normalization_unspecified(self) -> BaseSimulation:
+        """Set texture normalization to unspecified."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
+        )
+        return self
+
+    def set_texture_normalization_none(self) -> BaseSimulation:
+        """Disable texture normalization."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
+        )
+        return self
+
+    def set_texture_normalization_color_from_texture(self) -> BaseSimulation:
+        """Set texture normalization to color-from-texture mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE
+        )
+        return self
+
+    def set_texture_normalization_color_from_bsdf(self) -> BaseSimulation:
+        """Set texture normalization to color-from-BSDF mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+        )
+        return self
+
     def compute_CPU(
         self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
-    ) -> tuple[list[Result], list[Path]] | list[Result]:
+    ) -> Union[tuple[list[Result], list[Path]], list[Result]]:
         """Compute the simulation on CPU.
 
         Parameters
@@ -601,9 +919,11 @@ class BaseSimulation:
 
         Returns
         -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
+        Union[tuple[list[Result], list[Path]], list[Result]]
+            List of simulation results or 2 lists of simulation results
+             and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.CPU
 
         if threads_number is not None:
@@ -619,7 +939,7 @@ class BaseSimulation:
 
     def compute_GPU(
         self, export_vtp: Optional[bool] = False
-    ) -> tuple[list[Result], list[Path]] | list[Result]:
+    ) -> Union[tuple[list[Result], list[Path]], list[Result]]:
         """Compute the simulation on GPU.
 
         Parameters
@@ -629,9 +949,11 @@ class BaseSimulation:
 
         Returns
         -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
+        Union[tuple[list[Result], list[Path]], list[Result]]
+            List of simulation results or 2 lists of simulation results
+             and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
         if export_vtp:
@@ -643,6 +965,40 @@ class BaseSimulation:
         """Stop the simulation computation."""
         if self.job_link is not None:
             self.job_link.stop()
+
+    def _check_job(self) -> None:
+        """Check job stop conditions."""
+        stop_condition_error = False
+        if self._job.HasField("direct_mc_simulation_properties"):
+            job_props = self._job.direct_mc_simulation_properties
+            if not (
+                job_props.HasField("stop_condition_duration")
+                or job_props.HasField("stop_condition_rays_number")
+            ):
+                stop_condition_error = True
+        elif self._job.HasField("inverse_mc_simulation_properties"):
+            job_props = self._job.inverse_mc_simulation_properties
+            if not (
+                job_props.HasField("stop_condition_duration")
+                or job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+            ):
+                stop_condition_error = True
+
+        if stop_condition_error:
+            warnings.warn(
+                "In the current RPC version, simulation stop condition information may be lost "
+                "when loading a .speos file. Please define a stop condition explicitly. Default "
+                "stop conditions have been applied so the simulation does not run infinitely.",
+                stacklevel=2,
+            )
+            if self._job.HasField("direct_mc_simulation_properties"):
+                default_sim_paras = DirectSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_rays_number = default_sim_paras.stop_condition_rays_number
+            elif self._job.HasField("inverse_mc_simulation_properties"):
+                default_sim_paras = InverseSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
@@ -928,8 +1284,9 @@ class SimulationDirect(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : ansys.speos.core.generic.parameters.DirectSimulationParameters, optional
+        If defined the values in the direct simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class SourceSampling:
@@ -945,7 +1302,7 @@ class SimulationDirect(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[DirectSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -959,18 +1316,28 @@ class SimulationDirect(BaseSimulation):
         )
         self._template_class = "direct_mc_simulation_template"
 
-        if default_values:
-            # self.set_fast_transmission_gathering()
-            self.set_ambient_material_file_uri()
-            self.set_weight()
-            self.set_light_expert()
-            # Default job properties
-            self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
-            # Default values
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_dispersion()
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            self.light_expert = default_parameters.light_expert
+            self.stop_condition_rays_number = default_parameters.stop_condition_rays_number
+            self.stop_condition_duration = default_parameters.stop_condition_duration
+            self.automatic_save_frequency = default_parameters.automatic_save_frequency
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
+            self.dispersion = default_parameters.dispersion
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1026,158 +1393,135 @@ class SimulationDirect(BaseSimulation):
         )
         return self
 
-    def set_dispersion(self, value: bool = True) -> SimulationDirect:
+    @property
+    def dispersion(self) -> bool:
         """Activate/Deactivate the dispersion calculation.
 
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``True``, means activate.
-
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
+        bool
+            True if dispersion is activated.
         """
+        return self._simulation_template.direct_mc_simulation_template.dispersion
+
+    @dispersion.setter
+    def dispersion(self, value: bool) -> None:
         self._simulation_template.direct_mc_simulation_template.dispersion = value
-        return self
 
-    # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
-    #     """Activate/Deactivate the fast transmission gathering.
-    #
-    #     To accelerate the simulation by neglecting the light refraction that occurs when the
-    #     light is being
-    #     transmitted through a transparent surface.
-    #
-    #     Parameters
-    #     ----------
-    #     value : bool
-    #        Activate/Deactivate.
-    #        By default, ``False``, means deactivate
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.simulation.Direct
-    #        Direct simulation
-    #     """
-    #     template = self._simulation_template.direct_mc_simulation_template
-    #     template.fast_transmission_gathering = value
-    #     return self
-
-    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationDirect:
-        """To define the environment in which the light will propagate (water, fog, smoke etc.).
-
-        Parameters
-        ----------
-        uri : str
-            The ambient material, expressed in a .material file.
-            By default, ``""``, means air as ambient material.
+    @property
+    def ambient_material_file_uri(self) -> str:
+        """The ambient material file URI.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
+        str
+            The ambient material file URI.
         """
-        self._simulation_template.direct_mc_simulation_template.ambient_material_uri = uri
-        return self
+        return self._simulation_template.direct_mc_simulation_template.ambient_material_uri
 
-    def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> SimulationDirect:
-        """To stop the simulation after a certain number of rays were sent.
+    @ambient_material_file_uri.setter
+    def ambient_material_file_uri(self, uri: Union[Path, str]) -> None:
+        self._simulation_template.direct_mc_simulation_template.ambient_material_uri = str(uri)
 
-        Set None as value to have no condition about rays number.
-
-        Parameters
-        ----------
-        value : int, optional
-            The number of rays to send. Or None if no condition about the number of rays.
-            By default, ``200000``.
+    @property
+    def stop_condition_rays_number(self) -> Optional[int]:
+        """The number of rays to stop the simulation.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
+        Optional[int]
+            The number of rays, or None if no condition.
         """
+        if self._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number"):
+            return self._job.direct_mc_simulation_properties.stop_condition_rays_number
+        else:
+            return None
+
+    @stop_condition_rays_number.setter
+    def stop_condition_rays_number(self, value: Optional[int]) -> None:
         if value is None:
             self._job.direct_mc_simulation_properties.ClearField("stop_condition_rays_number")
         else:
             self._job.direct_mc_simulation_properties.stop_condition_rays_number = value
-        return self
 
-    def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationDirect:
-        """To stop the simulation after a certain duration.
-
-        Set None as value to have no condition about duration.
-
-        Parameters
-        ----------
-        value : int, optional
-            Duration requested (s). Or None if no condition about duration.
-            By default, ``None``.
+    @property
+    def stop_condition_duration(self) -> Optional[int]:
+        """The duration to stop the simulation.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
+        Optional[int]
+            The duration in seconds, or None if no condition.
         """
+        if self._job.direct_mc_simulation_properties.HasField("stop_condition_duration"):
+            return self._job.direct_mc_simulation_properties.stop_condition_duration
+        else:
+            return None
+
+    @stop_condition_duration.setter
+    def stop_condition_duration(self, value: Optional[int]) -> None:
         if value is None:
             self._job.direct_mc_simulation_properties.ClearField("stop_condition_duration")
         else:
             self._job.direct_mc_simulation_properties.stop_condition_duration = value
-        return self
 
-    def set_automatic_save_frequency(self, value: int = 1800) -> SimulationDirect:
-        """Define a backup interval (s).
-
-        This option is useful when computing long simulations.
-        But a reduced number of save operations naturally increases the simulation performance.
-
-        Parameters
-        ----------
-        value : int, optional
-            Backup interval (s).
-            By default, ``1800``.
+    @property
+    def automatic_save_frequency(self) -> int:
+        """The automatic save frequency.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
+        int
+            The save frequency in seconds.
         """
+        return self._job.direct_mc_simulation_properties.automatic_save_frequency
+
+    @automatic_save_frequency.setter
+    def automatic_save_frequency(self, value: int) -> None:
         self._job.direct_mc_simulation_properties.automatic_save_frequency = value
-        return self
 
-    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationDirect:
-        """Activate/Deactivate the generation of light expert file.
-
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``False``, means deactivate.
-        ray_number : int
-            number of rays stored in lpf file
-            By default, ``10e6``
+    @property
+    def light_expert(self) -> bool:
+        """Whether light expert is enabled.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationDirect
-            Interactive simulation
+        bool
+            True if light expert is enabled.
         """
-        self._light_expert_changed = True
+        for item in self._project._features:
+            if isinstance(item, BaseSensor) and item.lxp_path_number is not None:
+                return True
+        return False
+
+    @light_expert.setter
+    def light_expert(self, value: Union[bool, List[tuple[Union[BaseSensor, str], int]]]) -> None:
+        if not isinstance(value, (bool, list)):
+            raise ValueError("value must be bool or List[(sensor/sensor_path, ray_number: int)]")
         warnings.warn(
             "Please note that setting a value for light expert option forces a sensor"
             "commit when committing the Simulation class",
             stacklevel=2,
         )
-        if value:
+        self._light_expert_changed = True
+        if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = ray_number
-        else:
-            for item in self._project._features:
-                if isinstance(item, BaseSensor):
-                    item.lxp_path_number = None
-        return self
+                    item.lxp_path_number = 10e6 if value else None
+        elif isinstance(value, list):
+            for value_item in value:
+                ssr, ray_number = value_item
+                if isinstance(ssr, BaseSensor):
+                    ssr.lxp_path_number = ray_number
+                elif isinstance(ssr, str):
+                    ssr_found = self._project.find(name=ssr, feature_type=BaseSensor)
+                    if len(ssr_found) != 1:
+                        raise ValueError("Sensor {} not found".format(ssr))
+                    ssr_found[0].lxp_path_number = ray_number
+                else:
+                    raise ValueError(
+                        "First tuple value {} is not a Sensor or Sensor name".format(ssr)
+                    )
 
     def commit(self) -> SimulationDirect:
         """Save feature: send the local data to the speos server database.
@@ -1227,8 +1571,9 @@ class SimulationInverse(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
+        If defined the values in the inverse simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class SourceSampling:
@@ -1244,7 +1589,7 @@ class SimulationInverse(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[InverseSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1258,20 +1603,35 @@ class SimulationInverse(BaseSimulation):
         )
         self._template_class = "inverse_mc_simulation_template"
 
-        if default_values:
-            # self.set_fast_transmission_gathering()
-            self.set_ambient_material_file_uri()
-            # Default job properties
-            self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
-            # Default values
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_dispersion()
-            self.set_splitting()
-            self.set_number_of_gathering_rays_per_source()
-            self.set_maximum_gathering_error()
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            self.timeline = default_parameters.timeline
+            if self.timeline:
+                self.start_time = default_parameters.start_time
+            self.stop_condition_duration = default_parameters.stop_condition_duration
+            self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
+            self.automatic_save_frequency = default_parameters.automatic_save_frequency
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
+            self.dispersion = default_parameters.dispersion
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.splitting = default_parameters.splitting
+            self.number_of_gathering_rays_per_source = (
+                default_parameters.number_of_gathering_rays_per_source
+            )
+            self.maximum_gathering_error = default_parameters.maximum_gathering_error
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1327,24 +1687,70 @@ class SimulationInverse(BaseSimulation):
         )
         return self
 
-    def set_dispersion(self, value: bool = False) -> SimulationInverse:
-        """Activate/Deactivate the dispersion calculation.
-
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``False``, means deactivate.
+    @property
+    def timeline(self) -> bool:
+        """Switch to enable/disable the simulation timeline.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        bool
+            State of timeline activation.
         """
-        self._simulation_template.inverse_mc_simulation_template.dispersion = value
-        return self
+        return self._job.inverse_mc_simulation_properties.HasField("timeline")
 
-    def set_splitting(self, value: bool = False) -> SimulationInverse:
+    @timeline.setter
+    def timeline(self, value: bool) -> None:
+        props = self._job.inverse_mc_simulation_properties
+
+        if value:
+            if not props.HasField("timeline"):
+                timeline = props.timeline
+                timeline.start_time = InverseSimulationParameters.start_time
+        else:
+            props.ClearField("timeline")
+
+    @property
+    def start_time(self) -> Optional[float]:
+        """Timeline start time (s).
+
+        Returns
+        -------
+        Optional[float]
+            the start time (s) of the simulation timeline,
+            or None to disable timeline
+
+        """
+        if self._job.inverse_mc_simulation_properties.HasField("timeline"):
+            return self._job.inverse_mc_simulation_properties.timeline.start_time
+        else:
+            return None
+
+    @start_time.setter
+    def start_time(self, value: Optional[float]) -> None:
+        if not self.timeline:
+            raise TypeError("Timeline must be enabled to set start_time")
+        if value is None:
+            self._job.inverse_mc_simulation_properties.ClearField("timeline")
+        else:
+            self._job.inverse_mc_simulation_properties.timeline.start_time = value
+
+    @property
+    def dispersion(self) -> bool:
+        """Activate/Deactivate the dispersion calculation.
+
+        Returns
+        -------
+        bool
+            True if dispersion is activated.
+        """
+        return self._simulation_template.inverse_mc_simulation_template.dispersion
+
+    @dispersion.setter
+    def dispersion(self, value: bool) -> None:
+        self._simulation_template.inverse_mc_simulation_template.dispersion = value
+
+    @property
+    def splitting(self) -> bool:
         """Activate/Deactivate the splitting.
 
         To split each propagated ray into several paths at their first impact after leaving the
@@ -1361,43 +1767,43 @@ class SimulationInverse(BaseSimulation):
         ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
+        return self._simulation_template.inverse_mc_simulation_template.splitting
+
+    @splitting.setter
+    def splitting(self, value: bool) -> None:
         self._simulation_template.inverse_mc_simulation_template.splitting = value
-        return self
 
-    def set_number_of_gathering_rays_per_source(self, value: int = 1) -> SimulationInverse:
-        """Set the number of gathering rays per source.
-
-        Parameters
-        ----------
-        value : int
-            This number pilots the number of shadow rays to target at each source.
-            By default, ``1``.
+    @property
+    def number_of_gathering_rays_per_source(self) -> int:
+        """The number of gathering rays per source.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        int
+            The number of gathering rays per source.
         """
         template = self._simulation_template.inverse_mc_simulation_template
+        return template.number_of_gathering_rays_per_source
+
+    @number_of_gathering_rays_per_source.setter
+    def number_of_gathering_rays_per_source(self, value: int) -> None:
+        template = self._simulation_template.inverse_mc_simulation_template
         template.number_of_gathering_rays_per_source = value
-        return self
 
-    def set_maximum_gathering_error(self, value: int = 0) -> SimulationInverse:
-        """Set the maximum gathering error.
-
-        Parameters
-        ----------
-        value : int
-            This value defines the level below which a source can be neglected.
-            By default, ``0``, means that no approximation will be done.
+    @property
+    def maximum_gathering_error(self) -> int:
+        """The maximum gathering error.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        int
+            The maximum gathering error.
         """
+        return self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error
+
+    @maximum_gathering_error.setter
+    def maximum_gathering_error(self, value: int) -> None:
         self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
-        return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
     #     """Activate/Deactivate the fast transmission gathering.
@@ -1420,24 +1826,23 @@ class SimulationInverse(BaseSimulation):
     #     template.fast_transmission_gathering = value
     #     return self
 
-    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationInverse:
-        """To define the environment in which the light will propagate (water, fog, smoke etc.).
-
-        Parameters
-        ----------
-        uri : str
-            The ambient material, expressed in a .material file.
-            By default, ``""``, means air as ambient material.
+    @property
+    def ambient_material_file_uri(self) -> str:
+        """The ambient material file URI.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        str
+            The ambient material file URI.
         """
-        self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = uri
-        return self
+        return self._simulation_template.inverse_mc_simulation_template.ambient_material_uri
 
-    def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> SimulationInverse:
+    @ambient_material_file_uri.setter
+    def ambient_material_file_uri(self, uri: Union[Path, str]) -> None:
+        self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = str(uri)
+
+    @property
+    def stop_condition_passes_number(self) -> int:
         """To stop the simulation after a certain number of passes.
 
         Set None as value to have no condition about passes.
@@ -1445,95 +1850,106 @@ class SimulationInverse(BaseSimulation):
         Parameters
         ----------
         value : int, optional
-            The number of passes requested. Or None if no condition about passes.
-            By default, ``5``.
+           The number of passes requested. Or None if no condition about passes.
+           By default, ``5``.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        int
         """
-        propagation_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
+        props = self._job.inverse_mc_simulation_properties
+        return props.optimized_propagation_none.stop_condition_passes_number
+
+    @stop_condition_passes_number.setter
+    def stop_condition_passes_number(self, value: Union[None, int]) -> None:
+        prop_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
         if value is None:
-            propagation_none.ClearField("stop_condition_passes_number")
+            prop_none.ClearField("stop_condition_passes_number")
         else:
-            propagation_none.stop_condition_passes_number = value
-        return self
+            prop_none.stop_condition_passes_number = value
 
-    def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationInverse:
-        """To stop the simulation after a certain duration.
-
-        Set None as value to have no condition about duration.
-
-        Parameters
-        ----------
-        value : int, optional
-            Duration requested (s). Or None if no condition about duration.
-            By default, ``None``.
+    @property
+    def stop_condition_duration(self) -> Optional[int]:
+        """The duration to stop the simulation.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        Optional[int]
+            The duration in seconds, or None if no condition.
         """
+        if self._job.inverse_mc_simulation_properties.HasField("stop_condition_duration"):
+            return self._job.inverse_mc_simulation_properties.stop_condition_duration
+        else:
+            return None
+
+    @stop_condition_duration.setter
+    def stop_condition_duration(self, value: Optional[int]) -> None:
         if value is None:
             self._job.inverse_mc_simulation_properties.ClearField("stop_condition_duration")
         else:
             self._job.inverse_mc_simulation_properties.stop_condition_duration = value
-        return self
 
-    def set_automatic_save_frequency(self, value: int = 1800) -> SimulationInverse:
-        """Define a backup interval (s).
+    @property
+    def automatic_save_frequency(self) -> int:
+        """The automatic save frequency.
 
         This option is useful when computing long simulations.
-        But a reduced number of save operations naturally increases the simulation performance.
-
-        Parameters
-        ----------
-        value : int, optional
-            Backup interval (s).
-            By default, ``1800``.
+        But a reduced number of save operations naturally
+        increases the simulation performance.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
+        int
+            The save frequency in seconds.
         """
+        return self._job.inverse_mc_simulation_properties.automatic_save_frequency
+
+    @automatic_save_frequency.setter
+    def automatic_save_frequency(self, value: int) -> None:
         self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
-        return self
 
-    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationInverse:
-        """Activate/Deactivate the generation of light expert file.
-
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``False``, means deactivate.
-        ray_number : int
-            number of rays stored in lpf file
-            By default, ``10e6``
+    @property
+    def light_expert(self) -> bool:
+        """Whether light expert is enabled.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInverse
-            Interactive simulation
+        bool
+            True if light expert is enabled.
         """
-        self._light_expert_changed = True
+        for item in self._project._features:
+            if isinstance(item, BaseSensor) and item.lxp_path_number is not None:
+                return True
+        return False
+
+    @light_expert.setter
+    def light_expert(self, value: Union[bool, List[tuple[Union[BaseSensor, str], int]]]) -> None:
+        if not isinstance(value, (bool, list)):
+            raise ValueError("value must be bool or List[(sensor/sensor_path, ray_number: int)]")
         warnings.warn(
             "Please note that setting a value for light expert option forces a sensor"
             "commit when committing the Simulation class",
             stacklevel=2,
         )
-        if value:
+        self._light_expert_changed = True
+        if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = ray_number
-        else:
-            for item in self._project._features:
-                if isinstance(item, BaseSensor):
-                    item.lxp_path_number = None
-        return self
+                    item.lxp_path_number = 10e6 if value else None
+        elif isinstance(value, list):
+            for value_item in value:
+                ssr, ray_number = value_item
+                if isinstance(ssr, BaseSensor):
+                    ssr.lxp_path_number = ray_number
+                elif isinstance(ssr, str):
+                    ssr_found = self._project.find(name=ssr, feature_type=BaseSensor)
+                    if len(ssr_found) != 1:
+                        raise ValueError("Sensor {} not found".format(ssr))
+                    ssr_found[0].lxp_path_number = ray_number
+                else:
+                    raise ValueError(
+                        "First tuple value {} is not a Sensor or Sensor name".format(ssr)
+                    )
 
     def commit(self) -> SimulationInverse:
         """Save feature: send the local data to the speos server database.
@@ -1579,8 +1995,10 @@ class SimulationInteractive(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.InteractiveSimulationParameters] = None
+        If defined the values in the interactive simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class RaysNumberPerSource:
@@ -1613,7 +2031,7 @@ class SimulationInteractive(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[InteractiveSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1627,15 +2045,27 @@ class SimulationInteractive(BaseSimulation):
         )
         self._template_class = "interactive_simulation_template"
 
-        if default_values:
-            self.set_ambient_material_file_uri()
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
             # Default job parameters
-            self.set_light_expert().set_impact_report()
+            self.light_expert = default_parameters.light_expert
+            self.impact_report = default_parameters.impact_report
             # Default values
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1691,41 +2121,36 @@ class SimulationInteractive(BaseSimulation):
         )
         return self
 
-    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationInteractive:
-        """To define the environment in which the light will propagate (water, fog, smoke etc.).
+    @property
+    def ambient_material_file_uri(self) -> str:
+        """The ambient material file URI.
 
-        Parameters
-        ----------
-        uri : str
-            The ambient material, expressed in a .material file.
-            By default, ``""``, means air as ambient material.
+        Returns
+        -------
+        str
+            The ambient material file URI.
+        """
+        return self._simulation_template.interactive_simulation_template.ambient_material_uri
+
+    @ambient_material_file_uri.setter
+    def ambient_material_file_uri(self, uri: Union[Path, str]) -> None:
+        self._simulation_template.interactive_simulation_template.ambient_material_uri = str(uri)
+
+    @property
+    def rays_number_per_sources(self) -> Optional[int]:
+        """The number of rays to stop the simulation.
 
         Returns
         -------
         ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
-        self._simulation_template.interactive_simulation_template.ambient_material_uri = uri
-        return self
+        return self._job.interactive_simulation_properties.rays_number_per_sources[:]
 
-    def set_rays_number_per_sources(
+    @rays_number_per_sources.setter
+    def rays_number_per_sources(
         self, values: List[SimulationInteractive.RaysNumberPerSource]
-    ) -> SimulationInteractive:
-        """Select the number of rays emitted for each source.
-
-        If a source is present in the simulation but not referenced here, it will send by default
-        100 rays.
-
-        Parameters
-        ----------
-        values : List[ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource]
-            List of rays number emitted by source.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationInteractive
-            Interactive simulation
-        """
+    ) -> None:
         my_list = [
             ProtoJob.InteractiveSimulationProperties.RaysNumberPerSource(
                 source_path=rays_nb_per_source.source_path,
@@ -1735,43 +2160,38 @@ class SimulationInteractive(BaseSimulation):
         ]
         self._job.interactive_simulation_properties.ClearField("rays_number_per_sources")
         self._job.interactive_simulation_properties.rays_number_per_sources.extend(my_list)
-        return self
 
-    def set_light_expert(self, value: bool = False) -> SimulationInteractive:
-        """Activate/Deactivate the generation of light expert file.
-
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``False``, means deactivate.
+    @property
+    def light_expert(self) -> bool:
+        """Whether light expert is enabled.
 
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInteractive
-            Interactive simulation
+        bool
+            True if light expert is enabled.
         """
-        self._job.interactive_simulation_properties.light_expert = value
-        return self
+        return self._job.interactive_simulation_properties.light_expert
 
-    def set_impact_report(self, value: bool = False) -> SimulationInteractive:
+    @light_expert.setter
+    def light_expert(self, value: bool) -> None:
+        self._job.interactive_simulation_properties.light_expert = value
+
+    @property
+    def impact_report(self) -> bool:
         """Activate/Deactivate the details in the HTML simulation report.
 
         e.g: number of impacts, position and surface state
 
-        Parameters
-        ----------
-        value : bool
-            Activate/Deactivate.
-            By default, ``False``, means deactivate.
-
         Returns
         -------
-        ansys.speos.core.simulation.SimulationInteractive
-            Interactive simulation
+        bool
+            True if activated.
         """
+        return self._job.interactive_simulation_properties.impact_report
+
+    @impact_report.setter
+    def impact_report(self, value: bool) -> None:
         self._job.interactive_simulation_properties.impact_report = value
-        return self
 
 
 class SimulationVirtualBSDF(BaseSimulation):
@@ -1798,8 +2218,10 @@ class SimulationVirtualBSDF(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters] = None
+        If defined the values in the virtual bsdf simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class RoughnessOnly(BaseSimulation.SourceSampling):
@@ -2471,7 +2893,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[VirtualBSDFSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2493,17 +2915,50 @@ class SimulationVirtualBSDF(BaseSimulation):
         self._sensor_sampling_mode = self.set_sensor_sampling_uniform()
         self._mode = self.set_mode_all_characteristics()
 
-        if default_values:
-            self.analysis_x_ratio = 100
-            self.analysis_y_ratio = 100
-            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-            self.integration_angle = 2
-            self.stop_condition_ray_number = 100000
+        if default_parameters is not None:
+            self.set_wavelengths_range().start = default_parameters.wavelength_range.start
+            self.set_wavelengths_range().end = default_parameters.wavelength_range.end
+            self.set_wavelengths_range().sampling = default_parameters.wavelength_range.sampling
+
+            if default_parameters.sensor_sampling_mode is not None:
+                match type(default_parameters.sensor_sampling_mode).__name__:
+                    case "SensorSamplingUnionParameters":
+                        self.set_sensor_sampling_uniform().theta_sampling = (
+                            default_parameters.sensor_sampling_mode.theta_sampling
+                        )
+                        self.set_sensor_sampling_uniform().phi_sampling = (
+                            default_parameters.sensor_sampling_mode.phi_sampling
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.sensor_sampling_mode).__name__
+                            )
+                        )
+            else:
+                self.set_sensor_sampling_automatic()
+
+            self.analysis_x_ratio = default_parameters.analysis_x_ratio
+            self.analysis_y_ratio = default_parameters.analysis_y_ratio
+            self.axis_system = default_parameters.axis_system
+            self.integration_angle = default_parameters.integration_angle
+            self.stop_condition_ray_number = default_parameters.stop_condition_ray_number
             # default simulation properties
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
 
     @property
     def integration_angle(self) -> float:

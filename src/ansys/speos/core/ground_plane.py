@@ -38,7 +38,7 @@ class GroundPlane:
 
     Parameters
     ----------
-    project : project.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     """
 
@@ -67,7 +67,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: List[float]
+        value : List[float]
             Ground origin.
 
         Returns
@@ -90,7 +90,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: List[float]
+        value : List[float]
             Zenith direction.
 
         Returns
@@ -113,7 +113,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: float
+        value : float
             Ground height.
 
         Returns
@@ -155,11 +155,14 @@ class GroundPlane:
 
         Parameters
         ----------
-        key: str
+        key : str, optional
+            Key prefix used to look up a value.
+            By default, ``""``, which returns the full dictionary.
 
         Returns
         -------
         str | dict
+            Value found for the given key, or the full dictionary when *key* is empty.
         """
         if key == "":
             return self._to_dict()

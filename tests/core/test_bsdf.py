@@ -31,7 +31,13 @@ import pytest
 from ansys.speos.core import Speos, bsdf
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint, SpectralBRDF
 from tests.conftest import test_path
-from tests.helper import clean_all_dbs, does_file_exist, remove_file
+from tests.helper import (
+    approx_arrays,
+    approx_comparison,
+    clean_all_dbs,
+    does_file_exist,
+    remove_file,
+)
 
 
 def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
@@ -149,16 +155,6 @@ def compare_bsdf_data_point(bsdfdata1: BxdfDatapoint, bsdfdata2: BxdfDatapoint):
         return True
     else:
         return False
-
-
-def approx_comparison(value1, value2):
-    """Approximation comparison for floats."""
-    return np.fabs(value1 - value2) < 1e-6
-
-
-def approx_arrays(value1, values2):
-    """Approximation comparison for arrays."""
-    return all(np.isclose(value1, values2, atol=1e-4).flatten())
 
 
 def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):

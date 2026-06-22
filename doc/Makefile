@@ -28,7 +28,7 @@ clean:
 #customized pdf build due to svg badges
 pdf:
 	@$(SPHINXBUILD) -M latex "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	cd $(BUILDDIR)/latex && latexmk -r latexmkrc -pdf *.tex -interaction=nonstopmode || true
+	cd $(BUILDDIR)/latex && for file in *.tex; do lualatex --interaction=nonstopmode "$$file"; done
 	(test -f $(BUILDDIR)/latex/*.pdf && echo pdf exists) || exit 1
 
 # Build HTML files and generate examples as .py files

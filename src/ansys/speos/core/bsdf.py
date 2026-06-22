@@ -27,7 +27,7 @@ from __future__ import annotations
 from collections import Counter, UserDict
 from collections.abc import Collection
 from pathlib import Path
-from typing import Union
+from typing import List, Optional, Union
 import warnings
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
@@ -74,7 +74,19 @@ class BaseBSDF:
 
     @property
     def has_transmission(self) -> bool:
-        """Contains the BSDF Transmission data."""
+        """Contains the BSDF Transmission data.
+
+        Parameters
+        ----------
+        value : bool
+            True if has transmission, False otherwise.
+
+        Returns
+        -------
+        bool
+            True if has transmission, False otherwise.
+
+        """
         return self._has_transmission
 
     @has_transmission.setter
@@ -87,7 +99,19 @@ class BaseBSDF:
 
     @property
     def has_reflection(self) -> bool:
-        """Contains the BSDF Reflection data."""
+        """Contains the BSDF Reflection data.
+
+        Parameters
+        ----------
+        value : bool
+            True if has reflection, False otherwise.
+
+        Returns
+        -------
+        bool
+            True if has reflection, False otherwise.
+
+        """
         return self._has_reflection
 
     @has_reflection.setter
@@ -100,11 +124,22 @@ class BaseBSDF:
 
     @property
     def brdf(self) -> Collection[BxdfDatapoint]:
-        """List of BRDFDatapoints."""
+        """List of BRDFDatapoints.
+
+        Parameters
+        ----------
+        value : List[ansys.speos.core.bsdf.BxdfDatapoint]
+            BxdfDatapoint data to be written.
+
+        Returns
+        -------
+        Collection[ansys.speos.core.bsdf.BxdfDatapoint]
+            BxdfDatapoint data to be filled or modified.
+        """
         return self._brdf
 
     @brdf.setter
-    def brdf(self, value: list[BxdfDatapoint]):
+    def brdf(self, value: List[BxdfDatapoint]):
         if value is None:
             self._brdf = value
         else:
@@ -118,11 +153,22 @@ class BaseBSDF:
 
     @property
     def btdf(self) -> Collection[BxdfDatapoint]:
-        """List of BTDFDatapoints."""
+        """List of BTDFDatapoints.
+
+        Parameters
+        ----------
+        value : List[ansys.speos.core.bsdf.BxdfDatapoint]
+            BxdfDatapoint data to be written.
+
+        Returns
+        -------
+        Collection[ansys.speos.core.bsdf.BxdfDatapoint]
+            BxdfDatapoint data to be filled or modified.
+        """
         return self._btdf
 
     @btdf.setter
-    def btdf(self, value: list[BxdfDatapoint]):
+    def btdf(self, value: List[BxdfDatapoint]):
         if value is None:
             self._btdf = value
         else:
@@ -135,12 +181,12 @@ class BaseBSDF:
                 raise ValueError("One or multiple datapoints are reflection datapoints")
 
     @property
-    def nb_incidents(self) -> list[int]:
+    def nb_incidents(self) -> List[int]:
         """Number of incidence angle for reflection and transmission.
 
         Returns
         -------
-        list[int]:
+        List[int]
             first value of the list is nb of reflective data, second value is nb of transmittive
             data
         """
@@ -155,12 +201,12 @@ class BaseBSDF:
         return [r, t]
 
     @property
-    def incident_angles(self) -> list[Union[list[float], None], Union[list[float], None]]:
+    def incident_angles(self) -> List[Union[List[float], None], Union[List[float], None]]:
         """List of incident angles for reflection and transmission.
 
         Returns
         -------
-        list[Union[list[float], None],Union[list[float], None]]
+        List[Union[List[float], None], Union[List[float], None]]
             Returns a nested list of incidence angels for reflective and transmittive
             data if not available the value will be None
         """
@@ -180,6 +226,11 @@ class BaseBSDF:
 
         If bsdf file does not have interpolation enhancement settings, return None.
         if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.bsdf.InterpolationEnhancement]
+            Interpolation enhancement settings to be filled.
         """
         return self.__interpolation_settings
 
@@ -199,7 +250,7 @@ class BaseBSDF:
 
         Returns
         -------
-        ansys.speos.core.bsdf._InterpolationEnhancement
+        ansys.speos.core.bsdf.InterpolationEnhancement
             automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
         """
         self._stub.Import(self._grpcbsdf)
@@ -211,6 +262,21 @@ class BaseBSDF:
 
 class InterpolationEnhancement:
     """Class to facilitate Specular interpolation enhancement.
+
+    Parameters
+    ----------
+    bsdf : Union[\
+    ansys.speos.core.bsdf.AnisotropicBSDF, \
+    ansys.speos.core.bsdf.SpectralBRDF],
+        BSDF type object to be interpolated.
+    bsdf_namespace : Union[\
+    ansys.api.speos.bsdf.v1.spectral_bsdf_pb2, \
+    ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2],
+        namespace for the methods.
+    index_1 : Optional[float],
+        index on reflection side.
+    index_2 : Optional[float],
+        index on transmission side.
 
     Notes
     -----
@@ -248,7 +314,7 @@ class InterpolationEnhancement:
             """Iterate keys in fixed key order."""
             return iter(self._fixed_keys)
 
-        def keys(self) -> list[str]:
+        def keys(self) -> List[str]:
             """Return keys from fixed dictionary."""
             return self._fixed_keys
 
@@ -286,8 +352,8 @@ class InterpolationEnhancement:
         self,
         bsdf: Union[AnisotropicBSDF, SpectralBRDF],
         bsdf_namespace: Union[spectral_bsdf__v1__pb2, anisotropic_bsdf__v1__pb2],
-        index_1: Union[float, None] = 1.0,
-        index_2: Union[float, None] = 1.0,
+        index_1: Optional[float] = 1.0,
+        index_2: Optional[float] = 1.0,
     ) -> None:
         self._bsdf = bsdf
 
@@ -313,31 +379,59 @@ class InterpolationEnhancement:
 
     @property
     def index1(self) -> float:
-        """Refractive index on reflection side."""
+        """Property of refractive index on reflection side.
+
+        Parameters
+        ----------
+        value : refractive index.
+            Refractive index on reflection side.
+
+        Returns
+        -------
+        float
+            Refractive index on reflection side.
+
+        """
         return self.__cones_data.refractive_index_1
 
     @index1.setter
-    def index1(self, value: Union[float, int]) -> None:
-        """Set refractive index on reflection side."""
+    def index1(self, value: float) -> None:
         self.__cones_data.refractive_index_1 = value
         self._bsdf._stub.Import(self._bsdf._grpcbsdf)
         self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
 
     @property
     def index2(self) -> float:
-        """Refractive index on transmission side."""
+        """Refractive index on transmission side.
+
+        Parameters
+        ----------
+        value : refractive index.
+            Refractive index on transmission side.
+
+        Returns
+        -------
+        float
+            Refractive index on transmission side.
+        """
         return self.__cones_data.refractive_index_2
 
     @index2.setter
     def index2(self, value: Union[float, int]) -> None:
-        """Set refractive index on transmission side."""
         self.__cones_data.refractive_index_2 = value
         self._bsdf._stub.Import(self._bsdf._grpcbsdf)
         self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
 
     @property
     def get_reflection_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
-        """Return a fixed dictionary for reflection interpolation settings to be set by user."""
+        """Return a fixed dictionary for reflection interpolation settings to be set by user.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings]
+            A fixed dictionary for reflection interpolation settings to be set by user.
+
+        """
         if not self._bsdf.has_reflection:
             return None
         if isinstance(self._bsdf, AnisotropicBSDF):
@@ -409,10 +503,10 @@ class InterpolationEnhancement:
 
         Parameters
         ----------
-        is_brdf: bool
+        is_brdf : bool
             true if settings is for brdf, else for btdf
-        settings: InterpolationEnhancement._InterpolationSettings
-            interpolation settings.
+        settings : nsys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings
+            interpolation settings to set.
         """
         if not isinstance(
             settings, ansys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings
@@ -491,7 +585,14 @@ class InterpolationEnhancement:
 
     @property
     def get_transmission_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
-        """Return a fixed dictionary for reflection interpolation settings to be set by user."""
+        """Return a fixed dictionary for reflection interpolation settings to be set by user.
+
+        Returns
+        -------
+        Union[None, nsys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings]
+            A fixed dictionary for reflection interpolation settings to be set by user.
+
+        """
         if not self._bsdf.has_transmission:
             return None
         if isinstance(self._bsdf, AnisotropicBSDF):
@@ -566,7 +667,7 @@ class AnisotropicBSDF(BaseBSDF):
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos Object to connect to speos rpc server
-    file_path : Union[Path, str]
+    file_path : Union[pathlib.Path, str]
         File path to bsdf file
     """
 
@@ -685,8 +786,15 @@ class AnisotropicBSDF(BaseBSDF):
         return [refl_s, trans_s]
 
     @property
-    def anisotropic_angles(self):
-        """Anisotropic angles available in bsdf data."""
+    def anisotropic_angles(self) -> List[List[float]]:
+        """Anisotropic angles available in bsdf data.
+
+        Returns
+        -------
+        List[List[float]]
+            List of anisotropic angles.
+
+        """
         if self.has_transmission:
             t_angles = [btdf.anisotropy for btdf in self.btdf]
         else:
@@ -698,15 +806,23 @@ class AnisotropicBSDF(BaseBSDF):
         return [list(Counter(r_angles).keys()), list(Counter(t_angles).keys())]
 
     @property
-    def spectrum_incidence(self) -> list[float]:
+    def spectrum_incidence(self) -> Union[List[float], float]:
         """Incident angle (theta) of spectrum measurement.
 
-        First value is for reflection second for transmission
+        Parameters
+        ----------
+        value : Union[List[float], float]
+            First value is for reflection second for transmission
+
+        Returns
+        -------
+        Union[List[float], float]
+            First value is for reflection second for transmission
         """
         return self._spectrum_incidence
 
     @spectrum_incidence.setter
-    def spectrum_incidence(self, value) -> list[float]:
+    def spectrum_incidence(self, value: Union[List[float], float]) -> None:
         if isinstance(value, float) and self.has_reflection and self.has_transmission:
             raise ValueError("You need to define the value for both reflection and transmission")
         elif isinstance(value, float) and 0 <= value <= np.pi / 2:
@@ -723,15 +839,23 @@ class AnisotropicBSDF(BaseBSDF):
             )
 
     @property
-    def spectrum_anisotropy(self) -> list[float]:
+    def spectrum_anisotropy(self) -> Union[List[float], float]:
         """Incident angle (phi) of spectrum measurement.
 
-        First value is for reflection second for transmission
+        Parameters
+        ----------
+        value : Union[List[float], float]
+            First value is for reflection second for transmission.
+
+        Returns
+        -------
+        Union[List[float], float]
+            First value is for reflection second for transmission
         """
         return self._spectrum_anisotropy
 
     @spectrum_anisotropy.setter
-    def spectrum_anisotropy(self, value):
+    def spectrum_anisotropy(self, value: Union[List[float], float]):
         if isinstance(value, float) and self.has_reflection and self.has_transmission:
             raise ValueError("You need to define the value for both reflection and transmission")
         elif isinstance(value, float) and 0 <= value <= 2 * np.pi:
@@ -751,12 +875,20 @@ class AnisotropicBSDF(BaseBSDF):
     def reflection_spectrum(self):
         """Reflection Spectrum of the bsdf.
 
-        The spectrum is used to modulate the bsdf.
+        Parameters
+        ----------
+        value : List[Collection[float], Collection[float]]
+            The spectrum is used to modulate the bsdf
+
+        Returns
+        -------
+        List[Collection[float], Collection[float]]
+            The spectrum is used to modulate the bsdf.
         """
         return self._reflection_spectrum
 
     @reflection_spectrum.setter
-    def reflection_spectrum(self, value: list[Collection[float], Collection[float]]):
+    def reflection_spectrum(self, value: List[Collection[float], Collection[float]]):
         if len(value[0]) == len(value[1]):
             self._reflection_spectrum = value
         else:
@@ -766,12 +898,21 @@ class AnisotropicBSDF(BaseBSDF):
     def transmission_spectrum(self):
         """Transmission  Spectrum of the bsdf.
 
-        The spectrum is used to modulate the bsdf.
+        Parameters
+        ----------
+        value : List[Collection[float], Collection[float]]
+            The spectrum is used to modulate the bsdf
+
+        Returns
+        -------
+        List[Collection[float], Collection[float]]
+            The spectrum is used to modulate the bsdf.
+
         """
         return self._transmission_spectrum
 
     @transmission_spectrum.setter
-    def transmission_spectrum(self, value: list[Collection[float], Collection[float]]):
+    def transmission_spectrum(self, value: List[Collection[float], Collection[float]]):
         if len(value[0]) == len(value[1]):
             self._transmission_spectrum = value
         else:
@@ -840,14 +981,14 @@ class AnisotropicBSDF(BaseBSDF):
 
         Parameters
         ----------
-        file_path : Union[Path, str]
+        file_path : Union[pathlib.Path, str]
             Filepath to save bsdf
         commit : bool
             commit data before saving
 
         Returns
         -------
-        Path
+        pathlib.Path
             File location
         """
         file_path = Path(file_path)
@@ -873,7 +1014,7 @@ class SpectralBRDF(BaseBSDF):
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos Object to connect to speos rpc server
-    file_path : Union[Path, str]
+    file_path : Union[pathlib.Path, str]
         File path to bsdf file
     """
 
@@ -905,8 +1046,14 @@ class SpectralBRDF(BaseBSDF):
             self._transmission_spectrum, self._reflection_spectrum = None, None
 
     @property
-    def wavelength(self):
-        """List of all Wavelength in BRDF."""
+    def wavelength(self) -> List[float]:
+        """List of all Wavelength in BRDF.
+
+        Returns
+        -------
+        List[float]
+            List of Wavelength in BRDF.
+        """
         r_wl = []
         t_wl = []
         if self.has_reflection:
@@ -954,7 +1101,7 @@ class SpectralBRDF(BaseBSDF):
         self._stub.Load(file_name)
         return self._stub.Export(Empty())
 
-    def _extract_bsdf(self) -> tuple[list[BxdfDatapoint], list[BxdfDatapoint]]:
+    def _extract_bsdf(self) -> tuple[List[BxdfDatapoint], List[BxdfDatapoint]]:
         self.description = self._grpcbsdf.description
         brdf = []
         btdf = []
@@ -994,7 +1141,7 @@ class SpectralBRDF(BaseBSDF):
             btdf = None
         return brdf, btdf
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset BSDF data to what was stored in file."""
         self._brdf, self._btdf = self._extract_bsdf()
         self._has_transmission = bool(self._btdf)
@@ -1084,7 +1231,7 @@ class SpectralBRDF(BaseBSDF):
                 warnings.warn(error_msg, stacklevel=2)
             return error_msg
 
-    def commit(self):
+    def commit(self) -> None:
         """Sent Data to gRPC interface."""
         # set basic values
         self._sanity_check(raise_error=True)
@@ -1142,14 +1289,14 @@ class SpectralBRDF(BaseBSDF):
 
         Parameters
         ----------
-        file_path : Union[Path, str]
+        file_path : Union[pathlib.Path, str]
             Filepath to save bsdf
         commit : bool
             commit data before saving
 
         Returns
         -------
-        Path
+        pathlib.Path
             File location
         """
         file_path = Path(file_path)
@@ -1176,9 +1323,9 @@ class BxdfDatapoint:
     incident_angle : float
         incident angle in radian
     theta_values : Collection[float]
-        list of theta values for the bxdf data matrix, in radian
+        List of theta values for the bxdf data matrix, in radian
     phi_values : Collection[float]
-        list of phi values for the bxdf data matrix, in radian
+        List of phi values for the bxdf data matrix, in radian
     bxdf : Collection[float]
         nested list of bxdf values in 1/sr
     anisotropy : float
@@ -1240,12 +1387,23 @@ class BxdfDatapoint:
         return str(self.get())
 
     @property
-    def anisotropy(self):
-        """Anisotropy angels of Datapoint."""
+    def anisotropy(self) -> float:
+        """Property of Anisotropy angels of Datapoint.
+
+        Parameters
+        ----------
+        value : float
+            Anisotropy angle in radian.
+
+        Returns
+        -------
+        float
+            Anisotropy angle.
+        """
         return self._anisotropy
 
     @anisotropy.setter
-    def anisotropy(self, value):
+    def anisotropy(self, value: float) -> None:
         if 0 <= value <= 2 * np.pi:
             self._anisotropy = value
         else:
@@ -1255,16 +1413,21 @@ class BxdfDatapoint:
     def bxdf(self) -> np.array:
         """BxDF data as np matrix in 1/sr.
 
+        Parameters
+        ----------
+        value : Union[Collection[float], np.array]
+            bxdf data in shape theta_values, phi_values
+
         Returns
         -------
-        np.array:
+        np.array
             bxdf data in shape theta_values, phi_values
 
         """
         return self._bxdf
 
     @bxdf.setter
-    def bxdf(self, value: Collection[float]):
+    def bxdf(self, value: Union[Collection[float], np.array]) -> None:
         if value is not None:
             bxdf = np.array(value)
             if any((bxdf < 0).flatten()):
@@ -1282,37 +1445,47 @@ class BxdfDatapoint:
     def is_brdf(self):
         """Type of bxdf data point eitehr reflective or transmittive.
 
+        Parameters
+        ----------
+        value : bool
+            true if reflective false if transmittive.
+
         Returns
         -------
-        bool:
-            true if reflective false if transmittive
+        bool
+            true if reflective false if transmittive.
         """
         return self._is_brdf
 
     @is_brdf.setter
-    def is_brdf(self, value):
-        self._is_brdf = bool(value)
+    def is_brdf(self, value: bool) -> None:
+        self._is_brdf = value
 
     @property
-    def incident_angle(self):
+    def incident_angle(self) -> float:
         """Incident angle of the Datapoint in radian.
+
+        Parameters
+        ----------
+        value : float
+            Incidence angle in radian
 
         Returns
         -------
-        float:
+        float
             Incidence angle in radian
 
         """
         return self._incident_angle
 
     @incident_angle.setter
-    def incident_angle(self, value):
+    def incident_angle(self, value: float):
         if 0 <= value <= np.pi / 2:
             self._incident_angle = value
         else:
             raise ValueError("Incident angle needs to be between [0, pi/2]")
 
-    def set_incident_angle(self, value, is_deg=True):
+    def set_incident_angle(self, value, is_deg=True) -> None:
         """Allow to set an incident value in degree.
 
         Parameters
@@ -1321,6 +1494,11 @@ class BxdfDatapoint:
             value to be set
         is_deg : bool
             Allows to define if value is radian or degree
+
+        Returns
+        -------
+        None
+
         """
         if is_deg:
             self.incident_angle = np.deg2rad(value)
@@ -1328,12 +1506,23 @@ class BxdfDatapoint:
             self.incident_angle = value
 
     @property
-    def theta_values(self):
-        """List of theta values for which values are stored in bxdf data."""
+    def theta_values(self) -> List[float]:
+        """Property of bxdf phi values.
+
+        Parameters
+        ----------
+        value : List[float]
+            List of bxdf theta values.
+
+        Returns
+        -------
+        List[float]
+            List of bxdf theta values.
+        """
         return self._theta_values
 
     @theta_values.setter
-    def theta_values(self, value):
+    def theta_values(self, value: List[float]):
         if not self.is_brdf:
             if all([np.pi / 2 <= theta <= np.pi for theta in value]):
                 self._theta_values = value
@@ -1350,12 +1539,24 @@ class BxdfDatapoint:
                 raise ValueError("Theta values for Reflection need to be between [0, pi/2]")
 
     @property
-    def phi_values(self):
-        """List of phi values  for which values are stored in bxdf data."""
+    def phi_values(self) -> List[float]:
+        """Property of bxdf phi values.
+
+        Parameters
+        ----------
+        value : List[float]
+            List of bxdf phi values.
+
+        Returns
+        -------
+        List[float]
+            List of bxdf phi values.
+
+        """
         return self._phi_values
 
     @phi_values.setter
-    def phi_values(self, value):
+    def phi_values(self, value: List[float]):
         if all([0 <= phi <= 2 * np.pi for phi in value]):
             self._phi_values = value
             if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
@@ -1379,12 +1580,12 @@ def create_bsdf180(
     ----------
     speos : ansys.speos.core.Speos
         Speos Object to connect to RPC server
-    bsdf180_file_path : Union[str, Path]
+    bsdf180_file_path : Union[str, pathlib.Path]
         File location of created bsdf180
-    path_normal_bsdf : Union[str, Path]
+    path_normal_bsdf : Union[str, pathlib.Path]
         File location of first file, which represent normal direction
         Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
-    path_opposite_bsdf : Union[str, Path]
+    path_opposite_bsdf : Union[str, pathlib.Path]
         File location of first file, which represent anti-normal direction
         Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
     fix_disparity : bool
@@ -1393,7 +1594,7 @@ def create_bsdf180(
 
     Returns
     -------
-    Path
+    pathlib.Path
         Returns where the file location of the bsdf180
     """
     supported = [".coated", ".brdf", ".anisotropicbsdf", ".scattering"]
@@ -1418,8 +1619,8 @@ def create_bsdf180(
 def create_spectral_brdf(
     speos: ansys.speos.core.Speos,
     spectral_bsdf_file_path: Union[str, Path],
-    wavelength_list: list[float],
-    anisotropic_bsdf_file_list: list[Union[Path, str]],
+    wavelength_list: List[float],
+    anisotropic_bsdf_file_list: List[Union[Path, str]],
 ) -> Path:
     """Create a brdf from multiple bsdf.
 
@@ -1430,16 +1631,16 @@ def create_spectral_brdf(
     ----------
     speos : ansys.speos.core.Speos
         Speos Object to connect to RPC server
-    spectral_bsdf_file_path : Union[str, Path]
+    spectral_bsdf_file_path : Union[str, pathlib.Path]
         File location of created BRDF file
-    wavelength_list : list[float]
+    wavelength_list : List[float]
         List of wavelength
-    anisotropic_bsdf_file_list :  list[Union[Path, str]]
-        list of bsdf file locations
+    anisotropic_bsdf_file_list :  List[Union[pathlib.Path, str]]
+        List of bsdf file locations
 
     Returns
     -------
-    Path
+    pathlib.Path
         Location of created BRDF
     """
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
@@ -1468,8 +1669,8 @@ def create_spectral_brdf(
 def create_anisotropic_bsdf(
     speos: ansys.speos.core.Speos,
     anisotropic_bsdf_file_path: Union[str, Path],
-    anisotropy_list: list[float],
-    anisotropic_bsdf_file_list: list[Union[Path, str]],
+    anisotropy_list: List[float],
+    anisotropic_bsdf_file_list: List[Union[Path, str]],
     fix_disparity: bool = False,
 ) -> Path:
     """Create an anisotropic bsdf from anisotropic bsdf files.
@@ -1478,11 +1679,11 @@ def create_anisotropic_bsdf(
     ----------
     speos : ansys.speos.core.Speos
         Speos Object to connect to RPC server
-    anisotropic_bsdf_file_path : Union[str, Path]
+    anisotropic_bsdf_file_path : Union[str, pathlib.Path]
         File location of created Anisotropic BSDF file
-    anisotropy_list : list[float]
+    anisotropy_list : List[float]
         ordered List of anisotropy value, in radian
-    anisotropic_bsdf_file_list : list[Union[Path, str]]
+    anisotropic_bsdf_file_list : List[Union[pathlib.Path, str]]
         list of bsdf file locations
     fix_disparity : bool
         Fixes normalization disparity between BSDF,
@@ -1494,7 +1695,7 @@ def create_anisotropic_bsdf(
 
     Returns
     -------
-    Path
+    pathlib.Path
         Location of created Anisotropic BSDF files
     """
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)

@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -81,7 +82,7 @@ print(p)
 # #### Source
 
 source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-source1.set_intensity_file_uri(uri=str(assets_data_path / "IES_C_DETECTOR.ies"))
+source1.intensity_file_uri = assets_data_path / "IES_C_DETECTOR.ies"
 source1.commit()
 
 
@@ -196,7 +197,7 @@ src = features[1]
 
 # modify the surface source, e.g. surface source wavelength:
 
-src.set_spectrum().set_monochromatic(wavelength=550)
+src.spectrum.set_monochromatic().wavelength = 550
 src.commit()
 
 
@@ -212,9 +213,11 @@ print(sim_feat)
 sim_feat.compute_CPU()
 # -
 
-# Preview simulation result (only windows)
+# Preview simulation result
 
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(

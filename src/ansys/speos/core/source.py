@@ -24,7 +24,6 @@
 
 from __future__ import annotations
 
-import datetime
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import List, Mapping, Optional, Union
@@ -41,8 +40,36 @@ from ansys.speos.core import (
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
+    AmbientEnvironmentParameters,
+    AmbientNaturalLightParameters,
+    AmbientUniformParameters,
+    AutomaticSunParameters,
+    CieType,
+    ColorSpaceType,
+    ConstantExitanceParameters,
+    DisplayParameters,
+    FluxFromFileParameters,
+    IntensityFluxParameters,
+    IntensityOrientationType,
+    LuminaireSourceParameters,
+    LuminousFluxParameters,
+    ManualSunParameters,
+    RadiantFluxParameters,
+    RayFileSourceParameters,
+    SpectrumBlackBodyParameters,
+    SpectrumLibraryParameters,
+    SpectrumType,
+    SurfaceSourceParameters,
+    UserDefinedColorSpaceParameters,
+    UserDefinedWhitePointParameters,
+    VariableExitanceParameters,
+    WhitePointType,
+)
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
+import ansys.speos.core.intensity as intensity
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -80,10 +107,14 @@ class BaseSource:
 
         Parameters
         ----------
+        project : ansys.speos.core.project.Project
+            Project in which source shall be created.
         userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
             source_pb2.SourceTemplate.UserDefinedRGBSpace
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        src.ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters] = None
+            If defined the values in the UserDefinedColorSpace instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -99,8 +130,10 @@ class BaseSource:
             ----------
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
-            default_values : bool
-                Uses default values when True.
+            default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None
+                If defined the values in the UserDefinedWhitePoint instance will be
+                overwritten by the values of the data class.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
 
@@ -113,16 +146,21 @@ class BaseSource:
             def __init__(
                 self,
                 userdefined_white_point: source_pb2.SourceTemplate.UserDefinedWhitePoint,
-                default_values: bool = True,
+                default_parameters: Optional[UserDefinedWhitePointParameters] = None,
                 stable_ctr: bool = True,
             ):
                 if not stable_ctr:
                     msg = "UserDefinedWhitePoint class instantiated outside of class scope"
                     raise RuntimeError(msg)
                 self._userdefined_white_point = userdefined_white_point
+                self._fill_parameters(default_parameters)
 
-                if default_values:
-                    self.white_point = [0.31271, 0.32902]
+            def _fill_parameters(
+                self, default_parameters: Optional[UserDefinedWhitePointParameters] = None
+            ) -> None:
+                if default_parameters is None:
+                    return
+                self.white_point = [default_parameters.x, default_parameters.y]
 
             @property
             def white_point(self):
@@ -132,7 +170,7 @@ class BaseSource:
 
                 Parameters
                 ----------
-                value: List[float]
+                value : List[float]
                     The white point coordinate, [0.31271, 0.32902] by default.
 
                 Returns
@@ -151,7 +189,7 @@ class BaseSource:
             self,
             project: project.Project,
             userdefined_color_space: source_pb2.SourceTemplate.UserDefinedRGBSpace,
-            default_values: bool = True,
+            default_parameters: Optional[UserDefinedColorSpaceParameters] = None,
             stable_ctr: bool = True,
         ):
             self._project = project
@@ -184,14 +222,48 @@ class BaseSource:
                 field_name_to_complete="blue_spectrum_guid",
                 spectrum_guid=self._userdefined_color_space.blue_spectrum_guid,
             )
+            self._fill_parameters(default_parameters)
 
-            if default_values:
-                # Default values
-                self.set_white_point_type_d65()
+        def _fill_parameters(
+            self, default_parameters: Optional[UserDefinedColorSpaceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.red_spectrum = str(default_parameters.red_spectrum_uri)
+            self.green_spectrum = str(default_parameters.green_spectrum_uri)
+            self.blue_spectrum = str(default_parameters.blue_spectrum_uri)
+            match default_parameters.white_point_type:
+                case WhitePointType.d65:
+                    self.set_white_point_type_d65()
+                case WhitePointType.d50:
+                    self.set_white_point_type_d50()
+                case WhitePointType.c:
+                    self.set_white_point_type_c()
+                case WhitePointType.e:
+                    self.set_white_point_type_e()
+                case _:
+                    match type(default_parameters.white_point_type).__name__:
+                        case "UserDefinedWhitePointParameters":
+                            self.set_white_point_type_user_defined().white_point = [
+                                default_parameters.white_point_type.x,
+                                default_parameters.white_point_type.y,
+                            ]
+                        case _:
+                            raise ValueError(
+                                "Unsupported white point_type type: {}".format(
+                                    type(default_parameters.white_point_type).__name__
+                                )
+                            )
 
         @property
         def red_spectrum(self) -> dict:
-            """Get red spectrum.
+            """Property of red spectrum.
+
+            Parameters
+            ----------
+            red_spectrum_file_uri : Union[str, pathlib.Path]
+                Red spectrum file uri.
+
 
             Returns
             -------
@@ -202,29 +274,23 @@ class BaseSource:
             return self._red_spectrum._spectrum._to_dict()
 
         @red_spectrum.setter
-        def red_spectrum(self, red_spectrum_file_uri: str) -> None:
-            """Set red spectrum.
-
-            Parameters
-            ----------
-            red_spectrum_file_uri: str
-                Red spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
+        def red_spectrum(self, red_spectrum_file_uri: Union[str, Path]) -> None:
             if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._red_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._red_spectrum._spectrum._spectrum.name = Path(red_spectrum_file_uri).name
-            self._red_spectrum._spectrum.set_library(file_uri=red_spectrum_file_uri)
+            self._red_spectrum._spectrum.set_library().file_uri = str(red_spectrum_file_uri)
 
         @property
         def green_spectrum(self) -> dict:
-            """Get green spectrum.
+            """Property of the green spectrum.
+
+            Parameters
+            ----------
+            green_spectrum_file_uri : Union[str, pathlib.Path]
+                Green spectrum file uri.
 
             Returns
             -------
@@ -235,29 +301,23 @@ class BaseSource:
             return self._green_spectrum._spectrum._to_dict()
 
         @green_spectrum.setter
-        def green_spectrum(self, green_spectrum_file_uri: str) -> None:
-            """Set green spectrum.
-
-            Parameters
-            ----------
-            green_spectrum_file_uri: str
-                Green spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
+        def green_spectrum(self, green_spectrum_file_uri: Union[str, Path]) -> None:
             if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._green_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._green_spectrum._spectrum._spectrum.name = Path(green_spectrum_file_uri).name
-            self._green_spectrum._spectrum.set_library(file_uri=green_spectrum_file_uri)
+            self._green_spectrum._spectrum.set_library().file_uri = str(green_spectrum_file_uri)
 
         @property
         def blue_spectrum(self) -> dict:
-            """Get blue spectrum.
+            """Property of blue spectrum.
+
+            Parameters
+            ----------
+            blue_spectrum_file_uri : Union[str, pathlib.Path]
+                Blue spectrum file uri.
 
             Returns
             -------
@@ -268,61 +328,49 @@ class BaseSource:
             return self._blue_spectrum._spectrum._to_dict()
 
         @blue_spectrum.setter
-        def blue_spectrum(self, blue_spectrum_file_uri: str) -> None:
-            """Set blue spectrum.
-
-            Parameters
-            ----------
-            blue_spectrum_file_uri: str
-                Blue spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
+        def blue_spectrum(self, blue_spectrum_file_uri: Union[str, Path]) -> None:
             if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._blue_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._blue_spectrum._spectrum._spectrum.name = Path(blue_spectrum_file_uri).name
-            self._blue_spectrum._spectrum.set_library(file_uri=blue_spectrum_file_uri)
+            self._blue_spectrum._spectrum.set_library().file_uri = str(blue_spectrum_file_uri)
 
         @property
         def white_point_type(
             self,
         ) -> Union[
             None,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
             UserDefinedWhitePoint,
         ]:
             """Get the white point type.
 
             Returns
             -------
-            Union
-            [
-                None,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
-                UserDefinedWhitePoint,
-            ]
-            Predefined White Point Type or User Defined White Point Type.
+            Union[None, \
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType, \
+           ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
+                PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
             """
+            if self._white_point_type is None:
+                if self._userdefined_color_space.HasField("pre_defined_white_point"):
+                    self._white_point_type = (
+                        self._userdefined_color_space.pre_defined_white_point.white_point_type
+                    )
+                elif self._userdefined_color_space.HasField("user_defined_white_point"):
+                    self._white_point_type = self.set_white_point_type_user_defined()
             return self._white_point_type
 
-        def set_white_point_type_d65(self) -> None:
+        def set_white_point_type_d65(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to D65.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
@@ -331,26 +379,30 @@ class BaseSource:
             self._white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
             )
+            return self
 
-        def set_white_point_type_c(self) -> None:
+        def set_white_point_type_c(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to C.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
             )
             self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+            return self
 
-        def set_white_point_type_d50(self) -> None:
+        def set_white_point_type_d50(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to D50.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
@@ -359,26 +411,29 @@ class BaseSource:
             self._white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
             )
+            return self
 
-        def set_white_point_type_e(self) -> None:
+        def set_white_point_type_e(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to E.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
             )
             self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+            return self
 
         def set_white_point_type_user_defined(self) -> UserDefinedWhitePoint:
             """Set white point type to user_defined.
 
             Returns
             -------
-            UserDefinedWhitePoint
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
                 User defined white point settings.
 
             """
@@ -387,7 +442,7 @@ class BaseSource:
             ):
                 self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
                     userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
-                    default_values=False,
+                    default_parameters=None,
                     stable_ctr=True,
                 )
             if not isinstance(
@@ -396,6 +451,7 @@ class BaseSource:
                 # if the _type is not UserDefinedWhitePoint then we create a new type.
                 self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
                     userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
+                    default_parameters=UserDefinedWhitePointParameters(),
                     stable_ctr=True,
                 )
             elif (
@@ -415,8 +471,10 @@ class BaseSource:
         ----------
         predefined_color_space :
             ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ColorSpaceType] = None
+            If defined the values in the PredefinedColorSpace instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -428,36 +486,44 @@ class BaseSource:
         def __init__(
             self,
             predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
-            default_values: bool = True,
+            default_parameters: Optional[ColorSpaceType] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "PredefinedColorSpace class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._predefined_color_space = predefined_color_space
+            self._fill_parameters(default_parameters)
 
-            if default_values:
-                # Default values
-                self.set_color_space_srgb()
+        def _fill_parameters(self, default_parameters: Optional[ColorSpaceType] = None) -> None:
+            if default_parameters is None:
+                return
+            match default_parameters:
+                case ColorSpaceType.srgb:
+                    self.set_color_space_srgb()
+                case ColorSpaceType.adobe_rgb:
+                    self.set_color_space_adobergb()
 
-        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_srgb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the srgb preset.
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace
+                Type of color space is predefined value.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
             )
             return self
 
-        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_adobergb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the Adobe RGB preset.
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace
+                Type of color space is predefined value.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
@@ -474,6 +540,7 @@ class BaseSource:
     ) -> None:
         self._project = project
         self._name = name
+        self._source_path = self._name
         self._unique_id = None
         self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
@@ -496,6 +563,141 @@ class BaseSource:
             self._unique_id = source_instance.metadata["UniqueId"]
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
+
+    class Flux:
+        """Type of flux.
+
+        By default, Luminous flux value is set with value 683 lm.
+
+        Parameters
+        ----------
+        flux : ansys.api.speos.source.v1.source_pb2
+            flux protobuf object to modify.
+        default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.LuminousFluxParameters,\
+                ansys.speos.core.generic.parameters.RadiantFluxParameters,\
+                ansys.speos.core.generic.parameters.FluxFromFileParameters,\
+                ansys.speos.core.generic.parameters.IntensityFluxParameters] = None
+            If defined the values in the Flux instance will be
+            overwritten by the values of the data class.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux method available in source classes.
+        """
+
+        def __init__(
+            self,
+            flux: source_pb2,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    FluxFromFileParameters,
+                    IntensityFluxParameters,
+                ]
+            ] = None,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Flux class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._flux = flux
+            self._flux_type = None
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    FluxFromFileParameters,
+                    IntensityFluxParameters,
+                ]
+            ] = None,
+        ) -> None:
+            if default_parameters is None:
+                return
+            if isinstance(default_parameters, LuminousFluxParameters):
+                self.set_luminous()
+                self.value = default_parameters.value
+            elif isinstance(default_parameters, RadiantFluxParameters):
+                self.set_radiant()
+                self.value = default_parameters.value
+            elif isinstance(default_parameters, (FluxFromFileParameters, IntensityFluxParameters)):
+                pass
+            else:
+                raise ValueError(f"Unsupported flux type: {type(default_parameters).__name__}")
+
+        def set_luminous(self) -> BaseSource.Flux:
+            """Set flux type luminous.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
+
+            """
+            self._flux.luminous_flux.SetInParent()
+            self._flux_type = self._flux.luminous_flux
+            return self
+
+        def set_radiant(self) -> BaseSource.Flux:
+            """Set flux type radiant.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
+
+            """
+            self._flux.radiant_flux.SetInParent()
+            self._flux_type = self._flux.radiant_flux
+            return self
+
+        @property
+        def value(self) -> float:
+            """Property of flux type's value.
+
+            Parameters
+            ----------
+            value : float
+                Value of the flux.
+
+            Returns
+            -------
+            float
+                Flux type value.
+
+            """
+            if self._flux.HasField("radiant_flux") or self._flux_type.__name__ == "Radiant":
+                return self._flux.radiant_flux.radiant_value
+            elif self._flux.HasField("luminous_flux") or self._flux_type.__name__ == "Luminous":
+                return self._flux.luminous_flux.luminous_value
+            elif (
+                self._flux.HasField("luminous_intensity_flux")
+                or self._flux_type.__name__ == "LuminousIntensity"
+            ):
+                return self._flux.luminous_intensity_flux.luminous_intensity_value
+            else:
+                raise ValueError(f"Unsupported flux type: {self._flux.__name__}")
+
+        @value.setter
+        def value(self, value: float) -> None:
+            if self._flux.HasField("radiant_flux"):
+                self._flux_type = self._flux.radiant_flux
+                self._flux.radiant_flux.radiant_value = value
+            elif self._flux.HasField("luminous_flux"):
+                self._flux_type = self._flux.luminous_flux
+                self._flux.luminous_flux.luminous_value = value
+            elif self._flux.HasField("luminous_intensity_flux"):
+                self._flux_type = self._flux.luminous_intensity_flux
+                self._flux.luminous_intensity_flux.luminous_intensity_value = value
+            else:
+                raise ValueError(f"Unsupported flux type: {self._flux.__name__}")
 
     class _Spectrum:
         def __init__(
@@ -602,12 +804,12 @@ class BaseSource:
 
         return out_dict
 
-    def get(self, key: str = "") -> list[tuple[str, dict]]:
+    def get(self, key: str = "") -> List[tuple[str, dict]]:
         """Get dictionary corresponding to the project - read only.
 
         Parameters
         ----------
-        key: str
+        key : str
 
         Returns
         -------
@@ -820,8 +1022,10 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.LuminaireSourceParameters] = None
+        If defined the values in the SourceLuminaire instance will be overwritten
+        by the values of the data class.
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -832,7 +1036,7 @@ class SourceLuminaire(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[LuminaireSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -845,17 +1049,69 @@ class SourceLuminaire(BaseSource):
             source_instance=source_instance,
         )
 
+        # Attribute gathering more complex flux type
+        self._type = None
+
         self._spectrum = self._Spectrum(
             speos_client=self._project.client,
             name=name,
             message_to_complete=self._source_template.luminaire,
             spectrum_guid=self._source_template.luminaire.spectrum_guid,
         )
+        self._fill_parameters(default_parameters)
 
-        if default_values:
-            # Default values
-            self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-            self.set_axis_system()
+    def _fill_parameters(
+        self, default_parameters: Optional[LuminaireSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.intensity_file_uri = default_parameters.intensity_file_uri
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_intensity_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+        match default_parameters.spectrum_type:
+            case SpectrumType.incandescent:
+                self.spectrum.set_incandescent()
+            case SpectrumType.warm_white_fluorescent:
+                self.spectrum.set_warmwhitefluorescent()
+            case SpectrumType.daylight_fluorescent:
+                self.spectrum.set_daylightfluorescent()
+            case SpectrumType.white_led:
+                self.spectrum.set_white_led()
+            case SpectrumType.halogen:
+                self.spectrum.set_halogen()
+            case SpectrumType.metal_halide:
+                self.spectrum.set_metalhalide()
+            case SpectrumType.high_pressure_sodium:
+                self.spectrum.set_highpressuresodium()
+            case _:
+                match type(default_parameters.spectrum_type).__name__:
+                    case "SpectrumLibraryParameters":
+                        self.spectrum.set_library().file_uri = (
+                            default_parameters.spectrum_type.file_uri
+                        )
+                    case "SpectrumBlackBodyParameters":
+                        self.spectrum.set_blackbody().temperature = (
+                            default_parameters.spectrum_type.temperature
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.spectrum_type).__name__
+                            )
+                        )
+        self.axis_system = default_parameters.axis_system
 
     @property
     def visual_data(self) -> _VisualData:
@@ -863,8 +1119,9 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        _VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+        ansys.speos.core.generic.visualization_methods._VisualData
+            Instance of VisualData Class for pyvista.PolyData of
+            feature rays, coordinate_systems.
 
         """
         if self._visual_data.updated:
@@ -906,58 +1163,55 @@ class SourceLuminaire(BaseSource):
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceLuminaire:
-        """Set luminous flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
+    @property
+    def flux(self) -> BaseSource.Flux:
+        """Flux definition of the luminaire source.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
-        """
-        self._source_template.luminaire.luminous_flux.luminous_value = value
-        return self
+        ansys.speos.core.source.BaseSource.Flux
+            flux object of the source
 
-    def set_flux_radiant(self, value: float = 1) -> SourceLuminaire:
-        """Set radiant flux.
+        """
+        if self._type is None and self._source_template.HasField("luminaire"):
+            self._type = self.Flux(
+                flux=self._source_template.luminaire,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSource.Flux):
+            self._type = self.Flux(
+                flux=self._source_template.luminaire,
+                default_parameters=LuminaireSourceParameters().flux_type,
+                stable_ctr=True,
+            )
+        elif self._type._flux is not self._source_template.luminaire:
+            self._type._flux = self._source_template.luminaire
+        return self._type
+
+    @property
+    def intensity_file_uri(self) -> str:
+        """Property of intensity file.
 
         Parameters
         ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
-        """
-        self._source_template.luminaire.radiant_flux.radiant_value = value
-        return self
-
-    def set_intensity_file_uri(self, uri: str) -> SourceLuminaire:
-        """Set intensity file.
-
-        Parameters
-        ----------
-        uri : str
+        uri : Union[str, pathlib.Path]
             IES or EULUMDAT format file uri.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        str
+            Intensity file uri.
         """
-        self._source_template.luminaire.intensity_file_uri = uri
-        return self
+        return self._source_template.luminaire.intensity_file_uri
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum.
+    @intensity_file_uri.setter
+    def intensity_file_uri(self, uri: Union[str, Path]) -> None:
+        self._source_template.luminaire.intensity_file_uri = str(uri)
+
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property.
 
         Returns
         -------
@@ -969,24 +1223,27 @@ class SourceLuminaire(BaseSource):
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceLuminaire:
-        """Set the position of the source.
+    @property
+    def axis_system(self) -> List[float]:
+        """Property of the position of the source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
+        axis_system : List[float]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        return self._source_instance.luminaire_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system: List[float]) -> None:
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
-        return self
 
 
 class SourceRayFile(BaseSource):
@@ -1006,9 +1263,84 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
+        If defined the values in the SourceRayFile instance will
+        be overwritten by the values of the data class.
     """
+
+    class ExitGeometries:
+        """ExitGeometries of rayfile source.
+
+        By default, ExitGeometries list is set to be empty.
+
+        Parameters
+        ----------
+        rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
+            protobuf object to modify.
+        default_parameters : Optional[ansys.core.generic.parameters.RayFileSourceParameters] = None
+            If defined the values in the ExitGeometries instance will be
+            overwritten by the values of the data class.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exit_geometries
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            rayfile_props: scene_pb2.RayFileProperties,
+            default_parameters: Optional[RayFileSourceParameters] = None,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitGeometries class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._rayfile_props = rayfile_props
+
+            if default_parameters is not None:
+                self.geometries = default_parameters.exit_geometry
+
+        @property
+        def geometries(self) -> List[GeoRef]:
+            """Exit geometries.
+
+            Parameters
+            ----------
+            exit_geometries : Optional[List[Union[ansys.speos.core.geo_ref.GeoRef, \
+            ansys.speos.core.body.Body, ansys.speos.core.face.Face]]]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            Returns
+            -------
+            List[ansys.speos.core.geo_ref.GeoRef]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            """
+            return self._rayfile_props.exit_geometries.geo_paths
+
+        @geometries.setter
+        def geometries(
+            self,
+            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]] = None,
+        ) -> None:
+            geo_paths = []
+            if not exit_geometries or len(exit_geometries) == 0:
+                self._rayfile_props.ClearField("exit_geometries")
+            else:
+                for geometry in exit_geometries:
+                    if isinstance(geometry, GeoRef):
+                        geo_paths.append(geometry.to_native_link())
+                    elif isinstance(geometry, (body.Body, face.Face)):
+                        geo_paths.append(geometry.geo_path.to_native_link())
+                    else:
+                        raise ValueError("provided geometry is not of type supported")
+                self._rayfile_props.exit_geometries.geo_paths[:] = geo_paths
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -1018,7 +1350,7 @@ class SourceRayFile(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[RayFileSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1045,11 +1377,55 @@ class SourceRayFile(BaseSource):
             self.set_spectrum_from_ray_file()
 
         self._name = name
+        # Attribute gathering more complex flux type
+        self._type = None
+        # Attribute gathering more complex exit geometries settings
+        self._exit_geometry_type = None
+        self._fill_parameters(default_parameters)
 
-        if default_values:
-            # Default values
-            self.set_flux_from_ray_file().set_spectrum_from_ray_file()
-            self.set_axis_system()
+    def _fill_parameters(
+        self, default_parameters: Optional[RayFileSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        self.ray_file_uri = default_parameters.ray_file_uri
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_ray_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+        self.axis_system = default_parameters.axis_system
+
+        if default_parameters.spectrum_type is not None:
+            match type(default_parameters.spectrum_type).__name__:
+                case "SpectrumBlackBodyParameters":
+                    self.spectrum.set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
+                    )
+                case "SpectrumLibraryParameters":
+                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+                case "SpectrumMonochromaticParameters":
+                    self.spectrum.set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
+                        )
+                    )
+
+        if default_parameters.exit_geometry is not None:
+            self.set_exit_geometries().geometries = default_parameters.exit_geometry
 
     @property
     def visual_data(self) -> _VisualData:
@@ -1057,7 +1433,7 @@ class SourceRayFile(BaseSource):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
 
         """
@@ -1089,21 +1465,28 @@ class SourceRayFile(BaseSource):
             self._visual_data.updated = True
             return self._visual_data
 
-    def set_ray_file_uri(self, uri: str) -> SourceRayFile:
-        """Set ray file.
+    @property
+    def ray_file_uri(self) -> str:
+        """Ray file URI.
+
+        This property retrieve and defines the file uri of ray file used.
 
         Parameters
         ----------
-        uri : str
-            Rayfile format file uri (.ray or .tm25ray files expected).
+        uri : Union[pathlib.Path, str]
+            Ray file URI.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        str
+            Ray file URI.
+
         """
-        self._source_template.rayfile.ray_file_uri = uri
-        return self
+        return self._source_template.rayfile.ray_file_uri
+
+    @ray_file_uri.setter
+    def ray_file_uri(self, uri: Union[Path, str]) -> None:
+        self._source_template.rayfile.ray_file_uri = str(uri)
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
@@ -1116,39 +1499,31 @@ class SourceRayFile(BaseSource):
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceRayFile:
-        """Set luminous flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
+    @property
+    def flux(self) -> BaseSource.Flux:
+        """Flux definition of the Rayfile source.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        ansys.speos.core.source.BaseSource.Flux
+            flux object of the source
+
         """
-        self._source_template.rayfile.luminous_flux.luminous_value = value
-        return self
-
-    def set_flux_radiant(self, value: float = 1) -> SourceRayFile:
-        """Set radiant flux.
-
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
-        """
-        self._source_template.rayfile.radiant_flux.radiant_value = value
-        return self
+        if self._type is None and self._source_template.HasField("rayfile"):
+            self._type = BaseSource.Flux(
+                flux=self._source_template.rayfile,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSource.Flux):
+            self._type = BaseSource.Flux(
+                flux=self._source_template.rayfile,
+                default_parameters=RayFileSourceParameters().flux_type,
+                stable_ctr=True,
+            )
+        elif self._type._flux is not self._source_template.rayfile:
+            self._type._flux = self._source_template.rayfile
+        return self._type
 
     def set_spectrum_from_ray_file(self) -> SourceRayFile:
         """Take spectrum from ray file provided.
@@ -1162,8 +1537,9 @@ class SourceRayFile(BaseSource):
         self._spectrum._no_spectrum_local = True
         return self
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum of the Source.
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property of the Source.
 
         Returns
         -------
@@ -1183,47 +1559,58 @@ class SourceRayFile(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceRayFile:
-        """Set position of the source.
+    @property
+    def axis_system(self) -> List[float]:
+        """Axis system of the Source.
+
+        This property retrieve and defines the axis system of the source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        axis_system : List[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        List[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        return self._source_instance.rayfile_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: List[float]) -> None:
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
-        return self
 
-    def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> SourceRayFile:
+    def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
         """Set exit geometries.
-
-        Parameters
-        ----------
-        exit_geometries : List[ansys.speos.core.geo_ref.GeoRef]
-            Exit Geometries that will use this rayfile source.
-            By default, ``[]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        ansys.speos.core.source.SourceRayFile.ExitGeometries
+            ExitGeometries settings of rayfile source.
         """
-        if not exit_geometries:
-            self._source_instance.rayfile_properties.ClearField("exit_geometries")
-        else:
-            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [
-                gr.to_native_link() for gr in exit_geometries
-            ]
-
-        return self
+        if self._exit_geometry_type is None and self._source_instance.rayfile_properties.HasField(
+            "exit_geometries"
+        ):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._exit_geometry_type, SourceRayFile.ExitGeometries):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_parameters=RayFileSourceParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._exit_geometry_type._rayfile_props is not self._source_instance.rayfile_properties
+        ):
+            self._exit_geometry_type._rayfile_props = self._source_instance.rayfile_properties
+        return self._exit_geometry_type
 
 
 class SourceSurface(BaseSource):
@@ -1242,9 +1629,148 @@ class SourceSurface(BaseSource):
         Surface source to complete.
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.SurfaceSourceParameters] = None
+        If defined the values in the SourceSurface instance will be overwritten by the
+        values of the data class.
     """
+
+    class Flux(BaseSource.Flux):
+        """Different types of flux including luminous flux of intensity."""
+
+        def __init__(
+            self,
+            flux: source_pb2,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    IntensityFluxParameters,
+                    FluxFromFileParameters,
+                ]
+            ] = None,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Flux class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            super().__init__(flux, default_parameters, stable_ctr)
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    IntensityFluxParameters,
+                    FluxFromFileParameters,
+                ]
+            ] = None,
+        ) -> None:
+            if default_parameters is None:
+                return
+            if isinstance(default_parameters, IntensityFluxParameters):
+                self.set_luminous_intensity()
+                self.value = default_parameters.value
+
+        def set_luminous_intensity(self) -> BaseSource.Flux:
+            """Set flux type luminous intensity.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
+
+            """
+            self._flux.luminous_intensity_flux.SetInParent()
+            self._flux_type = self._flux.luminous_intensity_flux
+            return self
+
+    class ExitanceConstant:
+        """Type of surface source existence : existence constant.
+
+        Parameters
+        ----------
+        exitance_constant : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+        ExitanceConstant
+            Existence constant to complete.
+        exitance_constant_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+        SurfaceProperties.ExitanceConstantProperties
+            Existence constant properties to complete.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ConstantExitanceParameters] = None
+            If defined the values in the ExitanceConstant instance will be overwritten
+             by the values of the data class.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exitance_constant method
+        available in Source classes.
+        """
+
+        def __init__(
+            self,
+            exitance_constant,
+            exitance_constant_props,
+            default_parameters: Optional[ConstantExitanceParameters] = None,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitanceConstant class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._exitance_constant = exitance_constant
+            self._exitance_constant_props = exitance_constant_props
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[ConstantExitanceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.geometries = default_parameters.emissive_faces
+
+        @property
+        def geometries(self) -> List[tuple[GeoRef, bool]]:
+            """Geometries linked to surface source.
+
+            Parameters
+            ----------
+            geometries : List[tuple[Union[ansys.speos.core.geo_ref.GeoRef,\
+            ansys.speos.core.face.Face, ansys.speos.core.body.Body], bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            Returns
+            -------
+            List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            """
+            return self._exitance_constant_props.geo_paths
+
+        @geometries.setter
+        def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
+            geo_paths = []
+            for gr, reverse_normal in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                elif isinstance(gr, (face.Face, body.Body)):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                else:
+                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
+                    raise TypeError(msg)
+            self._exitance_constant_props.ClearField("geo_paths")
+            self._exitance_constant_props.geo_paths.extend(geo_paths)
 
     class ExitanceVariable:
         """Type of surface source existence : existence variable.
@@ -1257,8 +1783,10 @@ class SourceSurface(BaseSource):
         exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
         SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.VariableExitanceParameters] = None
+            If defined the values in the ExitanceVariable instance will be overwritten
+            by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1272,7 +1800,7 @@ class SourceSurface(BaseSource):
             self,
             exitance_variable,
             exitance_variable_props,
-            default_values: bool = True,
+            default_parameters: Optional[VariableExitanceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1280,48 +1808,60 @@ class SourceSurface(BaseSource):
                 raise RuntimeError(msg)
             self._exitance_variable = exitance_variable
             self._exitance_variable_props = exitance_variable_props
+            self._fill_parameters(default_parameters)
 
-            if default_values:
-                # Default values
-                self._exitance_variable.SetInParent()
-                self.set_axis_plane()
+        def _fill_parameters(
+            self, default_parameters: Optional[VariableExitanceParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self._exitance_variable.SetInParent()
+            self.axis_plane = default_parameters.axis_system
+            self.xmp_file_uri = default_parameters.xmp_file_uri
 
-        def set_xmp_file_uri(self, uri: str) -> SourceSurface.ExitanceVariable:
-            """Set existence xmp file.
+        @property
+        def xmp_file_uri(self) -> str:
+            """Xmp file uri.
 
             Parameters
             ----------
-            uri : str
-                XMP file describing existence.
+            xmp_file_uri : Union[str, pathlib.Path]
+                xmp file uri.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface source.
-            """
-            self._exitance_variable.exitance_xmp_file_uri = uri
-            return self
+            str
+                xmp file uri.
 
-        def set_axis_plane(
-            self, axis_plane: Optional[List[float]] = None
-        ) -> SourceSurface.ExitanceVariable:
-            """Set position of the existence map.
+            """
+            return self._exitance_variable.exitance_xmp_file_uri
+
+        @xmp_file_uri.setter
+        def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
+            self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
+
+        @property
+        def axis_plane(self) -> List[float]:
+            """Axis plane of the variable exitance surface source.
 
             Parameters
             ----------
-            axis_plane : Optional[List[float]]
+            axis_plane : List[float]
                 Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface Source.
+            List[float]
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
             """
-            if axis_plane is None:
-                axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+            return self._exitance_variable_props.axis_plane
+
+        @axis_plane.setter
+        def axis_plane(self, axis_plane: List[float]) -> None:
             self._exitance_variable_props.axis_plane[:] = axis_plane
-            return self
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -1331,7 +1871,7 @@ class SourceSurface(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[SurfaceSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1365,11 +1905,141 @@ class SourceSurface(BaseSource):
 
         # Attribute gathering more complex existence type
         self._exitance_type = None
+        # Attribute gathering more complex flux type
+        self._flux_type = None
+        self._fill_parameters(default_parameters)
 
-        if default_values:
-            # Default values
-            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
-            self.set_spectrum()
+    def _fill_parameters(
+        self, default_parameters: Optional[SurfaceSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+        # Flux
+        match type(default_parameters.flux_type).__name__:
+            case "FluxFromFileParameters":
+                self.set_flux_from_intensity_file()
+            case "LuminousFluxParameters":
+                self.flux.set_luminous()
+                self.flux.value = default_parameters.flux_type.value
+            case "RadiantFluxParameters":
+                self.flux.set_radiant()
+                self.flux.value = default_parameters.flux_type.value
+            case "IntensityFluxParameters":
+                self.flux.set_luminous_intensity()
+                self.flux.value = default_parameters.flux_type.value
+            case _:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+        # Exitance
+        match type(default_parameters.exitance_type).__name__:
+            case "VariableExitanceParameters":
+                self.set_exitance_variable().xmp_file_uri = (
+                    default_parameters.exitance_type.xmp_file_uri
+                )
+                self.set_exitance_variable().axis_plane = (
+                    default_parameters.exitance_type.axis_system
+                )
+            case "ConstantExitanceParameters":
+                self.set_exitance_constant().geometries = (
+                    default_parameters.exitance_type.emissive_faces
+                )
+            case _:
+                raise ValueError(
+                    "Unsupported exitance type: {}".format(
+                        type(default_parameters.exitance_type).__name__
+                    )
+                )
+
+        # Spectrum
+        if default_parameters.spectrum_type is not None:
+            match type(default_parameters.spectrum_type).__name__:
+                case "SpectrumBlackBodyParameters":
+                    self.spectrum.set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
+                    )
+                case "SpectrumLibraryParameters":
+                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+                case "SpectrumMonochromaticParameters":
+                    self.spectrum.set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
+                        )
+                    )
+
+        # Intensity
+        match type(default_parameters.intensity_type).__name__:
+            case "IntensityLambertianParameters":
+                self.intensity.set_cos().n = 1
+                self.intensity.set_cos().total_angle = default_parameters.intensity_type.total_angle
+            case "IntensityCosParameters":
+                self.intensity.set_cos().n = default_parameters.intensity_type.n
+                self.intensity.set_cos().total_angle = default_parameters.intensity_type.total_angle
+            case "IntensitySymmetricGaussianParameters":
+                self.intensity.set_gaussian().fwhm_angle_x = default_parameters.intensity_type.fwhm
+                self.intensity.set_gaussian().fwhm_angle_y = default_parameters.intensity_type.fwhm
+                self.intensity.set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            case "IntensitAsymmetricGaussianParameters":
+                self.intensity.set_gaussian().fwhm_angle_x = (
+                    default_parameters.intensity_type.fwhm_x
+                )
+                self.intensity.set_gaussian().fwhm_angle_y = (
+                    default_parameters.intensity_type.fwhm_y
+                )
+                self.intensity.set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+                self.intensity.set_gaussian().axis_system = (
+                    default_parameters.intensity_type.axis_system
+                )
+            case "IntensityLibraryParameters":
+                self.intensity.set_library().intensity_file_uri = (
+                    default_parameters.intensity_type.intensity_file_uri
+                )
+                if default_parameters.intensity_type.exit_geometries is not None:
+                    self.intensity.set_library().exit_geometries = (
+                        default_parameters.intensity_type.exit_geometries
+                    )
+                match default_parameters.intensity_type.orientation_type:
+                    case IntensityOrientationType.normal_to_uv:
+                        self.intensity.set_library().set_orientation_normal_to_uv_map()
+                    case IntensityOrientationType.normal_to_surface:
+                        self.intensity.set_library().set_orientation_normal_to_surface()
+                    case _:
+                        match type(default_parameters.intensity_type.orientation_type).__name__:
+                            case "IntensityOrientationAxisSystemParameters":
+                                orientation_axis = (
+                                    default_parameters.intensity_type.orientation_type
+                                )
+                                axis_parameters = orientation_axis.axis_system
+                                self.intensity.set_library().orientation_axis_system = (
+                                    axis_parameters
+                                )
+                            case _:
+                                raise ValueError(
+                                    "Unsupported orientation type: {}".format(
+                                        type(
+                                            default_parameters.intensity_type.orientation_type
+                                        ).__name__
+                                    )
+                                )
+            case _:
+                raise ValueError(
+                    "Unsupported intensity type: {}".format(
+                        type(default_parameters.intensity_type).__name__
+                    )
+                )
+
+        self.flux_variation_file_uri = default_parameters.flux_variation_file_uri
+        if self.flux_variation_file_uri is not None:
+            self.relative_lag = default_parameters.relative_lag
 
     @property
     def visual_data(self) -> _VisualData:
@@ -1377,7 +2047,7 @@ class SourceSurface(BaseSource):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
 
         """
@@ -1387,7 +2057,9 @@ class SourceSurface(BaseSource):
             self._visual_data = (
                 _VisualData(
                     ray=True,
-                    coordinate_system=True if self._exitance_type is not None else False,
+                    coordinate_system=True
+                    if isinstance(self._exitance_type, SourceSurface.ExitanceVariable)
+                    else False,
                 )
                 if general_methods._GRAPHICS_AVAILABLE
                 else None
@@ -1424,59 +2096,35 @@ class SourceSurface(BaseSource):
         self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceSurface:
-        """Set luminous flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
+    @property
+    def flux(self) -> SourceSurface.Flux:
+        """Flux property of the Surface source.
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.Flux
+            flux object of the source
+
         """
-        self._source_template.surface.luminous_flux.luminous_value = value
-        return self
+        if self._flux_type is None and self._source_template.HasField("surface"):
+            self._flux_type = SourceSurface.Flux(
+                flux=self._source_template.surface,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Flux):
+            self._flux_type = SourceSurface.Flux(
+                flux=self._source_template.surface,
+                default_parameters=SurfaceSourceParameters().flux_type,
+                stable_ctr=True,
+            )
+        elif self._flux_type._flux is not self._source_template.surface:
+            self._flux_type._flux = self._source_template.surface
+        return self._flux_type
 
-    def set_flux_radiant(self, value: float = 1) -> SourceSurface:
-        """Set radiant flux.
-
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
-        """
-        self._source_template.surface.radiant_flux.radiant_value = value
-        return self
-
-    def set_flux_luminous_intensity(self, value: float = 5) -> SourceSurface:
-        """Set luminous intensity flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous intensity in candelas.
-            By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
-        """
-        self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
-        return self
-
-    def set_intensity(self) -> Intensity:
-        """Set intensity.
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity property.
 
         Returns
         -------
@@ -1494,49 +2142,99 @@ class SourceSurface(BaseSource):
 
         return self._intensity
 
-    def set_exitance_constant(
-        self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]
-    ) -> SourceSurface:
-        """Set existence constant.
+    @property
+    def flux_variation_file_uri(self) -> str:
+        """Location of the flux variation file.
+
+        This property gets or sets the flux variation file applied to the surface source.\
+        If the file uri is empty, no flux variation is applied.
 
         Parameters
         ----------
-        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
-            List of (face, reverseNormal).
+        uri : Union[str, pathlib.Path]
+            Flux variation file uri.
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        str
+            Flux variation file uri.
         """
-        self._exitance_type = None
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.flux_variation_file_uri
+        return None
 
-        self._source_template.surface.exitance_constant.SetInParent()
-        self._source_instance.surface_properties.exitance_constant_properties.ClearField(
-            "geo_paths"
-        )
-        if geometries != []:
-            geo_paths = []
-            for gr, reverse_normal in geometries:
-                if isinstance(gr, GeoRef):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                elif isinstance(gr, (face.Face, body.Body)):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                else:
-                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
-                    raise TypeError(msg)
-            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
-                geo_paths
+    @flux_variation_file_uri.setter
+    def flux_variation_file_uri(self, uri: Union[str, Path]) -> None:
+        if uri == "":
+            self._source_template.surface.ClearField("timeline")
+        else:
+            self._source_template.surface.timeline.flux_variation_file_uri = str(uri)
+
+    @property
+    def relative_lag(self) -> float:
+        """Relative lag.
+
+        This property gets or sets the relative lag applied to the surface source.\
+        If the flux_variation_file_uri is not set, setting the relative lag will raise an error.
+
+        Parameters
+        ----------
+        relative_lag : float
+            Relative lag value to apply to the surface source.
+
+        Returns
+        -------
+        float
+            Relative lag.
+        """
+        if self._source_template.surface.HasField("timeline"):
+            return self._source_template.surface.timeline.relative_lag
+        return None
+
+    @relative_lag.setter
+    def relative_lag(self, relative_lag: float) -> None:
+        if self._source_template.surface.HasField("timeline"):
+            self._source_template.surface.timeline.relative_lag = relative_lag
+        else:
+            raise ValueError("Can't set relative_lag if flux_variation_file_uri is not set.")
+
+    def set_exitance_constant(self) -> SourceSurface.ExitanceConstant:
+        """Set existence constant.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceSurface.ExitanceConstant
+            ExitanceConstant of surface source.
+        """
+        if self._exitance_type is None and self._source_template.surface.HasField(
+            "exitance_constant"
+        ):
+            # Happens in case of project created via load of speos file
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                default_parameters=None,
+                stable_ctr=True,
             )
-        return self
+        elif not isinstance(self._exitance_type, SourceSurface.ExitanceConstant):
+            # if the _exitance_type is not ExitanceConstant then we create a new type.
+            self._source_template.surface.exitance_constant.SetInParent()
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                default_parameters=ConstantExitanceParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._exitance_type._exitance_constant
+            is not self._source_template.surface.exitance_constant
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._exitance_constant = self._source_template.surface.exitance_constant
+            self._exitance_type.__exitance_constant_props = (
+                self._source_instance.surface_properties.exitance_constant_properties
+            )
+        return self._exitance_type
 
     def set_exitance_variable(self) -> SourceSurface.ExitanceVariable:
         """Set existence variable, taken from XMP map.
@@ -1553,7 +2251,7 @@ class SourceSurface(BaseSource):
             self._exitance_type = SourceSurface.ExitanceVariable(
                 exitance_variable=self._source_template.surface.exitance_variable,
                 exitance_variable_props=self._source_instance.surface_properties.exitance_variable_properties,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._exitance_type, SourceSurface.ExitanceVariable):
@@ -1561,6 +2259,7 @@ class SourceSurface(BaseSource):
             self._exitance_type = SourceSurface.ExitanceVariable(
                 exitance_variable=self._source_template.surface.exitance_variable,
                 exitance_variable_props=self._source_instance.surface_properties.exitance_variable_properties,
+                default_parameters=VariableExitanceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -1586,8 +2285,9 @@ class SourceSurface(BaseSource):
         self._spectrum._no_spectrum_local = True
         return self
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum of the Source.
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property of the Source.
 
         Returns
         -------
@@ -1703,10 +2403,12 @@ class BaseSourceAmbient(BaseSource):
 
         Parameters
         ----------
-        sun: ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
+        sun : ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
             Wavelengths range protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.AutomaticSunParameters] = None,
+            If defined the values in the AutomaticSun instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1719,7 +2421,7 @@ class BaseSourceAmbient(BaseSource):
         def __init__(
             self,
             sun: scene_pb2.AutomaticSun,
-            default_values: bool = True,
+            default_parameters: Optional[AutomaticSunParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1727,21 +2429,30 @@ class BaseSourceAmbient(BaseSource):
                     "BaseSourceAmbient.AutomaticSun class instantiated outside of class scope"
                 )
             self._sun = sun
+            self._fill_parameters(default_parameters)
 
-            if default_values:
-                now = datetime.datetime.now()
-                self.year = now.year
-                self.month = now.month
-                self.day = now.day
-                self.hour = now.hour
-                self.minute = now.minute
-                self.time_zone = "CET"
-                self.longitude = 0.0
-                self.latitude = 0.0
+        def _fill_parameters(
+            self, default_parameters: Optional[AutomaticSunParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.year = default_parameters.year
+            self.month = default_parameters.month
+            self.day = default_parameters.day
+            self.hour = default_parameters.hour
+            self.minute = default_parameters.minute
+            self.time_zone = default_parameters.time_zone
+            self.longitude = default_parameters.longitude
+            self.latitude = default_parameters.latitude
 
         @property
         def year(self) -> int:
-            """Get year info of the automatic sun.
+            """Property of year info of the automatic sun.
+
+            Parameters
+            ----------
+            year : int
+                year information.
 
             Returns
             -------
@@ -1752,22 +2463,16 @@ class BaseSourceAmbient(BaseSource):
 
         @year.setter
         def year(self, year: int) -> None:
-            """Set year info of the automatic sun.
-
-            Parameters
-            ----------
-            year: int
-                year information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.year = year
 
         @property
         def month(self) -> int:
-            """Get month info of the automatic sun.
+            """Property of month info of the automatic sun.
+
+            Parameters
+            ----------
+            month : int
+                month information.
 
             Returns
             -------
@@ -1779,23 +2484,16 @@ class BaseSourceAmbient(BaseSource):
 
         @month.setter
         def month(self, month: int) -> None:
-            """Set month info of the automatic sun.
-
-            Parameters
-            ----------
-            month: int
-                month information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.month = month
 
         @property
         def day(self) -> int:
-            """Get day info of the automatic sun.
+            """Property of day info of the automatic sun.
+
+            Parameters
+            ----------
+            day : int
+                day information.
 
             Returns
             -------
@@ -1806,22 +2504,16 @@ class BaseSourceAmbient(BaseSource):
 
         @day.setter
         def day(self, day: int) -> None:
-            """Set day info of the automatic sun.
-
-            Parameters
-            ----------
-            day: int
-                day information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.day = day
 
         @property
         def hour(self) -> int:
             """Get hour info of the automatic sun.
+
+            Parameters
+            ----------
+            hour : int
+                hour information.
 
             Returns
             -------
@@ -1833,23 +2525,16 @@ class BaseSourceAmbient(BaseSource):
 
         @hour.setter
         def hour(self, hour: int) -> None:
-            """Set hour info of the automatic sun.
-
-            Parameters
-            ----------
-            hour: int
-                hour information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.hour = hour
 
         @property
         def minute(self) -> int:
-            """Get minute info of the automatic sun.
+            """Property of minute info of the automatic sun.
+
+            Parameters
+            ----------
+            minute : int
+                minute information.
 
             Returns
             -------
@@ -1861,23 +2546,16 @@ class BaseSourceAmbient(BaseSource):
 
         @minute.setter
         def minute(self, minute: int) -> None:
-            """Set minute info of the automatic sun.
-
-            Parameters
-            ----------
-            minute: int
-                minute information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.minute = minute
 
         @property
         def longitude(self) -> float:
-            """Get longitude info of the automatic sun.
+            """Property of longitude info of the automatic sun.
+
+            Parameters
+            ----------
+            longitude : float
+                longitude information.
 
             Returns
             -------
@@ -1888,22 +2566,16 @@ class BaseSourceAmbient(BaseSource):
 
         @longitude.setter
         def longitude(self, longitude: float) -> None:
-            """Get longitude info of the automatic sun.
-
-            Parameters
-            ----------
-            longitude: float
-                longitude information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.longitude = longitude
 
         @property
         def latitude(self) -> float:
-            """Get latitude info of the automatic sun.
+            """Property of latitude info of the automatic sun.
+
+            Parameters
+            ----------
+            latitude : float
+                latitude information.
 
             Returns
             -------
@@ -1914,22 +2586,18 @@ class BaseSourceAmbient(BaseSource):
 
         @latitude.setter
         def latitude(self, latitude: float) -> None:
-            """Set latitude info of the automatic sun.
-
-            Parameters
-            ----------
-            latitude: float
-                latitude information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.latitude = latitude
 
         @property
         def time_zone(self) -> str:
-            """Get time zone info of the automatic sun.
+            """Property of time zone info of the automatic sun.
+
+                default value to be "CET".
+
+            Parameters
+            ----------
+            timezone : str
+                timezone abbreviation.
 
             Returns
             -------
@@ -1940,19 +2608,6 @@ class BaseSourceAmbient(BaseSource):
 
         @time_zone.setter
         def time_zone(self, time_zone: str) -> None:
-            """Set time zone info of the automatic sun.
-
-                default value to be "CET".
-
-            Parameters
-            ----------
-            timezone: str
-                timezone abbreviation.
-
-            Returns
-            -------
-            None
-            """
             self._sun.time_zone_uri = time_zone
 
     class Manual:
@@ -1964,8 +2619,10 @@ class BaseSourceAmbient(BaseSource):
         ----------
         sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
             Wavelengths range protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ManualSunParameters] = None
+            If defined the values in the Manual instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1978,7 +2635,7 @@ class BaseSourceAmbient(BaseSource):
         def __init__(
             self,
             sun: scene_pb2.ManualSun,
-            default_values: bool = True,
+            default_parameters: Optional[ManualSunParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1986,18 +2643,29 @@ class BaseSourceAmbient(BaseSource):
                     "BaseSourceAmbient.Manual class instantiated outside of class scope"
                 )
             self._sun = sun
+            self._fill_parameters(default_parameters)
 
-            if default_values:
-                self.direction = [0, 0, 1]
-                self.reverse_sun = False
+        def _fill_parameters(
+            self, default_parameters: Optional[ManualSunParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+            self.direction = default_parameters.direction
 
         @property
         def direction(self) -> List[float]:
-            """Get direction of the manual sun.
+            """Property of direction of the manual sun.
+
+                default value to be [0, 0, 1].
+
+            Parameters
+            ----------
+            direction : List[float]
+                direction of the sun.
 
             Returns
             -------
-            list of float
+            List[float]
                 list describing the direction of the manual sun.
 
             """
@@ -2005,25 +2673,18 @@ class BaseSourceAmbient(BaseSource):
 
         @direction.setter
         def direction(self, direction: List[float]) -> None:
-            """Set direction of the manual sun.
-
-                default value to be [0, 0, 1].
-
-            Parameters
-            ----------
-            direction: List[float]
-                direction of the sun.
-
-            Returns
-            -------
-            BaseSourceAmbient.Manual
-
-            """
             self._sun.sun_direction[:] = direction
 
         @property
         def reverse_sun(self) -> bool:
-            """Get whether reverse direction of the manual sun.
+            """Property of whether reverse direction of the manual sun.
+
+                default value to be False.
+
+            Parameters
+            ----------
+            value : bool
+                True to reverse direction, False to not reverse direction
 
             Returns
             -------
@@ -2035,21 +2696,546 @@ class BaseSourceAmbient(BaseSource):
 
         @reverse_sun.setter
         def reverse_sun(self, value: bool) -> None:
-            """Reverse direction of the manual sun.
-
-                default value to be False.
-
-            Parameters
-            ----------
-            value: bool
-                True to reverse direction, False to not reverse direction
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.reverse_sun = value
+
+
+class SourceAmbientUniform(BaseSourceAmbient):
+    """Uniform ambient source.
+
+    Sets a constant luminance for the entire sky (or full sphere if mirrored_extent is True)
+    without any sun contribution.
+
+    By default, luminance is set to 1000 cd/m^2, mirrored_extent is False and
+    [0, 0, 1] is used as zenith direction.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientUniformParameters] = None
+        If defined the values in the SourceAmbientUniform instance will be
+        overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientUniformParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+        self._source_instance.ambient_properties.uniform_ambient_properties.SetInParent()
+
+        self._spectrum = self._Spectrum(
+            speos_client=self._project.client,
+            name=name,
+            message_to_complete=self._source_template.ambient.uniform_ambient,
+            spectrum_guid=self._source_template.ambient.uniform_ambient.spectrum_guid,
+        )
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientUniformParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            uniform_props = self._source_instance.ambient_properties.uniform_ambient_properties
+            if uniform_props.HasField("manual_sun"):
+                self.set_sun_manual()
+            return
+        self.luminance = default_parameters.luminance
+        self.mirrored_extent = default_parameters.mirrored_extent
+        self.zenith_direction = default_parameters.zenith_direction
+
+        if isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
+            self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+        elif isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
+            self.spectrum.set_blackbody().temperature = default_parameters.spectrum_type.temperature
+        else:
+            raise ValueError(
+                "Unsupported spectrum type for ambient uniform source: {}. "
+                "Only SpectrumLibraryParameters and SpectrumBlackBodyParameters "
+                "are supported.".format(type(default_parameters.spectrum_type).__name__)
+            )
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the uniform ambient source.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+
+        Returns
+        -------
+        float
+            Luminance value in cd/m^2.
+        """
+        return self._source_template.ambient.uniform_ambient.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.uniform_ambient.luminance = value
+
+    @property
+    def mirrored_extent(self) -> bool:
+        """Mirrored extent of the uniform ambient source.
+
+        If True the ambient light covers all space, if False only the upper half space.
+
+        Parameters
+        ----------
+        value : bool
+            True to cover all space, False to cover only the upper half space.
+
+        Returns
+        -------
+        bool
+            True if covering all space, False if covering only the upper half space.
+        """
+        return self._source_template.ambient.uniform_ambient.mirrored_extent
+
+    @mirrored_extent.setter
+    def mirrored_extent(self, value: bool) -> None:
+        self._source_template.ambient.uniform_ambient.mirrored_extent = value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Zenith direction of the uniform ambient source.
+
+        Parameters
+        ----------
+        direction : List[float]
+            Direction defining the zenith of the uniform ambient source.
+
+        Returns
+        -------
+        List[float]
+            Direction defining the zenith of the uniform ambient source.
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """Reverse zenith direction of the uniform ambient source.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum of the uniform ambient source.
+
+        Returns
+        -------
+        ansys.speos.core.spectrum.Spectrum
+            Spectrum associated with this source.
+        """
+        return self._spectrum._spectrum
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set the uniform ambient sun direction manually.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Manual sun feature to complete.
+        """
+        uniform_ambient_properties = (
+            self._source_instance.ambient_properties.uniform_ambient_properties
+        )
+        if self._type is None and uniform_ambient_properties.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                uniform_ambient_properties.manual_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            self._type = BaseSourceAmbient.Manual(
+                uniform_ambient_properties.manual_sun,
+                default_parameters=ManualSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not uniform_ambient_properties.manual_sun:
+            self._type._sun = uniform_ambient_properties.manual_sun
+        return self._type
+
+    def commit(self) -> SourceAmbientUniform:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().commit()
+        return self
+
+    def reset(self) -> SourceAmbientUniform:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().reset()
+        return self
+
+    def delete(self) -> SourceAmbientUniform:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUniform
+            Ambient uniform Source feature.
+        """
+        super().delete()
+        return self
+
+
+class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
+    """CIE Standard General Sky source.
+
+    By default, luminance is set to 1000 cd/m2
+    [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+    Sun type is set to be automatic type.
+    CIE type is partly cloudy sky, no gradation towards zenith, slight brightening
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters] = None
+        If defined the values in the SourceAmbientCieStandardGeneralSky instance
+         will be overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientCieStandardGeneralSkyParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.cie_general_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
+            return
+        self.cie_type = default_parameters.cie_type
+        self.luminance = default_parameters.luminance
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+            self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+            self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+            self.set_sun_automatic().year = default_parameters.sun_type.year
+            self.set_sun_automatic().month = default_parameters.sun_type.month
+            self.set_sun_automatic().day = default_parameters.sun_type.day
+            self.set_sun_automatic().hour = default_parameters.sun_type.hour
+            self.set_sun_automatic().minute = default_parameters.sun_type.minute
+            self.set_sun_automatic().time_zone = default_parameters.sun_type.time_zone
+        elif isinstance(default_parameters.sun_type, ManualSunParameters):
+            self.set_sun_manual().direction = default_parameters.sun_type.direction
+        else:
+            raise ValueError(f"Unsupported sun type: {type(default_parameters.sun_type).__name__}")
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the ambient CIE standard general sky source.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+
+        Returns
+        -------
+        float
+            Luminance value in cd/m^2.
+        """
+        return self._source_template.ambient.cie_general.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.cie_general.luminance = value
+
+    @property
+    def cie_type(self) -> CieType:
+        """Get the CIE type.
+
+        Parameters
+        ----------
+        ansys.speos.core.generic.parameters.CieType
+            allowed type parameter values:
+                standard_overcast
+                overcast_steep_gradation
+                overcast_azimuthal_uniformity
+                overcast_slight_brightening
+                uniform_luminance
+                cloudy_slight_brightening
+                cloudy_nogradation_circumsolar
+                cloudy_solar_corona
+                cloudy_obscured_sun
+                cloudy_circumsolar_region
+                white_blue_distinct
+                standard_low_luminance
+                standard_polluted_atmosphere
+                cloudless_turbid_corona
+                white_blue_broad
+
+        Returns
+        -------
+        ansys.speos.core.generic.parameters.CieType
+
+        """
+        proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
+
+        value = self._source_template.ambient.cie_general.cie_type
+        name = proto_enum.Name(value)  # int → string
+
+        return CieType(name)
+
+    @cie_type.setter
+    def cie_type(self, value: CieType) -> None:
+        proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
+
+        if not isinstance(value, CieType):
+            raise TypeError(f"cie_type must be a CieType enum, got {type(value)}")
+
+        try:
+            enum_value = proto_enum.Value(value.value)
+        except ValueError:
+            raise ValueError(f"Invalid CieType value: {value}")
+
+        self._source_template.ambient.cie_general.cie_type = enum_value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Property zenith direction of the ambient source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the zenith direction of the ambient sky
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the ambient sky
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """
+        Property whether reverse zenith direction of the ambient CIE standard general sky source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """Property north direction of the ambient CIE standard general sky.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the north direction of the ambient CIE standard general sky
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the ambient CIE standard general sky
+
+        """
+        return self._source_instance.ambient_properties.cie_general_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.cie_general_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Property whether reverse north direction of the ambient CIE standard general sky.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.cie_general_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.cie_general_properties.reverse_north = value
+
+    def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
+        """Set sun type as automatic.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+            Sun automatic type feature to complete.
+
+        """
+        cie_properties = self._source_instance.ambient_properties.cie_general_properties
+        if self._type is None and cie_properties.sun_axis_system.HasField("automatic_sun"):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                cie_properties.sun_axis_system.automatic_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.AutomaticSun(
+                cie_properties.sun_axis_system.automatic_sun,
+                default_parameters=AutomaticSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not cie_properties.sun_axis_system.automatic_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = cie_properties.sun_axis_system.automatic_sun
+        return self._type
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set cie standard general sky sun type as manual.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Sun Manual type feature to complete.
+        """
+        cie_properties = self._source_instance.ambient_properties.cie_general_properties
+        if self._type is None and cie_properties.sun_axis_system.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                cie_properties.sun_axis_system.manual_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.Manual(
+                cie_properties.sun_axis_system.manual_sun,
+                default_parameters=ManualSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not cie_properties.sun_axis_system.manual_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = cie_properties.sun_axis_system.manual_sun
+        return self._type
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):
@@ -2071,8 +3257,10 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientNaturalLightParameters] = None
+        If defined the values in the SourceAmbientNaturalLight instance
+         will be overwritten by the values of the data class.
     """
 
     def __init__(
@@ -2082,7 +3270,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[AmbientNaturalLightParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2097,20 +3285,48 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self._speos_client = self._project.client
         self._name = name
         self._type = None
+        self._fill_parameters(default_parameters)
 
-        if default_values:
-            # Default values
-            self.zenith_direction = [0, 0, 1]
-            self.north_direction = [0, 1, 0]
-            self.reverse_north_direction = False
-            self.reverse_zenith_direction = False
-            self.turbidity = 3
-            self.with_sky = True
-            self.set_sun_automatic()
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientNaturalLightParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.natural_light_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
+            return
+        self.with_sky = default_parameters.with_sky
+        self.turbidity = default_parameters.turbidity
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+            self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+            self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+            self.set_sun_automatic().year = default_parameters.sun_type.year
+            self.set_sun_automatic().month = default_parameters.sun_type.month
+            self.set_sun_automatic().day = default_parameters.sun_type.day
+            self.set_sun_automatic().hour = default_parameters.sun_type.hour
+            self.set_sun_automatic().minute = default_parameters.sun_type.minute
+        elif isinstance(default_parameters.sun_type, ManualSunParameters):
+            self.set_sun_manual().direction = default_parameters.sun_type.direction
+        else:
+            raise ValueError(f"Unsupported sun type: {type(default_parameters.sun_type).__name__}")
 
     @property
     def turbidity(self) -> float:
-        """Get turbidity of the natural light source.
+        """Property turbidity of the natural light source.
+
+            default value to be 3.
+
+        Parameters
+        ----------
+        value : float
+            set value of Turbidity the measure of the fraction of scattering.
+
 
         Returns
         -------
@@ -2122,27 +3338,21 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @turbidity.setter
     def turbidity(self, value: float) -> None:
-        """Set turbidity of the natural light source.
-
-            default value to be 3.
-
-        Parameters
-        ----------
-        value: float
-            set value of Turbidity the measure of the fraction of scattering.
-
-        Returns
-        -------
-        None
-
-        """
         if not 1.9 <= value <= 9.9:
             raise ValueError("Varies needs to be between 1.9 and 9.9")
         self._source_template.ambient.natural_light.turbidity = value
 
     @property
     def with_sky(self) -> bool:
-        """Bool of whether activated using sky in the natural light source.
+        """Bool Property of whether activated using sky in the natural light source.
+
+            default value to be True.
+
+        Parameters
+        ----------
+        value : bool
+            True as using sky, while False as using natural light without the sky.
+
 
         Returns
         -------
@@ -2154,25 +3364,18 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @with_sky.setter
     def with_sky(self, value: bool) -> None:
-        """Activate using sky in the natural light source.
-
-            default value to be True.
-
-        Parameters
-        ----------
-        value: bool
-            True as using sky, while False as using natural light without the sky.
-
-        Returns
-        -------
-        SourceAmbientNaturalLight
-
-        """
         self._source_template.ambient.natural_light.with_sky = value
 
     @property
     def zenith_direction(self) -> List[float]:
-        """Get zenith direction of the natural light source.
+        """Property zenith direction of the natural light source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the zenith direction of the natural light.
 
         Returns
         -------
@@ -2183,27 +3386,20 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         return self._source_instance.ambient_properties.zenith_direction
 
     @zenith_direction.setter
-    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
-        """Set zenith direction of the natural light source.
-
-            default value to be [0, 0, 1]
-
-        Parameters
-        ----------
-        direction: Optional[List[float]]
-            direction defines the zenith direction of the natural light.
-
-        Returns
-        -------
-        None
-
-        """
+    def zenith_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
     def reverse_zenith_direction(self) -> bool:
         """
-        Get whether reverse zenith direction of the natural light source.
+        Property whether reverse zenith direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse zenith direction, False otherwise.
 
         Returns
         -------
@@ -2215,25 +3411,18 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @reverse_zenith_direction.setter
     def reverse_zenith_direction(self, value: bool) -> None:
-        """Set reverse zenith direction of the natural light source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse zenith direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.reverse_zenith = value
 
     @property
     def north_direction(self) -> List[float]:
-        """Get north direction of the natural light source.
+        """Property north direction of the natural light source.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction : List[float]
+            direction defines the north direction of the natural light.
 
         Returns
         -------
@@ -2245,27 +3434,20 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
-        """Set north direction of the natural light source.
-
-            default value to be [0, 1, 0].
-
-        Parameters
-        ----------
-        direction: List[float]
-            direction defines the north direction of the natural light.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
             direction
         )
 
     @property
     def reverse_north_direction(self) -> bool:
-        """Get whether reverse north direction of the natural light source.
+        """Property whether reverse north direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value : bool
+            True to reverse north direction, False otherwise.
 
         Returns
         -------
@@ -2277,20 +3459,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @reverse_north_direction.setter
     def reverse_north_direction(self, value: bool) -> None:
-        """Set reverse north direction of the natural light source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse north direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
 
     def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
@@ -2298,7 +3466,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        BaseSourceAmbient.AutomaticSun
+        ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+            Sun automatic type feature to complete.
 
         """
         natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
@@ -2307,13 +3476,14 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         ):
             self._type = BaseSourceAmbient.AutomaticSun(
                 natural_light_properties.sun_axis_system.automatic_sun,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSourceAmbient.AutomaticSun(
                 natural_light_properties.sun_axis_system.automatic_sun,
+                default_parameters=AutomaticSunParameters(),
                 stable_ctr=True,
             )
         elif self._type._sun is not natural_light_properties.sun_axis_system.automatic_sun:
@@ -2326,19 +3496,21 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        BaseSourceAmbient.Manual
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Sun Manual type feature to complete.
         """
         natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
         if self._type is None and natural_light_properties.sun_axis_system.HasField("manual_sun"):
             self._type = BaseSourceAmbient.Manual(
                 natural_light_properties.sun_axis_system.manual_sun,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSourceAmbient.Manual):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSourceAmbient.Manual(
                 natural_light_properties.sun_axis_system.manual_sun,
+                default_parameters=ManualSunParameters(),
                 stable_ctr=True,
             )
         elif self._type._sun is not natural_light_properties.sun_axis_system.manual_sun:
@@ -2364,8 +3536,10 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientEnvironmentParameters] = None
+        If defined the values in the SourceAmbientEnvironment instance
+        will be overwritten by the values of the data class.
     """
 
     # source_type = "SourceAmbientEnvironment"
@@ -2376,7 +3550,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[AmbientEnvironmentParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2391,15 +3565,73 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self._speos_client = self._project.client
         self._name = name
         self._type = None
+        self._fill_parameters(default_parameters)
 
-        if default_values:
-            # Default values
-            self.zenith_direction = [0, 0, 1]
-            self.north_direction = [0, 1, 0]
-            self.reverse_north_direction = False
-            self.reverse_zenith_direction = False
-            self.luminance = 1000
-            self.set_predefined_color_space()  # defaults to sRGB
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientEnvironmentParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            env_map = self._source_template.ambient.environment_map
+            if env_map.HasField("predefined_color_space"):
+                self.set_predefined_color_space()
+            elif env_map.HasField("user_defined_rgb_space"):
+                self.set_userdefined_color_space()
+            return
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        self.luminance = default_parameters.luminance
+        match default_parameters.color_space_type:
+            case ColorSpaceType.srgb:
+                self.set_predefined_color_space().set_color_space_srgb()
+            case ColorSpaceType.adobe_rgb:
+                self.set_predefined_color_space().set_color_space_adobergb()
+            case _:
+                if isinstance(default_parameters.color_space_type, UserDefinedColorSpaceParameters):
+                    self.set_userdefined_color_space().red_spectrum = (
+                        default_parameters.color_space_type.red_spectrum_uri
+                    )
+                    self.set_userdefined_color_space().green_spectrum = (
+                        default_parameters.color_space_type.green_spectrum_uri
+                    )
+                    self.set_userdefined_color_space().blue_spectrum = (
+                        default_parameters.color_space_type.blue_spectrum_uri
+                    )
+                    match default_parameters.color_space_type.white_point_type:
+                        case WhitePointType.d65:
+                            self.set_userdefined_color_space().set_white_point_type_d65()
+                        case WhitePointType.d50:
+                            self.set_userdefined_color_space().set_white_point_type_d50()
+                        case WhitePointType.c:
+                            self.set_userdefined_color_space().set_white_point_type_c()
+                        case WhitePointType.e:
+                            self.set_userdefined_color_space().set_white_point_type_e()
+                        case _:
+                            if isinstance(
+                                default_parameters.color_space_type.white_point_type,
+                                UserDefinedWhitePointParameters,
+                            ):
+                                color_space_prop = self.set_userdefined_color_space()
+                                white_point_prop = (
+                                    color_space_prop.set_white_point_type_user_defined()
+                                )
+                                white_point_prop.white_point = [
+                                    default_parameters.color_space_type.white_point_type.x,
+                                    default_parameters.color_space_type.white_point_type.y,
+                                ]
+                            else:
+                                raise ValueError(
+                                    "Unsupported white point type: {}".format(
+                                        type(
+                                            default_parameters.color_space_type.white_point_type
+                                        ).__name__
+                                    )
+                                )
+                else:
+                    raise ValueError(
+                        "Unsupported color space type: {}".format(
+                            type(default_parameters.color_space_type).__name__
+                        )
+                    )
 
     @property
     def zenith_direction(self) -> List[float]:
@@ -2409,7 +3641,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: Optional[List[float]]
+        direction : List[float]
             direction defines the zenith direction of the environment light source.
 
         Returns
@@ -2421,7 +3653,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         return self._source_instance.ambient_properties.zenith_direction
 
     @zenith_direction.setter
-    def zenith_direction(self, direction: Optional[List[float]]) -> None:
+    def zenith_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
@@ -2433,7 +3665,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse zenith direction, False otherwise.
 
         Returns
@@ -2456,7 +3688,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: List[float]
+        direction : List[float]
             direction defines the north direction, default value to be [0, 1, 0].
 
         Returns
@@ -2481,7 +3713,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse north direction, False otherwise.
 
         Returns
@@ -2504,7 +3736,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: float
+        value : float
             set value of Luminance (cd/m^2).
 
         Returns
@@ -2528,7 +3760,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-         uri : Union[str, Path]
+         uri : Union[str, pathlib.Path]
             format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
 
         Returns
@@ -2547,45 +3779,44 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self,
     ) -> Union[
         None,
-        SourceAmbientEnvironment.PredefinedColorSpace,
-        SourceAmbientEnvironment.UserDefinedColorSpace,
+        BaseSource.PredefinedColorSpace,
+        BaseSource.UserDefinedColorSpace,
     ]:
         """Property containing all options in regard to the color space properties.
 
         Returns
         -------
-        Union[
-            None,
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,
-            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
-            ]
+        Union[None, \
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace, \
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace]
             Instance of Predefined Color Space class
         """
         return self._type
 
-    def set_userdefined_color_space(self) -> SourceAmbientEnvironment.UserDefinedColorSpace:
+    def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
         """Set the color space to user-defined.
 
         Returns
         -------
-        SourceAmbientEnvironment.UserDefinedColorSpace
+        ansys.speos.core.source.BaseSource.UserDefinedColorSpace
             Settings for user defined color space.
 
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "user_defined_rgb_space"
         ):
-            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+            self._type = BaseSource.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
+        if not isinstance(self._type, BaseSource.UserDefinedColorSpace):
             # if the _type is not UserDefinedColorSpace then we create a new type.
-            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+            self._type = BaseSource.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
+                default_parameters=UserDefinedColorSpaceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -2598,26 +3829,29 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             )
         return self._type
 
-    def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+    def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
         """Set the color space to use one of the presets.
+
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
 
         Returns
         -------
-        ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+        ansys.speos.core.source.BaseSource.PredefinedColorSpace
             Environment source color space for sRGB or AdobeRGB
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "predefined_color_space"
         ):
-            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+            self._type = BaseSource.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+        if not isinstance(self._type, BaseSource.PredefinedColorSpace):
             # if the _type is not PredefinedColorSpace then we create a new type.
-            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+            self._type = BaseSource.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
+                default_parameters=ColorSpaceType.srgb,
                 stable_ctr=True,
             )
         elif (
@@ -2673,3 +3907,547 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             self._type._green_spectrum._delete()
             self._type._blue_spectrum._delete()
         super().delete()
+
+
+class SourceDisplay(BaseSource):
+    """Display Source.
+
+    By default, image uri is empty and luminance values is 50.
+
+    This feature wraps both:
+    - ``ansys.api.speos.source.v1.source_pb2.SourceTemplate.Display``
+    - ``ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.DisplayProperties``
+    """
+
+    @general_methods.min_speos_version(25, 2, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[DisplayParameters] = None,
+    ) -> None:
+        """Initialize a Display source object.
+
+        Parameters
+        ----------
+        project : ansys.speos.core.project.Project
+            Project that will own the feature.
+        name : str
+            Name of the feature.
+        description : str, optional
+            Description of the feature. Default is empty string.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata for the feature. Default is None (interpreted as {}).
+        source_instance : Optional[ProtoScene.SourceInstance], optional
+            If provided, populates the object from an existing scene SourceInstance.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.DisplayParameters], optional
+            If provided, Display source will be created based on values from the data class.
+            Default is None (no default values applied).
+
+        Returns
+        -------
+        None
+        """
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        # Intensity (similar pattern as for surface)
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            intensity_props_to_complete=self._source_instance.display_properties.intensity_properties,
+            key=self._source_template.display.intensity_guid,
+        )
+
+        # Ensure the template contains SourceDimensions (server rejects templates
+        # missing this element). Initialize to safe defaults if missing.
+        if not self._source_template.display.HasField("source_dimensions"):
+            sd = self._source_template.display.source_dimensions
+            sd.x_start = -50.0
+            sd.x_end = 50.0
+            sd.y_start = -50.0
+            sd.y_end = 50.0
+
+        # color space helper (either PredefinedColorSpace or UserDefinedColorSpace)
+        self._color_space_type = None
+
+        if default_parameters is not None:
+            self._fill_parameters(default_parameters)
+        elif self._source_template.display.HasField("pre_defined_color_space"):
+            self.set_pre_defined_color_space()
+        elif self._source_template.display.HasField("user_defined_rbg_space"):
+            self.set_userdefined_color_space()
+
+    def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
+        """Populate the Display source from defaults.
+
+        Parameters
+        ----------
+        default_parameters : ansys.speos.core.generic.parameters.DisplayParameters
+            Dataclass carrying the values to apply to this display source.
+
+        Raises
+        ------
+        ValueError
+            If an unsupported intensity orientation type is supplied.
+        """
+        # Color space
+        match default_parameters.color_space_type:
+            case ColorSpaceType.srgb:
+                self.set_pre_defined_color_space().set_color_space_srgb()
+            case ColorSpaceType.adobe_rgb:
+                self.set_pre_defined_color_space().set_color_space_adobergb()
+            case UserDefinedColorSpaceParameters():
+                cs = self.set_userdefined_color_space()
+                cs.red_spectrum = default_parameters.color_space_type.red_spectrum_uri
+                cs.green_spectrum = default_parameters.color_space_type.green_spectrum_uri
+                cs.blue_spectrum = default_parameters.color_space_type.blue_spectrum_uri
+                match default_parameters.color_space_type.white_point_type:
+                    case WhitePointType.d50:
+                        cs.set_white_point_type_d50()
+                    case WhitePointType.d65:
+                        cs.set_white_point_type_d65()
+                    case WhitePointType.e:
+                        cs.set_white_point_type_e()
+                    case WhitePointType.c:
+                        cs.set_white_point_type_c()
+                    case UserDefinedWhitePointParameters():
+                        ud_wp = cs.set_white_point_type_user_defined()
+                        ud_wp.white_point = [
+                            default_parameters.color_space_type.white_point_type.x,
+                            default_parameters.color_space_type.white_point_type.y,
+                        ]
+
+        # Intensity
+        if default_parameters.intensity_type is not None:
+            match type(default_parameters.intensity_type).__name__:
+                case "IntensityLambertianParameters":
+                    self.intensity.set_cos().n = 1
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensityCosParameters":
+                    self.intensity.set_cos().n = default_parameters.intensity_type.n
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitySymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitAsymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm_x
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm_y
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                    self.intensity.set_gaussian().axis_system = (
+                        default_parameters.intensity_type.axis_system
+                    )
+                case "IntensityLibraryParameters":
+                    self.intensity.set_library().intensity_file_uri = (
+                        default_parameters.intensity_type.intensity_file_uri
+                    )
+                    if default_parameters.intensity_type.exit_geometries is not None:
+                        self.intensity.set_library().exit_geometries = (
+                            default_parameters.intensity_type.exit_geometries
+                        )
+                    match default_parameters.intensity_type.orientation_type:
+                        case IntensityOrientationType.normal_to_uv:
+                            self.intensity.set_library().set_orientation_normal_to_uv_map()
+                        case IntensityOrientationType.normal_to_surface:
+                            self.intensity.set_library().set_orientation_normal_to_surface()
+                        case _:
+                            match type(default_parameters.intensity_type.orientation_type).__name__:
+                                case "IntensityOrientationAxisSystemParameters":
+                                    orientation_axis = (
+                                        default_parameters.intensity_type.orientation_type
+                                    )
+                                    axis_parameters = orientation_axis.axis_system
+                                    self.intensity.set_library().orientation_axis_system = (
+                                        axis_parameters
+                                    )
+                                case _:
+                                    raise ValueError(
+                                        "Unsupported orientation type: {}".format(
+                                            type(
+                                                default_parameters.intensity_type.orientation_type
+                                            ).__name__
+                                        )
+                                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported intensity type: {}".format(
+                            type(default_parameters.intensity_type).__name__
+                        )
+                    )
+
+        # Scalar / instance-level properties
+        self.luminance = default_parameters.luminance
+        self.contrast_ratio = default_parameters.contrast_ratio
+        self.image_file_uri = default_parameters.image_file_uri
+        self.axis_system = default_parameters.axis_system
+        self.x_start = default_parameters.x_start
+        self.x_end = default_parameters.x_end
+        self.y_start = default_parameters.y_start
+        self.y_end = default_parameters.y_end
+
+    @property
+    def image_file_uri(self) -> str:
+        """Image file URI for the display.
+
+        Supported formats include PNG, JPEG, BMP, TIFF, RGB, HDR/EXR where applicable.
+
+        Returns
+        -------
+        str
+            Image file URI referenced by the display.
+        """
+        return self._source_template.display.image_file_uri
+
+    @image_file_uri.setter
+    def image_file_uri(self, uri: Union[str, Path]) -> None:
+        """Set the image file URI for the display.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            File path or URI to the image to be used by the display.
+        """
+        self._source_template.display.image_file_uri = str(uri)
+
+    @property
+    def x_start(self) -> float:
+        """Source physical dimension: x_start in millimeters.
+
+        Returns
+        -------
+        float
+            x_start in millimeters.
+        """
+        return self._source_template.display.source_dimensions.x_start
+
+    @x_start.setter
+    def x_start(self, value: float) -> None:
+        """Set source physical dimension x_start.
+
+        Parameters
+        ----------
+        value : float
+            x_start in millimeters.
+        """
+        self._source_template.display.source_dimensions.x_start = float(value)
+
+    @property
+    def x_end(self) -> float:
+        """Source physical dimension: x_end in millimeters.
+
+        Returns
+        -------
+        float
+            x_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.x_end
+
+    @x_end.setter
+    def x_end(self, value: float) -> None:
+        """Set source physical dimension x_end.
+
+        Parameters
+        ----------
+        value : float
+            x_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.x_end = float(value)
+
+    @property
+    def y_start(self) -> float:
+        """Source physical dimension: y_start in millimeters.
+
+        Returns
+        -------
+        float
+            y_start in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_start
+
+    @y_start.setter
+    def y_start(self, value: float) -> None:
+        """Set source physical dimension y_start.
+
+        Parameters
+        ----------
+        value : float
+            y_start in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_start = float(value)
+
+    @property
+    def y_end(self) -> float:
+        """Source physical dimension: y_end in millimeters.
+
+        Returns
+        -------
+        float
+            y_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_end
+
+    @y_end.setter
+    def y_end(self, value: float) -> None:
+        """Set source physical dimension y_end.
+
+        Parameters
+        ----------
+        value : float
+            y_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_end = float(value)
+
+    @property
+    def luminance(self) -> float:
+        """Luminance value for the display.
+
+        Returns
+        -------
+        float
+            Luminous flux expressed as luminance (cd/m^2).
+        """
+        return self._source_template.display.luminous_flux
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        """Set Luminance value.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+        """
+        self._source_template.display.luminous_flux = float(value)
+
+    @property
+    def contrast_ratio(self) -> Optional[int]:
+        """Contrast ratio for the display.
+
+        The underlying protobuf field is optional. When unset it behaves as None
+        from the Python API perspective (the proto scalar default is 0).
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
+
+        Returns
+        -------
+        Optional[int]
+            Contrast ratio if set, otherwise 0 (unset behavior preserved by proto).
+        """
+        return self._source_template.display.contrast_ratio
+
+    @contrast_ratio.setter
+    def contrast_ratio(self, value: Optional[int]) -> None:
+        """Set or clear the contrast ratio.
+
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
+
+        Parameters
+        ----------
+        value : Optional[int]
+            Integer contrast ratio to set, or None to clear the optional field.
+        """
+        if value is None:
+            # proto3 optional semantics: clear by assigning default (no direct ClearField on scalar)
+            self._source_template.display.ClearField("contrast_ratio")
+        else:
+            self._source_template.display.contrast_ratio = int(value)
+
+    @property
+    def axis_system(self) -> list:
+        """Axis system for the display.
+
+        Returns
+        -------
+        list
+            12-element axis system vector describing
+            origin and axes (Ox,Oy,Oz,Xx,Xy,Xz,Yx,Yy,Yz,Zx,Zy,Zz).
+        """
+        return self._source_instance.display_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list) -> None:
+        """Set the axis system for the display.
+
+        Parameters
+        ----------
+        axis_system : list
+            12-element sequence describing the origin and local axes for placement in the scene.
+        """
+        self._source_instance.display_properties.axis_system[:] = axis_system
+
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity settings for the display source.
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity object tied to the scene for this display.
+        """
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.display_properties.intensity_properties
+        ):
+            self._intensity._intensity_properties = (
+                self._source_instance.display_properties.intensity_properties
+            )
+        return self._intensity
+
+    def set_pre_defined_color_space(self) -> BaseSource.PredefinedColorSpace:
+        """Set display color space to a predefined color space.
+
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.PredefinedColorSpace
+            Helper object for choosing a predefined color space.
+        """
+        # proto field name in SourceTemplate.Display is `pre_defined_color_space`
+        if self._type is None and self._source_template.display.HasField("pre_defined_color_space"):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.PredefinedColorSpace):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
+                default_parameters=ColorSpaceType.srgb,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._predefined_color_space
+            is not self._source_template.display.pre_defined_color_space
+        ):
+            self._type._predefined_color_space = (
+                self._source_template.display.pre_defined_color_space
+            )
+        return self._type
+
+    def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
+        """Set user-defined RGB color space for the display.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+            Helper providing access to red/green/blue spectrum selection and white point.
+        """
+        # Note: proto field name in SourceTemplate.Display is `user_defined_rbg_space` (rbg)
+        if self._type is None and self._source_template.display.HasField("user_defined_rbg_space"):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=UserDefinedColorSpaceParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._type._userdefined_color_space
+            is not self._source_template.display.user_defined_rbg_space
+        ):
+            # Happens in case of feature reset
+            self._type._userdefined_color_space = (
+                self._source_template.display.user_defined_rbg_space
+            )
+        return self._type
+
+    def commit(self) -> SourceDisplay:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (committed).
+        """
+        # commit intensity template if used
+        if hasattr(self, "_intensity"):
+            self._intensity.commit()
+            # update template intensity guid
+            self._source_template.display.intensity_guid = (
+                self._intensity.intensity_template_link.key
+            )
+        # commit user-defined color space spectra if any
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._commit()
+            self._type._green_spectrum._commit()
+            self._type._blue_spectrum._commit()
+        super().commit()
+        return self
+
+    def reset(self) -> SourceDisplay:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (reset).
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._reset()
+            self._type._green_spectrum._reset()
+            self._type._blue_spectrum._reset()
+        # reset intensity
+        if hasattr(self, "_intensity"):
+            self._intensity.reset()
+        super().reset()
+        return self
+
+    def delete(self) -> SourceDisplay:
+        """Delete display source from server (local data kept).
+
+        Deletes any locally-managed spectra created for a user-defined color space
+        and deletes the feature from the server. Does not cascade-delete
+        the intensity.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (deleted on server).
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._delete()
+            self._type._green_spectrum._delete()
+            self._type._blue_spectrum._delete()
+        # do not cascade delete intensity template (consistent with surface behavior)
+        super().delete()
+        return self

@@ -28,13 +28,16 @@ Examples
 
         examples/core/project
         examples/core/opt-prop
+        examples/core/texture
         examples/core/source
         examples/core/sensor
         examples/core/part
+        examples/core/component
         examples/core/simulation
         examples/core/lpf-preview
         examples/core/prism-example
         examples/core/bsdf
+        examples/core/timeline
 
 
     The series of basic examples below explains how to use different PySpeos kernel methods.

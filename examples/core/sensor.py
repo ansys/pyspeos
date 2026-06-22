@@ -10,7 +10,7 @@
 
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
@@ -22,6 +22,7 @@ from ansys.speos.core.kernel.client import (
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
+    SensorImmersive,
     SensorIrradiance,
     SensorRadiance,
 )
@@ -42,13 +43,11 @@ def create_helper_geometries(project: Project):
     """Create bodies and faces."""
 
     def create_face(body):
-        (
-            body.create_face(name="TheFaceF")
-            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-            .set_facets([0, 1, 2])
-            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-            .commit()
-        )
+        f = body.create_face(name="TheFaceF")
+        f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+        f.facets = [0, 1, 2]
+        f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+        f.commit()
 
     root_part = project.create_root_part().commit()
     body_b1 = root_part.create_body(name="TheBodyB").commit()
@@ -247,8 +246,60 @@ print(sensor4)
 
 create_helper_geometries(p)
 sensor5 = p.create_sensor(name="3D_Irradiance.2", feature_type=Sensor3DIrradiance)
-sensor5.geometries = [GeoRef.from_native_link("TheBodyB/TheFaceF")]
+face = p.find(name="TheBodyB/TheFaceF", feature_type=Face)[0]
+sensor5.geometries = [face]
 sensor5.commit()
 print(sensor5)
+
+# ### Immersive sensor
+#
+# An immersive sensor wraps the observer in a virtual cube and records light arriving from all
+# six directions (front, back, left, right, top, bottom).  It can be used with both direct and
+# inverse simulations.
+#
+# **Default values**
+#
+# Create an immersive sensor and commit it to show its default settings.
+
+sensor6 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
+print(sensor6)  # local: not yet on server
+
+sensor6.commit()
+print(sensor6)  # now on server
+
+# **Customise the sensor**
+#
+# The sampling controls the pixel count per cube face, the integration angle is used for
+# direct simulations, and the wavelengths range selects the spectral window.
+
+sensor6.sampling = 256
+sensor6.integration_angle = 10.0
+sensor6.stereo_interocular_distance = 50
+
+wl = sensor6.set_wavelengths_range()
+wl.start = 380.0
+wl.end = 780.0
+wl.sampling = 20
+
+# Exclude the bottom face so rays from below are not recorded.
+sensor6.exclude_bottom = True
+
+# Separate results by light source.
+sensor6.set_layer_type_source()
+
+# Reposition the sensor (Origin, X-axis, Y-axis, Z-axis).
+sensor6.axis_system = [5, 0, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor6.commit()
+print(sensor6)
+
+# **Reset and delete**
+
+sensor6.sampling = 512  # local modification — not yet committed
+sensor6.reset()  # restores the last committed value (256)
+print(sensor6)
+
+sensor6.delete()
+print(sensor6)
 
 speos.close()

@@ -52,7 +52,7 @@ class SOPTemplateLink(CrudItem):
     >>> speos = Speos()
     >>> sop_t_db = speos.client.sop_templates()
     >>> sop_t_message = ProtoSOPTemplate(name="Mirror_50")
-    >>> sop_t_message.mirror.reflectance = 50
+    >>> sop_t_message.sop_mirror.reflectance = 50
     >>> sop_t_link = sop_t_db.create(message=sop_t_message)
 
     """

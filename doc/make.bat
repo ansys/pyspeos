@@ -39,7 +39,7 @@ goto end
 %SPHINXBUILD% -M latex %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 cd "%BUILDDIR%\latex"
 for %%f in (*.tex) do (
-pdflatex "%%f" --interaction=nonstopmode)
+lualatex --interaction=nonstopmode "%%f")
 
 :clean
 rmdir /s /q %BUILDDIR% > /NUL 2>&1

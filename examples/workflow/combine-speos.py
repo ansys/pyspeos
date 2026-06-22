@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Part, Speos, launcher
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -146,10 +147,9 @@ ssr.commit()
 
 # +
 src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-src.set_intensity_file_uri(
-    uri=str(assets_data_path / "IES_C_DETECTOR.ies")
-).set_spectrum().set_daylightfluorescent()
-src.set_axis_system([0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+src.intensity_file_uri = assets_data_path / "IES_C_DETECTOR.ies"
+src.spectrum.set_daylightfluorescent()
+src.axis_system = [0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
 src.commit()
 # -
@@ -159,7 +159,8 @@ src.commit()
 # More details on creating/editing simulation examples can be found in core examples.
 
 sim = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
-sim.set_sensor_paths(["Camera.1"]).set_source_paths(["Luminaire.1"])
+sim.sensor_paths = [ssr]
+sim.source_paths = [src]
 sim.commit()
 
 # ## Run the simulation
@@ -171,9 +172,11 @@ run_sim()  # Run the simulation
 
 # ## Check and review result
 #
-# Open result (only windows)
+# Open result
 
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
@@ -189,7 +192,7 @@ if os.name == "nt":
 # z_vect_x, z_vect_y, z_vect_z.
 
 blue_car_sub_part = p.find(name="BlueCar", feature_type=Part.SubPart)[0]
-blue_car_sub_part.set_axis_system([2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+blue_car_sub_part.axis_system = [2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 blue_car_sub_part.commit()
 
 # ## Re-run simulation with the modified part position
@@ -198,7 +201,9 @@ run_sim()
 
 # Review result:
 
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 
 # ## Modify camera property
@@ -212,7 +217,9 @@ cam1.commit()
 # Re-run the simulation and review result
 
 run_sim()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 
 speos.close()
