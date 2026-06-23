@@ -16,19 +16,19 @@ exclude: |
 repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.17
+  rev: 77039ccbba72c8aede339c5f8ae29b42aced0a2e  # frozen: v0.15.18
   hooks:
     - id: ruff
     - id: ruff-format
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.2
+  rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
   hooks:
   - id: codespell
     args: ["--ignore-words", "doc/styles/config/vocabularies/ANSYS/accept.txt", "-w"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
   hooks:
   - id: check-merge-conflict
   - id: debug-statements
@@ -37,12 +37,12 @@ repos:
 
 # This validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.37.3
+  rev: 8ef330cbb7204d388aa7a620f9549bcea8009663  # frozen: 0.37.3
   hooks:
     - id: check-github-workflows
 
 - repo: https://github.com/ansys/pre-commit-hooks
-  rev: v0.7.2
+  rev: 55c5b6a5439abd847613579c6924da750e8b78b2  # frozen: v0.8.0
   hooks:
     - id: add-license-headers
       files: '(ansys|tests)/.*\.(py)'
