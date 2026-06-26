@@ -77,8 +77,9 @@ sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 # When running the simulation, the ``export_vtp`` argument can be set to True to get vtp export
 # of the compatible results.
 
-results = sim.compute_CPU(export_vtp=True)  # run the simulation
-print(results)
+if os.name == "nt":
+    results = sim.compute_CPU(export_vtp=True)  # run the simulation
+    print(results)
 
 
 # ## vtp export from an existing xmp or xm3 result
