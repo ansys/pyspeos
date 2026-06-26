@@ -350,7 +350,6 @@ if os.name == "nt":
         simulation_feature: Union[SimulationDirect, SimulationInverse],
         geo_faces: List[face_pb2.Face],
         result_name: Union[str, Path],
-        result_folder_path: Path = None,
     ) -> Path:
         """Export an XM3 result into vtp file.
 
