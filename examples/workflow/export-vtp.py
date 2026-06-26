@@ -78,8 +78,8 @@ sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 # of the compatible results.
 
 if os.name == "nt":
-    results = sim.compute_CPU(export_vtp=True)  # run the simulation
-    print(results)
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)  # run the simulation
+    print(speos_results, vtp_results)
 
 
 # ## vtp export from an existing xmp or xm3 result
