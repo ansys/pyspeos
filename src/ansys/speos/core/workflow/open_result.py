@@ -252,6 +252,7 @@ if os.name == "nt":
         simulation_feature: Union[SimulationDirect, SimulationInverse],
         xmp_feature: Union[SensorIrradiance, SensorRadiance],
         result_name: Union[str, Path],
+        result_folder_path: Path = None,
     ) -> Path:
         """Export an XMP result into vtp file.
 
@@ -263,6 +264,12 @@ if os.name == "nt":
             The sensor feature.
         result_name: Union[str, Path]
             file path of an XMP result.
+        result_folder_path: Path, optional
+            If results are obtained via another way of computation than PySpeos,
+            provide here the folder where the result is stored.
+            Example of use case: the result is obtained via Speos HPC computation
+            and downloaded then in the result_folder_path.
+            Leave to None if the result is obtained via PySpeos.
 
         Returns
         -------
@@ -275,7 +282,11 @@ if os.name == "nt":
         result_name = Path(result_name)
         if not str(result_name).lower().endswith(".xmp"):
             result_name = result_name.with_name(result_name.name + ".xmp")
-        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if result_folder_path is not None:
+            file_path = result_folder_path / result_name.name
+        else:
+            file_path = _find_correct_result(simulation_feature, str(result_name))
 
         if file_path == "":
             raise ValueError(
@@ -342,8 +353,9 @@ if os.name == "nt":
         simulation_feature: Union[SimulationDirect, SimulationInverse],
         geo_faces: List[face_pb2.Face],
         result_name: Union[str, Path],
+        result_folder_path: Path = None,
     ) -> Path:
-        """Export an XMP result into vtp file.
+        """Export an XM3 result into vtp file.
 
         Parameters
         ----------
@@ -352,7 +364,13 @@ if os.name == "nt":
         geo_faces: List[face_pb2.Face]
             list of face geometries.
         result_name: Union[str, Path]
-            file path of an XMP result.
+            file path of an XM3 result.
+        result_folder_path: Path, optional
+            If results are obtained via another way of computation than PySpeos,
+            provide here the folder where the result is stored.
+            Example of use case: the result is obtained via Speos HPC computation
+            and downloaded then in the result_folder_path.
+            Leave to None if the result is obtained via PySpeos.
 
         Returns
         -------
@@ -365,7 +383,11 @@ if os.name == "nt":
         result_name = Path(result_name)
         if not str(result_name).lower().endswith(".xm3"):
             result_name = result_name.with_name(result_name.name + ".xm3")
-        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if result_folder_path is not None:
+            file_path = result_folder_path / result_name.name
+        else:
+            file_path = _find_correct_result(simulation_feature, str(result_name))
 
         if file_path == "":
             raise ValueError(
