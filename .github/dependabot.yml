@@ -1,47 +1,38 @@
 version: 2
 updates:
   - package-ecosystem: "uv"
-    cooldown:
-      default-days: 10 # Fallback cooldown if no specific rule applies
-      include:
-        - "*"  # Include all dependencies in cooldown
-      exclude:
-        - "ansys-api-speos"
-        - "ansys-sphinx-theme"
-        - "ansys-tools-common"
-        - "ansys-tools-visualization-interface"
-        - "ansys-platform-instancemanagement"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "05:00"
       timezone: "Europe/Paris"
-    labels:
-      - "maintenance"
-      - "dependencies"
-    assignees:
-      - "StefanThoene"
-      - "pluAtAnsys"
-      - "echambla"
-      - "jomadec"
-    ignore:
-      - dependency-name: "grpcio-tools"
-      - dependency-name: "grpcio-health-checking"
-    commit-message:
-      prefix: "build(uv)"
     groups:
       core-deps:
+        applies-to: version-updates
         patterns:
           - "ansys-tools-common"
           - "numpy"
           - "comtypes"
       grpc-deps:
+        applies-to: version-updates
         patterns:
           - "grpc*"
           - "protobuf"
-      doc-deps:
+      optional-deps:
+        applies-to: version-updates
         patterns:
+          - "pyvista"
+          - "ansys-tools-visualization-interface"
+          - "ansys-platform-instancemanagement"
+          - "jupyterlab"
+          - "ipywidgets"
+          - "notebook"
+          - "matplotlib"
+      dev-dependencies:
+        applies-to: version-updates
+        patterns:
+          # Documentation
           - "ansys-sphinx-theme*"
           - "jupytext"
           - "jupyterlab"
@@ -52,33 +43,69 @@ updates:
           - "numpydoc"
           - "sphinx"
           - "sphinx*"
-      test-deps:
+          # Lint / Format
+          - "prek"
+          - "ruff"
+          - "ty"
+          # Test
+          - "psutil"
+          - "pytest"
+          - "pytest-cov"
+      security-updates:
+        applies-to: security-updates
         patterns:
-          - "pytest*"
-      graphics-deps:
-        patterns:
-          - "pyvista"
-          - "ansys-tools-visualization-interface"
-      jupyter-deps:
-        patterns:
-          - "jupyterlab"
-          - "ipywidgets"
-          - "notebook"
-          - "matplotlib"
-
-  - package-ecosystem: "github-actions"
+          - "*"
     cooldown:
       default-days: 10 # Fallback cooldown if no specific rule applies
       include:
         - "*"  # Include all dependencies in cooldown
       exclude:
-        - "ansys/actions"
+        - "ansys-api-speos"
+        - "ansys-sphinx-theme"
+        - "ansys-tools-common"
+        - "ansys-tools-visualization-interface"
+        - "ansys-platform-instancemanagement"
+    labels:
+      - "maintenance"
+      - "dependencies"
+    assignees:
+      - "StefanThoene"
+      - "pluAtAnsys"
+      - "echambla"
+      - "jomadec"
+    commit-message:
+      prefix: "build(uv)"
+    ignore:
+      - dependency-name: "grpcio-tools"
+      - dependency-name: "grpcio-health-checking"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "05:00"
       timezone: "Europe/Paris"
+    groups:
+      actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 10 # Fallback cooldown if no specific rule applies
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/actions"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
     labels:
       - "maintenance"
     assignees:
@@ -88,3 +115,44 @@ updates:
       - "jomadec"
     commit-message:
       prefix: "build(ci)"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Paris"
+    groups:
+      precommit:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      precommit-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7 # Fallback cooldown if no specific rule applies
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/pre-commit-hooks"
+    assignees:
+      - "StefanThoene"
+      - "pluAtAnsys"
+      - "echambla"
+      - "jomadec"
+    labels:
+      - "maintenance"
+    ignore:
+      - dependency-name: "https://github.com/astral-sh/ruff-pre-commit"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "https://github.com/codespell-project/codespell"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "https://github.com/pre-commit/pre-commit-hooks"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "https://github.com/python-jsonschema/check-jsonschema"
+        update-types: ["version-update:semver-patch"]
+    commit-message:
+      prefix: "build(pre-commit)"
