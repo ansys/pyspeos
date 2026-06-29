@@ -19,6 +19,7 @@ Examples
         :caption: Workflow examples
 
         examples/workflow/open-result
+        examples/workflow/export-vtp
         examples/workflow/combine-speos
 
     The series of basic examples below explains how to use different PySpeos core methods.
