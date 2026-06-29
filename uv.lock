@@ -203,15 +203,15 @@ wheels = [
 
 [[package]]
 name = "ansys-api-speos"
-version = "0.16.2"
+version = "0.16.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "grpcio" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/b6/2c49ee47154399501ac61f37309d0ad29ccad9e25a06b4f7e8206a6ffe81/ansys_api_speos-0.16.2.tar.gz", hash = "sha256:25132a4e8800f411415de0e154df612f6fbd6b324c0ae7301c8d994476566f43", size = 42663, upload-time = "2026-05-05T09:17:27.273Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/31/1bc22b4ac6cb7b2dba69b21fba005c029becc3317bf716731be860450caa/ansys_api_speos-0.16.3.tar.gz", hash = "sha256:ddf735e44de42d03ee67625f8407056f8b97f2219cd61d82ed44777b64e207a9", size = 42810, upload-time = "2026-06-25T12:42:01.594Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d5/fc/94446f723c711c4c3f60bb6937c2cf1ec5effcc9ef42575474f61596edf2/ansys_api_speos-0.16.2-py3-none-any.whl", hash = "sha256:76c54a865aea8ccda773761e54d5021d249d652fa455ae313294c775c8132395", size = 315044, upload-time = "2026-05-05T09:17:25.926Z" },
+    { url = "https://files.pythonhosted.org/packages/07/0f/d0af06bc195c493e9e99785150881dcc8ca32e5dda42c46d7980d2e6066c/ansys_api_speos-0.16.3-py3-none-any.whl", hash = "sha256:3410103677662a02dc07012f1a2b5c99a2809b9a1b30b614786f1cc75081b00d", size = 315346, upload-time = "2026-06-25T12:42:00.234Z" },
 ]
 
 [[package]]
@@ -311,7 +311,7 @@ tests = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ansys-api-speos", specifier = "==0.16.2" },
+    { name = "ansys-api-speos", specifier = "==0.16.3" },
     { name = "ansys-platform-instancemanagement", marker = "extra == 'all'" },
     { name = "ansys-tools-common", specifier = ">=0.3.1" },
     { name = "ansys-tools-visualization-interface", marker = "extra == 'all'", specifier = ">=0.8.3" },
@@ -519,7 +519,7 @@ wheels = [
 ]
 
 [[package]]
-name = "asteroid"
+name = "astroid"
 version = "4.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
@@ -4173,7 +4173,7 @@ name = "sphinx-autoapi"
 version = "3.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "asteroid" },
+    { name = "astroid" },
     { name = "jinja2" },
     { name = "pyyaml" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
