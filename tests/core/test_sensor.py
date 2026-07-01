@@ -54,6 +54,9 @@ from ansys.speos.core.generic.parameters import (
     LayerTypes,
     MeasuresParameters,
     NearfieldParameters,
+    PolarIntensityDimensionsParameters,
+    PolarIntensityFormatTypes,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayfileTypes,
     SensorTypes,
@@ -67,6 +70,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -3188,3 +3192,249 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
     assert loaded_radiometric.radiometric._integration_type.absorption is True
 
     sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_polar_intensity_sensor(speos: Speos):
+    """Test creation of polar intensity sensor with default and modified settings."""
+    p = Project(speos=speos)
+
+    # --- default values ---
+    sensor1 = p.create_sensor(name="PolarIntensity.1", feature_type=SensorPolarIntensity)
+    assert isinstance(sensor1, SensorPolarIntensity)
+    sensor1.commit()
+
+    assert sensor1.sensor_template_link is not None
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor1.sensor_template_link.get().HasField("polar_intensity_sensor_template")
+
+    # Default format: IESNA C
+    assert sensor_template.HasField("iesna_c")
+
+    # Default sampling: explicit dimensions 360 x 90
+    assert sensor_template.HasField("dimensions")
+    assert sensor_template.dimensions.horizontal_sampling == 360
+    assert sensor_template.dimensions.vertical_sampling == 90
+
+    # Default field: far field, integration angle 5 deg
+    assert sensor_template.HasField("far_field")
+    assert sensor_template.far_field.integration_angle == 5.0
+
+    # Default axis system: ORIGIN
+    assert sensor1._sensor_instance.HasField("polar_intensity_properties")
+    assert list(sensor1._sensor_instance.polar_intensity_properties.axis_system) == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    # --- format setters ---
+    sensor1.set_format_iesna_a()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("iesna_a")
+
+    sensor1.set_format_iesna_b()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("iesna_b")
+
+    sensor1.set_format_iesna_c()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("iesna_c")
+
+    sensor1.set_format_eulumdat()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("eulumdat")
+
+    # --- sampling: explicit dimensions ---
+    sensor1.set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=45)
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("dimensions")
+    assert sensor_template.dimensions.horizontal_sampling == 180
+    assert sensor_template.dimensions.vertical_sampling == 45
+
+    # Verify property getters/setters for explicit dimensions
+    sensor1.horizontal_sampling = 270
+    sensor1.vertical_sampling = 60
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.dimensions.horizontal_sampling == 270
+    assert sensor_template.dimensions.vertical_sampling == 60
+
+    # --- sampling: adaptive ---
+    sensor1.set_sampling_adaptive("/path/to/adaptive.xml")
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("adaptive_sampling_uri")
+    assert sensor_template.adaptive_sampling_uri == "/path/to/adaptive.xml"
+
+    # Accessing horizontal_sampling while adaptive should return None
+    assert sensor1.horizontal_sampling is None
+    assert sensor1.vertical_sampling is None
+
+    # Switch back to dimensions
+    sensor1.set_sampling_dimensions()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("dimensions")
+
+    # --- field: near field ---
+    sensor1.set_field_near_field()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("near_field")
+
+    sensor1.cell_distance = 1.0
+    sensor1.cell_diameter = 2.0
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.near_field.cell_distance == 1.0
+    assert sensor_template.near_field.cell_integration_angle == math.degrees(
+        math.atan(2.0 / 2.0 / 1.0)
+    )
+
+    # integration_angle property returns None in near-field mode
+    assert sensor1.integration_angle is None
+
+    # --- field: far field ---
+    sensor1.set_field_far_field(integration_angle=10.0)
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("far_field")
+    assert sensor_template.far_field.integration_angle == 10.0
+    assert sensor1.integration_angle == 10.0
+
+    # cell_distance/cell_diameter return None in far-field mode
+    assert sensor1.cell_distance is None
+    assert sensor1.cell_diameter is None
+
+    # integration_angle property setter
+    sensor1.integration_angle = 7.5
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.far_field.integration_angle == 7.5
+
+    # --- axis system ---
+    sensor1.axis_system = [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.commit()
+    assert list(sensor1._sensor_instance.polar_intensity_properties.axis_system) == [
+        10,
+        20,
+        30,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
+    """Test creation of polar intensity sensor using PolarIntensitySensorParameters."""
+    p = Project(speos=speos)
+
+    # --- custom far-field parameters ---
+    params = PolarIntensitySensorParameters(
+        format=PolarIntensityFormatTypes.eulumdat,
+        dimensions=PolarIntensityDimensionsParameters(
+            horizontal_sampling=180, vertical_sampling=45
+        ),
+        integration_angle=3.0,
+        axis_system=[1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    )
+    sensor1 = p.create_sensor(
+        name="PolarIntensity.Params.1", feature_type=SensorPolarIntensity, parameters=params
+    )
+    sensor1.commit()
+
+    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template.HasField("eulumdat")
+    assert sensor_template.HasField("dimensions")
+    assert sensor_template.dimensions.horizontal_sampling == 180
+    assert sensor_template.dimensions.vertical_sampling == 45
+    assert sensor_template.HasField("far_field")
+    assert sensor_template.far_field.integration_angle == 3.0
+    assert list(sensor1._sensor_instance.polar_intensity_properties.axis_system) == [
+        1,
+        2,
+        3,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    # --- custom near-field parameters ---
+    params_nf = PolarIntensitySensorParameters(
+        format=PolarIntensityFormatTypes.iesna_a,
+        dimensions=PolarIntensityDimensionsParameters(
+            horizontal_sampling=360, vertical_sampling=90
+        ),
+        near_field=NearfieldParameters(cell_distance=5.0, cell_diameter=0.5),
+    )
+    sensor2 = p.create_sensor(
+        name="PolarIntensity.Params.NF", feature_type=SensorPolarIntensity, parameters=params_nf
+    )
+    sensor2.commit()
+
+    sensor_template2 = sensor2.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template2.HasField("iesna_a")
+    assert sensor_template2.HasField("near_field")
+    assert sensor_template2.near_field.cell_distance == 5.0
+    assert sensor_template2.near_field.cell_integration_angle == pytest.approx(
+        math.degrees(math.atan(0.5 / 2.0 / 5.0)), rel=1e-6
+    )
+
+    # --- adaptive sampling via parameters ---
+    params_adaptive = PolarIntensitySensorParameters(
+        format=PolarIntensityFormatTypes.iesna_c,
+        dimensions="/some/adaptive.xml",
+    )
+    sensor3 = p.create_sensor(
+        name="PolarIntensity.Adaptive",
+        feature_type=SensorPolarIntensity,
+        parameters=params_adaptive,
+    )
+    sensor3.commit()
+    sensor_template3 = sensor3.sensor_template_link.get().polar_intensity_sensor_template
+    assert sensor_template3.HasField("adaptive_sampling_uri")
+    assert sensor_template3.adaptive_sampling_uri == "/some/adaptive.xml"
+
+    # --- wrong parameter class raises TypeError ---
+    import pytest as _pytest
+
+    with _pytest.raises(TypeError):
+        p.create_sensor(
+            name="ShouldFail",
+            feature_type=SensorPolarIntensity,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    sensor1.delete()
+    sensor2.delete()
+    sensor3.delete()
