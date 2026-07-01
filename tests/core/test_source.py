@@ -2182,7 +2182,6 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
 def test_rayfile_modify_after_reset(speos: Speos):
     """Test reset of ray file source, and then modify."""
     p = Project(speos=speos)
@@ -2226,25 +2225,23 @@ def test_rayfile_modify_after_reset(speos: Speos):
     source.spectrum.set_blackbody()
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
-    # Intermediate class for intensity
-    assert source._intensity._intensity_template.HasField("cos")
-    source.intensity.set_gaussian()
-    assert source._intensity._intensity_template.HasField("gaussian")
-
-    # Intermediate class for exitance variable + Props
-    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
-        0,
-        0,
-        0,
+    # Props
+    assert source._source_instance.rayfile_properties.axis_system == [
+        10,
+        10,
+        10,
         1,
         0,
         0,
         0,
         1,
         0,
+        0,
+        0,
+        1,
     ]
-    source.set_exitance_variable().axis_plane = [50, 20, 10, 1, 0, 0, 0, 1, 0]
-    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
+    source.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert source._source_instance.rayfile_properties.axis_system == [
         50,
         20,
         10,
@@ -2254,6 +2251,9 @@ def test_rayfile_modify_after_reset(speos: Speos):
         0,
         1,
         0,
+        0,
+        0,
+        1,
     ]
 
     source.delete()
