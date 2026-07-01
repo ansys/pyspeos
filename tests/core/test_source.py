@@ -34,6 +34,7 @@ from ansys.speos.core.generic.constants import (
 )
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
@@ -68,6 +69,7 @@ from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import (
     SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
@@ -1296,6 +1298,100 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     assert source5._source_template.ambient.cie_general.cie_type == proto_enum.cloudy_obscured_sun
     assert source5.north_direction == [1, 0, 0]
     assert source5.set_sun_manual().direction == [1, 0, 0]
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_cie_overcast_source(speos: Speos):
+    """Test creation of ambient CIE overcast source."""
+    p = Project(speos=speos)
+
+    default_parameter = AmbientCieStandardOvercastSkyParameters()
+    source1 = SourceAmbientCieStandardOvercastSky(
+        p,
+        name="CieOvercast.1",
+        default_parameters=default_parameter,
+    )
+
+    assert source1._source_template.ambient.HasField("cie_overcast")
+    assert source1._source_template.ambient.cie_overcast.luminance == default_parameter.luminance
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid == ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("cie_overcast_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+
+    assert source1.luminance == 1000
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.spectrum.set_blackbody().temperature == 2856
+
+    source1.luminance = 765
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.spectrum.set_blackbody().temperature = 4500
+    source1.commit()
+
+    assert source1._source_template.ambient.cie_overcast.luminance == 765
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert source1.luminance == 765
+    assert source1.zenith_direction == [0, 1, 0]
+    assert source1.reverse_zenith_direction is True
+    assert source1.spectrum.set_blackbody().temperature == 4500
+
+    source1.delete()
+
+    source2 = p.create_source(
+        name="CieOvercast.2", feature_type=SourceAmbientCieStandardOvercastSky
+    )
+    assert source2._source_template.ambient.HasField("cie_overcast")
+    assert source2._source_instance.ambient_properties.HasField("cie_overcast_properties")
+    assert source2.luminance == 1000
+    assert source2.zenith_direction == [0, 0, 1]
+    p.create_root_part().commit()
+    source2.commit()
+    p.remove_mesh_protection()
+    reloaded_source = p.find(
+        name="CieOvercast.2", feature_type=SourceAmbientCieStandardOvercastSky
+    )[0]
+    assert isinstance(reloaded_source, SourceAmbientCieStandardOvercastSky)
+    assert reloaded_source.luminance == 1000
+    assert reloaded_source.zenith_direction == [0, 0, 1]
+
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientCieStandardOvercastSkyParameters",
+    ):
+        p.create_source(
+            name="CieOvercast.3",
+            feature_type=SourceAmbientCieStandardOvercastSky,
+            parameters=LuminaireSourceParameters(),
+        )
+
+    new_default_parameter = AmbientCieStandardOvercastSkyParameters(
+        luminance=4321,
+        zenith_direction=[1, 0, 0],
+        spectrum_type=SpectrumLibraryParameters(file_uri=Path(test_path) / "R04.spectrum"),
+    )
+    source3 = p.create_source(
+        name="CieOvercast.4",
+        feature_type=SourceAmbientCieStandardOvercastSky,
+        parameters=new_default_parameter,
+    )
+    source3.commit()
+
+    assert source3.luminance == 4321
+    assert source3.zenith_direction == [1, 0, 0]
+    assert source3._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source3.spectrum.set_library().file_uri == str(Path(test_path) / "R04.spectrum")
+
+    source3.reset()
+    assert source3.luminance == 4321
+    assert source3.zenith_direction == [1, 0, 0]
+
+    source3.delete()
 
 
 @pytest.mark.supported_speos_versions(min=252)
