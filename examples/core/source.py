@@ -20,6 +20,7 @@ from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -316,6 +317,27 @@ print(ambient_cie_standard_general_sky_source)
 
 # +
 ambient_cie_standard_general_sky_source.delete()
+# -
+
+# ### Ambient U.S. Standard light source
+
+# +
+ambient_us_standard_source = p.create_source(
+    name="UsStandard.1", feature_type=SourceAmbientUsStandard
+)
+print(ambient_us_standard_source.zenith_direction)  # default zenith direction
+print(ambient_us_standard_source.north_direction)  # default north direction
+ambient_us_standard_source.zenith_direction = [0, 1, 0]
+ambient_us_standard_source.reverse_zenith_direction = True
+ambient_us_standard_source.north_direction = [1, 0, 0]
+ambient_us_standard_source.reverse_north_direction = True
+ambient_us_standard_source.set_sun_manual().direction = [0, 0.707, 0.707]
+ambient_us_standard_source.commit()
+print(ambient_us_standard_source)
+# -
+
+# +
+ambient_us_standard_source.delete()
 # -
 
 # ### Ambient environment light source

@@ -37,6 +37,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
+    AmbientUsStandardParameters,
     CieType,
     ColorSpaceType,
     ConstantExitanceParameters,
@@ -71,6 +72,7 @@ from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -1296,6 +1298,130 @@ def test_create_cie_standard_general_sky_source(speos: Speos):
     assert source5._source_template.ambient.cie_general.cie_type == proto_enum.cloudy_obscured_sun
     assert source5.north_direction == [1, 0, 0]
     assert source5.set_sun_manual().direction == [1, 0, 0]
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_us_standard_source(speos: Speos):
+    """Test creation of ambient U.S. Standard source."""
+    from zoneinfo import ZoneInfo
+
+    p = Project(speos=speos)
+    cet = ZoneInfo("CET")
+
+    before = datetime.datetime.now(cet)
+    source1 = SourceAmbientUsStandard(
+        p,
+        name="UsStandard.1",
+        default_parameters=AmbientUsStandardParameters(),
+    )
+    after = datetime.datetime.now(cet)
+
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("us_standard")
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("us_standard_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+    assert source1._source_instance.ambient_properties.us_standard_properties.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.sun_axis_system.HasField("automatic_sun")
+
+    auto_sun = us_prop.sun_axis_system.automatic_sun
+    server_dt = datetime.datetime(
+        year=auto_sun.year,
+        month=auto_sun.month,
+        day=auto_sun.day,
+        hour=auto_sun.hour,
+        minute=auto_sun.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun.time_zone_uri == "CET"
+
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.set_sun_manual().direction = [0, 0.707, 0.707]
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert us_prop.north_direction == [1, 0, 0]
+    assert us_prop.reverse_north is True
+    assert us_prop.sun_axis_system.HasField("manual_sun")
+    assert us_prop.sun_axis_system.manual_sun.sun_direction == [0, 0.707, 0.707]
+    assert source1.set_sun_manual().direction == [0, 0.707, 0.707]
+
+    source1.set_sun_automatic().year = 2026
+    source1.set_sun_automatic().month = 12
+    source1.set_sun_automatic().day = 31
+    source1.set_sun_automatic().hour = 12
+    source1.set_sun_automatic().minute = 23
+    source1.set_sun_automatic().longitude = 10
+    source1.set_sun_automatic().latitude = 45
+    source1.set_sun_automatic().time_zone = "CST"
+    source1.commit()
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.sun_axis_system.HasField("automatic_sun")
+    assert us_prop.sun_axis_system.automatic_sun.year == 2026
+    assert us_prop.sun_axis_system.automatic_sun.month == 12
+    assert us_prop.sun_axis_system.automatic_sun.day == 31
+    assert us_prop.sun_axis_system.automatic_sun.hour == 12
+    assert us_prop.sun_axis_system.automatic_sun.minute == 23
+    assert us_prop.sun_axis_system.automatic_sun.longitude == 10
+    assert us_prop.sun_axis_system.automatic_sun.latitude == 45
+    assert us_prop.sun_axis_system.automatic_sun.time_zone_uri == "CST"
+    source1.delete()
+
+    source2 = p.create_source(name="UsStandard.2", feature_type=SourceAmbientUsStandard)
+    assert source2._source_template.ambient.HasField("us_standard")
+    assert source2._source_instance.ambient_properties.HasField("us_standard_properties")
+    source2.delete()
+
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientUsStandardParameters",
+    ):
+        p.create_source(
+            name="UsStandard.invalid",
+            feature_type=SourceAmbientUsStandard,
+            parameters=LuminaireSourceParameters(),
+        )
+
+    new_default_parameters = AmbientUsStandardParameters()
+    new_default_parameters.sun_type = ManualSunParameters()
+    source3 = p.create_source(
+        name="UsStandard.3",
+        feature_type=SourceAmbientUsStandard,
+        parameters=new_default_parameters,
+    )
+    us_prop = source3._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.north_direction == [0, 1, 0]
+    assert us_prop.sun_axis_system.HasField("manual_sun")
+    assert source3.set_sun_manual().direction == new_default_parameters.sun_type.direction
+
+    source3.commit()
+    p.create_root_part().commit()
+    p.remove_mesh_protection()
+    reloaded_source = p.find(name="UsStandard.3", feature_type=SourceAmbientUsStandard)[0]
+    assert isinstance(reloaded_source, SourceAmbientUsStandard)
 
 
 @pytest.mark.supported_speos_versions(min=252)

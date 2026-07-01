@@ -45,6 +45,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
+    AmbientUsStandardParameters,
     AutomaticSunParameters,
     CieType,
     ColorSpaceType,
@@ -3517,6 +3518,209 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = natural_light_properties.sun_axis_system.manual_sun
         return self._type
+
+
+class SourceAmbientUsStandard(BaseSourceAmbient):
+    """U.S. Standard atmosphere ambient source.
+
+    By default, [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction,
+    and sun type is set to automatic.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientUsStandardParameters] = None
+        If defined the values in the SourceAmbientUsStandard instance
+         will be overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientUsStandardParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+        self._source_template.ambient.us_standard.SetInParent()
+        self._source_instance.ambient_properties.us_standard_properties.SetInParent()
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientUsStandardParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            sun_axis = (
+                self._source_instance.ambient_properties.us_standard_properties.sun_axis_system
+            )
+            if sun_axis.HasField("automatic_sun"):
+                self.set_sun_automatic()
+            elif sun_axis.HasField("manual_sun"):
+                self.set_sun_manual()
+            return
+
+        self.zenith_direction = default_parameters.zenith_direction
+        self.north_direction = default_parameters.north_direction
+        if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+            self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+            self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+            self.set_sun_automatic().year = default_parameters.sun_type.year
+            self.set_sun_automatic().month = default_parameters.sun_type.month
+            self.set_sun_automatic().day = default_parameters.sun_type.day
+            self.set_sun_automatic().hour = default_parameters.sun_type.hour
+            self.set_sun_automatic().minute = default_parameters.sun_type.minute
+            self.set_sun_automatic().time_zone = default_parameters.sun_type.time_zone
+        elif isinstance(default_parameters.sun_type, ManualSunParameters):
+            self.set_sun_manual().direction = default_parameters.sun_type.direction
+        else:
+            raise ValueError(f"Unsupported sun type: {type(default_parameters.sun_type).__name__}")
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Zenith direction of the U.S. Standard ambient source.
+
+        Returns
+        -------
+        List[float]
+            Direction defining the zenith.
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """Reverse zenith direction flag of the U.S. Standard ambient source.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """North direction of the U.S. Standard ambient source.
+
+        Returns
+        -------
+        List[float]
+            Direction defining north.
+        """
+        return self._source_instance.ambient_properties.us_standard_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.us_standard_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Reverse north direction flag of the U.S. Standard ambient source.
+
+        Returns
+        -------
+        bool
+            True to reverse north direction, False otherwise.
+        """
+        return self._source_instance.ambient_properties.us_standard_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.us_standard_properties.reverse_north = value
+
+    def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
+        """Set U.S. Standard sun type as automatic.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+            Sun automatic type feature to complete.
+        """
+        us_standard_properties = self._source_instance.ambient_properties.us_standard_properties
+        if self._type is None and us_standard_properties.sun_axis_system.HasField("automatic_sun"):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                us_standard_properties.sun_axis_system.automatic_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                us_standard_properties.sun_axis_system.automatic_sun,
+                default_parameters=AutomaticSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not us_standard_properties.sun_axis_system.automatic_sun:
+            self._type._sun = us_standard_properties.sun_axis_system.automatic_sun
+        return self._type
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set U.S. Standard sun type as manual.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Sun manual type feature to complete.
+        """
+        us_standard_properties = self._source_instance.ambient_properties.us_standard_properties
+        if self._type is None and us_standard_properties.sun_axis_system.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                us_standard_properties.sun_axis_system.manual_sun,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            self._type = BaseSourceAmbient.Manual(
+                us_standard_properties.sun_axis_system.manual_sun,
+                default_parameters=ManualSunParameters(),
+                stable_ctr=True,
+            )
+        elif self._type._sun is not us_standard_properties.sun_axis_system.manual_sun:
+            self._type._sun = us_standard_properties.sun_axis_system.manual_sun
+        return self._type
+
+    def commit(self) -> SourceAmbientUsStandard:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientUsStandard
+            Ambient U.S. Standard source feature.
+        """
+        super().commit()
+        return self
 
 
 class SourceAmbientEnvironment(BaseSourceAmbient):
