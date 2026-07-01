@@ -2637,6 +2637,62 @@ def test_load_uniform_ambient_source(speos: Speos):
             assert spectrum.library.file_uri.endswith(".spectrum")
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_cie_standard_overcast_source(speos: Speos):
+    """Test loading ambient CIE Standard Overcast Sky sources from SPEOS file."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "Source.speos" / "SourceCieStandardOvercastSkyTests.speos",
+    )
+    # Find sources using regex to match names with unique ID suffixes
+    sources = p.find(
+        name="CIE Standard Overcast.*",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardOvercastSky,
+    )
+    assert len(sources) >= 2
+
+    # Find and verify first source (with blackbody spectrum)
+    source1 = next((s for s in sources if "Overcast Sky.1" in s._name), None)
+    assert source1 is not None
+    assert isinstance(source1, SourceAmbientCieStandardOvercastSky)
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.luminance == 1000.0
+
+    # Verify backend structure
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("cie_overcast")
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("cie_overcast_properties")
+
+    # Check spectrum is blackbody
+    spectrum1 = speos.client[source1._source_template.ambient.cie_overcast.spectrum_guid].get()
+    assert spectrum1.HasField("blackbody")
+    assert spectrum1.blackbody.temperature == 2856.0
+
+    # Find and verify second source (with library spectrum)
+    source2 = next((s for s in sources if "Overcast Sky.2" in s._name), None)
+    assert source2 is not None
+    assert isinstance(source2, SourceAmbientCieStandardOvercastSky)
+    assert source2.zenith_direction == [0, 0, 1]
+    assert source2.reverse_zenith_direction is False
+    assert source2.luminance == 1000.0
+
+    # Verify backend structure for source 2
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("cie_overcast")
+    assert source2._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.HasField("cie_overcast_properties")
+
+    # Check spectrum is library
+    spectrum2 = speos.client[source2._source_template.ambient.cie_overcast.spectrum_guid].get()
+    assert spectrum2.HasField("library")
+    assert spectrum2.library.file_uri.endswith(".spectrum")
+
+
 @pytest.mark.supported_speos_versions(min=261)
 def test_source_timeline(speos: Speos):
     """Test source timeline."""
