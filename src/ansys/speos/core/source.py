@@ -3711,17 +3711,6 @@ class SourceAmbientUsStandard(BaseSourceAmbient):
             self._type._sun = us_standard_properties.sun_axis_system.manual_sun
         return self._type
 
-    def commit(self) -> SourceAmbientUsStandard:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceAmbientUsStandard
-            Ambient U.S. Standard source feature.
-        """
-        super().commit()
-        return self
-
 
 class SourceAmbientEnvironment(BaseSourceAmbient):
     """Environment ambient source.

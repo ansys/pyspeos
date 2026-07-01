@@ -1425,6 +1425,46 @@ def test_create_us_standard_source(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
+def test_load_us_standard_source(speos: Speos):
+    """Test loading ambient U.S. Standard source from SPEOS file."""
+    # test loading
+    p = Project(speos=speos, path=Path(test_path) / "Source.speos" / "SourceUsStandardTests.speos")
+    # Find sources using regex to match the names with unique ID suffixes
+    sources = p.find(
+        name="U.S. Standard.*",
+        name_regex=True,
+        feature_type=SourceAmbientUsStandard,
+    )
+    assert len(sources) >= 2
+
+    # Find and verify first source
+    source1 = next((s for s in sources if "1976.1" in s._name), None)
+    assert source1 is not None
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+    sun1 = source1.set_sun_automatic()
+    assert sun1.year == 2026
+    assert sun1.month == 7
+    assert sun1.day == 1
+    assert sun1.hour == 11
+
+    # Find and verify second source
+    source2 = next((s for s in sources if "1976.2" in s._name), None)
+    assert source2 is not None
+    assert source2.zenith_direction == [0, 0, 1]
+    assert source2.north_direction == [1, 0, 0]
+    sun2 = source2.set_sun_automatic()
+    assert sun2.year == 2026
+    assert sun2.month == 7
+    assert sun2.day == 1
+    assert sun2.hour == 13
+    sun2_manual = source2.set_sun_manual()
+    assert sun2_manual.direction == [0, 0, 1]
+
+
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_environment_source(speos: Speos):
     """Test creation of ambient environment source."""
     p = Project(speos=speos)
@@ -2186,12 +2226,13 @@ def test_rayfile_modify_after_reset(speos: Speos):
     source.spectrum.set_blackbody()
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
-    # Props
-    assert source._source_instance.rayfile_properties.axis_system == [
-        10,
-        10,
-        10,
-        1,
+    # Intermediate class for intensity
+    assert source._intensity._intensity_template.HasField("cos")
+    source.intensity.set_gaussian()
+    assert source._intensity._intensity_template.HasField("gaussian")
+
+    # Intermediate class for exitance variable + Props
+    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
         0,
         0,
         0,
@@ -2200,9 +2241,10 @@ def test_rayfile_modify_after_reset(speos: Speos):
         0,
         0,
         1,
+        0,
     ]
-    source.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    assert source._source_instance.rayfile_properties.axis_system == [
+    source.set_exitance_variable().axis_plane = [50, 20, 10, 1, 0, 0, 0, 1, 0]
+    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
         50,
         20,
         10,
@@ -2212,9 +2254,6 @@ def test_rayfile_modify_after_reset(speos: Speos):
         0,
         1,
         0,
-        0,
-        0,
-        1,
     ]
 
     source.delete()
