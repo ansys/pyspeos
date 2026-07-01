@@ -1,0 +1,207 @@
+
+
+
+
+
+
+:class:`VOPTemplateLink`
+========================
+
+
+.. py:class:: ansys.speos.core.kernel.vop_template.VOPTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for a Volume Optical Property (VOP) template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.vop_template.VOPTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the vop template in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> vop_t_db = speos.client.vop_templates()
+   >>> vop_t_message = ProtoVOPTemplate(name="Opaque")
+   >>> vop_t_message.opaque.SetInParent()
+   >>> vop_t_link = vop_t_db.create(message=vop_t_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: VOPTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the vop template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.vop_template import VOPTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the vop template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`vop_template.VOPTemplate`
+           VOPTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`vop_template.VOPTemplate`
+           New VOPTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

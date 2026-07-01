@@ -1,0 +1,166 @@
+
+
+
+
+
+
+:class:`SourceSampling`
+=======================
+
+.. toctree::
+   :hidden:
+
+    Adaptive</api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Adaptive>
+    Uniform</api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Uniform>
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.SourceSampling(source_sampling, default_values = True, stable_ctr = False)
+
+   
+   Source sampling mode.
+
+
+   :Parameters:
+
+       **source_sampling** : :obj:`Union`\[
+           simulation_template_pb2.RoughnessOnly,
+           simulation_template_pb2.Iridescence,
+           simulation_template_pb2.Isotropic,
+           simulation_template_pb2.Anisotropic] to complete.
+
+       **default_values: bool**
+           True to use the default values as uniform source sampling.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_weight method available in simulation
+   classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceSampling
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_uniform`
+            - Set uniform type of source sampling.
+          * - :py:attr:`~set_adaptive`
+            - Set adaptive type of source sampling.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation import SourceSampling
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_uniform()
+
+   
+   Set uniform type of source sampling.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform`
+           Uniform source sampling settings to be set
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_adaptive()
+
+   
+   Set adaptive type of source sampling.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive`
+           Adaptive source sampling settings to be set
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive
+    ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform
+
+
+
+

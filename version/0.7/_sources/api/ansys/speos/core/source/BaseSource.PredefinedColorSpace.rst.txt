@@ -1,0 +1,143 @@
+
+
+
+
+
+
+:class:`PredefinedColorSpace`
+=============================
+
+
+.. py:class:: ansys.speos.core.source.BaseSource.PredefinedColorSpace(predefined_color_space, default_values = True, stable_ctr = False)
+
+   
+   Type of color space is predefined value.
+
+
+   :Parameters:
+
+       **predefined_color_space**
+           ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_predefined_color_space() method.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PredefinedColorSpace
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_color_space_srgb`
+            - Set the color space to the srgb preset.
+          * - :py:attr:`~set_color_space_adobergb`
+            - Set the color space to the Adobe RGB preset.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSource import PredefinedColorSpace
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_color_space_srgb()
+
+   
+   Set the color space to the srgb preset.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_color_space_adobergb()
+
+   
+   Set the color space to the Adobe RGB preset.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,61 @@
+
+
+
+
+
+
+:class:`Isotropic`
+==================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic(non_iridescence_isotropic, default_values = True, stable_ctr = False)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Uniform Isotropic source sampling.
+
+   By default,
+   Uniform source theta sampling value 18 is set
+
+   :Parameters:
+
+       **non_iridescence_isotropic** : :obj:`simulation_template_pb2.Isotropic`
+           Isotropic settings to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default source sampling values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence import Isotropic
+
+
+
+
+

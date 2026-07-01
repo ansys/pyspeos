@@ -1,0 +1,243 @@
+
+
+
+
+
+
+:class:`BaseTextureMap`
+=======================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.BaseTextureMap(parent, texture_type, stable_ctr=False)
+
+   
+   Base class for texture mapping properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BaseTextureMap
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_uv_mapping_cylindrical`
+            - Set cylindrical mapping for the texture layer.
+          * - :py:attr:`~set_uv_mapping_planar`
+            - Set planar mapping for the texture layer.
+          * - :py:attr:`~set_uv_mapping_cubic`
+            - Set cubic mapping for the texture layer.
+          * - :py:attr:`~set_uv_mapping_spherical`
+            - Set spherical mapping for the texture layer.
+          * - :py:attr:`~set_uv_mapping_by_data`
+            - Set mapping by vertices data index for the texture layer.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~uv_mapping`
+            - Texture mapping properties for the texture layer.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import BaseTextureMap
+
+Property detail
+---------------
+
+.. py:property:: uv_mapping
+   :type: Optional[Union[TextureLayer, TextureLayer]]
+
+
+   
+   Texture mapping properties for the texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_uv_mapping_cylindrical()
+
+   
+   Set cylindrical mapping for the texture layer.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator`
+           The mapping operator for the cylindrical mapping.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_uv_mapping_planar()
+
+   
+   Set planar mapping for the texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_uv_mapping_cubic()
+
+   
+   Set cubic mapping for the texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_uv_mapping_spherical()
+
+   
+   Set spherical mapping for the texture layer.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator`
+           The mapping operator for the spherical mapping.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_uv_mapping_by_data()
+
+   
+   Set mapping by vertices data index for the texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

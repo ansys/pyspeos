@@ -1,0 +1,304 @@
+
+
+
+
+
+
+:class:`SpectralBRDF`
+=====================
+
+
+.. py:class:: ansys.speos.core.bsdf.SpectralBRDF(speos, file_path = None)
+
+   Bases: :py:obj:`BaseBSDF`
+
+
+   
+   BSDF - Bidirectional scattering distribution function.
+
+   This class contains the methods and functions to load and edit existing Speos bsdf datasets.
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           Speos Object to connect to speos rpc server
+
+       **file_path** : :obj:`Union`\[:obj:`Path`, :class:`python:str`]
+           File path to bsdf file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SpectralBRDF
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Retrieve any information from the BSDF object.
+          * - :py:attr:`~reset`
+            - Reset BSDF data to what was stored in file.
+          * - :py:attr:`~sanity_check`
+            - Verify BSDF data is correctly defined.
+          * - :py:attr:`~commit`
+            - Sent Data to gRPC interface.
+          * - :py:attr:`~save`
+            - Save a Speos anistropic bsdf.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelength`
+            - List of all Wavelength in BRDF.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Create string representation of a BSDF.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.bsdf import SpectralBRDF
+
+Property detail
+---------------
+
+.. py:property:: wavelength
+
+   
+   List of all Wavelength in BRDF.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key='')
+
+   
+   Retrieve any information from the BSDF object.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Name of the property.
+
+
+
+   :Returns:
+
+       :obj:`property`
+           Values/content of the associated property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Create string representation of a BSDF.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset BSDF data to what was stored in file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: sanity_check(silent = True)
+
+   
+   Verify BSDF data is correctly defined.
+
+
+   :Parameters:
+
+       **silent** : :ref:`bool <python:bltin-boolean-values>`
+           If False Warnings will be raised else not, by Default True
+
+
+
+   :Returns:
+
+       **WarningInformation** : :class:`python:str`
+           Description of what data is missing or incorrect
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Sent Data to gRPC interface.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: save(file_path, commit = True)
+
+   
+   Save a Speos anistropic bsdf.
+
+
+   :Parameters:
+
+       **file_path** : :obj:`Union`\[:obj:`Path`, :class:`python:str`]
+           Filepath to save bsdf
+
+       **commit** : :ref:`bool <python:bltin-boolean-values>`
+           commit data before saving
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           File location
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

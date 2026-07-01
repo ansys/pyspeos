@@ -1,0 +1,131 @@
+
+
+
+
+
+
+:class:`ExitanceConstant`
+=========================
+
+
+.. py:class:: ansys.speos.core.source.SourceSurface.ExitanceConstant(exitance_constant, exitance_constant_props, default_parameters = None, stable_ctr = False)
+
+   
+   Type of surface source existence : existence constant.
+
+
+   :Parameters:
+
+       **exitance_constant** : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+           ..
+
+       **ExitanceConstant**
+           Existence constant to complete.
+
+       **exitance_constant_props** : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+           ..
+
+       **SurfaceProperties.ExitanceConstantProperties**
+           Existence constant properties to complete.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.ConstantExitanceParameters`] = :data:`python:None`
+           If defined the values in the ExitanceConstant instance will be overwritten
+            by the values of the data class.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_exitance_constant method
+   available in Source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ExitanceConstant
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geometries`
+            - Geometries linked to surface source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceSurface import ExitanceConstant
+
+Property detail
+---------------
+
+.. py:property:: geometries
+   :type: List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+
+
+   
+   Geometries linked to surface source.
+
+
+   :Parameters:
+
+       **geometries** : :obj:`List`\[:class:`python:tuple`\[:obj:`Union`\[:obj:`ansys.speos.core.geo_ref.GeoRef`,            :obj:`ansys.speos.core.face.Face`, :obj:`ansys.speos.core.body.Body`], :ref:`bool <python:bltin-boolean-values>`]]
+           list of tuple which contains geometry ref and bool for normal direction.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:tuple`\[:obj:`ansys.speos.core.geo_ref.GeoRef`, :ref:`bool <python:bltin-boolean-values>`]]
+           list of tuple which contains geometry ref and bool for normal direction.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

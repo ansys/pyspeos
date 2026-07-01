@@ -1,0 +1,103 @@
+
+
+
+
+
+
+:class:`SopMirror`
+==================
+
+
+.. py:class:: ansys.speos.core.opt_prop.BaseSop.SopMirror(parent, stable_ctr=False)
+
+   
+   Mirror SOP parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SopMirror
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflectance`
+            - Reflectance of the mirror surface in percentage.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.BaseSop import SopMirror
+
+Property detail
+---------------
+
+.. py:property:: reflectance
+   :type: float
+
+
+   
+   Reflectance of the mirror surface in percentage.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Reflectance value between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

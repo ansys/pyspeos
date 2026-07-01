@@ -1,0 +1,48 @@
+
+
+
+
+
+
+:class:`PySpeosFormatter`
+=========================
+
+.. py:class:: ansys.speos.core.logger.PySpeosFormatter(fmt=STDOUT_MSG_FORMAT, datefmt=None, style='%', validate=True, defaults=None)
+
+   Bases: :py:obj:`logging.Formatter`
+
+
+   
+   Provides the customized ``Formatter`` class for overwriting default format styles.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.logger import PySpeosFormatter
+
+
+
+
+

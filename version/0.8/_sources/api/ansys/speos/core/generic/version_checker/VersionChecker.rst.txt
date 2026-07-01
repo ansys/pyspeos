@@ -1,0 +1,140 @@
+
+
+
+
+
+
+:class:`VersionChecker`
+=======================
+
+
+.. py:class:: ansys.speos.core.generic.version_checker.VersionChecker
+
+   
+   Class to check version.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VersionChecker
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_version`
+            - Set version.
+          * - :py:attr:`~is_version_supported`
+            - Check that the version is greater than or equal to the major.minor.patch.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.version_checker import VersionChecker
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_version(input_version)
+
+   
+   Set version.
+
+
+   :Parameters:
+
+       **input_version: str**
+           Input version written as "major.minor.patch", e.g. "2026.1.0"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: is_version_supported(major, minor, patch)
+
+   
+   Check that the version is greater than or equal to the major.minor.patch.
+
+
+   :Parameters:
+
+       **major** : :class:`python:int`
+           Major release version, e.g. 2025
+
+       **minor** : :class:`python:int`
+           Minor release version e.g. 2
+
+       **patch** : :class:`python:int`
+           Service Pack version e.g. 3
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if the input version is >= to the major.minor.patch
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

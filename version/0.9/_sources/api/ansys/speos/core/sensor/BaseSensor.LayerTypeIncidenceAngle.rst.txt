@@ -1,0 +1,124 @@
+
+
+
+
+
+
+:class:`LayerTypeIncidenceAngle`
+================================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle(layer_type_incidence_angle, default_parameters = None, stable_ctr = False)
+
+   
+   Type of layer : IncidenceAngle.
+
+   Includes in the result one layer per range of incident angles.
+   By default, a sampling of 9 is chosen.
+
+   :Parameters:
+
+       **layer_type_incidence_angle** :         :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle`
+           LayerTypeIncidenceAngle protobuf object to modify.
+
+       **default_parameters** :         :obj:`ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method
+   available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypeIncidenceAngle
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sampling`
+            - Value of the sampling for incidence angles.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import LayerTypeIncidenceAngle
+
+Property detail
+---------------
+
+.. py:property:: sampling
+   :type: int
+
+
+   
+   Value of the sampling for incidence angles.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Sampling for incidence angles. By default, ``9``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Sampling for incidence angles.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,208 @@
+
+
+
+
+
+
+:class:`AmbientCieStandardGeneralSkyParameters`
+===============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters
+
+   
+   Ambient CIE Standard General Sky Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientCieStandardGeneralSkyParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~cie_type`
+            - sky type, from cie types list
+          * - :py:attr:`~luminance`
+            - Luminance value in cd/m2
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction vector
+          * - :py:attr:`~north_direction`
+            - North direction vector
+          * - :py:attr:`~sun_type`
+            - Sun definition, automatic or manual
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientCieStandardGeneralSkyParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: cie_type
+   :type:  CieType
+
+   
+   sky type, from cie types list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: luminance
+   :type:  float
+   :value: 1000.0
+
+
+   
+   Luminance value in cd/m2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+   
+   Zenith direction vector
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: north_direction
+   :type:  list[float]
+   :value: [0, 1, 0]
+
+
+   
+   North direction vector
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sun_type
+   :type:  Union[AutomaticSunParameters, ManualSunParameters]
+
+   
+   Sun definition, automatic or manual
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`ColorimetricStandardTypes`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ColorimetricStandardTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Colorimetric Standard Types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ColorimetricStandardTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~cie_1931`
+            - 
+          * - :py:attr:`~cie_1964`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ColorimetricStandardTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: cie_1931
+   :value: 'cie_1931'
+
+
+.. py:attribute:: cie_1964
+   :value: 'cie_1964'
+
+
+
+
+
+

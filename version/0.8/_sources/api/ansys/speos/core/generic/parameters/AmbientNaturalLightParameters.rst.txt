@@ -1,0 +1,210 @@
+
+
+
+
+
+
+:class:`AmbientNaturalLightParameters`
+======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientNaturalLightParameters
+
+   
+   Ambient Natural Light Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientNaturalLightParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~with_sky`
+            - Whether the sky contribution is enabled.
+          * - :py:attr:`~turbidity`
+            - Atmospheric turbidity value.
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction vector.
+          * - :py:attr:`~north_direction`
+            - North direction vector.
+          * - :py:attr:`~sun_type`
+            - Sun definition, automatic or manual.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientNaturalLightParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: with_sky
+   :type:  bool
+   :value: True
+
+
+   
+   Whether the sky contribution is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: turbidity
+   :type:  float
+   :value: 3.0
+
+
+   
+   Atmospheric turbidity value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+   
+   Zenith direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: north_direction
+   :type:  list[float]
+   :value: [0, 1, 0]
+
+
+   
+   North direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sun_type
+   :type:  Union[AutomaticSunParameters, ManualSunParameters]
+
+   
+   Sun definition, automatic or manual.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,93 @@
+
+
+
+
+
+
+:class:`IntensitySensorOrientationTypes`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensitySensorOrientationTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Intensity sensor orientation types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensitySensorOrientationTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~conoscopic`
+            - 
+          * - :py:attr:`~x_as_parallel`
+            - 
+          * - :py:attr:`~x_as_meridian`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensitySensorOrientationTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: conoscopic
+   :value: 'conoscopic'
+
+
+.. py:attribute:: x_as_parallel
+   :value: 'x_as_parallel'
+
+
+.. py:attribute:: x_as_meridian
+   :value: 'x_as_meridian'
+
+
+
+
+
+

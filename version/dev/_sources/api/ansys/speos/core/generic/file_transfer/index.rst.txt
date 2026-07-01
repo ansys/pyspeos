@@ -1,0 +1,82 @@
+
+
+
+
+
+
+The ``file_transfer.py`` module
+===============================
+
+.. py:module:: ansys.speos.core.generic.file_transfer
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: file_transfer
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.file_transfer.FileTransfer`
+            - Class to help performing file(s) transfer.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> FileTransfer</api/ansys/speos/core/generic/file_transfer/FileTransfer>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module to handle file transfer to a server.
+
+This module allows to transfer files to and from a server.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+
