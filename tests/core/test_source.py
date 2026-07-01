@@ -2182,6 +2182,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_rayfile_modify_after_reset(speos: Speos):
     """Test reset of ray file source, and then modify."""
     p = Project(speos=speos)
