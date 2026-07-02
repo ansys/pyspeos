@@ -531,6 +531,9 @@ class PolarIntensityDimensionsParameters:
     """Number of vertical samples."""
 
 
+IESNA_A_B_DIMENSIONS = PolarIntensityDimensionsParameters(37, 37)
+
+
 @dataclass
 class PolarIntensitySensorParameters:
     """Parameters for :class:`~ansys.speos.core.sensor.SensorPolarIntensity`.

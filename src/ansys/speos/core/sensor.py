@@ -38,10 +38,10 @@ import numpy as np
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
-from ansys.speos.core.generic.constants import IESNA_A_B_DIMENSIONS
 from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    IESNA_A_B_DIMENSIONS,
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
@@ -5970,8 +5970,8 @@ class SensorPolarIntensity(BaseSensor):
             This polar intensity sensor.
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_a.SetInParent()
-        self.vertical_sampling = IESNA_A_B_DIMENSIONS.vertical_sampling
-        self.horizontal_sampling = IESNA_A_B_DIMENSIONS.horizontal_sampling
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
         return self
 
     def set_format_iesna_b(self) -> SensorPolarIntensity:
@@ -5983,8 +5983,8 @@ class SensorPolarIntensity(BaseSensor):
             This polar intensity sensor.
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_b.SetInParent()
-        self.vertical_sampling = IESNA_A_B_DIMENSIONS.vertical_sampling
-        self.horizontal_sampling = IESNA_A_B_DIMENSIONS.horizontal_sampling
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
         return self
 
     def set_format_iesna_c(self) -> SensorPolarIntensity:
@@ -5997,8 +5997,7 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_c.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
-        self.vertical_sampling = _dimensions.vertical_sampling
-        self.horizontal_sampling = _dimensions.horizontal_sampling
+        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
         return self
 
     def set_format_eulumdat(self) -> SensorPolarIntensity:
@@ -6011,8 +6010,7 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.eulumdat.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
-        self.vertical_sampling = _dimensions.vertical_sampling
-        self.horizontal_sampling = _dimensions.horizontal_sampling
+        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
         return self
 
     # ------------------------------------------------------------------
