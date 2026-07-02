@@ -564,7 +564,7 @@ class PolarIntensitySensorParameters:
     """Sampling definition: explicit dimensions or adaptive-sampling file URI."""
     near_field: Optional[NearfieldParameters] = None
     """Near-field parameters. ``None`` means far-field mode."""
-    integration_angle: float = 5.0
+    integration_angle: float = 1.0
     """Far-field integration angle in degrees."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
