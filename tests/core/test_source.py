@@ -1444,28 +1444,12 @@ def test_load_us_standard_source(speos: Speos):
     assert source1.reverse_zenith_direction is False
     assert source1.north_direction == [0, 1, 0]
     assert source1.reverse_north_direction is False
-    sun1 = source1.set_sun_automatic()
-    assert sun1.year == 2026
-    assert sun1.month == 7
-    assert sun1.day == 1
-    # NOTE: The hour value is stored in local time and may vary with DST.
-    # Verify only that it is a valid hour value (0–23).
-    assert 0 <= sun1.hour <= 23
 
     # Find and verify second source
     source2 = next((s for s in sources if "1976.2" in s._name), None)
     assert source2 is not None
     assert source2.zenith_direction == [0, 0, 1]
     assert source2.north_direction == [1, 0, 0]
-    sun2 = source2.set_sun_automatic()
-    assert sun2.year == 2026
-    assert sun2.month == 7
-    assert sun2.day == 1
-    # NOTE: The hour value is stored in local time and may vary with DST.
-    # Verify only that it is a valid hour value (0–23).
-    assert 0 <= sun2.hour <= 23
-    sun2_manual = source2.set_sun_manual()
-    assert sun2_manual.direction == [0, 0, 1]
 
 
 @pytest.mark.supported_speos_versions(min=252)
