@@ -24,6 +24,8 @@
 
 import os
 
+from ansys.speos.core.generic.parameters import PolarIntensityDimensionsParameters
+
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
 DEFAULT_PORT: str = "50098"
@@ -42,3 +44,5 @@ By default, 4194304.
 """
 ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 """Global Origin"""
+
+IESNA_A_B_DIMENSIONS = PolarIntensityDimensionsParameters(37, 37)

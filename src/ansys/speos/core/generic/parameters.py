@@ -525,9 +525,9 @@ class PolarIntensityDimensionsParameters:
         By default, ``90``.
     """
 
-    horizontal_sampling: int = 360
+    horizontal_sampling: int = 720
     """Number of horizontal samples."""
-    vertical_sampling: int = 90
+    vertical_sampling: int = 361
     """Number of vertical samples."""
 
 
