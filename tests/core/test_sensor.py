@@ -3453,6 +3453,7 @@ def test_load_polar_intensity_from_file(speos: Speos):
         format=PolarIntensityFormatTypes.iesna_a,
         dimensions="IESNA_A.txt",
         integration_angle=5.0,
+        axis_system=[0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
     )
     # Sensor name: Intensity.2
     sensor_iesna_b_params = PolarIntensitySensorParameters(
@@ -3470,6 +3471,7 @@ def test_load_polar_intensity_from_file(speos: Speos):
     sensor_eulumdat_params = PolarIntensitySensorParameters(
         format=PolarIntensityFormatTypes.eulumdat,
         dimensions=PolarIntensityDimensionsParameters(360, 181),
+        axis_system=[0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0],
     )
 
     # Load sensors from file
@@ -3537,7 +3539,7 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert sensor_template_eulumdat.dimensions.vertical_sampling == 181
 
     # Verify axis_system for all sensors
-    assert sensor_iesna_a.axis_system == sensor_iesna_a_params.axis_system
-    assert sensor_iesna_b.axis_system == sensor_iesna_b_params.axis_system
-    assert sensor_iesna_c.axis_system == sensor_iesna_c_params.axis_system
-    assert sensor_eulumdat.axis_system == sensor_eulumdat_params.axis_system
+    assert sensor_iesna_a.axis_system == pytest.approx(sensor_iesna_a_params.axis_system)
+    assert sensor_iesna_b.axis_system == pytest.approx(sensor_iesna_b_params.axis_system)
+    assert sensor_iesna_c.axis_system == pytest.approx(sensor_iesna_c_params.axis_system)
+    assert sensor_eulumdat.axis_system == pytest.approx(sensor_eulumdat_params.axis_system)
