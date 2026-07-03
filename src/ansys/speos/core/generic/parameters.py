@@ -972,6 +972,20 @@ class AmbientCieStandardGeneralSkyParameters:
 
 
 @dataclass
+class AmbientCieStandardOvercastSkyParameters:
+    """Ambient CIE Standard Overcast Sky Parameters."""
+
+    luminance: float = 1000.0
+    """Luminance value in cd/m^2."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    spectrum_type: Union[SpectrumLibraryParameters, SpectrumBlackBodyParameters] = field(
+        default_factory=SpectrumBlackBodyParameters
+    )
+    """Spectrum type for the overcast ambient source (blackbody or library spectra only)."""
+
+
+@dataclass
 class AmbientNaturalLightParameters:
     """Ambient Natural Light Parameters."""
 
