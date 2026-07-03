@@ -318,9 +318,13 @@ sensor_polar.commit()
 print(sensor_polar)  # now on server
 
 # Customise format, sampling and field configuration.
+assert isinstance(sensor_polar, SensorPolarIntensity)
 sensor_polar.set_format_eulumdat()
-sensor_polar.set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=91)
-sensor_polar.set_field_far_field(integration_angle=2.0)
+sensor_polar.set_constant_sampling()
+sensor_polar.horizontal_sampling = 180
+sensor_polar.vertical_sampling = 90
+sensor_polar.set_far_field()
+sensor_polar.integration_angle = 1
 sensor_polar.axis_system = [0, 0, 25, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
 sensor_polar.commit()

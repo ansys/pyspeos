@@ -3254,7 +3254,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
     assert sensor_template.HasField("eulumdat")
 
     # --- sampling: explicit dimensions ---
-    sensor1.set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=45)
+    sensor1._set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=45)
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
     assert sensor_template.HasField("dimensions")
@@ -3271,7 +3271,8 @@ def test_create_polar_intensity_sensor(speos: Speos):
 
     # --- sampling: adaptive ---
     sensor1.set_format_iesna_a()
-    sensor1.set_sampling_adaptive(str(test_path / "polar_intensity_test.1.speos" / "IESNA_A.txt"))
+    sensor1.set_adaptive_sampling()
+    sensor1.adaptive_sampling_file = test_path / "polar_intensity_test.1.speos" / "IESNA_A.txt"
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
     assert sensor_template.HasField("adaptive_sampling_uri")
@@ -3284,13 +3285,15 @@ def test_create_polar_intensity_sensor(speos: Speos):
     assert sensor1.vertical_sampling is None
 
     # Switch back to dimensions
-    sensor1.set_sampling_dimensions()
+    sensor1.set_constant_sampling()
+    sensor1.horizontal_sampling = 5
+    sensor1.vertical_sampling = 5
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
     assert sensor_template.HasField("dimensions")
 
     # --- field: near field ---
-    sensor1.set_field_near_field()
+    sensor1.set_near_field()
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
     assert sensor_template.HasField("near_field")
@@ -3308,7 +3311,8 @@ def test_create_polar_intensity_sensor(speos: Speos):
     assert sensor1.integration_angle is None
 
     # --- field: far field ---
-    sensor1.set_field_far_field(integration_angle=10.0)
+    sensor1.set_far_field()
+    sensor1.integration_angle = 10.0
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
     assert sensor_template.HasField("far_field")
@@ -3438,6 +3442,52 @@ def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
     sensor1.delete()
     sensor2.delete()
     sensor3.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_polar_intensity_sensor_error_paths(speos: Speos):
+    """Test that polar intensity sensor raises clear errors on invalid state transitions."""
+    p = Project(speos=speos)
+
+    sensor1 = p.create_sensor(name="PolarIntensity.Errors.1", feature_type=SensorPolarIntensity)
+
+    # Cannot set adaptive-sampling file while explicit dimensions are active.
+    with pytest.raises(TypeError, match="Constant sampling is active"):
+        sensor1.adaptive_sampling_file = (
+            Path(test_path) / "polar_intensity_test.1.speos" / "IESNA_A.txt"
+        )
+
+    # Cannot edit explicit dimensions while adaptive sampling is active.
+    sensor1.set_adaptive_sampling()
+    with pytest.raises(TypeError, match="Adaptive sampling is active"):
+        sensor1.horizontal_sampling = 20
+    with pytest.raises(TypeError, match="Adaptive sampling is active"):
+        sensor1.vertical_sampling = 10
+
+    # Cannot edit near-field values while far-field mode is active.
+    with pytest.raises(TypeError, match="far-field mode"):
+        sensor1.cell_distance = 5.0
+    with pytest.raises(TypeError, match="far-field mode"):
+        sensor1.cell_diameter = 0.4
+
+    # Cannot edit far-field integration angle when created in near-field mode.
+    sensor2 = p.create_sensor(
+        name="PolarIntensity.Errors.2",
+        feature_type=SensorPolarIntensity,
+        parameters=PolarIntensitySensorParameters(
+            near_field=NearfieldParameters(cell_distance=2.0, cell_diameter=0.2)
+        ),
+    )
+    with pytest.raises(TypeError, match="near-field mode"):
+        sensor2.integration_angle = 3.0
+
+    # Wrong dataclass type must fail at create_sensor dispatch.
+    with pytest.raises(TypeError, match="PolarIntensitySensorParameters"):
+        p.create_sensor(
+            name="PolarIntensity.Errors.3",
+            feature_type=SensorPolarIntensity,
+            parameters=IrradianceSensorParameters(),
+        )
 
 
 @pytest.mark.supported_speos_versions(min=252)

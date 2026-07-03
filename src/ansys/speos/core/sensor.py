@@ -5933,20 +5933,22 @@ class SensorPolarIntensity(BaseSensor):
 
             # --- sampling ---
             if isinstance(default_parameters.dimensions, str):
-                self.set_sampling_adaptive(default_parameters.dimensions)
+                self.set_adaptive_sampling()
+                self.adaptive_sampling_file = default_parameters.dimensions
             else:
-                self.set_sampling_dimensions(
+                self._set_sampling_dimensions(
                     horizontal_sampling=default_parameters.dimensions.horizontal_sampling,
                     vertical_sampling=default_parameters.dimensions.vertical_sampling,
                 )
 
             # --- field ---
             if default_parameters.near_field is not None:
-                self.set_field_near_field()
+                self.set_near_field()
                 self.cell_distance = default_parameters.near_field.cell_distance
                 self.cell_diameter = default_parameters.near_field.cell_diameter
             else:
-                self.set_field_far_field(default_parameters.integration_angle)
+                self.set_far_field()
+                self.integration_angle = default_parameters.integration_angle
 
             # --- instance ---
             self.axis_system = default_parameters.axis_system
@@ -5971,7 +5973,9 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_a.SetInParent()
         _dimensions = IESNA_A_B_DIMENSIONS
-        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
         return self
 
     def set_format_iesna_b(self) -> SensorPolarIntensity:
@@ -5984,7 +5988,9 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_b.SetInParent()
         _dimensions = IESNA_A_B_DIMENSIONS
-        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
         return self
 
     def set_format_iesna_c(self) -> SensorPolarIntensity:
@@ -5997,7 +6003,9 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.iesna_c.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
-        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
         return self
 
     def set_format_eulumdat(self) -> SensorPolarIntensity:
@@ -6010,17 +6018,28 @@ class SensorPolarIntensity(BaseSensor):
         """
         self._sensor_template.polar_intensity_sensor_template.eulumdat.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
-        self.set_sampling_dimensions(_dimensions.horizontal_sampling, _dimensions.vertical_sampling)
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
         return self
 
     # ------------------------------------------------------------------
     # Sampling setters / properties
     # ------------------------------------------------------------------
+    def set_constant_sampling(self):
+        """Use constant samplign instead of an adaptive-sampling file.
 
-    def set_sampling_dimensions(
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.dimensions.SetInParent()
+
+    def _set_sampling_dimensions(
         self,
-        horizontal_sampling: int = 720,
-        vertical_sampling: int = 361,
+        horizontal_sampling: int,
+        vertical_sampling: int,
     ) -> SensorPolarIntensity:
         """Use explicit horizontal and vertical sampling.
 
@@ -6043,21 +6062,48 @@ class SensorPolarIntensity(BaseSensor):
         template.dimensions.vertical_sampling = int(vertical_sampling)
         return self
 
-    def set_sampling_adaptive(self, uri: Union[str, Path]) -> SensorPolarIntensity:
+    def set_adaptive_sampling(self) -> SensorPolarIntensity:
         """Use an adaptive-sampling file instead of explicit dimensions.
-
-        Parameters
-        ----------
-        uri : Union[str, Path]
-            Path to the adaptive-sampling file.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.adaptive_sampling_uri = str(uri)
+        self._sensor_template.polar_intensity_sensor_template.ClearField("dimensions")
         return self
+
+    @property
+    def adaptive_sampling_file(self) -> Union[Path, None]:
+        """Location of the adaptive-sampling file.
+
+        Parameters
+        ----------
+        uri : Union[str, Path]
+            Path to the adaptive-sampling file.
+
+
+        Returns
+        -------
+        Union[Path, None]
+            Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
+        """
+        if not self._sensor_template.polar_intensity_sensor_template.HasField("dimensions"):
+            return Path(self._sensor_template.polar_intensity_sensor_template.adaptive_sampling_uri)
+
+    @adaptive_sampling_file.setter
+    def adaptive_sampling_file(self, value: Union[Path, None]):
+        template = self._sensor_template.polar_intensity_sensor_template
+        if value is None:
+            template.ClearField("adaptive_sampling_uri")
+            self.set_constant_sampling()
+        else:
+            if template.HasField("dimensions"):
+                raise TypeError(
+                    "Constant sampling is active; switch to adaptive sampling with "
+                    "set_adaptove_sampling() first."
+                )
+            template.adaptive_sampling_uri = str(value)
 
     @property
     def horizontal_sampling(self) -> Union[int, None]:
@@ -6083,8 +6129,8 @@ class SensorPolarIntensity(BaseSensor):
         template = self._sensor_template.polar_intensity_sensor_template
         if not template.HasField("dimensions"):
             raise TypeError(
-                "Adaptive sampling is active; switch to explicit dimensions with "
-                "set_sampling_dimensions() first."
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
             )
         template.dimensions.horizontal_sampling = int(value)
 
@@ -6112,8 +6158,8 @@ class SensorPolarIntensity(BaseSensor):
         template = self._sensor_template.polar_intensity_sensor_template
         if not template.HasField("dimensions"):
             raise TypeError(
-                "Adaptive sampling is active; switch to explicit dimensions with "
-                "set_sampling_dimensions() first."
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
             )
         template.dimensions.vertical_sampling = int(value)
 
@@ -6121,26 +6167,21 @@ class SensorPolarIntensity(BaseSensor):
     # Field setters / properties
     # ------------------------------------------------------------------
 
-    def set_field_far_field(self, integration_angle: float = 5.0) -> SensorPolarIntensity:
+    def set_far_field(self) -> SensorPolarIntensity:
         """Configure the sensor for far-field measurement.
-
-        Parameters
-        ----------
-        integration_angle : float, optional
-            Integration angle in degrees.
-            By default, ``5.0``.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.far_field.integration_angle = float(
-            integration_angle
-        )
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("far_field"):
+            template.far_field.SetInParent()
+            self.integration_angle = 1
         return self
 
-    def set_field_near_field(self) -> SensorPolarIntensity:
+    def set_near_field(self) -> SensorPolarIntensity:
         """Configure the sensor for near-field measurement.
 
         Default cell distance is ``10`` mm and default cell diameter is ``0.3491`` mm.
@@ -6181,7 +6222,7 @@ class SensorPolarIntensity(BaseSensor):
     def integration_angle(self, value: float) -> None:
         template = self._sensor_template.polar_intensity_sensor_template
         if not template.HasField("far_field"):
-            raise TypeError("Sensor is in near-field mode; call set_field_far_field() first.")
+            raise TypeError("Sensor is in near-field mode; call set_far_field() first.")
         template.far_field.integration_angle = float(value)
 
     @property
@@ -6207,7 +6248,7 @@ class SensorPolarIntensity(BaseSensor):
     def cell_distance(self, value: float) -> None:
         template = self._sensor_template.polar_intensity_sensor_template
         if not template.HasField("near_field"):
-            raise TypeError("Sensor is in far-field mode; call set_field_near_field() first.")
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_distance = float(value)
 
     @property
@@ -6240,7 +6281,7 @@ class SensorPolarIntensity(BaseSensor):
     def cell_diameter(self, value: float) -> None:
         template = self._sensor_template.polar_intensity_sensor_template
         if not template.HasField("near_field"):
-            raise TypeError("Sensor is in far-field mode; call set_field_near_field() first.")
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_integration_angle = np.degrees(
             np.arctan(float(value) / 2.0 / template.near_field.cell_distance)
         )
