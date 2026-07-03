@@ -42,6 +42,7 @@ import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
@@ -3236,6 +3237,140 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = cie_properties.sun_axis_system.manual_sun
         return self._type
+
+
+class SourceAmbientCieStandardOvercastSky(BaseSourceAmbient):
+    """CIE overcast ambient source.
+
+    This source uses the dedicated ``CieOvercast`` protobuf template structure.
+
+    By default, luminance is set to 1000 cd/m^2 and [0, 0, 1] is used as the
+    zenith direction.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientCieStandardOvercastSkyParameters]
+        If defined the values in the SourceAmbientCieStandardOvercastSky instance will be
+        overwritten by the values of the data class.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[AmbientCieStandardOvercastSkyParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._source_instance.ambient_properties.cie_overcast_properties.SetInParent()
+
+        self._spectrum = self._Spectrum(
+            speos_client=self._project.client,
+            name=name,
+            message_to_complete=self._source_template.ambient.cie_overcast,
+            spectrum_guid=self._source_template.ambient.cie_overcast.spectrum_guid,
+        )
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[AmbientCieStandardOvercastSkyParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            return
+
+        self.luminance = default_parameters.luminance
+        self.zenith_direction = default_parameters.zenith_direction
+
+        if isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
+            self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
+        elif isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
+            self.spectrum.set_blackbody().temperature = default_parameters.spectrum_type.temperature
+        else:
+            raise ValueError(
+                "Unsupported spectrum type for ambient CIE overcast source: {}. "
+                "Only SpectrumLibraryParameters and SpectrumBlackBodyParameters "
+                "are supported.".format(type(default_parameters.spectrum_type).__name__)
+            )
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the CIE overcast ambient source.
+
+        Returns
+        -------
+        float
+            Luminance value in cd/m^2.
+        """
+        return self._source_template.ambient.cie_overcast.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.cie_overcast.luminance = value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Zenith direction of the CIE overcast ambient source.
+
+        Returns
+        -------
+        List[float]
+            Direction defining the zenith of the ambient source.
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """Reverse zenith direction of the CIE overcast ambient source.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum of the CIE overcast ambient source.
+
+        Returns
+        -------
+        ansys.speos.core.spectrum.Spectrum
+            Spectrum associated with this source.
+        """
+        return self._spectrum._spectrum
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):
