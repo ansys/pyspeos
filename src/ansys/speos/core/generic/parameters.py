@@ -519,10 +519,10 @@ class PolarIntensityDimensionsParameters:
     ----------
     horizontal_sampling : int, optional
         Number of horizontal samples of the intensity file (IESNA or EULUMDAT).
-        By default, ``360``.
+        By default, ``720``.
     vertical_sampling : int, optional
         Number of vertical samples of the intensity file (IESNA or EULUMDAT).
-        By default, ``90``.
+        By default, ``361``.
     """
 
     horizontal_sampling: int = 720
@@ -544,7 +544,7 @@ class PolarIntensitySensorParameters:
         Output file format. Accepted values: ``"iesna_a"``, ``"iesna_b"``,
         ``"iesna_c"``, ``"eulumdat"``.
         By default, ``PolarIntensityFormatTypes.iesna_c``.
-    dimensions : Union[PolarIntensityDimensionsParameters, str], optional
+    dimensions : Union[PolarIntensityDimensionsParameters, str, Path], optional
         Either explicit horizontal/vertical sampling (``PolarIntensityDimensionsParameters``)
         or a path to an adaptive-sampling file (``str``).
         By default, ``PolarIntensityDimensionsParameters()``.
@@ -561,7 +561,7 @@ class PolarIntensitySensorParameters:
 
     format: PolarIntensityFormatTypes = PolarIntensityFormatTypes.iesna_c
     """Output file format."""
-    dimensions: Union[PolarIntensityDimensionsParameters, str] = field(
+    dimensions: Union[PolarIntensityDimensionsParameters, str, Path] = field(
         default_factory=PolarIntensityDimensionsParameters
     )
     """Sampling definition: explicit dimensions or adaptive-sampling file URI."""

@@ -6043,12 +6043,12 @@ class SensorPolarIntensity(BaseSensor):
         template.dimensions.vertical_sampling = int(vertical_sampling)
         return self
 
-    def set_sampling_adaptive(self, uri: str) -> SensorPolarIntensity:
+    def set_sampling_adaptive(self, uri: Union[str, Path]) -> SensorPolarIntensity:
         """Use an adaptive-sampling file instead of explicit dimensions.
 
         Parameters
         ----------
-        uri : str
+        uri : Union[str, Path]
             Path to the adaptive-sampling file.
 
         Returns
