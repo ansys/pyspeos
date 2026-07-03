@@ -39,6 +39,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
@@ -89,6 +90,7 @@ from ansys.speos.core.simulation import (
 from ansys.speos.core.source import (
     BaseSource,
     SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
@@ -221,6 +223,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
@@ -373,6 +376,7 @@ class Project:
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
                 RayFileSourceParameters,
+                AmbientCieStandardOvercastSkyParameters,
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
@@ -384,6 +388,7 @@ class Project:
         SourceSurface,
         SourceRayFile,
         SourceLuminaire,
+        SourceAmbientCieStandardOvercastSky,
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
@@ -549,6 +554,22 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientCieStandardOvercastSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardOvercastSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardOvercastSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of "
+                        f"AmbientCieStandardOvercastSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardOvercastSky(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SourceAmbientCieStandardGeneralSky":
                 if parameters is None:
                     parameters = AmbientCieStandardGeneralSkyParameters()
@@ -571,6 +592,7 @@ class Project:
                         SourceSurface,
                         SourceLuminaire,
                         SourceRayFile,
+                        SourceAmbientCieStandardOvercastSky,
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
@@ -1005,6 +1027,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
@@ -1441,6 +1464,13 @@ class Project:
                     )
                 elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
                     src_feat = SourceAmbientUniform(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("cie_overcast_properties"):
+                    src_feat = SourceAmbientCieStandardOvercastSky(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
