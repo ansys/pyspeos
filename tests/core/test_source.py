@@ -1395,7 +1395,7 @@ def test_create_us_standard_source(speos: Speos):
     assert source2._source_instance.ambient_properties.HasField("us_standard_properties")
     source2.delete()
 
- 
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_cie_overcast_source(speos: Speos):
     """Test creation of ambient CIE overcast source."""
