@@ -3806,21 +3806,21 @@ class SourceAmbientUsStandard(BaseSourceAmbient):
         """
         us_standard_properties = self._source_instance.ambient_properties.us_standard_properties
         if self._type is None and us_standard_properties.sun_axis_system.HasField("automatic_sun"):
-                # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file
             self._type = BaseSourceAmbient.AutomaticSun(
                 us_standard_properties.sun_axis_system.automatic_sun,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
-                # if the _type is not AutomaticSun then we create a new type.
+            # if the _type is not AutomaticSun then we create a new type.
             self._type = BaseSourceAmbient.AutomaticSun(
                 us_standard_properties.sun_axis_system.automatic_sun,
                 default_parameters=AutomaticSunParameters(),
                 stable_ctr=True,
             )
         elif self._type._sun is not us_standard_properties.sun_axis_system.automatic_sun:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+            # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = us_standard_properties.sun_axis_system.automatic_sun
         return self._type
 
@@ -3834,21 +3834,21 @@ class SourceAmbientUsStandard(BaseSourceAmbient):
         """
         us_standard_properties = self._source_instance.ambient_properties.us_standard_properties
         if self._type is None and us_standard_properties.sun_axis_system.HasField("manual_sun"):
-                # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file
             self._type = BaseSourceAmbient.Manual(
                 us_standard_properties.sun_axis_system.manual_sun,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSourceAmbient.Manual):
-                # if the _type is not Manual then we create a new type.
+            # if the _type is not Manual then we create a new type.
             self._type = BaseSourceAmbient.Manual(
                 us_standard_properties.sun_axis_system.manual_sun,
                 default_parameters=ManualSunParameters(),
                 stable_ctr=True,
             )
         elif self._type._sun is not us_standard_properties.sun_axis_system.manual_sun:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+            # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = us_standard_properties.sun_axis_system.manual_sun
         return self._type
 
