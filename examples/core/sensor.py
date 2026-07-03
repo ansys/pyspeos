@@ -15,6 +15,9 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
     PhotometricCameraParameters,
+    PolarIntensityDimensionsParameters,
+    PolarIntensityFormatTypes,
+    PolarIntensitySensorParameters,
 )
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
@@ -24,6 +27,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorPolarIntensity,
     SensorRadiance,
 )
 
@@ -301,5 +305,44 @@ print(sensor6)
 
 sensor6.delete()
 print(sensor6)
+
+# ### Polar intensity sensor
+#
+# A polar intensity sensor generates an IES/Eulumdat photometric file from the simulation.
+# It supports format selection, explicit angular sampling, and far-field or near-field setup.
+
+sensor_polar = p.create_sensor(name="PolarIntensity.1", feature_type=SensorPolarIntensity)
+print(sensor_polar)  # local: not yet on server
+
+sensor_polar.commit()
+print(sensor_polar)  # now on server
+
+# Customise format, sampling and field configuration.
+sensor_polar.set_format_eulumdat()
+sensor_polar.set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=91)
+sensor_polar.set_field_far_field(integration_angle=2.0)
+sensor_polar.axis_system = [0, 0, 25, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor_polar.commit()
+print(sensor_polar)
+
+# The same sensor can be created directly from parameter dataclasses.
+polar_param = PolarIntensitySensorParameters(
+    format=PolarIntensityFormatTypes.iesna_b,
+    dimensions=PolarIntensityDimensionsParameters(horizontal_sampling=37, vertical_sampling=37),
+    integration_angle=1.0,
+    axis_system=[10, 0, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+)
+
+sensor_polar_param = p.create_sensor(
+    name="PolarIntensity.Parameters",
+    feature_type=SensorPolarIntensity,
+    parameters=polar_param,
+)
+sensor_polar_param.commit()
+print(sensor_polar_param)
+
+sensor_polar_param.delete()
+sensor_polar.delete()
 
 speos.close()
