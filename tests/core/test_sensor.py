@@ -3558,6 +3558,7 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert sensor_template_iesna_b.HasField("iesna_b")
     # Verify adaptive sampling is used
     assert sensor_template_iesna_b.HasField("adaptive_sampling_uri")
+    assert sensor_iesna_b.adaptive_sampling_file.suffix == ".txt"
 
     # Verify Intensity.3 (IESNA_A with explicit dimensions and near-field)
     assert isinstance(sensor_iesna_c, SensorPolarIntensity)
@@ -3585,8 +3586,8 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert sensor_template_eulumdat.HasField("eulumdat")
     # Verify explicit dimensions
     assert sensor_template_eulumdat.HasField("dimensions")
-    assert sensor_template_eulumdat.dimensions.horizontal_sampling == 360
-    assert sensor_template_eulumdat.dimensions.vertical_sampling == 181
+    assert sensor_eulumdat.horizontal_sampling == 360
+    assert sensor_eulumdat.vertical_sampling == 181
 
     # Verify axis_system for all sensors
     assert sensor_iesna_a.axis_system == pytest.approx(sensor_iesna_a_params.axis_system)
