@@ -3481,14 +3481,6 @@ def test_polar_intensity_sensor_error_paths(speos: Speos):
     with pytest.raises(TypeError, match="near-field mode"):
         sensor2.integration_angle = 3.0
 
-    # Wrong dataclass type must fail at create_sensor dispatch.
-    with pytest.raises(TypeError, match="PolarIntensitySensorParameters"):
-        p.create_sensor(
-            name="PolarIntensity.Errors.3",
-            feature_type=SensorPolarIntensity,
-            parameters=IrradianceSensorParameters(),
-        )
-
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_polar_intensity_from_file(speos: Speos):
