@@ -1004,6 +1004,20 @@ class AmbientNaturalLightParameters:
 
 
 @dataclass
+class AmbientUsStandardParameters:
+    """Ambient U.S. Standard Parameters."""
+
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector."""
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+    """Sun definition, automatic or manual."""
+
+
+@dataclass
 class UserDefinedWhitePointParameters:
     """User defined White Point Parameters."""
 

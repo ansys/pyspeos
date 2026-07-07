@@ -43,6 +43,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
+    AmbientUsStandardParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
@@ -94,6 +95,7 @@ from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -225,6 +227,7 @@ class Project:
             SourceRayFile,
             SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
+            SourceAmbientUsStandard,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
         ]
@@ -380,6 +383,7 @@ class Project:
                 RayFileSourceParameters,
                 AmbientCieStandardOvercastSkyParameters,
                 AmbientNaturalLightParameters,
+                AmbientUsStandardParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
                 AmbientCieStandardGeneralSkyParameters,
@@ -392,6 +396,7 @@ class Project:
         SourceLuminaire,
         SourceAmbientCieStandardOvercastSky,
         SourceAmbientNaturalLight,
+        SourceAmbientUsStandard,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
         SourceAmbientCieStandardGeneralSky,
@@ -413,6 +418,7 @@ class Project:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceAmbientNaturalLight, \
+            ansys.speos.core.source.SourceAmbientUsStandard, \
             ansys.speos.core.source.SourceAmbientEnvironment, \
              ansys.speos.core.source.SourceAmbientUniform, \
             ansys.speos.core.source.SourceDisplay].
@@ -424,6 +430,7 @@ class Project:
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
+        ansys.speos.core.generic.parameters.AmbientUsStandardParameters,\
         ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
         ansys.speos.core.generic.parameters.AmbientUniformParameters,\
         ansys.speos.core.generic.parameters.DisplayParamaters]]
@@ -435,6 +442,7 @@ class Project:
         ansys.speos.core.source.SourceRayFile,\
         ansys.speos.core.source.SourceLuminaire,\
         ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientUsStandard,\
         ansys.speos.core.source.SourceAmbientEnvironment,\
         ansys.speos.core.source.SourceAmbientUniform,\
         ansys.speos.core.source.SourceDisplay]
@@ -541,6 +549,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientUsStandard":
+                if parameters is None:
+                    parameters = AmbientUsStandardParameters()
+                elif not isinstance(parameters, AmbientUsStandardParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUsStandardParameters"
+                    )
+                feature = SourceAmbientUsStandard(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SourceAmbientUniform":
                 if parameters is None:
                     parameters = AmbientUniformParameters()
@@ -596,6 +619,7 @@ class Project:
                         SourceRayFile,
                         SourceAmbientCieStandardOvercastSky,
                         SourceAmbientNaturalLight,
+                        SourceAmbientUsStandard,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
                         SourceAmbientCieStandardGeneralSky,
@@ -1461,6 +1485,13 @@ class Project:
                     )
                 elif src_inst.ambient_properties.HasField("environment_map_properties"):
                     src_feat = SourceAmbientEnvironment(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("us_standard_properties"):
+                    src_feat = SourceAmbientUsStandard(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
