@@ -41,6 +41,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    IESNA_A_B_DIMENSIONS,
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
@@ -66,6 +67,9 @@ from ansys.speos.core.generic.parameters import (
     MonoChromaticParameters,
     NearfieldParameters,
     PhotometricCameraParameters,
+    PolarIntensityDimensionsParameters,
+    PolarIntensityFormatTypes,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayfileTypes,
     SensorTypes,
@@ -5842,3 +5846,472 @@ class SensorImmersive(BaseSensor):
         self._sensor_instance.immersive_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
         return self
+
+
+class SensorPolarIntensity(BaseSensor):
+    """Class for polar intensity sensor.
+
+    A polar intensity sensor generates a photometric file (IESNA A/B/C or Eulumdat) from a
+    simulation.  It supports both far-field (integration angle) and near-field (cell distance +
+    diameter) configurations as well as explicit dimensional sampling or adaptive sampling from a
+    file.
+
+    By default, IESNA C format, explicit dimensions (360 × 90), far-field with integration angle
+    of 5 degrees, and the origin axis system are used.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : \
+    ansys.speos.core.generic.parameters.PolarIntensitySensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+
+    Notes
+    -----
+    ``PolarIntensityProperties`` in the scene proto only contains an ``axis_system`` field –
+    there is no layer-type separation for polar intensity sensors.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[PolarIntensitySensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[PolarIntensitySensorParameters] = None
+    ) -> None:
+        """Populate the sensor template and instance from parameters or from a loaded state.
+
+        Parameters
+        ----------
+        default_parameters : PolarIntensitySensorParameters, optional
+            When provided, the sensor is initialised from these values.
+            When ``None``, the sensor is reconstructed from an already-populated
+            ``_sensor_template`` (load-from-file path).
+        """
+        if default_parameters is not None:
+            # --- format ---
+            match default_parameters.format:
+                case PolarIntensityFormatTypes.iesna_a:
+                    self.set_format_iesna_a()
+                case PolarIntensityFormatTypes.iesna_b:
+                    self.set_format_iesna_b()
+                case PolarIntensityFormatTypes.iesna_c:
+                    self.set_format_iesna_c()
+                case PolarIntensityFormatTypes.eulumdat:
+                    self.set_format_eulumdat()
+
+            # --- sampling ---
+            if isinstance(default_parameters.dimensions, str):
+                self.set_adaptive_sampling()
+                self.adaptive_sampling_file = default_parameters.dimensions
+            else:
+                self._set_sampling_dimensions(
+                    horizontal_sampling=default_parameters.dimensions.horizontal_sampling,
+                    vertical_sampling=default_parameters.dimensions.vertical_sampling,
+                )
+
+            # --- field ---
+            if default_parameters.near_field is not None:
+                self.set_near_field()
+                self.cell_distance = default_parameters.near_field.cell_distance
+                self.cell_diameter = default_parameters.near_field.cell_diameter
+            else:
+                self.set_far_field()
+                self.integration_angle = default_parameters.integration_angle
+
+            # --- instance ---
+            self.axis_system = default_parameters.axis_system
+            return
+
+        # --- load-from-file path: reconstruct state from already-populated proto ---
+        template = self._sensor_template.polar_intensity_sensor_template
+        # Nothing extra to reconstruct; properties are read directly from proto on demand.
+        _ = template  # reference to avoid lint warning
+
+    # ------------------------------------------------------------------
+    # Format setters
+    # ------------------------------------------------------------------
+
+    def set_format_iesna_a(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type A.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_a.SetInParent()
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_iesna_b(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type B.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_b.SetInParent()
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_iesna_c(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type C.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_c.SetInParent()
+        _dimensions = PolarIntensityDimensionsParameters()
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_eulumdat(self) -> SensorPolarIntensity:
+        """Set output format to Eulumdat.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.eulumdat.SetInParent()
+        _dimensions = PolarIntensityDimensionsParameters()
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    # ------------------------------------------------------------------
+    # Sampling setters / properties
+    # ------------------------------------------------------------------
+    def set_constant_sampling(self):
+        """Use constant samplign instead of an adaptive-sampling file.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.dimensions.SetInParent()
+
+    def _set_sampling_dimensions(
+        self,
+        horizontal_sampling: int,
+        vertical_sampling: int,
+    ) -> SensorPolarIntensity:
+        """Use explicit horizontal and vertical sampling.
+
+        Parameters
+        ----------
+        horizontal_sampling : int, optional
+            Number of horizontal samples.
+            By default, ``720``.
+        vertical_sampling : int, optional
+            Number of vertical samples.
+            By default, ``361``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        template.dimensions.horizontal_sampling = int(horizontal_sampling)
+        template.dimensions.vertical_sampling = int(vertical_sampling)
+        return self
+
+    def set_adaptive_sampling(self) -> SensorPolarIntensity:
+        """Use an adaptive-sampling file instead of explicit dimensions.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.ClearField("dimensions")
+        return self
+
+    @property
+    def adaptive_sampling_file(self) -> Union[Path, None]:
+        """Location of the adaptive-sampling file.
+
+        Parameters
+        ----------
+        uri : Union[str, Path]
+            Path to the adaptive-sampling file.
+
+
+        Returns
+        -------
+        Union[Path, None]
+            Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
+        """
+        if not self._sensor_template.polar_intensity_sensor_template.HasField("dimensions"):
+            return Path(self._sensor_template.polar_intensity_sensor_template.adaptive_sampling_uri)
+
+    @adaptive_sampling_file.setter
+    def adaptive_sampling_file(self, value: Union[Path, None]):
+        template = self._sensor_template.polar_intensity_sensor_template
+        if value is None:
+            template.ClearField("adaptive_sampling_uri")
+            self.set_constant_sampling()
+        else:
+            if template.HasField("dimensions"):
+                raise TypeError(
+                    "Constant sampling is active; switch to adaptive sampling with "
+                    "set_adaptove_sampling() first."
+                )
+            template.adaptive_sampling_uri = str(value)
+
+    @property
+    def horizontal_sampling(self) -> Union[int, None]:
+        """Number of horizontal samples.
+
+        Parameters
+        ----------
+        value : int
+            Number of horizontal samples of the intensity file.
+
+        Returns
+        -------
+        Union[int, None]
+            Horizontal sampling count, or ``None`` if adaptive sampling is active.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("dimensions"):
+            return template.dimensions.horizontal_sampling
+        return None
+
+    @horizontal_sampling.setter
+    def horizontal_sampling(self, value: int) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("dimensions"):
+            raise TypeError(
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
+            )
+        template.dimensions.horizontal_sampling = int(value)
+
+    @property
+    def vertical_sampling(self) -> Union[int, None]:
+        """Number of vertical samples.
+
+        Parameters
+        ----------
+        value : int
+            Number of vertical samples of the intensity file.
+
+        Returns
+        -------
+        Union[int, None]
+            Vertical sampling count, or ``None`` if adaptive sampling is active.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("dimensions"):
+            return template.dimensions.vertical_sampling
+        return None
+
+    @vertical_sampling.setter
+    def vertical_sampling(self, value: int) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("dimensions"):
+            raise TypeError(
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
+            )
+        template.dimensions.vertical_sampling = int(value)
+
+    # ------------------------------------------------------------------
+    # Field setters / properties
+    # ------------------------------------------------------------------
+
+    def set_far_field(self) -> SensorPolarIntensity:
+        """Configure the sensor for far-field measurement.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("far_field"):
+            template.far_field.SetInParent()
+            self.integration_angle = 1
+        return self
+
+    def set_near_field(self) -> SensorPolarIntensity:
+        """Configure the sensor for near-field measurement.
+
+        Default cell distance is ``10`` mm and default cell diameter is ``0.3491`` mm.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            template.near_field.SetInParent()
+            nf = NearfieldParameters()
+            self.cell_distance = nf.cell_distance
+            self.cell_diameter = nf.cell_diameter
+        return self
+
+    @property
+    def integration_angle(self) -> Union[float, None]:
+        """Far-field integration angle in degrees.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle (degrees).
+
+        Returns
+        -------
+        Union[float, None]
+            Integration angle, or ``None`` when the sensor is in near-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("far_field"):
+            return template.far_field.integration_angle
+        return None
+
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("far_field"):
+            raise TypeError("Sensor is in near-field mode; call set_far_field() first.")
+        template.far_field.integration_angle = float(value)
+
+    @property
+    def cell_distance(self) -> Union[float, None]:
+        """Distance of the measurement cell from the sensor origin in mm.
+
+        Parameters
+        ----------
+        value : float
+            Cell distance in mm.
+
+        Returns
+        -------
+        Union[float, None]
+            Cell distance, or ``None`` when the sensor is in far-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("near_field"):
+            return template.near_field.cell_distance
+        return None
+
+    @cell_distance.setter
+    def cell_distance(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
+        template.near_field.cell_distance = float(value)
+
+    @property
+    def cell_diameter(self) -> Union[float, None]:
+        """Diameter of the measurement cell in mm.
+
+        The diameter is derived from ``cell_distance`` and the stored
+        ``cell_integration_angle`` via ``2 * cell_distance * tan(cell_integration_angle)``.
+
+        Parameters
+        ----------
+        value : float
+            Cell diameter in mm.
+
+        Returns
+        -------
+        Union[float, None]
+            Cell diameter, or ``None`` when the sensor is in far-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("near_field"):
+            return (
+                2
+                * template.near_field.cell_distance
+                * np.tan(np.radians(template.near_field.cell_integration_angle))
+            )
+        return None
+
+    @cell_diameter.setter
+    def cell_diameter(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
+        template.near_field.cell_integration_angle = np.degrees(
+            np.arctan(float(value) / 2.0 / template.near_field.cell_distance)
+        )
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position of the sensor.
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+
+        Notes
+        -----
+        ``PolarIntensityProperties`` contains only an ``axis_system``; there is no
+        layer-type separation for polar intensity sensors.
+        """
+        return list(self._sensor_instance.polar_intensity_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.polar_intensity_properties.axis_system[:] = value

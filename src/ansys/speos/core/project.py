@@ -55,6 +55,7 @@ from ansys.speos.core.generic.parameters import (
     IrradianceSensorParameters,
     LuminaireSourceParameters,
     OptPropParameters,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
@@ -76,6 +77,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -258,6 +260,7 @@ class Project:
             SensorCamera,
             SensorImmersive,
             SensorIrradiance,
+            SensorPolarIntensity,
             SensorRadiance,
             SensorXMPIntensity,
         ]
@@ -270,6 +273,7 @@ class Project:
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
             List of sensor features.
@@ -767,6 +771,7 @@ class Project:
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
                 ImmersiveSensorParameters,
+                PolarIntensitySensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -776,6 +781,7 @@ class Project:
         Sensor3DIrradiance,
         SensorXMPIntensity,
         SensorImmersive,
+        SensorPolarIntensity,
     ]:
         """Create a new Sensor feature.
 
@@ -794,7 +800,8 @@ class Project:
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
-            ansys.speos.core.sensor.SensorImmersive].
+            ansys.speos.core.sensor.SensorImmersive, \
+            ansys.speos.core.sensor.SensorPolarIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -804,7 +811,8 @@ class Project:
         ansys.speos.core.generic.parameters.CameraSensorParameters,\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
-        ansys.speos.core.generic.parameters.ImmersiveSensorParameters]]
+        ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
+        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -812,7 +820,7 @@ class Project:
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
-        ansys.speos.core.sensor.SensorImmersive]
+        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -916,6 +924,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorPolarIntensity":
+                if parameters is None:
+                    parameters = PolarIntensitySensorParameters()
+                elif not isinstance(parameters, PolarIntensitySensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of PolarIntensitySensorParameters"
+                    )
+                feature = SensorPolarIntensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -926,6 +949,7 @@ class Project:
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
                         SensorImmersive,
+                        SensorPolarIntensity,
                     ],
                 )
                 raise TypeError(msg)
@@ -1038,6 +1062,7 @@ class Project:
             SensorCamera,
             Sensor3DIrradiance,
             SensorXMPIntensity,
+            SensorPolarIntensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
@@ -1075,6 +1100,7 @@ class Project:
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
@@ -1537,6 +1563,13 @@ class Project:
                 )
             elif ssr_inst.HasField("intensity_properties"):
                 ssr_feat = SensorXMPIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("polar_intensity_properties"):
+                ssr_feat = SensorPolarIntensity(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
