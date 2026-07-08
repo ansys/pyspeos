@@ -145,10 +145,6 @@ See [`.github/agents/implement-feature.md`](.github/agents/implement-feature.md)
 
 See [`.github/agents/fix-bug.md`](.github/agents/fix-bug.md).
 
-### Sensor implementation notes
-
-See [`.github/agents/skills/sensor-polar-intensity.md`](.github/agents/skills/sensor-polar-intensity.md).
-
 ---
 
 ## PR Checklist
