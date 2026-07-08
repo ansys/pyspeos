@@ -29,12 +29,16 @@ from unittest.mock import MagicMock
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
-from ansys.speos.core.generic.parameters import IrradianceSensorParameters, RadianceSensorParameters
+from ansys.speos.core.generic.parameters import (
+    IrradianceSensorParameters,
+    RadianceSensorParameters,
+)
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -630,6 +634,12 @@ def test_creation_errors(speos: Speos):
         p.create_sensor(
             name="irradiance_sensor",
             feature_type=SensorIrradiance,
+            parameters=RadianceSensorParameters(),
+        )
+    with pytest.raises(TypeError, match="PolarIntensitySensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorPolarIntensity,
             parameters=RadianceSensorParameters(),
         )
     with pytest.raises(TypeError, match="CameraSensorParameters"):
