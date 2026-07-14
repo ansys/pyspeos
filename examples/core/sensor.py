@@ -197,6 +197,7 @@ sensor1.commit()
 print(sensor1)
 
 # Modify photometric camera properties (including diffraction effects)
+sensor1.distortion_file_uri = assets_data_path / FILES / "diffractive_effects.OPTDistortion"
 sensor1.set_mode_photometric().consider_diffraction_effects = True
 sensor1.commit()
 print(sensor1)

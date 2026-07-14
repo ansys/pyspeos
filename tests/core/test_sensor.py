@@ -3228,7 +3228,9 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 
     sensor = p.create_sensor(name="Camera.diffraction", feature_type=SensorCamera)
     assert isinstance(sensor, SensorCamera)
-
+    sensor.distortion_file_uri = (
+        test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion"
+    )
     # Set diffraction effects
     sensor.set_mode_photometric().consider_diffraction_effects = True
     sensor.commit()
@@ -3256,7 +3258,10 @@ def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: 
 
     # Create parameters with consider_diffraction_effects = True
     photo_params = PhotometricCameraParameters(consider_diffraction_effects=True)
-    camera_params = CameraSensorParameters(sensor_type_parameters=photo_params)
+    camera_params = CameraSensorParameters(
+        distortion_file_uri=test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion",
+        sensor_type_parameters=photo_params,
+    )
 
     sensor = p.create_sensor(
         name="Camera.diffraction", feature_type=SensorCamera, default_parameters=camera_params
