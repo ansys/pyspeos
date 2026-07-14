@@ -1774,7 +1774,7 @@ class SensorCamera(BaseSensor):
 
             Notes
             -----
-            This feature is available in Speos 0.16.3 or later.
+            This feature is available in Speos 2026 R1 SP3 or later.
             """
             return self._mode_photometric.consider_diffraction_effects
 
