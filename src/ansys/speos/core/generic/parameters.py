@@ -500,6 +500,81 @@ class IntensityXMPSensorParameters:
     """Parameters used when the sensor is near field."""
 
 
+class PolarIntensityFormatTypes(str, Enum):
+    """Polar intensity sensor format types."""
+
+    iesna_a = "iesna_a"
+    """Generate an IESNA type A photometric file."""
+    iesna_b = "iesna_b"
+    """Generate an IESNA type B photometric file."""
+    iesna_c = "iesna_c"
+    """Generate an IESNA type C photometric file."""
+    eulumdat = "eulumdat"
+    """Generate an Eulumdat photometric file."""
+
+
+@dataclass
+class PolarIntensityDimensionsParameters:
+    """Dimensions (sampling) for a polar intensity sensor.
+
+    Parameters
+    ----------
+    horizontal_sampling : int, optional
+        Number of horizontal samples of the intensity file (IESNA or EULUMDAT).
+        By default, ``720``.
+    vertical_sampling : int, optional
+        Number of vertical samples of the intensity file (IESNA or EULUMDAT).
+        By default, ``361``.
+    """
+
+    horizontal_sampling: int = 720
+    """Number of horizontal samples."""
+    vertical_sampling: int = 361
+    """Number of vertical samples."""
+
+
+IESNA_A_B_DIMENSIONS = PolarIntensityDimensionsParameters(37, 37)
+
+
+@dataclass
+class PolarIntensitySensorParameters:
+    """Parameters for :class:`~ansys.speos.core.sensor.SensorPolarIntensity`.
+
+    Parameters
+    ----------
+    format : PolarIntensityFormatTypes, optional
+        Output file format. Accepted values: ``"iesna_a"``, ``"iesna_b"``,
+        ``"iesna_c"``, ``"eulumdat"``.
+        By default, ``PolarIntensityFormatTypes.iesna_c``.
+    dimensions : Union[PolarIntensityDimensionsParameters, str, Path], optional
+        Either explicit horizontal/vertical sampling (``PolarIntensityDimensionsParameters``)
+        or a path to an adaptive-sampling file (``str``).
+        By default, ``PolarIntensityDimensionsParameters()``.
+    near_field : Optional[NearfieldParameters], optional
+        Near-field configuration. When ``None``, the sensor is in far-field mode.
+        By default, ``None``.
+    integration_angle : float, optional
+        Far-field integration angle in degrees. Used only when ``near_field`` is ``None``.
+        By default, ``5.0``.
+    axis_system : list[float], optional
+        Position of the sensor ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    """
+
+    format: PolarIntensityFormatTypes = PolarIntensityFormatTypes.iesna_c
+    """Output file format."""
+    dimensions: Union[PolarIntensityDimensionsParameters, str, Path] = field(
+        default_factory=PolarIntensityDimensionsParameters
+    )
+    """Sampling definition: explicit dimensions or adaptive-sampling file URI."""
+    near_field: Optional[NearfieldParameters] = None
+    """Near-field parameters. ``None`` means far-field mode."""
+    integration_angle: float = 1.0
+    """Far-field integration angle in degrees."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+
+
 @dataclass
 class ImmersiveSensorParameters:
     """Parameters for :class:`~ansys.speos.core.sensor.SensorImmersive`.
@@ -899,6 +974,20 @@ class AmbientCieStandardGeneralSkyParameters:
 
 
 @dataclass
+class AmbientCieStandardOvercastSkyParameters:
+    """Ambient CIE Standard Overcast Sky Parameters."""
+
+    luminance: float = 1000.0
+    """Luminance value in cd/m^2."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    spectrum_type: Union[SpectrumLibraryParameters, SpectrumBlackBodyParameters] = field(
+        default_factory=SpectrumBlackBodyParameters
+    )
+    """Spectrum type for the overcast ambient source (blackbody or library spectra only)."""
+
+
+@dataclass
 class AmbientNaturalLightParameters:
     """Ambient Natural Light Parameters."""
 
@@ -906,6 +995,20 @@ class AmbientNaturalLightParameters:
     """Whether the sky contribution is enabled."""
     turbidity: float = 3.0
     """Atmospheric turbidity value."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector."""
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+    """Sun definition, automatic or manual."""
+
+
+@dataclass
+class AmbientUsStandardParameters:
+    """Ambient U.S. Standard Parameters."""
+
     zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
     """Zenith direction vector."""
     north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])

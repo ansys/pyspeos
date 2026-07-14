@@ -12,14 +12,17 @@
 from pathlib import Path
 
 from ansys.speos.core import Face, Project, Speos, launcher
+from ansys.speos.core.generic.parameters import CieType
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.source import (
     SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -300,8 +303,6 @@ print(ambient_cie_standard_general_sky_source.cie_type)  # default cie setting
 ambient_cie_standard_general_sky_source.luminance = 500.0
 ambient_cie_standard_general_sky_source.north_direction = [1, 0, 0]
 ambient_cie_standard_general_sky_source.reverse_north_direction = True
-from ansys.speos.core.generic.parameters import CieType
-
 ambient_cie_standard_general_sky_source.cie_type = CieType.standard_overcast
 ambient_cie_standard_general_sky_source.commit()
 print(ambient_cie_standard_general_sky_source)
@@ -316,6 +317,45 @@ print(ambient_cie_standard_general_sky_source)
 
 # +
 ambient_cie_standard_general_sky_source.delete()
+# -
+
+# ### Ambient U.S. Standard light source
+
+# +
+ambient_us_standard_source = p.create_source(
+    name="UsStandard.1", feature_type=SourceAmbientUsStandard
+)
+print(ambient_us_standard_source.zenith_direction)  # default zenith direction
+print(ambient_us_standard_source.north_direction)  # default north direction
+ambient_us_standard_source.zenith_direction = [0, 1, 0]
+ambient_us_standard_source.north_direction = [1, 0, 0]
+ambient_us_standard_source.reverse_north_direction = True
+ambient_us_standard_source.set_sun_manual().direction = [0, 0.707, 0.707]
+ambient_us_standard_source.commit()
+print(ambient_us_standard_source)
+# -
+
+# +
+ambient_us_standard_source.delete()
+# ### Ambient CIE overcast light source
+
+# +
+ambient_cie_overcast_source = p.create_source(
+    name="CieOvercast.1", feature_type=SourceAmbientCieStandardOvercastSky
+)
+print(ambient_cie_overcast_source.luminance)  # default luminance value
+print(ambient_cie_overcast_source.zenith_direction)  # default zenith direction
+print(ambient_cie_overcast_source.spectrum.set_blackbody().temperature)  # default spectrum
+ambient_cie_overcast_source.luminance = 750.0
+ambient_cie_overcast_source.zenith_direction = [0, 1, 0]
+ambient_cie_overcast_source.reverse_zenith_direction = True
+ambient_cie_overcast_source.spectrum.set_blackbody().temperature = 4500
+ambient_cie_overcast_source.commit()
+print(ambient_cie_overcast_source)
+# -
+
+# +
+ambient_cie_overcast_source.delete()
 # -
 
 # ### Ambient environment light source
