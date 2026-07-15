@@ -591,15 +591,15 @@ class AngularRangeParameters:
         Vertical angle sampling. By default, ``3``.
     """
 
-    x_start: float = -45
+    x_start: float = -45.0
     """Horizontal start angle in degrees."""
-    x_end: float = 45
+    x_end: float = 45.0
     """Horizontal end angle in degrees."""
     x_sampling: int = 5
     """Horizontal angle sampling."""
-    y_start: float = -30
+    y_start: float = -30.0
     """Vertical start angle in degrees."""
-    y_end: float = 30
+    y_end: float = 30.0
     """Vertical end angle in degrees."""
     y_sampling: int = 3
     """Vertical angle sampling."""

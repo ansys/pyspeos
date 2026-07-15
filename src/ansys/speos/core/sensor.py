@@ -174,8 +174,8 @@ class BaseSensor:
     class AngularRange:
         """Angular range for Observer sensor locations on a sphere.
 
-        By default, horizontal angles range from -45 to 45 with a sampling of 5,
-        and vertical angles range from -30 to 30 with a sampling of 3.
+        By default, horizontal angles range from -45.0 to 45.0 with a sampling of 5,
+        and vertical angles range from -30.0 to 30.0 with a sampling of 3.
 
         Parameters
         ----------
