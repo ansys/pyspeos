@@ -3212,7 +3212,7 @@ def test_create_observer_sensor_default(speos: Speos):
     assert sensor.focal == default_params.focal
     assert sensor.integration_angle == default_params.integration_angle
     assert sensor.distance == default_params.distance
-    assert sensor.stereo_interocular_distance == 0.0  # Not set by default
+    assert sensor.stereo_interocular_distance is None  # Not set by default
 
 
 @pytest.mark.supported_speos_versions(min=261)
@@ -3296,7 +3296,7 @@ def test_observer_sensor_stereo_interocular_distance(speos: Speos):
 
     # Test clearing stereo (set to None)
     sensor.stereo_interocular_distance = None
-    assert sensor.stereo_interocular_distance == 0.0
+    assert sensor.stereo_interocular_distance is None
 
 
 @pytest.mark.supported_speos_versions(min=261)
