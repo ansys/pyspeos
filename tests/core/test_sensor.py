@@ -3244,7 +3244,7 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
     )
     wl = sensor.set_mode_photometric().set_wavelengths_range()
     wl.start = 486
-    wl.end = 656
+    wl.end = 655
     wl.sampling = 13
     sensor.set_mode_photometric().consider_diffraction_effects = True
     sensor.commit()

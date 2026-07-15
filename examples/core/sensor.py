@@ -211,7 +211,7 @@ sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
 )
 wl = sensor1.set_mode_photometric().set_wavelengths_range()
 wl.start = 486
-wl.end = 656
+wl.end = 655
 wl.sampling = 13
 sensor1.set_mode_photometric().consider_diffraction_effects = True
 sensor1.commit()
