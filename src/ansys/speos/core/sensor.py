@@ -1778,7 +1778,10 @@ class SensorCamera(BaseSensor):
 
             Notes
             -----
-            This feature is available in Speos 2026 R1 SP3 or later.
+            This feature is available in Speos 2026 R1 SP3 or later. Not all Distortion files
+            do contain diffractive effects. You may get an RPC error on commit when using a
+            distortion file that does not contain diffractive effects while having set this
+            option to true.
             """
             return self._mode_photometric.consider_diffraction_effects
 
