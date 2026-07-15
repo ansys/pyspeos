@@ -723,6 +723,7 @@ class Project:
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
                 ImmersiveSensorParameters,
+                ObserverSensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -732,6 +733,7 @@ class Project:
         Sensor3DIrradiance,
         SensorXMPIntensity,
         SensorImmersive,
+        SensorObserver,
     ]:
         """Create a new Sensor feature.
 
@@ -750,7 +752,8 @@ class Project:
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
-            ansys.speos.core.sensor.SensorImmersive].
+            ansys.speos.core.sensor.SensorImmersive
+            ansys.speos.core.sensor.SensorObserver].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -760,7 +763,8 @@ class Project:
         ansys.speos.core.generic.parameters.CameraSensorParameters,\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
-        ansys.speos.core.generic.parameters.ImmersiveSensorParameters]]
+        ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
+        ansys.speos.core.generic.parameters.ObserverSensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
