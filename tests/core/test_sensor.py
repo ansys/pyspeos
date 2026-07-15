@@ -3353,7 +3353,7 @@ def test_observer_sensor_angular_range(speos: Speos):
 
     # Get angular range object
     ang_range = sensor.set_angular_range()
-    assert isinstance(ang_range, BaseSensor.AngularRange)
+    assert isinstance(ang_range, SensorObserver.AngularRange)
 
     # Test setting angular range
     ang_range.x_start = -60.0
@@ -3436,6 +3436,7 @@ def test_observer_sensor_with_parameters_dataclass(speos: Speos):
             x_start=-50, x_end=50, x_sampling=8, y_start=-40, y_end=40, y_sampling=5
         ),
         axis_system=[5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+        layer_type=LayerTypes.by_source,
     )
 
     sensor = p.create_sensor(
@@ -3476,83 +3477,69 @@ def test_observer_sensor_with_parameters_dataclass(speos: Speos):
 
     # Verify axis system
     assert sensor.axis_system == [5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    assert sensor.layer == LayerTypes.by_source
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_load_hydration(speos: Speos):
+def test_observer_sensor_load(speos: Speos):
     """Test loading and hydrating Observer sensor from scene."""
-    p = Project(speos=speos)
+    p = Project(speos=speos, path=test_path / "observer_test.1.speos" / "observer_test.1.speos")
 
     # Create and commit an Observer sensor with specific configuration
-    sensor = p.create_sensor(name="Observer.LoadTest", feature_type=SensorObserver)
-    sensor.focal = 320.0
-    sensor.integration_angle = 7.5
-    sensor.distance = 130.0
-    sensor.stereo_interocular_distance = 63.0
-
-    # Configure nested properties
-    wl = sensor.set_wavelengths_range()
-    wl.start = 430
-    wl.end = 670
-    wl.sampling = 18
-
-    dims = sensor.set_dimensions()
-    dims.x_start = -90
-    dims.x_end = 90
-    dims.x_sampling = 110
-    dims.y_start = -70
-    dims.y_end = 70
-    dims.y_sampling = 75
-
-    ang = sensor.set_angular_range()
-    ang.x_start = -55
-    ang.x_end = 55
-    ang.x_sampling = 9
-    ang.y_start = -42
-    ang.y_end = 42
-    ang.y_sampling = 6
-
-    sensor.commit()
-
-    # Load the sensor from scene
-    scene_sensor = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Observer.LoadTest"
+    params = ObserverSensorParameters(
+        focal=120.0,
+        integration_angle=2.5,
+        wavelengths_range=WavelengthsRangeParameters(start=420, end=680, sampling=15),
+        dimensions=DimensionsParameters(
+            x_start=-10,
+            x_end=10,
+            x_sampling=10,
+            y_start=-10,
+            y_end=10,
+            y_sampling=10,
+        ),
+        distance=125,
+        sensors_locations=AngularRangeParameters(
+            x_start=-30,
+            x_end=30,
+            x_sampling=7,
+            y_start=-10,
+            y_end=10,
+            y_sampling=3,
+        ),
+        interocular_distance=55,
+        axis_system=[0, 0, 5, 0, 0, 1, 1, 0, 0, 0, 1, 0],
     )
 
-    # Create new sensor instance by hydration
-    loaded_sensor = SensorObserver(
-        project=p,
-        name=scene_sensor.name,
-        sensor_instance=scene_sensor,
-        default_parameters=None,
-    )
+    loaded_sensor = p.sensors[0]
 
     # Verify all properties match
-    assert loaded_sensor.focal == 320.0
-    assert loaded_sensor.integration_angle == 7.5
-    assert loaded_sensor.distance == 130.0
-    assert loaded_sensor.stereo_interocular_distance == 63.0
+    assert loaded_sensor.focal == params.focal
+    assert loaded_sensor.integration_angle == params.integration_angle
+    assert loaded_sensor.distance == params.distance
+    assert loaded_sensor.stereo_interocular_distance == params.interocular_distance
 
     # Verify nested properties
     loaded_wl = loaded_sensor.set_wavelengths_range()
-    assert loaded_wl.start == 430
-    assert loaded_wl.end == 670
-    assert loaded_wl.sampling == 18
+    assert loaded_wl.start == params.wavelengths_range.start
+    assert loaded_wl.end == params.wavelengths_range.end
+    assert loaded_wl.sampling == params.wavelengths_range.sampling
 
     loaded_dims = loaded_sensor.set_dimensions()
-    assert loaded_dims.x_start == -90
-    assert loaded_dims.x_end == 90
-    assert loaded_dims.x_sampling == 110
-    assert loaded_dims.y_start == -70
-    assert loaded_dims.y_end == 70
-    assert loaded_dims.y_sampling == 75
+    assert loaded_dims.x_start == params.dimensions.x_start
+    assert loaded_dims.x_end == params.dimensions.x_end
+    assert loaded_dims.x_sampling == params.dimensions.x_sampling
+    assert loaded_dims.y_start == params.dimensions.y_start
+    assert loaded_dims.y_end == params.dimensions.y_end
+    assert loaded_dims.y_sampling == params.dimensions.y_sampling
 
     loaded_ang = loaded_sensor.set_angular_range()
-    assert loaded_ang.x_start == -55
-    assert loaded_ang.x_end == 55
-    assert loaded_ang.x_sampling == 9
-    assert loaded_ang.y_start == -42
-    assert loaded_ang.y_end == 42
-    assert loaded_ang.y_sampling == 6
+    assert loaded_ang.x_start == params.sensors_locations.x_start
+    assert loaded_ang.x_end == params.sensors_locations.x_end
+    assert loaded_ang.x_sampling == params.sensors_locations.x_sampling
+    assert loaded_ang.y_start == params.sensors_locations.y_start
+    assert loaded_ang.y_end == params.sensors_locations.y_end
+    assert loaded_ang.y_sampling == params.sensors_locations.y_sampling
+
+    assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
+    assert loaded_sensor.layer is None

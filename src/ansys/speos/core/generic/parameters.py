@@ -607,14 +607,14 @@ class AngularRangeParameters:
 
 @dataclass
 class ObserverSensorParameters:
-    """Parameters for :class:`~ansys.speos.core.sensor.SensorObserver`.
+    """Parameters for SensorObserver.
 
     Parameters
     ----------
     focal : float, optional
         Distance between the sensor radiance plan and the observer point in mm.
         The larger the focal, the closer to the object.
-        By default, ``250.0``.
+        By default, ``50.0``.
     integration_angle : float, optional
         Integration angle in degrees for direct simulations.
         By default, ``5.0``.
@@ -626,20 +626,23 @@ class ObserverSensorParameters:
         By default, ``x_start=-50``, ``x_end=50``, ``y_start=-50``, ``y_end=50``.
     distance : float, optional
         Radius of the sphere on which the sensors will be placed in mm.
-        By default, ``100.0``.
+        By default, ``1000.0``.
     sensors_locations : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
         Locations of the sensors on the sphere.
-        By default, horizontal range from -45 to 45 degrees with 5 sampling,
-        vertical range from -30 to 30 degrees with 3 sampling.
+        By default, horizontal range from -180 to 180 degrees with 9 sampling,
+        vertical range from -90 to 90 degrees with 9 sampling.
     interocular_distance : float, optional
         Distance between the left and right eyes for stereo mode in mm.
         By default, None (stereo disabled).
     axis_system : list[float], optional
         Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
     """
 
-    focal: float = 250.0
+    focal: float = 50.0
     """Distance between sensor radiance plan and observer point in mm."""
     integration_angle: float = 5.0
     """Integration angle in degrees."""
@@ -649,7 +652,7 @@ class ObserverSensorParameters:
     """Spectral range."""
     dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
     """Sensor dimensions."""
-    distance: float = 100.0
+    distance: float = 1000.0
     """Radius of sphere where sensors are placed in mm."""
     sensors_locations: AngularRangeParameters = field(default_factory=AngularRangeParameters)
     """Angular locations of sensors on the sphere."""
@@ -657,6 +660,8 @@ class ObserverSensorParameters:
     """Distance between viewpoints in mm for stereo mode."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
+    layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
 
 
 # =============================================================================
