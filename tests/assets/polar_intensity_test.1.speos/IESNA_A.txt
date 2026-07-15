@@ -1,0 +1,4 @@
+OPTIS Intensity Distribution sampling file v1.0
+Example for IESNA Type A
+7 -90 -85 -30 0 30 85 90
+7 -90 -60 -30 0 30 60 90
