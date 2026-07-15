@@ -37,6 +37,7 @@ from ansys.speos.core.generic.parameters import (
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
+    ColorParameters,
     DimensionsParameters,
     ImmersiveSensorParameters,
     IntegrationTypes,
@@ -54,6 +55,7 @@ from ansys.speos.core.generic.parameters import (
     LayerTypes,
     MeasuresParameters,
     NearfieldParameters,
+    PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
     PolarIntensitySensorParameters,
@@ -3228,8 +3230,22 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 
     sensor = p.create_sensor(name="Camera.diffraction", feature_type=SensorCamera)
     assert isinstance(sensor, SensorCamera)
-
-    # Set diffraction effects
+    sensor.distortion_file_uri = (
+        test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion"
+    )
+    sensor.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
+    wl = sensor.set_mode_photometric().set_wavelengths_range()
+    wl.start = 486
+    wl.end = 656
+    wl.sampling = 13
     sensor.set_mode_photometric().consider_diffraction_effects = True
     sensor.commit()
 
@@ -3250,16 +3266,30 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 @pytest.mark.supported_speos_versions(min=261)
 def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
     """Test consider_diffraction_effects from PhotometricCameraParameters."""
-    from ansys.speos.core.generic.parameters import PhotometricCameraParameters
-
     p = Project(speos=speos)
 
     # Create parameters with consider_diffraction_effects = True
-    photo_params = PhotometricCameraParameters(consider_diffraction_effects=True)
-    camera_params = CameraSensorParameters(sensor_type_parameters=photo_params)
+    photo_params = PhotometricCameraParameters(
+        consider_diffraction_effects=True,
+        color_mode=ColorParameters(
+            red_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityRed.spectrum",
+            green_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityGreen.spectrum",
+            blue_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityBlue.spectrum",
+        ),
+    )
+    camera_params = CameraSensorParameters(
+        distortion_file_uri=test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion",
+        sensor_type_parameters=photo_params,
+    )
 
     sensor = p.create_sensor(
-        name="Camera.diffraction", feature_type=SensorCamera, default_parameters=camera_params
+        name="Camera.diffraction", feature_type=SensorCamera, parameters=camera_params
     )
     assert isinstance(sensor, SensorCamera)
 
