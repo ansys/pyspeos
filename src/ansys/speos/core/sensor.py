@@ -171,6 +171,106 @@ class BaseSensor:
         else:
             self._sensor_instance.ClearField("lxp_properties")
 
+    class AngularRange:
+        """Angular range for Observer sensor locations on a sphere.
+
+        By default, horizontal angles range from -45 to 45 with a sampling of 5,
+        and vertical angles range from -30 to 30 with a sampling of 3.
+
+        Parameters
+        ----------
+        angular_range : ansys.api.speos.sensor.v1.common_pb2.AngularRange
+            AngularRange protobuf object to modify.
+        default_parameters : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+            If defined, the values in the sensor instance are overwritten by the values
+            of the dataclass.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope.
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use ``set_angular_range``
+        method available in sensor classes.
+        """
+
+        def __init__(
+            self,
+            angular_range: common_pb2.AngularRange,
+            default_parameters: Optional[AngularRangeParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "AngularRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._angular_range = angular_range
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[AngularRangeParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.x_start = default_parameters.x_start
+            self.x_end = default_parameters.x_end
+            self.x_sampling = default_parameters.x_sampling
+            self.y_start = default_parameters.y_start
+            self.y_end = default_parameters.y_end
+            self.y_sampling = default_parameters.y_sampling
+
+        @property
+        def x_start(self) -> float:
+            """Minimum value on x axis in degrees."""
+            return self._angular_range.x_start
+
+        @x_start.setter
+        def x_start(self, value: float):
+            self._angular_range.x_start = value
+
+        @property
+        def x_end(self) -> float:
+            """Maximum value on x axis in degrees."""
+            return self._angular_range.x_end
+
+        @x_end.setter
+        def x_end(self, value: float):
+            self._angular_range.x_end = value
+
+        @property
+        def x_sampling(self) -> int:
+            """Sampling value on x axis."""
+            return self._angular_range.x_sampling
+
+        @x_sampling.setter
+        def x_sampling(self, value: int):
+            self._angular_range.x_sampling = value
+
+        @property
+        def y_start(self) -> float:
+            """Minimum value on y axis in degrees."""
+            return self._angular_range.y_start
+
+        @y_start.setter
+        def y_start(self, value: float):
+            self._angular_range.y_start = value
+
+        @property
+        def y_end(self) -> float:
+            """Maximum value on y axis in degrees."""
+            return self._angular_range.y_end
+
+        @y_end.setter
+        def y_end(self, value: float):
+            self._angular_range.y_end = value
+
+        @property
+        def y_sampling(self) -> int:
+            """Sampling value on y axis."""
+            return self._angular_range.y_sampling
+
+        @y_sampling.setter
+        def y_sampling(self, value: int):
+            self._angular_range.y_sampling = value
+
     class WavelengthsRange:
         """Range of wavelengths.
 
@@ -5876,106 +5976,6 @@ class SensorObserver(BaseSensor):
         By default, ``None``.
     """
 
-    class AngularRange:
-        """Angular range for Observer sensor locations on a sphere.
-
-        By default, horizontal angles range from -45 to 45 with a sampling of 5,
-        and vertical angles range from -30 to 30 with a sampling of 3.
-
-        Parameters
-        ----------
-        angular_range : ansys.api.speos.sensor.v1.common_pb2.AngularRange
-            AngularRange protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
-            If defined, the values in the sensor instance are overwritten by the values
-            of the dataclass.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope.
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use ``set_angular_range``
-        method available in sensor classes.
-        """
-
-        def __init__(
-            self,
-            angular_range: common_pb2.AngularRange,
-            default_parameters: Optional[AngularRangeParameters] = None,
-            stable_ctr: bool = False,
-        ) -> None:
-            if not stable_ctr:
-                msg = "AngularRange class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._angular_range = angular_range
-            self._fill_parameters(default_parameters)
-
-        def _fill_parameters(
-            self, default_parameters: Optional[AngularRangeParameters] = None
-        ) -> None:
-            if not default_parameters:
-                return
-            self.x_start = default_parameters.x_start
-            self.x_end = default_parameters.x_end
-            self.x_sampling = default_parameters.x_sampling
-            self.y_start = default_parameters.y_start
-            self.y_end = default_parameters.y_end
-            self.y_sampling = default_parameters.y_sampling
-
-        @property
-        def x_start(self) -> float:
-            """Minimum value on x axis in degrees."""
-            return self._angular_range.x_start
-
-        @x_start.setter
-        def x_start(self, value: float):
-            self._angular_range.x_start = value
-
-        @property
-        def x_end(self) -> float:
-            """Maximum value on x axis in degrees."""
-            return self._angular_range.x_end
-
-        @x_end.setter
-        def x_end(self, value: float):
-            self._angular_range.x_end = value
-
-        @property
-        def x_sampling(self) -> int:
-            """Sampling value on x axis."""
-            return self._angular_range.x_sampling
-
-        @x_sampling.setter
-        def x_sampling(self, value: int):
-            self._angular_range.x_sampling = value
-
-        @property
-        def y_start(self) -> float:
-            """Minimum value on y axis in degrees."""
-            return self._angular_range.y_start
-
-        @y_start.setter
-        def y_start(self, value: float):
-            self._angular_range.y_start = value
-
-        @property
-        def y_end(self) -> float:
-            """Maximum value on y axis in degrees."""
-            return self._angular_range.y_end
-
-        @y_end.setter
-        def y_end(self, value: float):
-            self._angular_range.y_end = value
-
-        @property
-        def y_sampling(self) -> int:
-            """Sampling value on y axis."""
-            return self._angular_range.y_sampling
-
-        @y_sampling.setter
-        def y_sampling(self, value: int):
-            self._angular_range.y_sampling = value
-
     def __init__(
         self,
         project: project.Project,
@@ -6102,7 +6102,7 @@ class SensorObserver(BaseSensor):
         self._sensor_template.observer_sensor_template.distance = float(value)
 
     @property
-    def stereo_interocular_distance(self) -> float:
+    def stereo_interocular_distance(self) -> Union[float, None]:
         """Stereo interocular distance in mm.
 
         Parameters
@@ -6115,11 +6115,12 @@ class SensorObserver(BaseSensor):
 
         Returns
         -------
-        float
+        Union[float, None]
             Current stereo interocular distance in mm.
-            If stereo setting is not activated, distance will be 0 mm.
+            If stereo setting is not activated, None will be returned.
         """
-        return self._sensor_template.observer_sensor_template.stereo.interocular_distance
+        if self._sensor_template.observer_sensor_template.HasField("stereo"):
+            return self._sensor_template.observer_sensor_template.stereo.interocular_distance
 
     @stereo_interocular_distance.setter
     def stereo_interocular_distance(self, value: None | float) -> None:
@@ -6154,7 +6155,7 @@ class SensorObserver(BaseSensor):
             stable_ctr=True,
         )
 
-    def set_angular_range(self) -> AngularRange:
+    def set_angular_range(self) -> BaseSensor.AngularRange:
         """Configure the angular range for sensor locations on the sphere.
 
         Returns
@@ -6162,7 +6163,7 @@ class SensorObserver(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.AngularRange
             Angular range object.
         """
-        return self.AngularRange(
+        return BaseSensor.AngularRange(
             angular_range=self._sensor_template.observer_sensor_template.sensors_locations,
             stable_ctr=True,
         )
