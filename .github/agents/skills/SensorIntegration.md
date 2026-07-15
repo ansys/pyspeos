@@ -32,6 +32,71 @@ Every sensor feature should follow the same flow:
 
 ---
 
+## Proto mapping matrix (recommended before coding)
+
+Before implementation, create a mapping table in your PR notes.
+
+| Python API | Proto field | Scope | Notes |
+|---|---|---|---|
+| `sensor.<prop>` | `<sensor>_sensor_template.<prop>` | Template | Shared/configuration state |
+| `sensor.<instance_prop>` | `<sensor>_properties.<instance_prop>` | Instance | Placement/runtime state |
+| `set_<group>()` | nested proto message | Template | Return helper class |
+| `None` setter path | `ClearField("...")` | Template/Instance | Optional field disable path |
+
+Observer reference mapping:
+
+- `SensorObserver.focal` -> `observer_sensor_template.focal`
+- `SensorObserver.axis_system` -> `observer_properties.axis_system`
+- `SensorObserver.set_angular_range()` -> `observer_sensor_template.sensors_locations`
+- `SensorObserver.stereo_interocular_distance = None` -> `observer_sensor_template.ClearField("stereo")`
+
+This catches naming and scope mismatches early.
+
+---
+
+## Hydration contract (must hold for every sensor)
+
+Creation and hydration must be deterministic:
+
+- In `Project._fill_features()`, map each `HasField("<sensor>_properties")` to the matching sensor class.
+- Constructor hydration path uses `sensor_instance=...` with `default_parameters=None`.
+- `_fill_parameters()` must only apply defaults when `default_parameters` is provided.
+- Hydration path must not overwrite values already loaded from scene protobuf.
+
+Rule:
+
+- `default_parameters is not None` => creation/default assignment path
+- `default_parameters is None` => hydration/read-existing path
+
+---
+
+## Nested helper pattern (`stable_ctr` guard)
+
+For nested configuration objects, use guarded helper classes (for example `BaseSensor.Dimensions`, `BaseSensor.AngularRange`).
+
+- Helper class constructor accepts `stable_ctr: bool = False`.
+- Raise `RuntimeError` when instantiated directly by users.
+- Expose helper only through parent `set_<group>()` method with `stable_ctr=True`.
+
+This keeps nested protobuf mutations controlled and consistent.
+
+---
+
+## Optional field semantics (enable/disable behavior)
+
+For optional embedded protobuf messages:
+
+- Assign value => set field content.
+- Assign `None` => clear field via `ClearField("...")`.
+
+Always test both transitions:
+
+1. unset -> set
+2. set -> clear (`None`)
+3. clear state after `commit()` and hydration
+
+---
+
 ## Required implementation checklist (all sensors)
 
 1. Add or update parameter dataclasses in `generic/parameters.py`.
@@ -48,6 +113,7 @@ Every sensor feature should follow the same flow:
 9. Run:
    - `ruff check --fix`
    - `ruff format`
+10. Run focused syntax and pytest validation for the new sensor keyword.
 
 ---
 
@@ -90,6 +156,18 @@ At minimum, verify:
 
 When adding load tests, mirror the assertions used by existing sensor load tests in `tests/core/test_sensor.py`.
 
+### Minimal test blueprint for new sensors
+
+At minimum, add tests for:
+
+1. Factory creation with default dataclass.
+2. Creation with custom dataclass values.
+3. Property getter/setter round-trips.
+4. Nested helper (`set_*`) round-trips.
+5. `commit()` persistence (template type + values).
+6. Scene hydration parity (loaded object values match committed values).
+7. Optional `None` clear-paths (if applicable).
+
 ---
 
 ## Worked example: `SensorPolarIntensity`
@@ -116,6 +194,23 @@ When implementing another sensor with similar mode complexity, copy this pattern
 - Accidentally overwriting unrelated oneof branches.
 - Registering factory dispatch but missing `_fill_features()` hydration mapping.
 - Updating feature code without updating both creation and load tests.
+- Defining helper classes at the wrong nesting/indentation level in `sensor.py`.
+- Writing defaults during hydration because `_fill_parameters()` does not guard `default_parameters is None`.
+- Registering in `create_sensor()` but forgetting supported-list update in default `TypeError` branch.
+
+---
+
+## Validation commands (Windows / PowerShell)
+
+Run these after implementation updates:
+
+```powershell
+cd D:\work\Gitdir\pyspeos
+python -m py_compile src/ansys/speos/core/sensor.py src/ansys/speos/core/project.py tests/core/test_sensor.py
+python -m pytest tests/core/test_sensor.py -k <sensor-keyword> -q --maxfail=1
+```
+
+Example keyword: `observer`.
 
 ---
 

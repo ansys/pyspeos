@@ -52,6 +52,7 @@ from ansys.speos.core.generic.parameters import (
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
+    ObserverSensorParameters,
     OptPropParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
@@ -74,6 +75,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -870,6 +872,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorObserver":
+                if parameters is None:
+                    parameters = ObserverSensorParameters()
+                elif not isinstance(parameters, ObserverSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ObserverSensorParameters"
+                    )
+                feature = SensorObserver(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -880,6 +897,7 @@ class Project:
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
                         SensorImmersive,
+                        SensorObserver,
                     ],
                 )
                 raise TypeError(msg)
@@ -1483,6 +1501,13 @@ class Project:
                 )
             elif ssr_inst.HasField("immersive_properties"):
                 ssr_feat = SensorImmersive(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("observer_properties"):
+                ssr_feat = SensorObserver(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,

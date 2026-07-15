@@ -34,11 +34,11 @@ from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
 from ansys.speos.core.generic.parameters import (
+    AngularRangeParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
     DimensionsParameters,
-    ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
     IntensitySensorDimensionsXAsMeridianParameters,
@@ -46,14 +46,13 @@ from ansys.speos.core.generic.parameters import (
     IntensitySensorOrientationTypes,
     IntensitySensorViewingTypes,
     IntensityXMPSensorParameters,
-    Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
     LayerByIncidenceAngleParameters,
     LayerBySequenceParameters,
     LayerTypes,
-    MeasuresParameters,
     NearfieldParameters,
+    ObserverSensorParameters,
     RadianceSensorParameters,
     RayfileTypes,
     SensorTypes,
@@ -65,8 +64,8 @@ from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
-    SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -2551,78 +2550,6 @@ def test_create_by_parameters(speos: Speos):
                 )
         if isinstance(para.sensor_type, ColorimetricParameters):
             assert s.type.lower() == "colorimetric"
-            assert (
-                s.colorimetric.set_wavelengths_range().start
-                == colorimetric_params.wavelength_range.start
-            )
-        elif isinstance(para.sensor_type, SpectralParameters):
-            assert s.type.lower() == "spectral"
-            assert (
-                s.spectral.set_wavelengths_range().start == spectral_params.wavelength_range.start
-            )
-        else:
-            assert s.type.lower() == para.sensor_type
-    irr3d_sensor_params = [
-        Irradiance3DSensorParameters(
-            sensor_type=SensorTypes.photometric,
-            layer_type=LayerTypes.none,
-            integration_type=IntegrationTypes.radial,
-            rayfile_type=RayfileTypes.tm25_no_polarization,
-        ),
-        Irradiance3DSensorParameters(
-            sensor_type=colorimetric_params,
-            layer_type=LayerTypes.by_source,
-            integration_type=IntegrationTypes.planar,
-            rayfile_type=RayfileTypes.tm25,
-        ),
-        Irradiance3DSensorParameters(
-            sensor_type=SensorTypes.radiometric,
-            integration_type=IntegrationTypes.planar,
-            rayfile_type=RayfileTypes.classic,
-            measures=MeasuresParameters(False, False, True),
-        ),
-        Irradiance3DSensorParameters(
-            integration_type=IntegrationTypes.planar,
-            rayfile_type=RayfileTypes.polarization,
-            measures=MeasuresParameters(True, True, True),
-        ),
-        Irradiance3DSensorParameters(
-            sensor_type=SensorTypes.radiometric,
-            integration_type=IntegrationTypes.radial,
-            rayfile_type=RayfileTypes.classic,
-        ),
-    ]
-    for i, para in enumerate(irr3d_sensor_params):
-        s = p.create_sensor(f"Irr3DSensor.{i}", feature_type=Sensor3DIrradiance, parameters=para)
-        assert isinstance(s, Sensor3DIrradiance)
-        match para.rayfile_type:
-            case RayfileTypes.none:
-                assert (
-                    s._sensor_instance.irradiance_3d_properties.ray_file_type
-                    == s._sensor_instance.EnumRayFileType.RayFileNone
-                )
-            case RayfileTypes.classic:
-                assert (
-                    s._sensor_instance.irradiance_3d_properties.ray_file_type
-                    == s._sensor_instance.EnumRayFileType.RayFileClassic
-                )
-            case RayfileTypes.polarization:
-                assert (
-                    s._sensor_instance.irradiance_3d_properties.ray_file_type
-                    == s._sensor_instance.EnumRayFileType.RayFilePolarization
-                )
-            case RayfileTypes.tm25:
-                assert (
-                    s._sensor_instance.irradiance_3d_properties.ray_file_type
-                    == s._sensor_instance.EnumRayFileType.RayFileTM25
-                )
-            case RayfileTypes.tm25_no_polarization:
-                assert (
-                    s._sensor_instance.irradiance_3d_properties.ray_file_type
-                    == s._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
-                )
-        if isinstance(para.sensor_type, ColorimetricParameters):
-            assert s.type.lower() == "colorimetric"
             assert isinstance(s.colorimetric, Sensor3DIrradiance.Colorimetric)
             assert (
                 s.colorimetric.set_wavelengths_range().start
@@ -2661,530 +2588,366 @@ def test_create_by_parameters(speos: Speos):
                 assert s.set_type_radiometric()._integration_type.lower() == para.integration_type
 
 
+# ============================================================================
+# Observer Sensor Tests
+# ============================================================================
+
+
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor(speos: Speos):
-    """Test creation of an immersive sensor with default parameters."""
+def test_create_observer_sensor_default(speos: Speos):
+    """Test creation of Observer sensor with default parameters."""
     p = Project(speos=speos)
-    default_params = ImmersiveSensorParameters()
 
     # Create with default parameters
-    sensor1 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
-    assert isinstance(sensor1, SensorImmersive)
+    sensor = p.create_sensor(name="Observer.1", feature_type=SensorObserver)
+    assert isinstance(sensor, SensorObserver)
 
-    # Verify defaults from parameters dataclass
-    assert sensor1.sampling == default_params.sampling
-    assert sensor1.integration_angle == default_params.integration_angle
-    assert sensor1.stereo_interocular_distance == 0.0
-    assert sensor1.set_wavelengths_range().start == default_params.wavelengths_range.start
-    assert sensor1.set_wavelengths_range().end == default_params.wavelengths_range.end
-    assert sensor1.set_wavelengths_range().sampling == default_params.wavelengths_range.sampling
-    assert list(sensor1.axis_system) == list(default_params.axis_system)
-    assert sensor1.exclude_front == default_params.exclude_front
-    assert sensor1.exclude_back == default_params.exclude_back
-    assert sensor1.exclude_left == default_params.exclude_left
-    assert sensor1.exclude_right == default_params.exclude_right
-    assert sensor1.exclude_top == default_params.exclude_top
-    assert sensor1.exclude_bottom == default_params.exclude_bottom
-
-    # Commit and verify template is stored on server
-    assert sensor1.sensor_template_link is None
-    assert len(p.scene_link.get().sensors) == 0
-    sensor1.commit()
-    assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("immersive_sensor_template")
-    assert len(p.scene_link.get().sensors) == 1
-    assert p.scene_link.get().sensors[0].HasField("immersive_properties")
-
-    # Verify template values on the server
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
-    assert tmpl.sampling == default_params.sampling
-    assert tmpl.integration_angle == default_params.integration_angle
-    assert tmpl.wavelengths_range.w_start == default_params.wavelengths_range.start
-    assert tmpl.wavelengths_range.w_end == default_params.wavelengths_range.end
-    assert tmpl.wavelengths_range.w_sampling == default_params.wavelengths_range.sampling
-    assert tmpl.exclude_faces.front == default_params.exclude_front
-    assert tmpl.exclude_faces.back == default_params.exclude_back
-
-    sensor1.delete()
+    # Check default values
+    default_params = ObserverSensorParameters()
+    assert sensor.focal == default_params.focal
+    assert sensor.integration_angle == default_params.integration_angle
+    assert sensor.distance == default_params.distance
+    assert sensor.stereo_interocular_distance == 0.0  # Not set by default
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor_custom_parameters(speos: Speos):
-    """Test creation of an immersive sensor with custom parameters."""
+def test_create_observer_sensor_custom_parameters(speos: Speos):
+    """Test creation of Observer sensor with custom parameters."""
     p = Project(speos=speos)
 
-    custom_params = ImmersiveSensorParameters(
-        sampling=128,
+    # Create custom parameters
+    custom_params = ObserverSensorParameters(
+        focal=300.0,
         integration_angle=10.0,
-        wavelengths_range=WavelengthsRangeParameters(start=380, end=780, sampling=21),
-        axis_system=[1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        layer_type=LayerTypes.by_source,
-        exclude_front=True,
-        exclude_back=False,
-        exclude_left=True,
-        exclude_right=False,
-        exclude_top=True,
-        exclude_bottom=False,
-        interocular_distance=6.5,
+        distance=150.0,
+        interocular_distance=65.0,
     )
 
-    sensor1 = p.create_sensor(
-        name="Immersive.Custom",
-        feature_type=SensorImmersive,
+    sensor = p.create_sensor(
+        name="Observer.Custom",
+        feature_type=SensorObserver,
         parameters=custom_params,
     )
-    assert isinstance(sensor1, SensorImmersive)
+    assert isinstance(sensor, SensorObserver)
 
-    # Verify custom template values (local)
-    assert sensor1.sampling == 128
-    assert sensor1.integration_angle == 10.0
-    assert sensor1.stereo_interocular_distance == 6.5
-    assert sensor1.set_wavelengths_range().start == 380
-    assert sensor1.set_wavelengths_range().end == 780
-    assert sensor1.set_wavelengths_range().sampling == 21
-    assert list(sensor1.axis_system) == [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    assert sensor1.layer == LayerTypes.by_source
-    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_source")
-    assert sensor1.exclude_front is True
-    assert sensor1.exclude_back is False
-    assert sensor1.exclude_left is True
-    assert sensor1.exclude_right is False
-    assert sensor1.exclude_top is True
-    assert sensor1.exclude_bottom is False
-
-    sensor1.commit()
-
-    # Verify values on the server after commit
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
-    assert tmpl.sampling == 128
-    assert tmpl.integration_angle == 10.0
-    assert tmpl.stereo.interocular_distance == 6.5
-    assert tmpl.wavelengths_range.w_start == 380
-    assert tmpl.wavelengths_range.w_end == 780
-    assert tmpl.wavelengths_range.w_sampling == 21
-    assert tmpl.exclude_faces.front is True
-    assert tmpl.exclude_faces.left is True
-    assert tmpl.exclude_faces.top is True
-    assert tmpl.exclude_faces.back is False
-    assert tmpl.exclude_faces.right is False
-    assert tmpl.exclude_faces.bottom is False
-
-    scene_inst = p.scene_link.get().sensors[0]
-    assert scene_inst.HasField("immersive_properties")
-    assert list(scene_inst.immersive_properties.axis_system) == [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    assert scene_inst.immersive_properties.HasField("layer_type_source")
-
-    sensor1.delete()
+    # Check custom values
+    assert sensor.focal == 300.0
+    assert sensor.integration_angle == 10.0
+    assert sensor.distance == 150.0
+    assert sensor.stereo_interocular_distance == 65.0
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_setters(speos: Speos):
-    """Test property setters of the immersive sensor."""
+def test_observer_sensor_focal_property(speos: Speos):
+    """Test focal distance property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Focal", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.focal = 400.0
+    assert sensor.focal == 400.0
+
+    sensor.focal = 500.5
+    assert sensor.focal == 500.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_integration_angle_property(speos: Speos):
+    """Test integration angle property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.IntAngle", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.integration_angle = 15.0
+    assert sensor.integration_angle == 15.0
+
+    sensor.integration_angle = 20.5
+    assert sensor.integration_angle == 20.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_distance_property(speos: Speos):
+    """Test distance property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Distance", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.distance = 200.0
+    assert sensor.distance == 200.0
+
+    sensor.distance = 250.5
+    assert sensor.distance == 250.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_stereo_interocular_distance(speos: Speos):
+    """Test stereo interocular distance property."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Stereo", feature_type=SensorObserver)
+
+    # Test setting stereo distance
+    sensor.stereo_interocular_distance = 65.0
+    assert sensor.stereo_interocular_distance == 65.0
+
+    # Test clearing stereo (set to None)
+    sensor.stereo_interocular_distance = None
+    assert sensor.stereo_interocular_distance == 0.0
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_wavelengths_range(speos: Speos):
+    """Test wavelengths range configuration."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.WL", feature_type=SensorObserver)
+
+    # Get wavelengths range object
+    wl_range = sensor.set_wavelengths_range()
+    assert isinstance(wl_range, BaseSensor.WavelengthsRange)
+
+    # Test setting wavelengths range
+    wl_range.start = 450.0
+    wl_range.end = 650.0
+    wl_range.sampling = 20
+
+    assert wl_range.start == 450.0
+    assert wl_range.end == 650.0
+    assert wl_range.sampling == 20
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_dimensions(speos: Speos):
+    """Test dimensions configuration."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Dims", feature_type=SensorObserver)
+
+    # Get dimensions object
+    dims = sensor.set_dimensions()
+    assert isinstance(dims, BaseSensor.Dimensions)
+
+    # Test setting dimensions
+    dims.x_start = -100.0
+    dims.x_end = 100.0
+    dims.x_sampling = 50
+    dims.y_start = -75.0
+    dims.y_end = 75.0
+    dims.y_sampling = 30
+
+    assert dims.x_start == -100.0
+    assert dims.x_end == 100.0
+    assert dims.x_sampling == 50
+    assert dims.y_start == -75.0
+    assert dims.y_end == 75.0
+    assert dims.y_sampling == 30
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_angular_range(speos: Speos):
+    """Test angular range configuration for sensor locations."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.AngularRange", feature_type=SensorObserver)
+
+    # Get angular range object
+    ang_range = sensor.set_angular_range()
+    assert isinstance(ang_range, BaseSensor.AngularRange)
+
+    # Test setting angular range
+    ang_range.x_start = -60.0
+    ang_range.x_end = 60.0
+    ang_range.x_sampling = 10
+    ang_range.y_start = -45.0
+    ang_range.y_end = 45.0
+    ang_range.y_sampling = 7
+
+    assert ang_range.x_start == -60.0
+    assert ang_range.x_end == 60.0
+    assert ang_range.x_sampling == 10
+    assert ang_range.y_start == -45.0
+    assert ang_range.y_end == 45.0
+    assert ang_range.y_sampling == 7
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_axis_system(speos: Speos):
+    """Test axis system property."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.AxisSys", feature_type=SensorObserver)
+
+    # Test default axis system (origin)
+    assert sensor.axis_system == ORIGIN
+
+    # Test setting custom axis system
+    custom_axis = [10.0, 20.0, 30.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    sensor.axis_system = custom_axis
+    assert sensor.axis_system == custom_axis
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_commit_and_check_template(speos: Speos):
+    """Test committing Observer sensor and checking template."""
     p = Project(speos=speos)
 
-    sensor1 = p.create_sensor(name="Immersive.Setters", feature_type=SensorImmersive)
+    sensor = p.create_sensor(name="Observer.Commit", feature_type=SensorObserver)
 
-    # Modify via setters
-    sensor1.sampling = 256
-    sensor1.integration_angle = 7.5
-    sensor1.stereo_interocular_distance = 6.5
-    wl = sensor1.set_wavelengths_range()
-    wl.start = 420
-    wl.end = 720
-    wl.sampling = 15
-    sensor1.axis_system = [5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    sensor1.exclude_back = True
-    sensor1.exclude_bottom = True
+    # Set properties
+    sensor.focal = 350.0
+    sensor.integration_angle = 8.0
+    sensor.distance = 120.0
+    sensor.stereo_interocular_distance = 60.0
 
-    assert sensor1.sampling == 256
-    assert sensor1.integration_angle == 7.5
-    assert sensor1.stereo_interocular_distance == 6.5
-    assert sensor1.set_wavelengths_range().start == 420
-    assert sensor1.set_wavelengths_range().end == 720
-    assert sensor1.set_wavelengths_range().sampling == 15
-    assert list(sensor1.axis_system) == [5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    assert sensor1.exclude_back is True
-    assert sensor1.exclude_bottom is True
-    # Untouched faces should remain False
-    assert sensor1.exclude_front is False
-    assert sensor1.exclude_left is False
-    assert sensor1.exclude_right is False
-    assert sensor1.exclude_top is False
+    # Commit sensor
+    sensor.commit()
 
-    sensor1.commit()
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
-    assert tmpl.sampling == 256
-    assert tmpl.integration_angle == 7.5
-    assert tmpl.stereo.interocular_distance == 6.5
-    assert tmpl.exclude_faces.back is True
-    assert tmpl.exclude_faces.bottom is True
-    assert tmpl.exclude_faces.front is False
-
-    sensor1.delete()
-
-
-@pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_layer_types(speos: Speos):
-    """Test layer type setters of the immersive sensor."""
-    p = Project(speos=speos)
-
-    sensor1 = p.create_sensor(name="Immersive.Layers", feature_type=SensorImmersive)
-
-    # Default: layer_type_none
-    sensor1.set_layer_type_none()
-    assert sensor1.layer == LayerTypes.none
-    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_none")
-
-    # Switch to by_source
-    sensor1.set_layer_type_source()
-    assert sensor1.layer == LayerTypes.by_source
-    assert sensor1._sensor_instance.immersive_properties.HasField("layer_type_source")
-
-    sensor1.commit()
-    scene_inst = p.scene_link.get().sensors[0]
-    assert scene_inst.immersive_properties.HasField("layer_type_source")
-
-    sensor1.delete()
-
-
-@pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_commit_reset_delete(speos: Speos):
-    """Test commit, reset, and delete lifecycle of immersive sensor."""
-    p = Project(speos=speos)
-
-    sensor1 = p.create_sensor(name="Immersive.Lifecycle", feature_type=SensorImmersive)
-    default_sampling = ImmersiveSensorParameters().sampling
-
-    # Before commit: no server entry
-    assert sensor1.sensor_template_link is None
-    assert len(p.scene_link.get().sensors) == 0
-
-    sensor1.commit()
-    assert sensor1.sensor_template_link is not None
-    assert len(p.scene_link.get().sensors) == 1
-
-    # Modify locally, not committed
-    sensor1.sampling = 512
-    assert sensor1.sampling == 512
-    assert sensor1.sensor_template_link.get().immersive_sensor_template.sampling == default_sampling
-
-    # Reset restores server values
-    sensor1.reset()
-    assert sensor1.sampling == default_sampling
-
-    # Delete clears server entries
-    sensor1.delete()
-    assert sensor1.sensor_template_link is None
-    assert sensor1._unique_id is None
-    assert len(p.scene_link.get().sensors) == 0
-
-
-@pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_wrong_parameters(speos: Speos):
-    """Test that passing wrong parameter type raises TypeError."""
-    p = Project(speos=speos)
-
-    with pytest.raises(TypeError, match="ImmersiveSensorParameters"):
-        p.create_sensor(
-            name="Immersive.WrongParam",
-            feature_type=SensorImmersive,
-            parameters=IrradianceSensorParameters(),
-        )
-
-
-@pytest.mark.supported_speos_versions(min=261)
-def test_load_immersive_sensor_from_speos_file(speos: Speos):
-    """Test loading an immersive sensor from an existing .speos file.
-
-    Verifies that the sensor settings (sampling, integration angle, wavelengths
-    range, axis system, layer type, and face exclusions) are correctly loaded
-    from ``tests/assets/sensor_immersive/InverseImmersive.speos``.
-    """
-    p = Project(
-        speos=speos,
-        path=Path(test_path) / "sensor_immersive" / "InverseImmersive.speos",
-    )
-
-    # The project should contain exactly one sensor, and it must be a SensorImmersive
-    assert len(p.sensors) == 1
-    sensor = p.sensors[0]
-    assert isinstance(sensor, SensorImmersive)
-
-    # Verify the sensor template link was populated on load
+    # Check sensor template link exists
     assert sensor.sensor_template_link is not None
-    assert sensor.sensor_template_link.get().HasField("immersive_sensor_template")
 
-    # Template-level settings
-    assert sensor.sampling == 600
-    assert sensor.integration_angle == 5.0
-    assert sensor.stereo_interocular_distance == 1000
+    # Get template and verify it has observer_sensor_template
+    template = sensor.sensor_template_link.get()
+    assert template.HasField("observer_sensor_template")
 
-    wl = sensor.set_wavelengths_range()
-    assert wl.start == 400.0
-    assert wl.end == 700.0
-    assert wl.sampling == 13
-
-    # Face exclusions stored in the file: left, right, and bottom are excluded
-    assert sensor.exclude_front is False
-    assert sensor.exclude_back is False
-    assert sensor.exclude_left is True
-    assert sensor.exclude_right is True
-    assert sensor.exclude_top is False
-    assert sensor.exclude_bottom is True
-
-    # Instance-level settings
-    assert sensor.axis_system == [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-
-    # Layer type loaded from file is 'none'
-    from ansys.speos.core.generic.parameters import LayerTypes
-
-    assert sensor.layer == LayerTypes.none
-    assert sensor._sensor_instance.immersive_properties.HasField("layer_type_none")
+    # Verify observer template properties
+    observer_template = template.observer_sensor_template
+    assert observer_template.focal == 350.0
+    assert observer_template.integration_angle == 8.0
+    assert observer_template.distance == 120.0
+    assert observer_template.stereo.interocular_distance == 60.0
 
 
-@pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_nested_modes(speos: Speos):
-    """Ensure camera load path hydrates photometric and nested color balance helpers."""
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_with_parameters_dataclass(speos: Speos):
+    """Test Observer sensor creation with full parameter dataclass configuration."""
     p = Project(speos=speos)
 
-    sensor_camera = p.create_sensor(name="Camera.LoadHydration", feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
-    color_mode.red_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
-    )
-    color_mode.green_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
-    )
-    color_mode.blue_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
-    )
-    user_white = color_mode.set_balance_mode_user_white()
-    user_white.red_gain = 1.3
-    user_white.green_gain = 0.9
-    user_white.blue_gain = 1.1
-    sensor_camera.commit()
-
-    scene_sensor = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Camera.LoadHydration"
-    )
-    loaded_sensor = SensorCamera(
-        project=p,
-        name=scene_sensor.name,
-        sensor_instance=scene_sensor,
-        default_parameters=None,
-    )
-
-    assert isinstance(loaded_sensor.photometric, SensorCamera.Photometric)
-    assert isinstance(loaded_sensor.photometric._mode, SensorCamera.Photometric.Color)
-    loaded_color_mode = loaded_sensor.photometric._mode
-    assert isinstance(
-        loaded_color_mode._mode,
-        SensorCamera.Photometric.Color.BalanceModeUserWhite,
-    )
-    assert loaded_color_mode._mode.red_gain == pytest.approx(1.3)
-    assert loaded_color_mode._mode.green_gain == pytest.approx(0.9)
-    assert loaded_color_mode._mode.blue_gain == pytest.approx(1.1)
-
-    sensor_camera.delete()
-
-
-@pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
-    """Ensure 3D irradiance load path keeps radial integration helper state."""
-    p = Project(
-        speos=speos,
-        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
-    )
-    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
-
-    sensor_photo = p.create_sensor(
-        name="Irr3D.Photo.LoadHydration", feature_type=Sensor3DIrradiance
-    )
-    sensor_photo.geometries = [body]
-    sensor_photo.set_type_photometric().set_integration_radial()
-    sensor_photo.commit()
-
-    scene_photo = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Irr3D.Photo.LoadHydration"
-    )
-
-    loaded_photo = Sensor3DIrradiance(
-        project=p,
-        name=scene_photo.name,
-        sensor_instance=scene_photo,
-        default_parameters=None,
-    )
-    assert isinstance(loaded_photo.photometric, Sensor3DIrradiance.Photometric)
-    assert loaded_photo.photometric._integration_type == "Radial"
-
-    sensor_photo.set_type_radiometric().set_integration_radial()
-    sensor_photo.commit()
-    loaded_radiometric = Sensor3DIrradiance(
-        project=p,
-        name=scene_photo.name,
-        sensor_instance=scene_photo,
-        default_parameters=None,
-    )
-    assert isinstance(loaded_radiometric.radiometric, Sensor3DIrradiance.Radiometric)
-    assert loaded_radiometric.radiometric._integration_type == "Radial"
-
-    sensor_photo.delete()
-
-
-@pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_geometric_mode(speos: Speos):
-    """Ensure camera load path hydrates geometric mode branch."""
-    p = Project(speos=speos)
-
-    sensor_camera = p.create_sensor(name="Camera.LoadGeometric", feature_type=SensorCamera)
-    sensor_camera.set_mode_geometric()
-    sensor_camera.commit()
-
-    scene_sensor = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Camera.LoadGeometric"
-    )
-    loaded_sensor = SensorCamera(
-        project=p,
-        name=scene_sensor.name,
-        sensor_instance=scene_sensor,
-        default_parameters=None,
-    )
-
-    assert loaded_sensor._sensor_template.camera_sensor_template.HasField("sensor_mode_geometric")
-    assert loaded_sensor._type is None
-
-    sensor_camera.delete()
-
-
-@pytest.mark.supported_speos_versions(min=252)
-@pytest.mark.parametrize(
-    ("balance_setter", "expected_field", "expected_mode_type"),
-    [
-        (
-            "set_balance_mode_display_primaries",
-            "balance_mode_display",
-            SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries,
+    # Create detailed parameters
+    params = ObserverSensorParameters(
+        focal=280.0,
+        integration_angle=6.0,
+        distance=110.0,
+        interocular_distance=66.0,
+        wavelengths_range=WavelengthsRangeParameters(start=420, end=680, sampling=15),
+        dimensions=DimensionsParameters(
+            x_start=-80, x_end=80, x_sampling=120, y_start=-60, y_end=60, y_sampling=80
         ),
-        ("set_balance_mode_grey_world", "balance_mode_greyworld", None),
-        ("set_balance_mode_none", "balance_mode_none", None),
-    ],
-)
-def test_load_camera_hydrates_other_balance_modes(
-    speos: Speos,
-    balance_setter: str,
-    expected_field: str,
-    expected_mode_type: type | None,
-):
-    """Ensure camera load path hydrates all color balance mode branches."""
+        sensors_locations=AngularRangeParameters(
+            x_start=-50, x_end=50, x_sampling=8, y_start=-40, y_end=40, y_sampling=5
+        ),
+        axis_system=[5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+    )
+
+    sensor = p.create_sensor(
+        name="Observer.FullParams",
+        feature_type=SensorObserver,
+        parameters=params,
+    )
+
+    # Verify focal properties
+    assert sensor.focal == 280.0
+    assert sensor.integration_angle == 6.0
+    assert sensor.distance == 110.0
+    assert sensor.stereo_interocular_distance == 66.0
+
+    # Verify wavelengths range
+    wl_range = sensor.set_wavelengths_range()
+    assert wl_range.start == 420
+    assert wl_range.end == 680
+    assert wl_range.sampling == 15
+
+    # Verify dimensions
+    dims = sensor.set_dimensions()
+    assert dims.x_start == -80
+    assert dims.x_end == 80
+    assert dims.x_sampling == 120
+    assert dims.y_start == -60
+    assert dims.y_end == 60
+    assert dims.y_sampling == 80
+
+    # Verify angular range
+    ang_range = sensor.set_angular_range()
+    assert ang_range.x_start == -50
+    assert ang_range.x_end == 50
+    assert ang_range.x_sampling == 8
+    assert ang_range.y_start == -40
+    assert ang_range.y_end == 40
+    assert ang_range.y_sampling == 5
+
+    # Verify axis system
+    assert sensor.axis_system == [5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_load_hydration(speos: Speos):
+    """Test loading and hydrating Observer sensor from scene."""
     p = Project(speos=speos)
 
-    sensor_name = f"Camera.LoadBalance.{balance_setter}"
-    sensor_camera = p.create_sensor(name=sensor_name, feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
-    color_mode.red_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
-    )
-    color_mode.green_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
-    )
-    color_mode.blue_spectrum_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
-    )
+    # Create and commit an Observer sensor with specific configuration
+    sensor = p.create_sensor(name="Observer.LoadTest", feature_type=SensorObserver)
+    sensor.focal = 320.0
+    sensor.integration_angle = 7.5
+    sensor.distance = 130.0
+    sensor.stereo_interocular_distance = 63.0
 
-    balance_mode = getattr(color_mode, balance_setter)()
-    if expected_mode_type is SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
-        balance_mode.red_display_file_uri = str(
-            Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
-        )
-        balance_mode.green_display_file_uri = str(
-            Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
-        )
-        balance_mode.blue_display_file_uri = str(
-            Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
-        )
-    sensor_camera.commit()
+    # Configure nested properties
+    wl = sensor.set_wavelengths_range()
+    wl.start = 430
+    wl.end = 670
+    wl.sampling = 18
 
+    dims = sensor.set_dimensions()
+    dims.x_start = -90
+    dims.x_end = 90
+    dims.x_sampling = 110
+    dims.y_start = -70
+    dims.y_end = 70
+    dims.y_sampling = 75
+
+    ang = sensor.set_angular_range()
+    ang.x_start = -55
+    ang.x_end = 55
+    ang.x_sampling = 9
+    ang.y_start = -42
+    ang.y_end = 42
+    ang.y_sampling = 6
+
+    sensor.commit()
+
+    # Load the sensor from scene
     scene_sensor = next(
         sensor_instance
         for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == sensor_name
+        if sensor_instance.name == "Observer.LoadTest"
     )
-    loaded_sensor = SensorCamera(
+
+    # Create new sensor instance by hydration
+    loaded_sensor = SensorObserver(
         project=p,
         name=scene_sensor.name,
         sensor_instance=scene_sensor,
         default_parameters=None,
     )
 
-    loaded_color_mode = loaded_sensor.photometric._mode
-    assert loaded_color_mode._mode_color.HasField(expected_field)
-    if expected_mode_type is None:
-        assert loaded_color_mode._mode is None
-    else:
-        assert isinstance(loaded_color_mode._mode, expected_mode_type)
+    # Verify all properties match
+    assert loaded_sensor.focal == 320.0
+    assert loaded_sensor.integration_angle == 7.5
+    assert loaded_sensor.distance == 130.0
+    assert loaded_sensor.stereo_interocular_distance == 63.0
 
-    sensor_camera.delete()
+    # Verify nested properties
+    loaded_wl = loaded_sensor.set_wavelengths_range()
+    assert loaded_wl.start == 430
+    assert loaded_wl.end == 670
+    assert loaded_wl.sampling == 18
 
+    loaded_dims = loaded_sensor.set_dimensions()
+    assert loaded_dims.x_start == -90
+    assert loaded_dims.x_end == 90
+    assert loaded_dims.x_sampling == 110
+    assert loaded_dims.y_start == -70
+    assert loaded_dims.y_end == 70
+    assert loaded_dims.y_sampling == 75
 
-@pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
-    """Ensure 3D irradiance load path keeps planar integration helper state."""
-    p = Project(
-        speos=speos,
-        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
-    )
-    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
-
-    sensor_3d = p.create_sensor(name="Irr3D.Planar.LoadHydration", feature_type=Sensor3DIrradiance)
-    sensor_3d.geometries = [body]
-
-    photo_measures = sensor_3d.set_type_photometric().set_integration_planar()
-    photo_measures.absorption = False
-    sensor_3d.commit()
-
-    scene_sensor = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Irr3D.Planar.LoadHydration"
-    )
-    loaded_photo = Sensor3DIrradiance(
-        project=p,
-        name=scene_sensor.name,
-        sensor_instance=scene_sensor,
-        default_parameters=None,
-    )
-    assert isinstance(loaded_photo.photometric, Sensor3DIrradiance.Photometric)
-    assert isinstance(loaded_photo.photometric._integration_type, Sensor3DIrradiance.Measures)
-    assert loaded_photo.photometric._integration_type.reflection is True
-    assert loaded_photo.photometric._integration_type.transmission is True
-    assert loaded_photo.photometric._integration_type.absorption is False
-
-    radio_measures = sensor_3d.set_type_radiometric().set_integration_planar()
-    radio_measures.reflection = False
-    radio_measures.transmission = False
-    sensor_3d.commit()
-
-    scene_sensor = next(
-        sensor_instance
-        for sensor_instance in p.scene_link.get().sensors
-        if sensor_instance.name == "Irr3D.Planar.LoadHydration"
-    )
-    loaded_radiometric = Sensor3DIrradiance(
-        project=p,
-        name=scene_sensor.name,
-        sensor_instance=scene_sensor,
-        default_parameters=None,
-    )
-    assert isinstance(loaded_radiometric.radiometric, Sensor3DIrradiance.Radiometric)
-    assert isinstance(loaded_radiometric.radiometric._integration_type, Sensor3DIrradiance.Measures)
-    assert loaded_radiometric.radiometric._integration_type.reflection is False
-    assert loaded_radiometric.radiometric._integration_type.transmission is False
-    assert loaded_radiometric.radiometric._integration_type.absorption is True
-
-    sensor_3d.delete()
+    loaded_ang = loaded_sensor.set_angular_range()
+    assert loaded_ang.x_start == -55
+    assert loaded_ang.x_end == 55
+    assert loaded_ang.x_sampling == 9
+    assert loaded_ang.y_start == -42
+    assert loaded_ang.y_end == 42
+    assert loaded_ang.y_sampling == 6
