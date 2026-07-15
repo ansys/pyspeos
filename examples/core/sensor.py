@@ -192,6 +192,11 @@ sensor1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 sensor1.commit()
 print(sensor1)
 
+# Modify photometric camera properties (including diffraction effects)
+sensor1.set_mode_photometric().consider_diffraction_effects = True
+sensor1.commit()
+print(sensor1)
+
 # ## Reset
 #
 # Possibility to reset local values from the one available in the server.
