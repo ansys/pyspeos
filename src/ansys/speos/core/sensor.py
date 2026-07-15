@@ -1785,7 +1785,10 @@ class SensorCamera(BaseSensor):
         @consider_diffraction_effects.setter
         @general_methods.min_speos_version(26, 1, 3)
         def consider_diffraction_effects(self, value: bool) -> None:
-            self._mode_photometric.consider_diffraction_effects = value
+            if value:
+                self._mode_photometric.consider_diffraction_effects = value
+            else:
+                self._mode_photometric.ClearField("consider_diffraction_effects")
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
             """Choose 08-bits for png.
