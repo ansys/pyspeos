@@ -6166,6 +6166,9 @@ class SensorObserver(BaseSensor):
     def axis_system(self) -> list[float]:
         """Position of the sensor.
 
+        Whereas Horizontal direction is represented by X-Component and vertical by Z-Component of
+        the axis-system
+
         Parameters
         ----------
         value : list[float]

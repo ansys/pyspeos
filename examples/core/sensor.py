@@ -259,8 +259,7 @@ print(sensor5)
 # six directions (front, back, left, right, top, bottom).  It can be used with both direct and
 # inverse simulations.
 #
-# **Default values**
-#
+
 # Create an immersive sensor and commit it to show its default settings.
 
 sensor6 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
