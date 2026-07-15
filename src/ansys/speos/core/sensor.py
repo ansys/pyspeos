@@ -6020,21 +6020,11 @@ class SensorObserver(BaseSensor):
 
             # Set dimensions
             _dim = self.set_dimensions()
-            _dim.x_start = default_parameters.dimensions.x_start
-            _dim.x_end = default_parameters.dimensions.x_end
-            _dim.x_sampling = default_parameters.dimensions.x_sampling
-            _dim.y_start = default_parameters.dimensions.y_start
-            _dim.y_end = default_parameters.dimensions.y_end
-            _dim.y_sampling = default_parameters.dimensions.y_sampling
+            _dim._fill_parameters(default_parameters.dimensions)
 
             # Set angular range for sensor locations
             _ang = self.set_angular_range()
-            _ang.x_start = default_parameters.sensors_locations.x_start
-            _ang.x_end = default_parameters.sensors_locations.x_end
-            _ang.x_sampling = default_parameters.sensors_locations.x_sampling
-            _ang.y_start = default_parameters.sensors_locations.y_start
-            _ang.y_end = default_parameters.sensors_locations.y_end
-            _ang.y_sampling = default_parameters.sensors_locations.y_sampling
+            _ang._fill_parameters(default_parameters.sensors_locations)
             return
 
     # ------------------------------------------------------------------

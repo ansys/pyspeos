@@ -3226,6 +3226,7 @@ def test_create_observer_sensor_custom_parameters(speos: Speos):
         integration_angle=10.0,
         distance=150.0,
         interocular_distance=65.0,
+        sensors_locations=AngularRangeParameters(),
     )
 
     sensor = p.create_sensor(
