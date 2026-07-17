@@ -648,6 +648,99 @@ class ImmersiveSensorParameters:
     """Distance between viewpoints in mm."""
 
 
+@dataclass
+class AngularRangeParameters:
+    """Parameters for angular range configuration of Observer sensor locations.
+
+    Parameters
+    ----------
+    x_start : float, optional
+        Horizontal start angle in degrees. By default, ``-45``.
+    x_end : float, optional
+        Horizontal end angle in degrees. By default, ``45``.
+    x_sampling : int, optional
+        Horizontal angle sampling. By default, ``5``.
+    y_start : float, optional
+        Vertical start angle in degrees. By default, ``-30``.
+    y_end : float, optional
+        Vertical end angle in degrees. By default, ``30``.
+    y_sampling : int, optional
+        Vertical angle sampling. By default, ``3``.
+    """
+
+    x_start: float = -45.0
+    """Horizontal start angle in degrees."""
+    x_end: float = 45.0
+    """Horizontal end angle in degrees."""
+    x_sampling: int = 5
+    """Horizontal angle sampling."""
+    y_start: float = -30.0
+    """Vertical start angle in degrees."""
+    y_end: float = 30.0
+    """Vertical end angle in degrees."""
+    y_sampling: int = 3
+    """Vertical angle sampling."""
+
+
+@dataclass
+class ObserverSensorParameters:
+    """Parameters for SensorObserver.
+
+    Parameters
+    ----------
+    focal : float, optional
+        Distance between the sensor radiance plan and the observer point in mm.
+        The larger the focal, the closer to the object.
+        By default, ``50.0``.
+    integration_angle : float, optional
+        Integration angle in degrees for direct simulations.
+        By default, ``5.0``.
+    wavelengths_range : ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
+        Spectral range to use for simulation.
+        By default, a range from 400nm to 700nm with sampling of 13.
+    dimensions : ansys.speos.core.generic.parameters.DimensionsParameters, optional
+        Dimensions of the sensor.
+        By default, ``x_start=-50``, ``x_end=50``, ``y_start=-50``, ``y_end=50``.
+    distance : float, optional
+        Radius of the sphere on which the sensors will be placed in mm.
+        By default, ``1000.0``.
+    sensors_locations : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+        Locations of the sensors on the sphere.
+        By default, horizontal range from -180 to 180 degrees with 9 sampling,
+        vertical range from -90 to 90 degrees with 9 sampling.
+    interocular_distance : float, optional
+        Distance between the left and right eyes for stereo mode in mm.
+        By default, None (stereo disabled).
+    axis_system : list[float], optional
+        Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
+    """
+
+    focal: float = 50.0
+    """Distance between sensor radiance plan and observer point in mm."""
+    integration_angle: float = 5.0
+    """Integration angle in degrees."""
+    wavelengths_range: WavelengthsRangeParameters = field(
+        default_factory=WavelengthsRangeParameters
+    )
+    """Spectral range."""
+    dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
+    """Sensor dimensions."""
+    distance: float = 1000.0
+    """Radius of sphere where sensors are placed in mm."""
+    sensors_locations: AngularRangeParameters = field(default_factory=AngularRangeParameters)
+    """Angular locations of sensors on the sphere."""
+    interocular_distance: Optional[float] = None
+    """Distance between viewpoints in mm for stereo mode."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
+
+
 # =============================================================================
 # Source parameters
 # =============================================================================

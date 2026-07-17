@@ -34,6 +34,7 @@ from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
 from ansys.speos.core.generic.parameters import (
+    AngularRangeParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
@@ -55,6 +56,7 @@ from ansys.speos.core.generic.parameters import (
     LayerTypes,
     MeasuresParameters,
     NearfieldParameters,
+    ObserverSensorParameters,
     PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
@@ -72,6 +74,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
     SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
@@ -3691,3 +3694,356 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert sensor_iesna_b.axis_system == pytest.approx(sensor_iesna_b_params.axis_system)
     assert sensor_iesna_c.axis_system == pytest.approx(sensor_iesna_c_params.axis_system)
     assert sensor_eulumdat.axis_system == pytest.approx(sensor_eulumdat_params.axis_system)
+
+
+# ============================================================================
+# Observer Sensor Tests
+# ============================================================================
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_observer_sensor_default(speos: Speos):
+    """Test creation of Observer sensor with default parameters."""
+    p = Project(speos=speos)
+
+    # Create with default parameters
+    sensor = p.create_sensor(name="Observer.1", feature_type=SensorObserver)
+    assert isinstance(sensor, SensorObserver)
+
+    # Check default values
+    default_params = ObserverSensorParameters()
+    assert sensor.focal == default_params.focal
+    assert sensor.integration_angle == default_params.integration_angle
+    assert sensor.distance == default_params.distance
+    assert sensor.stereo_interocular_distance is None  # Not set by default
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_observer_sensor_custom_parameters(speos: Speos):
+    """Test creation of Observer sensor with custom parameters."""
+    p = Project(speos=speos)
+
+    # Create custom parameters
+    custom_params = ObserverSensorParameters(
+        focal=300.0,
+        integration_angle=10.0,
+        distance=150.0,
+        interocular_distance=65.0,
+        sensors_locations=AngularRangeParameters(),
+    )
+
+    sensor = p.create_sensor(
+        name="Observer.Custom",
+        feature_type=SensorObserver,
+        parameters=custom_params,
+    )
+    assert isinstance(sensor, SensorObserver)
+
+    # Check custom values
+    assert sensor.focal == 300.0
+    assert sensor.integration_angle == 10.0
+    assert sensor.distance == 150.0
+    assert sensor.stereo_interocular_distance == 65.0
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_focal_property(speos: Speos):
+    """Test focal distance property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Focal", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.focal = 400.0
+    assert sensor.focal == 400.0
+
+    sensor.focal = 500.5
+    assert sensor.focal == 500.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_integration_angle_property(speos: Speos):
+    """Test integration angle property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.IntAngle", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.integration_angle = 15.0
+    assert sensor.integration_angle == 15.0
+
+    sensor.integration_angle = 20.5
+    assert sensor.integration_angle == 20.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_distance_property(speos: Speos):
+    """Test distance property getter and setter."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Distance", feature_type=SensorObserver)
+
+    # Test setter and getter
+    sensor.distance = 200.0
+    assert sensor.distance == 200.0
+
+    sensor.distance = 250.5
+    assert sensor.distance == 250.5
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_stereo_interocular_distance(speos: Speos):
+    """Test stereo interocular distance property."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Stereo", feature_type=SensorObserver)
+
+    # Test setting stereo distance
+    sensor.stereo_interocular_distance = 65.0
+    assert sensor.stereo_interocular_distance == 65.0
+
+    # Test clearing stereo (set to None)
+    sensor.stereo_interocular_distance = None
+    assert sensor.stereo_interocular_distance is None
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_wavelengths_range(speos: Speos):
+    """Test wavelengths range configuration."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.WL", feature_type=SensorObserver)
+
+    # Get wavelengths range object
+    wl_range = sensor.set_wavelengths_range()
+    assert isinstance(wl_range, BaseSensor.WavelengthsRange)
+
+    # Test setting wavelengths range
+    wl_range.start = 450.0
+    wl_range.end = 650.0
+    wl_range.sampling = 20
+
+    assert wl_range.start == 450.0
+    assert wl_range.end == 650.0
+    assert wl_range.sampling == 20
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_dimensions(speos: Speos):
+    """Test dimensions configuration."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.Dims", feature_type=SensorObserver)
+
+    # Get dimensions object
+    dims = sensor.set_dimensions()
+    assert isinstance(dims, BaseSensor.Dimensions)
+
+    # Test setting dimensions
+    dims.x_start = -100.0
+    dims.x_end = 100.0
+    dims.x_sampling = 50
+    dims.y_start = -75.0
+    dims.y_end = 75.0
+    dims.y_sampling = 30
+
+    assert dims.x_start == -100.0
+    assert dims.x_end == 100.0
+    assert dims.x_sampling == 50
+    assert dims.y_start == -75.0
+    assert dims.y_end == 75.0
+    assert dims.y_sampling == 30
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_angular_range(speos: Speos):
+    """Test angular range configuration for sensor locations."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.AngularRange", feature_type=SensorObserver)
+
+    # Get angular range object
+    ang_range = sensor.set_angular_range()
+    assert isinstance(ang_range, SensorObserver.AngularRange)
+
+    # Test setting angular range
+    ang_range.x_start = -60.0
+    ang_range.x_end = 60.0
+    ang_range.x_sampling = 10
+    ang_range.y_start = -45.0
+    ang_range.y_end = 45.0
+    ang_range.y_sampling = 7
+
+    assert ang_range.x_start == -60.0
+    assert ang_range.x_end == 60.0
+    assert ang_range.x_sampling == 10
+    assert ang_range.y_start == -45.0
+    assert ang_range.y_end == 45.0
+    assert ang_range.y_sampling == 7
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_axis_system(speos: Speos):
+    """Test axis system property."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Observer.AxisSys", feature_type=SensorObserver)
+
+    # Test default axis system (origin)
+    assert sensor.axis_system == ORIGIN
+
+    # Test setting custom axis system
+    custom_axis = [10.0, 20.0, 30.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    sensor.axis_system = custom_axis
+    assert sensor.axis_system == custom_axis
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_commit_and_check_template(speos: Speos):
+    """Test committing Observer sensor and checking template."""
+    p = Project(speos=speos)
+
+    sensor = p.create_sensor(name="Observer.Commit", feature_type=SensorObserver)
+
+    # Set properties
+    sensor.focal = 350.0
+    sensor.integration_angle = 8.0
+    sensor.distance = 120.0
+    sensor.stereo_interocular_distance = 60.0
+
+    # Commit sensor
+    sensor.commit()
+
+    # Check sensor template link exists
+    assert sensor.sensor_template_link is not None
+
+    # Get template and verify it has observer_sensor_template
+    template = sensor.sensor_template_link.get()
+    assert template.HasField("observer_sensor_template")
+
+    # Verify observer template properties
+    observer_template = template.observer_sensor_template
+    assert observer_template.focal == 350.0
+    assert observer_template.integration_angle == 8.0
+    assert observer_template.distance == 120.0
+    assert observer_template.stereo.interocular_distance == 60.0
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_with_parameters_dataclass(speos: Speos):
+    """Test Observer sensor creation with full parameter dataclass configuration."""
+    p = Project(speos=speos)
+
+    # Create detailed parameters
+    params = ObserverSensorParameters(
+        focal=280.0,
+        integration_angle=6.0,
+        distance=110.0,
+        interocular_distance=66.0,
+        wavelengths_range=WavelengthsRangeParameters(start=420, end=680, sampling=15),
+        dimensions=DimensionsParameters(
+            x_start=-80, x_end=80, x_sampling=120, y_start=-60, y_end=60, y_sampling=80
+        ),
+        sensors_locations=AngularRangeParameters(
+            x_start=-50, x_end=50, x_sampling=8, y_start=-40, y_end=40, y_sampling=5
+        ),
+        axis_system=[5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+        layer_type=LayerTypes.by_source,
+    )
+
+    sensor = p.create_sensor(
+        name="Observer.FullParams",
+        feature_type=SensorObserver,
+        parameters=params,
+    )
+
+    # Verify focal properties
+    assert sensor.focal == 280.0
+    assert sensor.integration_angle == 6.0
+    assert sensor.distance == 110.0
+    assert sensor.stereo_interocular_distance == 66.0
+
+    # Verify wavelengths range
+    wl_range = sensor.set_wavelengths_range()
+    assert wl_range.start == 420
+    assert wl_range.end == 680
+    assert wl_range.sampling == 15
+
+    # Verify dimensions
+    dims = sensor.set_dimensions()
+    assert dims.x_start == -80
+    assert dims.x_end == 80
+    assert dims.x_sampling == 120
+    assert dims.y_start == -60
+    assert dims.y_end == 60
+    assert dims.y_sampling == 80
+
+    # Verify angular range
+    ang_range = sensor.set_angular_range()
+    assert ang_range.x_start == -50
+    assert ang_range.x_end == 50
+    assert ang_range.x_sampling == 8
+    assert ang_range.y_start == -40
+    assert ang_range.y_end == 40
+    assert ang_range.y_sampling == 5
+
+    # Verify axis system
+    assert sensor.axis_system == [5.0, 10.0, 15.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    assert sensor.layer == LayerTypes.by_source
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_sensor_load(speos: Speos):
+    """Test loading and hydrating Observer sensor from scene."""
+    p = Project(speos=speos, path=test_path / "observer_test.1.speos" / "observer_test.1.speos")
+
+    # Create and commit an Observer sensor with specific configuration
+    params = ObserverSensorParameters(
+        focal=120.0,
+        integration_angle=2.5,
+        wavelengths_range=WavelengthsRangeParameters(start=420, end=680, sampling=15),
+        dimensions=DimensionsParameters(
+            x_start=-10,
+            x_end=10,
+            x_sampling=10,
+            y_start=-10,
+            y_end=10,
+            y_sampling=10,
+        ),
+        distance=125,
+        sensors_locations=AngularRangeParameters(
+            x_start=-30,
+            x_end=30,
+            x_sampling=7,
+            y_start=-10,
+            y_end=10,
+            y_sampling=3,
+        ),
+        interocular_distance=55,
+        axis_system=[0, 0, 5, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+    )
+
+    loaded_sensor = p.sensors[0]
+
+    # Verify all properties match
+    assert loaded_sensor.focal == params.focal
+    assert loaded_sensor.integration_angle == params.integration_angle
+    assert loaded_sensor.distance == params.distance
+    assert loaded_sensor.stereo_interocular_distance == params.interocular_distance
+
+    # Verify nested properties
+    loaded_wl = loaded_sensor.set_wavelengths_range()
+    assert loaded_wl.start == params.wavelengths_range.start
+    assert loaded_wl.end == params.wavelengths_range.end
+    assert loaded_wl.sampling == params.wavelengths_range.sampling
+
+    loaded_dims = loaded_sensor.set_dimensions()
+    assert loaded_dims.x_start == params.dimensions.x_start
+    assert loaded_dims.x_end == params.dimensions.x_end
+    assert loaded_dims.x_sampling == params.dimensions.x_sampling
+    assert loaded_dims.y_start == params.dimensions.y_start
+    assert loaded_dims.y_end == params.dimensions.y_end
+    assert loaded_dims.y_sampling == params.dimensions.y_sampling
+
+    loaded_ang = loaded_sensor.set_angular_range()
+    assert loaded_ang.x_start == params.sensors_locations.x_start
+    assert loaded_ang.x_end == params.sensors_locations.x_end
+    assert loaded_ang.x_sampling == params.sensors_locations.x_sampling
+    assert loaded_ang.y_start == params.sensors_locations.y_start
+    assert loaded_ang.y_end == params.sensors_locations.y_end
+    assert loaded_ang.y_sampling == params.sensors_locations.y_sampling
+
+    assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
+    assert loaded_sensor.layer is None
