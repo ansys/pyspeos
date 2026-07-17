@@ -14,6 +14,7 @@ from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
+    ObserverSensorParameters,
     PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
@@ -27,6 +28,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
     SensorPolarIntensity,
     SensorRadiance,
 )
@@ -261,8 +263,7 @@ print(sensor5)
 # six directions (front, back, left, right, top, bottom).  It can be used with both direct and
 # inverse simulations.
 #
-# **Default values**
-#
+
 # Create an immersive sensor and commit it to show its default settings.
 
 sensor6 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
@@ -305,6 +306,90 @@ print(sensor6)
 
 sensor6.delete()
 print(sensor6)
+
+# ### Observer sensor
+#
+# An observer sensor places multiple virtual viewpoints on a sphere around the scene.
+# It is useful when you want to sample a setup from several directions with one feature.
+#
+# **Default values**
+
+sensor7 = p.create_sensor(name="Observer.1", feature_type=SensorObserver)
+print(sensor7)  # local: not yet on server
+
+sensor7.commit()
+print(sensor7)  # now on server
+
+# **Customise the sensor**
+#
+# The focal distance defines the observer plane, ``distance`` controls the radius of the
+# sampling sphere, and the angular range controls how many viewpoints are created.
+
+sensor7.focal = 320.0
+sensor7.integration_angle = 7.5
+sensor7.distance = 130.0
+sensor7.stereo_interocular_distance = 63.0
+
+observer_wl = sensor7.set_wavelengths_range()
+observer_wl.start = 430.0
+observer_wl.end = 670.0
+observer_wl.sampling = 18
+
+observer_dims = sensor7.set_dimensions()
+observer_dims.x_start = -90.0
+observer_dims.x_end = 90.0
+observer_dims.x_sampling = 110
+observer_dims.y_start = -70.0
+observer_dims.y_end = 70.0
+observer_dims.y_sampling = 75
+
+observer_angles = sensor7.set_angular_range()
+observer_angles.x_start = -55.0
+observer_angles.x_end = 55.0
+observer_angles.x_sampling = 9
+observer_angles.y_start = -42.0
+observer_angles.y_end = 42.0
+observer_angles.y_sampling = 6
+
+# Separate the recorded results by source and move the sensor frame.
+sensor7.set_layer_type_source()
+sensor7.axis_system = [10, 0, 15, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor7.commit()
+print(sensor7)
+
+# **Create from parameter dataclass**
+#
+# Observer sensors can also be configured in one shot with a parameter dataclass.
+
+observer_params = ObserverSensorParameters(
+    focal=280.0,
+    integration_angle=6.0,
+    distance=110.0,
+    interocular_distance=66.0,
+    axis_system=[5, 10, 15, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    layer_type="by_source",
+)
+sensor8 = p.create_sensor(
+    name="Observer.Parameters",
+    feature_type=SensorObserver,
+    parameters=observer_params,
+)
+sensor8.commit()
+print(sensor8)
+
+# **Reset and delete**
+
+sensor7.distance = 300.0  # local modification — not yet committed
+sensor7.stereo_interocular_distance = None
+sensor7.reset()  # restores the last committed values from the server
+print(sensor7)
+
+sensor8.delete()
+print(sensor8)
+
+sensor7.delete()
+print(sensor7)
 
 # ### Polar intensity sensor
 #

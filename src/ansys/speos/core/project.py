@@ -54,6 +54,7 @@ from ansys.speos.core.generic.parameters import (
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
+    ObserverSensorParameters,
     OptPropParameters,
     PolarIntensitySensorParameters,
     RadianceSensorParameters,
@@ -77,6 +78,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
     SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
@@ -771,6 +773,7 @@ class Project:
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
                 ImmersiveSensorParameters,
+                ObserverSensorParameters,
                 PolarIntensitySensorParameters,
             ]
         ] = None,
@@ -781,6 +784,7 @@ class Project:
         Sensor3DIrradiance,
         SensorXMPIntensity,
         SensorImmersive,
+        SensorObserver,
         SensorPolarIntensity,
     ]:
         """Create a new Sensor feature.
@@ -800,6 +804,7 @@ class Project:
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SensorObserver, \
             ansys.speos.core.sensor.SensorImmersive, \
             ansys.speos.core.sensor.SensorPolarIntensity].
         metadata : Optional[Mapping[str, str]]
@@ -812,6 +817,7 @@ class Project:
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
         ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
+        ansys.speos.core.generic.parameters.ObserverSensorParameters,\
         ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
@@ -924,6 +930,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorObserver":
+                if parameters is None:
+                    parameters = ObserverSensorParameters()
+                elif not isinstance(parameters, ObserverSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ObserverSensorParameters"
+                    )
+                feature = SensorObserver(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SensorPolarIntensity":
                 if parameters is None:
                     parameters = PolarIntensitySensorParameters()
@@ -949,6 +970,7 @@ class Project:
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
                         SensorImmersive,
+                        SensorObserver,
                         SensorPolarIntensity,
                     ],
                 )
@@ -1577,6 +1599,13 @@ class Project:
                 )
             elif ssr_inst.HasField("immersive_properties"):
                 ssr_feat = SensorImmersive(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("observer_properties"):
+                ssr_feat = SensorObserver(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,

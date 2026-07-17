@@ -39,6 +39,7 @@ from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
+    SensorObserver,
     SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
@@ -615,12 +616,17 @@ def test_preview_visual_data(speos: Speos):
 @pytest.mark.supported_speos_versions(min=252)
 def test_creation_errors(speos: Speos):
     """Test to validate errors on sensor creation."""
-    p = Project(
-        speos=speos,
-        path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
-        ),
-    )
+    p = Project(speos=speos)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_sensor(name="test", feature_type=SourceSurface)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_source(name="test", feature_type=SensorRadiance)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_simulation(name="test", feature_type=SensorIrradiance)
+
     with pytest.raises(TypeError, match="Irradiance3DSensorParameters"):
         p.create_sensor(
             name="Sensor3D", feature_type=Sensor3DIrradiance, parameters=RadianceSensorParameters()
@@ -647,6 +653,13 @@ def test_creation_errors(speos: Speos):
         p.create_sensor(
             name="irradiance_sensor",
             feature_type=SensorCamera,
+            parameters=RadianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="ObserverSensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorObserver,
             parameters=RadianceSensorParameters(),
         )
 
