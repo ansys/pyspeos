@@ -38,6 +38,7 @@ from ansys.speos.core.generic.parameters import (
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
+    ColorParameters,
     DimensionsParameters,
     ImmersiveSensorParameters,
     IntegrationTypes,
@@ -56,6 +57,7 @@ from ansys.speos.core.generic.parameters import (
     MeasuresParameters,
     NearfieldParameters,
     ObserverSensorParameters,
+    PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
     PolarIntensitySensorParameters,
@@ -3194,7 +3196,110 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
     assert loaded_radiometric.radiometric._integration_type.transmission is False
     assert loaded_radiometric.radiometric._integration_type.absorption is True
 
-    sensor_3d.delete()
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
+    """Test default value of consider_diffraction_effects is False."""
+    p = Project(speos=speos)
+
+    sensor = p.create_sensor(name="Camera.diffraction", feature_type=SensorCamera)
+    assert isinstance(sensor, SensorCamera)
+
+    # Default value should be False
+    assert sensor.set_mode_photometric().consider_diffraction_effects is False
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
+    """Test consider_diffraction_effects setter and getter."""
+    p = Project(speos=speos)
+
+    sensor = p.create_sensor(name="Camera.diffraction", feature_type=SensorCamera)
+    assert isinstance(sensor, SensorCamera)
+
+    # Set to True
+    sensor.set_mode_photometric().consider_diffraction_effects = True
+    assert sensor.set_mode_photometric().consider_diffraction_effects is True
+
+    # Set back to False
+    sensor.set_mode_photometric().consider_diffraction_effects = False
+    assert sensor.set_mode_photometric().consider_diffraction_effects is False
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speos):
+    """Test consider_diffraction_effects persists after commit and reset."""
+    p = Project(speos=speos)
+
+    sensor = p.create_sensor(name="Camera.diffraction", feature_type=SensorCamera)
+    assert isinstance(sensor, SensorCamera)
+    sensor.distortion_file_uri = (
+        test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion"
+    )
+    sensor.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
+    wl = sensor.set_mode_photometric().set_wavelengths_range()
+    wl.start = 486
+    wl.end = 655
+    wl.sampling = 13
+    sensor.set_mode_photometric().consider_diffraction_effects = True
+    sensor.commit()
+
+    # Check persistence after commit
+    assert sensor.set_mode_photometric().consider_diffraction_effects is True
+
+    # Reset and check persistence
+    sensor.reset()
+    assert sensor.set_mode_photometric().consider_diffraction_effects is True
+
+    # Modify and verify it's changed
+    sensor.set_mode_photometric().consider_diffraction_effects = False
+    assert sensor.set_mode_photometric().consider_diffraction_effects is False
+
+    sensor.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
+    """Test consider_diffraction_effects from PhotometricCameraParameters."""
+    p = Project(speos=speos)
+
+    # Create parameters with consider_diffraction_effects = True
+    photo_params = PhotometricCameraParameters(
+        consider_diffraction_effects=True,
+        color_mode=ColorParameters(
+            red_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityRed.spectrum",
+            green_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityGreen.spectrum",
+            blue_spectrum_file_uri=Path(test_path)
+            / "CameraInputFiles"
+            / "CameraSensitivityBlue.spectrum",
+        ),
+    )
+    camera_params = CameraSensorParameters(
+        distortion_file_uri=test_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion",
+        sensor_type_parameters=photo_params,
+    )
+
+    sensor = p.create_sensor(
+        name="Camera.diffraction", feature_type=SensorCamera, parameters=camera_params
+    )
+    assert isinstance(sensor, SensorCamera)
+
+    # Check that the property was set from parameters
+    assert sensor.set_mode_photometric().consider_diffraction_effects is True
+
+    sensor.delete()
 
 
 @pytest.mark.supported_speos_versions(min=252)

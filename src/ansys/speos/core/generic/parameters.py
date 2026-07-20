@@ -264,6 +264,8 @@ class PhotometricCameraParameters:
     """Gamma correction Value for the Camera Sensor."""
     transmittance_file_uri: Union[str, Path] = ""
     """Transmittance spectrum location"""
+    consider_diffraction_effects: bool = False
+    """Enable diffraction effects in the Camera Sensor. Available in Speos 0.16.3+."""
 
 
 @dataclass
