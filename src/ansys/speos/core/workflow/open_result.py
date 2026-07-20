@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -27,10 +27,13 @@ from pathlib import Path
 import tempfile
 from typing import List, Union
 
+from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.part.v1 import face_pb2
 
 from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
 
 if os.name == "nt":
@@ -111,38 +114,81 @@ def _display_image(img: numpy.ndarray):
         plt.show()
 
 
-if os.name == "nt":
+def open_result_image(
+    simulation_feature: Union[SimulationDirect, SimulationInverse, SimulationInteractive],
+    result_name: str,
+) -> Path:
+    """Retrieve an image from a specific simulation result.
 
-    def open_result_image(
-        simulation_feature: Union[SimulationDirect, SimulationInverse, SimulationInteractive],
-        result_name: str,
-    ) -> None:
-        """Retrieve an image from a specific simulation result.
+    Parameters
+    ----------
+    simulation_feature : ansys.speos.core.simulation.Simulation
+        The simulation feature.
+    result_name : str
+        The result name to open as an image.
 
-        Parameters
-        ----------
-        simulation_feature : ansys.speos.core.simulation.Simulation
-            The simulation feature.
-        result_name : str
-            The result name to open as an image.
-        """
-        file_path = _find_correct_result(simulation_feature, result_name)
-        if file_path == "":
-            raise ValueError(
-                "No result corresponding to "
-                + result_name
-                + " is found in "
-                + simulation_feature._name
+    Returns
+    -------
+    Path
+        The path of the image file.
+    """
+    download_if_distant = True
+    # In case of XMP that will be exported to PNG by the server,
+    # it is important not to download locally the XMP file.
+    if result_name.lower().endswith("xmp") and server_version_checker.is_version_supported(
+        2026, 1, 2
+    ):
+        download_if_distant = False
+
+    file_path = _find_correct_result(
+        simulation_feature, result_name, download_if_distant=download_if_distant
+    )
+    if file_path == "":
+        raise ValueError(
+            "No result corresponding to " + result_name + " is found in " + simulation_feature._name
+        )
+
+    if result_name.lower().endswith("xmp"):
+        if server_version_checker.is_version_supported(2026, 1, 2):
+            res = _export_xmp_to_image(
+                client=simulation_feature._project.client,
+                file_path=file_path,
+                result_name=result_name,
             )
-
-        if file_path.endswith("xmp") or file_path.endswith("XMP"):
+            if res.HasField("path"):
+                _display_image(mpimg.imread(res.path))
+                return Path(res.path)
+            elif res.HasField("upload_response"):
+                file_transfer = FileTransfer(simulation_feature._project.client)
+                file_transfer.download_file(
+                    file_uri=res.upload_response.info.uri,
+                    download_location=Path(tempfile.gettempdir()),
+                )
+                downloaded_file_path = (
+                    Path(tempfile.gettempdir()) / res.upload_response.info.file_name
+                )
+                _display_image(mpimg.imread(str(downloaded_file_path)))
+                return downloaded_file_path
+        elif os.name == "nt":  # Are we running on Windows OS?
             dpf_instance = CreateObject("XMPViewer.Application")
             dpf_instance.OpenFile(file_path)
             res = dpf_instance.ExportXMPImage(file_path + ".png", 1)
             if res:
                 _display_image(mpimg.imread(file_path + ".png"))
-        elif file_path.endswith("png") or file_path.endswith("PNG"):
-            _display_image(mpimg.imread(file_path))
+                return Path(file_path + ".png")
+        else:
+            raise NotImplementedError(
+                "Opening XMP result as image is only supported with Speos 2026 R1.2 or higher.\
+                    Or on Windows OS with older Speos versions."
+            )
+    elif result_name.lower().endswith("png"):
+        _display_image(mpimg.imread(file_path))
+        return Path(file_path)
+
+    return Path()
+
+
+if os.name == "nt":
 
     def open_result_in_viewer(
         simulation_feature: Union[SimulationDirect, SimulationInverse],
@@ -216,7 +262,11 @@ if os.name == "nt":
         xmp_feature: ansys.speos.core.sensor.Sensor
             The sensor feature.
         result_name: Union[str, Path]
-            file path of an XMP result.
+            file name of an XMP result generated by simulation_feature.
+            Or give directly the path of the XMP result if it was obtained via another way of
+            computation than PySpeos (example: Speos HPC computation).
+            In this case, it is mandatory that the project reflects exactly
+            the speos system used in the other computation.
 
         Returns
         -------
@@ -229,7 +279,11 @@ if os.name == "nt":
         result_name = Path(result_name)
         if not str(result_name).lower().endswith(".xmp"):
             result_name = result_name.with_name(result_name.name + ".xmp")
-        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if result_name.is_file():
+            file_path = result_name
+        else:
+            file_path = _find_correct_result(simulation_feature, str(result_name))
 
         if file_path == "":
             raise ValueError(
@@ -297,7 +351,7 @@ if os.name == "nt":
         geo_faces: List[face_pb2.Face],
         result_name: Union[str, Path],
     ) -> Path:
-        """Export an XMP result into vtp file.
+        """Export an XM3 result into vtp file.
 
         Parameters
         ----------
@@ -306,7 +360,11 @@ if os.name == "nt":
         geo_faces: List[face_pb2.Face]
             list of face geometries.
         result_name: Union[str, Path]
-            file path of an XMP result.
+            file name of an XM3 result generated by simulation_feature.
+            Or give directly the path of the XM3 result if it was obtained via another way of
+            computation than PySpeos (example: Speos HPC computation).
+            In this case, it is mandatory that the project reflects exactly
+            the speos system used in the other computation.
 
         Returns
         -------
@@ -319,7 +377,11 @@ if os.name == "nt":
         result_name = Path(result_name)
         if not str(result_name).lower().endswith(".xm3"):
             result_name = result_name.with_name(result_name.name + ".xm3")
-        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if result_name.is_file():
+            file_path = result_name
+        else:
+            file_path = _find_correct_result(simulation_feature, str(result_name))
 
         if file_path == "":
             raise ValueError(
@@ -431,3 +493,72 @@ if os.name == "nt":
         # vtp_meshes = vtp_meshes.point_data_to_cell_data()
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
+
+
+def _export_xmp_to_image(client: SpeosClient, file_path: str, result_name: str) -> Result:
+
+    # Looking at file_path allows to know if server is distant.
+    # Example: if file_path is a file_uri from file transfer -> this is a distant server,
+    # if file_path is a local path -> this is a local server.
+    is_local_server = Path(file_path).is_file() is True
+
+    image_exported_path = ""
+    if is_local_server:
+        image_exported_path = Path(file_path).with_suffix(".png")
+    else:
+        # Book a file_uri
+        file_transfer = FileTransfer(client)
+        image_exported_path = file_transfer.reserve()
+
+    client.maps().export_xmp_to_image(xmp_file_uri=file_path, image_file_uri=image_exported_path)
+
+    image_exported = Result()
+    if is_local_server:
+        image_exported.path = str(image_exported_path)
+    else:
+        image_exported.upload_response.info.uri = image_exported_path
+        image_exported.upload_response.info.file_name = Path(result_name).with_suffix(".png").name
+
+    return image_exported
+
+
+def export_xmp_to_image(
+    simulation_feature: Union[SimulationDirect, SimulationInverse, SimulationInteractive],
+    result_name: str,
+) -> Result:
+    """Export an XMP result into a PNG file.
+
+    Parameters
+    ----------
+    simulation_feature : ansys.speos.core.simulation.Simulation
+        The simulation feature.
+    result_name : str
+        The result name to export as an image.
+
+    Returns
+    -------
+    ansys.api.speos.job.v2.job_pb2.Result
+        The exported image file.
+    """
+    if not str(result_name).lower().endswith(".xmp"):
+        # raise error if the result name does not end with .xmp,
+        # since only xmp result can be exported to image
+        raise ValueError(
+            "Only XMP result can be exported to image,\
+            please provide a valid result name ending with .xmp"
+        )
+
+    if not server_version_checker.is_version_supported(2026, 1, 2):
+        raise NotImplementedError(
+            "Exporting XMP result as image is only supported with Speos 2026 R1.2 or higher."
+        )
+
+    file_path = _find_correct_result(simulation_feature, result_name, download_if_distant=False)
+    if file_path == "":
+        raise ValueError(
+            "No result corresponding to " + result_name + " is found in " + simulation_feature._name
+        )
+
+    return _export_xmp_to_image(
+        client=simulation_feature._project.client, file_path=file_path, result_name=result_name
+    )

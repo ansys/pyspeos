@@ -9,6 +9,143 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.9.0 <https://github.com/ansys/pyspeos/releases/tag/v0.9.0>`_ - June 17, 2026
+===============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Light box
+          - `#919 <https://github.com/ansys/pyspeos/pull/919>`_
+
+        * - Add source group support to simulation classes via ``BaseSimulation.add_source_group()``.
+          - `#943 <https://github.com/ansys/pyspeos/pull/943>`_
+
+        * - Add simulation source groups
+          - `#955 <https://github.com/ansys/pyspeos/pull/955>`_
+
+        * - Prepare for Speos 26r1 sp2
+          - `#963 <https://github.com/ansys/pyspeos/pull/963>`_
+
+        * - Implement source CIE Standard General Sky
+          - `#983 <https://github.com/ansys/pyspeos/pull/983>`_
+
+        * - Implement timeline
+          - `#985 <https://github.com/ansys/pyspeos/pull/985>`_
+
+        * - Add immersive sensor
+          - `#990 <https://github.com/ansys/pyspeos/pull/990>`_
+
+        * - Export xmp to png
+          - `#999 <https://github.com/ansys/pyspeos/pull/999>`_
+
+        * - Timeline for source and example for timelines
+          - `#1004 <https://github.com/ansys/pyspeos/pull/1004>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Nightly run uniform ambient source
+          - `#958 <https://github.com/ansys/pyspeos/pull/958>`_
+
+        * - Infinite simulation
+          - `#988 <https://github.com/ansys/pyspeos/pull/988>`_
+
+        * - Nightly failed on 251
+          - `#1000 <https://github.com/ansys/pyspeos/pull/1000>`_
+
+        * - Resolve issue with missing filled properties and attributes
+          - `#1002 <https://github.com/ansys/pyspeos/pull/1002>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Fix jupyter notebook download
+          - `#996 <https://github.com/ansys/pyspeos/pull/996>`_
+
+        * - Refactor download button
+          - `#998 <https://github.com/ansys/pyspeos/pull/998>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update pyvista requirement from <0.48,>=0.40.0 to >=0.40.0,<0.49 in the graphics-deps group
+          - `#961 <https://github.com/ansys/pyspeos/pull/961>`_
+
+        * - Bump the doc-deps group across 1 directory with 3 updates
+          - `#974 <https://github.com/ansys/pyspeos/pull/974>`_
+
+        * - Bump the doc-deps group with 2 updates
+          - `#993 <https://github.com/ansys/pyspeos/pull/993>`_, `#1007 <https://github.com/ansys/pyspeos/pull/1007>`_
+
+        * - Bump notebook from 7.5.6 to 7.5.7 in the jupyter-deps group
+          - `#1008 <https://github.com/ansys/pyspeos/pull/1008>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v0.8.0
+          - `#956 <https://github.com/ansys/pyspeos/pull/956>`_
+
+        * - Bump ansys/actions from 10.3.0 to 10.3.1
+          - `#959 <https://github.com/ansys/pyspeos/pull/959>`_
+
+        * - Bump actions/labeler from 6.0.1 to 6.1.0
+          - `#962 <https://github.com/ansys/pyspeos/pull/962>`_
+
+        * - Pre-commit autoupdate
+          - `#964 <https://github.com/ansys/pyspeos/pull/964>`_, `#986 <https://github.com/ansys/pyspeos/pull/986>`_, `#997 <https://github.com/ansys/pyspeos/pull/997>`_, `#1009 <https://github.com/ansys/pyspeos/pull/1009>`_
+
+        * - Update CHANGELOG for v0.8.1
+          - `#972 <https://github.com/ansys/pyspeos/pull/972>`_
+
+        * - Update CHANGELOG for v0.7.4
+          - `#976 <https://github.com/ansys/pyspeos/pull/976>`_, `#979 <https://github.com/ansys/pyspeos/pull/979>`_
+
+        * - Upgrade pyvista version
+          - `#980 <https://github.com/ansys/pyspeos/pull/980>`_
+
+        * - Update CHANGELOG for v0.8.2
+          - `#982 <https://github.com/ansys/pyspeos/pull/982>`_
+
+        * - Bump ansys/actions from 10.3.1 to 10.3.2
+          - `#984 <https://github.com/ansys/pyspeos/pull/984>`_
+
+        * - Bump codecov/codecov-action from 6.0.0 to 6.0.1
+          - `#991 <https://github.com/ansys/pyspeos/pull/991>`_
+
+        * - Bump docker/login-action from 4.1.0 to 4.2.0
+          - `#992 <https://github.com/ansys/pyspeos/pull/992>`_
+
+        * - Bump actions/checkout from 6.0.2 to 6.0.3
+          - `#1005 <https://github.com/ansys/pyspeos/pull/1005>`_
+
+        * - Bump astral-sh/setup-uv from 8.1.0 to 8.2.0
+          - `#1006 <https://github.com/ansys/pyspeos/pull/1006>`_
+
+
 `0.8.2 <https://github.com/ansys/pyspeos/releases/tag/v0.8.2>`_ - May 21, 2026
 ==============================================================================
 

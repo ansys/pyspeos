@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 """Provides a way to interact with Speos feature: ground plane."""
 
 from __future__ import annotations
@@ -155,11 +156,14 @@ class GroundPlane:
 
         Parameters
         ----------
-        key : str
+        key : str, optional
+            Key prefix used to look up a value.
+            By default, ``""``, which returns the full dictionary.
 
         Returns
         -------
         str | dict
+            Value found for the given key, or the full dictionary when *key* is empty.
         """
         if key == "":
             return self._to_dict()

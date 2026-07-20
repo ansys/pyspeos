@@ -26,6 +26,28 @@ All fixtures are defined in `tests/conftest.py`. Key fixtures:
 | `tmp_path` | `Path` | pytest built-in — temporary directory for output files. |
 | `test_path` | `Path | str` | Asset root path imported from `tests.conftest` (local or Docker path). |
 
+### Runtime requirement
+
+The simulation-oriented test suite requires an active Speos RPC server. In this repository,
+`tests/local_config.json` is set up to use a Docker container named `speos-rpc` on port `50098`.
+
+Match the CI configuration before running tests locally:
+
+```bash
+docker login ghcr.io/ansys
+docker run --detach --name speos-rpc \
+  -p 127.0.0.1:50098:50098 \
+  -e SPEOS_LOG_LEVEL=2 \
+  -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER \
+  -v "$(pwd)/tests/assets:/app/assets" \
+  --entrypoint /app/SpeosRPC_Server.x \
+  ghcr.io/ansys/speos-rpc:dev \
+  --transport_insecure --host 0.0.0.0
+```
+
+If the container is not running, tests using the `speos` fixture will fail during channel health
+checks.
+
 Always use the `speos` fixture in test signatures, and then create a project in the test body:
 
 ```python
@@ -141,4 +163,3 @@ Every test function must have a **one-line docstring** that describes what it ve
 def test_source_rayfile_ies_path(speos: Speos, tmp_path):
     """Verify that an IES file path round-trips through commit() correctly."""
 ```
-

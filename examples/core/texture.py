@@ -181,7 +181,9 @@ print(opt)
 # Image result shows black surface as mirror reflectance is 0.
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -200,7 +202,9 @@ print(opt)
 # Image result shows mirror surface as mirror reflectance is 100.
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -245,7 +249,9 @@ opt.commit()
 # simplescattering file.
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -300,7 +306,9 @@ opt.commit()
 # transparent at the other area.
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -312,7 +320,9 @@ texture_layer_3.image_texture.uv_mapping.axis_system = [0, 2.5, 0, 0, 0, 1, 0, 1
 opt.commit()
 
 results = sim.compute_CPU()  # use GPU using "compute_GPU" method
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -324,7 +334,9 @@ texture_layer_3.image_texture.repeat_u = True
 opt.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -336,7 +348,9 @@ texture_layer_3.image_texture.uv_mapping.v_length = 10
 opt.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -407,7 +421,9 @@ opt_2_layer_1.image_texture.repeat_v = False
 opt_2.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -446,7 +462,9 @@ opt_2_layer_1.image_texture.uv_mapping.vertices_data_index = 1
 opt_2.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -481,7 +499,9 @@ opt_2_layer_1.image_texture.uv_mapping.vertices_data_index = 2
 opt_2.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
@@ -587,7 +607,9 @@ opt_3_layer_1.image_texture.repeat_v = False
 opt_3.commit()
 
 results = sim.compute_CPU()
-if os.name == "nt":
+# Method available only on Windows OS or with Speos 2026 R1.2 or higher,
+# which supports opening XMP results as images regardless of the OS.
+if os.name == "nt" or server_version_checker.is_version_supported(2026, 1, 2):
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
