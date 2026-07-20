@@ -198,6 +198,27 @@ sensor1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 sensor1.commit()
 print(sensor1)
 
+# Modify photometric camera properties (including diffraction effects)
+sensor1.distortion_file_uri = (
+    assets_data_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion"
+)
+sensor1.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+)
+sensor1.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+)
+sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+)
+wl = sensor1.set_mode_photometric().set_wavelengths_range()
+wl.start = 486
+wl.end = 655
+wl.sampling = 13
+sensor1.set_mode_photometric().consider_diffraction_effects = True
+sensor1.commit()
+print(sensor1)
+
 # ## Reset
 #
 # Possibility to reset local values from the one available in the server.
