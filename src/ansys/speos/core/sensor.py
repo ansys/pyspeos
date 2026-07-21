@@ -1742,6 +1742,7 @@ class SensorCamera(BaseSensor):
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
+                self.consider_diffraction_effects = default_parameters.consider_diffraction_effects
                 if default_parameters.transmittance_file_uri:
                     self.transmittance_file_uri = default_parameters.transmittance_file_uri
                 match default_parameters.png_bits:
@@ -1861,6 +1862,35 @@ class SensorCamera(BaseSensor):
         @gamma_correction.setter
         def gamma_correction(self, value: float) -> None:
             self._mode_photometric.gamma_correction = value
+
+        @property
+        @general_methods.min_speos_version(26, 1, 3)
+        def consider_diffraction_effects(self) -> bool:
+            """Whether to consider diffraction effects in the Camera Sensor.
+
+            Parameters
+            ----------
+            value : bool
+                Enable (True) or disable (False) diffraction effects. By default, ``False``.
+
+            Returns
+            -------
+            bool
+                Whether diffraction effects are considered.
+
+            Notes
+            -----
+            This feature is available in Speos 2026 R1 SP3 or later. Not all Distortion files
+            do contain diffractive effects. You may get an RPC error on commit when using a
+            distortion file that does not contain diffractive effects while having set this
+            option to true.
+            """
+            return self._mode_photometric.consider_diffraction_effects
+
+        @consider_diffraction_effects.setter
+        @general_methods.min_speos_version(26, 1, 3)
+        def consider_diffraction_effects(self, value: bool) -> None:
+            self._mode_photometric.consider_diffraction_effects = value
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
             """Choose 08-bits for png.
