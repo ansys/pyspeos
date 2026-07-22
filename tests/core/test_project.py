@@ -796,7 +796,7 @@ def test_create_speos_feature_preview_sensor_radiance(speos: Speos):
     assert mock_plotter.plot.call_count >= 3
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_create_speos_feature_preview_sensor_camera(speos: Speos):
     """Test _create_speos_feature_preview for SensorCamera (case _: branch, 3-axis coords)."""
     p = Project(speos=speos)

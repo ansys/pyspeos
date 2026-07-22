@@ -83,7 +83,7 @@ from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
@@ -2106,7 +2106,7 @@ def test_radiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_camera_modify_after_reset(speos: Speos):
     """Test reset of camera sensor, and then modify."""
     p = Project(speos=speos)
@@ -2307,6 +2307,7 @@ def test_delete_sensor(speos: Speos):
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
 
 
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
     """Test get of a sensor."""
     p = Project(speos=speos)
@@ -2951,7 +2952,7 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
     assert sensor._sensor_instance.immersive_properties.HasField("layer_type_none")
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_load_camera_hydrates_nested_modes(speos: Speos):
     """Ensure camera load path hydrates photometric and nested color balance helpers."""
     p = Project(speos=speos)
@@ -3044,7 +3045,7 @@ def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
     sensor_photo.delete()
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_load_camera_hydrates_geometric_mode(speos: Speos):
     """Ensure camera load path hydrates geometric mode branch."""
     p = Project(speos=speos)
@@ -3071,7 +3072,7 @@ def test_load_camera_hydrates_geometric_mode(speos: Speos):
     sensor_camera.delete()
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261.3)
 @pytest.mark.parametrize(
     ("balance_setter", "expected_field", "expected_mode_type"),
     [
@@ -3197,7 +3198,7 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
     assert loaded_radiometric.radiometric._integration_type.absorption is True
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
     """Test default value of consider_diffraction_effects is False."""
     p = Project(speos=speos)
@@ -3209,7 +3210,7 @@ def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
     assert sensor.set_mode_photometric().consider_diffraction_effects is False
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
     """Test consider_diffraction_effects setter and getter."""
     p = Project(speos=speos)
@@ -3226,7 +3227,7 @@ def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
     assert sensor.set_mode_photometric().consider_diffraction_effects is False
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speos):
     """Test consider_diffraction_effects persists after commit and reset."""
     p = Project(speos=speos)
@@ -3266,7 +3267,7 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
     sensor.delete()
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=261.3)
 def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
     """Test consider_diffraction_effects from PhotometricCameraParameters."""
     p = Project(speos=speos)
