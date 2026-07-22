@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,6 +25,7 @@
 import datetime
 from pathlib import Path
 
+from ansys.api.speos.source.v1 import source_pb2
 import pytest
 
 from ansys.speos.core import GeoRef, Intensity, Project, Speos
@@ -32,8 +33,13 @@ from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    AmbientUniformParameters,
+    AmbientUsStandardParameters,
+    CieType,
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
@@ -60,15 +66,22 @@ from ansys.speos.core.generic.parameters import (
     VariableExitanceParameters,
     WhitePointType,
 )
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import (
+    SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
 )
 from tests.conftest import test_path
+from tests.helper import remove_file
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -308,9 +321,8 @@ def test_create_surface_source(speos: Speos):
     root_part.commit()
 
     # Default value
-    # source1 = p.create_source(name="Surface.1")
-    source1 = SourceSurface(
-        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    source1 = p.create_source(
+        name="Surface.1", feature_type=SourceSurface, parameters=SurfaceSourceParameters()
     )
     source1.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source1.commit()
@@ -1037,6 +1049,504 @@ def test_create_natural_light_source(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
+def test_create_cie_standard_general_sky_source(speos: Speos):
+    """Test creation of ambient CIE general standard sky source."""
+    from zoneinfo import ZoneInfo
+
+    p = Project(speos=speos)
+    cet = ZoneInfo("CET")
+    proto_enum = source_pb2.SourceTemplate.Ambient.CieGeneral.CieType
+    before = datetime.datetime.now(cet)
+    source1 = SourceAmbientCieStandardGeneralSky(
+        p,
+        name="CieGeneral.1",
+        default_parameters=AmbientCieStandardGeneralSkyParameters(),
+    )
+    after = datetime.datetime.now(cet)
+    assert source1._source_instance.ambient_properties.HasField("cie_general_properties")
+    tmp_cie_general_prop = source1._source_instance.ambient_properties.cie_general_properties
+
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+
+    assert tmp_cie_general_prop.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_cie_general_prop.HasField("sun_axis_system")
+    assert tmp_cie_general_prop.sun_axis_system.HasField("automatic_sun")
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun = tmp_cie_general_prop.sun_axis_system.automatic_sun
+    server_dt = datetime.datetime(
+        year=auto_sun.year,
+        month=auto_sun.month,
+        day=auto_sun.day,
+        hour=auto_sun.hour,
+        minute=auto_sun.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun.time_zone_uri == "CET"
+
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("cie_general")
+    assert source1._source_template.ambient.cie_general.luminance == 1000
+    # enum wrapper assertion
+    assert source1.cie_type == CieType.cloudy_slight_brightening
+    # low-level enum assertion
+    assert (
+        source1._source_template.ambient.cie_general.cie_type
+        == proto_enum.cloudy_slight_brightening
+    )
+
+    # Check property method
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    source1.zenith_direction = [0, 0, 1]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.luminance = 1234
+    source1.cie_type = CieType.standard_overcast
+    source1.commit()
+
+    assert source1.cie_type == CieType.standard_overcast
+    assert source1._source_template.ambient.cie_general.cie_type == proto_enum.standard_overcast
+    assert source1._source_template.ambient.cie_general.luminance == 1234
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.cie_general_properties.north_direction == [
+        1,
+        0,
+        0,
+    ]
+    assert source1._source_instance.ambient_properties.cie_general_properties.reverse_north is True
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+
+    source1.set_sun_manual().direction = [0, 0.707, 0.707]
+    source1.commit()
+
+    # check the backend
+    tmp_cie_general_prop = source1._source_instance.ambient_properties.cie_general_properties
+    assert tmp_cie_general_prop.sun_axis_system.HasField("manual_sun")
+    assert tmp_cie_general_prop.sun_axis_system.manual_sun.sun_direction == [0, 0.707, 0.707]
+    assert tmp_cie_general_prop.sun_axis_system.manual_sun.reverse_sun is False
+
+    # check the property method
+    assert source1.cie_type == CieType.standard_overcast
+    assert source1._source_template.ambient.cie_general.cie_type == proto_enum.standard_overcast
+    assert source1.luminance == 1234
+    assert source1.set_sun_manual().direction == [0, 0.707, 0.707]
+    assert source1.set_sun_manual().reverse_sun is False
+
+    source1.set_sun_automatic().year = 2026
+    source1.set_sun_automatic().month = 12
+    source1.set_sun_automatic().day = 31
+    source1.set_sun_automatic().hour = 12
+    source1.set_sun_automatic().minute = 23
+    source1.set_sun_automatic().longitude = 10
+    source1.set_sun_automatic().latitude = 45
+    source1.set_sun_automatic().time_zone = "CST"
+    source1.commit()
+
+    # check the backend
+    tmp_cie_general_prop = source1._source_instance.ambient_properties.cie_general_properties
+    assert tmp_cie_general_prop.sun_axis_system.HasField("automatic_sun")
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.year == 2026
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.month == 12
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.day == 31
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.hour == 12
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.minute == 23
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.longitude == 10
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.latitude == 45
+    assert tmp_cie_general_prop.sun_axis_system.automatic_sun.time_zone_uri == "CST"
+
+    # check property methods
+    assert source1.set_sun_automatic().year == 2026
+    assert source1.set_sun_automatic().month == 12
+    assert source1.set_sun_automatic().day == 31
+    assert source1.set_sun_automatic().hour == 12
+    assert source1.set_sun_automatic().minute == 23
+    assert source1.set_sun_automatic().longitude == 10
+    assert source1.set_sun_automatic().latitude == 45
+    assert source1.set_sun_automatic().time_zone == "CST"
+
+    source1.delete()
+
+    before2 = datetime.datetime.now(cet)
+    source2 = p.create_source(name="CieGeneral.2", feature_type=SourceAmbientCieStandardGeneralSky)
+    after2 = datetime.datetime.now(cet)
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source2._source_instance.ambient_properties.HasField("cie_general_properties")
+    tmp_cie_general_prop = source2._source_instance.ambient_properties.cie_general_properties
+    assert tmp_cie_general_prop.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_cie_general_prop.HasField("sun_axis_system")
+    assert tmp_cie_general_prop.sun_axis_system.HasField("automatic_sun")
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun2 = tmp_cie_general_prop.sun_axis_system.automatic_sun
+    server_dt2 = datetime.datetime(
+        year=auto_sun2.year,
+        month=auto_sun2.month,
+        day=auto_sun2.day,
+        hour=auto_sun2.hour,
+        minute=auto_sun2.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before2 - datetime.timedelta(seconds=60)
+        <= server_dt2
+        <= after2 + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun2.time_zone_uri == "CET"
+
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("cie_general")
+    assert source2._source_template.ambient.cie_general.luminance == 1000
+    assert source2.cie_type == CieType.cloudy_slight_brightening
+    assert (
+        source2._source_template.ambient.cie_general.cie_type
+        == proto_enum.cloudy_slight_brightening
+    )
+
+    source2.delete()
+
+    # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientCieStandardGeneralSkyParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2",
+            feature_type=SourceAmbientCieStandardGeneralSky,
+            parameters=LuminaireSourceParameters(),
+        )
+
+    new_default_parameters = AmbientCieStandardGeneralSkyParameters()
+    new_default_parameters.sun_type = ManualSunParameters()
+    source3 = p.create_source(
+        name="CieGeneral.3",
+        feature_type=SourceAmbientCieStandardGeneralSky,
+        parameters=new_default_parameters,
+    )
+    tmp_cie_general_prop = source3._source_instance.ambient_properties.cie_general_properties
+    assert tmp_cie_general_prop.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_cie_general_prop.sun_axis_system.HasField("manual_sun")
+    assert source3.set_sun_manual().direction == new_default_parameters.sun_type.direction
+    source3.delete()
+
+    # test loading
+    p = Project(
+        speos, path=Path(test_path) / "Source.speos" / "SourceCieStandardGeneralSkyTests.speos"
+    )
+    source4 = p.find(
+        name="CIE Standard General Sky.1",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardGeneralSky,
+    )[0]
+    assert source4.luminance == 1000
+    assert source4.cie_type == CieType.cloudy_slight_brightening
+    assert (
+        source4._source_template.ambient.cie_general.cie_type
+        == proto_enum.cloudy_slight_brightening
+    )
+    assert source4.north_direction == [0, 1, 0]
+    assert source4.zenith_direction == [0, 0, 1]
+    assert source4.set_sun_automatic().year == 2026
+    assert source4.set_sun_automatic().month == 5
+    assert source4.set_sun_automatic().day == 22
+    assert source4.set_sun_automatic().hour == 10
+
+    source5 = p.find(
+        name="CIE Standard General Sky.2",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardGeneralSky,
+    )[0]
+    assert source5.luminance == 1234
+    assert source5.cie_type == CieType.cloudy_obscured_sun
+    assert source5._source_template.ambient.cie_general.cie_type == proto_enum.cloudy_obscured_sun
+    assert source5.north_direction == [1, 0, 0]
+    assert source5.set_sun_manual().direction == [1, 0, 0]
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_us_standard_source(speos: Speos):
+    """Test creation of ambient U.S. Standard source."""
+    from zoneinfo import ZoneInfo
+
+    p = Project(speos=speos)
+    cet = ZoneInfo("CET")
+
+    before = datetime.datetime.now(cet)
+    source1 = SourceAmbientUsStandard(
+        p,
+        name="UsStandard.1",
+        default_parameters=AmbientUsStandardParameters(),
+    )
+    after = datetime.datetime.now(cet)
+
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("us_standard")
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("us_standard_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+    assert source1._source_instance.ambient_properties.us_standard_properties.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.sun_axis_system.HasField("automatic_sun")
+
+    auto_sun = us_prop.sun_axis_system.automatic_sun
+    server_dt = datetime.datetime(
+        year=auto_sun.year,
+        month=auto_sun.month,
+        day=auto_sun.day,
+        hour=auto_sun.hour,
+        minute=auto_sun.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun.time_zone_uri == "CET"
+
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.set_sun_manual().direction = [0, 0.707, 0.707]
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert us_prop.north_direction == [1, 0, 0]
+    assert us_prop.reverse_north is True
+    assert us_prop.sun_axis_system.HasField("manual_sun")
+    assert us_prop.sun_axis_system.manual_sun.sun_direction == [0, 0.707, 0.707]
+    assert source1.set_sun_manual().direction == [0, 0.707, 0.707]
+
+    source1.set_sun_automatic().year = 2026
+    source1.set_sun_automatic().month = 12
+    source1.set_sun_automatic().day = 31
+    source1.set_sun_automatic().hour = 12
+    source1.set_sun_automatic().minute = 23
+    source1.set_sun_automatic().longitude = 10
+    source1.set_sun_automatic().latitude = 45
+    source1.set_sun_automatic().time_zone = "CST"
+    source1.commit()
+
+    us_prop = source1._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.sun_axis_system.HasField("automatic_sun")
+    assert us_prop.sun_axis_system.automatic_sun.year == 2026
+    assert us_prop.sun_axis_system.automatic_sun.month == 12
+    assert us_prop.sun_axis_system.automatic_sun.day == 31
+    assert us_prop.sun_axis_system.automatic_sun.hour == 12
+    assert us_prop.sun_axis_system.automatic_sun.minute == 23
+    assert us_prop.sun_axis_system.automatic_sun.longitude == 10
+    assert us_prop.sun_axis_system.automatic_sun.latitude == 45
+    assert us_prop.sun_axis_system.automatic_sun.time_zone_uri == "CST"
+    source1.delete()
+
+    source2 = p.create_source(name="UsStandard.2", feature_type=SourceAmbientUsStandard)
+    assert source2._source_template.ambient.HasField("us_standard")
+    assert source2._source_instance.ambient_properties.HasField("us_standard_properties")
+    source2.delete()
+
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientUsStandardParameters",
+    ):
+        p.create_source(
+            name="UsStandard.invalid",
+            feature_type=SourceAmbientUsStandard,
+            parameters=LuminaireSourceParameters(),
+        )
+
+    new_default_parameters = AmbientUsStandardParameters()
+    new_default_parameters.sun_type = ManualSunParameters()
+    source3 = p.create_source(
+        name="UsStandard.3",
+        feature_type=SourceAmbientUsStandard,
+        parameters=new_default_parameters,
+    )
+    us_prop = source3._source_instance.ambient_properties.us_standard_properties
+    assert us_prop.north_direction == [0, 1, 0]
+    assert us_prop.sun_axis_system.HasField("manual_sun")
+    assert source3.set_sun_manual().direction == new_default_parameters.sun_type.direction
+
+    source3.commit()
+    reloaded_source = p.find(name="UsStandard.3", feature_type=SourceAmbientUsStandard)[0]
+    assert isinstance(reloaded_source, SourceAmbientUsStandard)
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_cie_overcast_source(speos: Speos):
+    """Test creation of ambient CIE overcast source."""
+    p = Project(speos=speos)
+
+    default_parameter = AmbientCieStandardOvercastSkyParameters()
+    source1 = SourceAmbientCieStandardOvercastSky(
+        p,
+        name="CieOvercast.1",
+        default_parameters=default_parameter,
+    )
+
+    assert source1._source_template.ambient.HasField("cie_overcast")
+    assert source1._source_template.ambient.cie_overcast.luminance == default_parameter.luminance
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid == ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("cie_overcast_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+
+    assert source1.luminance == 1000
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.spectrum.set_blackbody().temperature == 2856
+
+    source1.luminance = 765
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.spectrum.set_blackbody().temperature = 4500
+    source1.commit()
+
+    assert source1._source_template.ambient.cie_overcast.luminance == 765
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert source1.luminance == 765
+    assert source1.zenith_direction == [0, 1, 0]
+    assert source1.reverse_zenith_direction is True
+    assert source1.spectrum.set_blackbody().temperature == 4500
+
+    source1.delete()
+
+    source2 = p.create_source(
+        name="CieOvercast.2", feature_type=SourceAmbientCieStandardOvercastSky
+    )
+    assert source2._source_template.ambient.HasField("cie_overcast")
+    assert source2._source_instance.ambient_properties.HasField("cie_overcast_properties")
+    assert source2.luminance == 1000
+    assert source2.zenith_direction == [0, 0, 1]
+    p.create_root_part().commit()
+    source2.commit()
+    p.remove_mesh_protection()
+    reloaded_source = p.find(
+        name="CieOvercast.2", feature_type=SourceAmbientCieStandardOvercastSky
+    )[0]
+    assert isinstance(reloaded_source, SourceAmbientCieStandardOvercastSky)
+    assert reloaded_source.luminance == 1000
+    assert reloaded_source.zenith_direction == [0, 0, 1]
+
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))}"
+        + " instead of AmbientCieStandardOvercastSkyParameters",
+    ):
+        p.create_source(
+            name="CieOvercast.3",
+            feature_type=SourceAmbientCieStandardOvercastSky,
+            parameters=LuminaireSourceParameters(),
+        )
+
+    new_default_parameter = AmbientCieStandardOvercastSkyParameters(
+        luminance=4321,
+        zenith_direction=[1, 0, 0],
+        spectrum_type=SpectrumLibraryParameters(file_uri=Path(test_path) / "R04.spectrum"),
+    )
+    source3 = p.create_source(
+        name="CieOvercast.4",
+        feature_type=SourceAmbientCieStandardOvercastSky,
+        parameters=new_default_parameter,
+    )
+    source3.commit()
+
+    assert source3.luminance == 4321
+    assert source3.zenith_direction == [1, 0, 0]
+    assert source3._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source3.spectrum.set_library().file_uri == str(Path(test_path) / "R04.spectrum")
+
+    source3.reset()
+    assert source3.luminance == 4321
+    assert source3.zenith_direction == [1, 0, 0]
+
+    source3.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_us_standard_source(speos: Speos):
+    """Test loading ambient U.S. Standard source from SPEOS file."""
+    # test loading
+    p = Project(speos=speos, path=Path(test_path) / "Source.speos" / "SourceUsStandardTests.speos")
+    # Find sources using regex to match the names with unique ID suffixes
+    sources = p.find(
+        name="U.S. Standard.*",
+        name_regex=True,
+        feature_type=SourceAmbientUsStandard,
+    )
+    assert len(sources) >= 2
+
+    # Find and verify first source
+    source1 = next((s for s in sources if "1976.1" in s._name), None)
+    assert source1 is not None
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    # Find and verify second source
+    source2 = next((s for s in sources if "1976.2" in s._name), None)
+    assert source2 is not None
+    assert source2.zenith_direction == [0, 0, 1]
+    assert source2.north_direction == [1, 0, 0]
+
+
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_environment_source(speos: Speos):
     """Test creation of ambient environment source."""
     p = Project(speos=speos)
@@ -1281,6 +1791,132 @@ def test_create_environment_source(speos: Speos):
     source8.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_uniform_ambient_source(speos: Speos):
+    """Test creation of ambient uniform source."""
+    p = Project(speos=speos)
+
+    # Default values
+    source1 = SourceAmbientUniform(
+        p,
+        name="Uniform.1",
+        default_parameters=AmbientUniformParameters(),
+    )
+
+    # Check proto-level defaults
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("uniform_ambient")
+    assert source1._source_template.ambient.uniform_ambient.luminance == 1000.0
+    assert source1._source_template.ambient.uniform_ambient.mirrored_extent is False
+
+    # Check source instance defaults
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 0, 1]
+    assert source1._source_instance.ambient_properties.HasField("uniform_ambient_properties")
+
+    # Check property methods - default values
+    assert source1.luminance == 1000.0
+    assert source1.mirrored_extent is False
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+
+    # Check spectrum was created with a valid default blackbody spectrum
+    assert source1._spectrum._spectrum._spectrum.HasField("blackbody")
+    assert source1._spectrum._spectrum._spectrum.blackbody.temperature == 2856
+    assert source1._spectrum._spectrum._spectrum.name == "Uniform.1.Spectrum"
+
+    # Set and verify properties
+    source1.luminance = 500.0
+    source1.mirrored_extent = True
+    source1.zenith_direction = [0, 1, 0]
+    source1.reverse_zenith_direction = True
+    source1.set_sun_manual().direction = [1, 0, 0]
+    source1.set_sun_manual().reverse_sun = True
+    source1.commit()
+
+    assert source1._source_template.ambient.uniform_ambient.luminance == 500.0
+    assert source1._source_template.ambient.uniform_ambient.mirrored_extent is True
+    assert source1._source_instance.ambient_properties.zenith_direction == [0, 1, 0]
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert (
+        source1._source_instance.ambient_properties.uniform_ambient_properties.manual_sun.sun_direction
+        == [
+            1,
+            0,
+            0,
+        ]
+    )
+    assert (
+        source1._source_instance.ambient_properties.uniform_ambient_properties.manual_sun.reverse_sun
+        is True
+    )
+    assert source1.source_template_link is not None
+    assert source1.source_template_link.get().ambient.uniform_ambient.spectrum_guid != ""
+
+    project_scene = p.scene_link.get()
+    assert len(project_scene.sources) == 1
+    assert project_scene.sources[0].ambient_properties.HasField("uniform_ambient_properties")
+
+    # Verify via property accessors after commit
+    assert source1.luminance == 500.0
+    assert source1.mirrored_extent is True
+    assert source1.zenith_direction == [0, 1, 0]
+    assert source1.reverse_zenith_direction is True
+    assert source1.set_sun_manual().direction == [1, 0, 0]
+    assert source1.set_sun_manual().reverse_sun is True
+
+    serialized = source1.get()
+    assert serialized["source"]["ambient"]["uniform_ambient"]["luminance"] == 500.0
+    assert serialized["source"]["ambient"]["uniform_ambient"]["mirrored_extent"] is True
+    assert source1.get(key="reverse_zenith") is True
+    assert source1.get(key="sun_direction") == [1, 0, 0]
+
+    # Test using p.create_source factory
+    source2 = p.create_source(name="Uniform.2", feature_type=SourceAmbientUniform)
+    assert isinstance(source2, SourceAmbientUniform)
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("uniform_ambient")
+    source2.luminance = 2000.0
+    source2.commit()
+    assert source2.luminance == 2000.0
+    assert p.find(name="Uniform.2", feature_type=SourceAmbientUniform)[0] is source2
+
+    # Test with blackbody spectrum
+    source3 = SourceAmbientUniform(
+        p,
+        name="Uniform.3",
+        default_parameters=AmbientUniformParameters(
+            luminance=800.0,
+            mirrored_extent=True,
+            zenith_direction=[0, 0, 1],
+            spectrum_type=SpectrumBlackBodyParameters(temperature=5500),
+        ),
+    )
+    assert source3.luminance == 800.0
+    assert source3.mirrored_extent is True
+    assert source3._spectrum._spectrum._spectrum.HasField("blackbody")
+    assert source3._spectrum._spectrum._spectrum.blackbody.temperature == 5500
+
+    with pytest.raises(ValueError, match="Unsupported spectrum type for ambient uniform source"):
+        SourceAmbientUniform(
+            p,
+            name="Uniform.invalid",
+            default_parameters=AmbientUniformParameters(spectrum_type=SpectrumType.incandescent),
+        )
+
+    with pytest.raises(TypeError, match="AmbientUniformParameters"):
+        p.create_source(
+            name="Uniform.invalid.factory",
+            feature_type=SourceAmbientUniform,
+            parameters=AmbientEnvironmentParameters(),
+        )
+
+    # Test delete
+    source1.delete()
+    source2.delete()
+    source3.delete()
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -1351,6 +1987,130 @@ def test_keep_same_internal_feature(speos: Speos):
     source1.delete()
     source2.delete()
     source3.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_cached_helper_state(speos: Speos):
+    """Ensure source helpers are hydrated when a source is reconstructed from scene data."""
+    p = Project(speos=speos)
+
+    uniform_source = p.create_source(
+        name="Uniform.LoadHydration", feature_type=SourceAmbientUniform
+    )
+    uniform_source.set_sun_manual().direction = [1.0, 0.0, 0.0]
+    uniform_source.commit()
+
+    environment_source = p.create_source(
+        name="Environment.LoadHydration", feature_type=SourceAmbientEnvironment
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    environment_source.set_predefined_color_space().set_color_space_adobergb()
+    environment_source.commit()
+
+    display_source = p.create_source(name="Display.LoadHydration", feature_type=SourceDisplay)
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_source.set_pre_defined_color_space().set_color_space_adobergb()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    uniform_scene = next(item for item in scene_sources if item.name == "Uniform.LoadHydration")
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.LoadHydration"
+    )
+    display_scene = next(item for item in scene_sources if item.name == "Display.LoadHydration")
+
+    loaded_uniform = SourceAmbientUniform(
+        project=p,
+        name=uniform_scene.name,
+        source_instance=uniform_scene,
+        default_parameters=None,
+    )
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_uniform._type is not None
+    assert loaded_environment.color_space is not None
+    assert loaded_display._type is not None
+
+    uniform_source.delete()
+    environment_source.delete()
+    display_source.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_source_hydrates_userdefined_color_space_helpers(speos: Speos):
+    """Ensure user-defined color space helpers are hydrated on source reconstruction."""
+    p = Project(speos=speos)
+
+    spectrum_file = str(Path(test_path) / "R04.spectrum")
+
+    environment_source = p.create_source(
+        name="Environment.UserDefined.LoadHydration",
+        feature_type=SourceAmbientEnvironment,
+    )
+    environment_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    env_color_space = environment_source.set_userdefined_color_space()
+    env_color_space.red_spectrum = spectrum_file
+    env_color_space.green_spectrum = spectrum_file
+    env_color_space.blue_spectrum = spectrum_file
+    env_color_space.set_white_point_type_d50()
+    environment_source.commit()
+
+    display_source = p.create_source(
+        name="Display.UserDefined.LoadHydration",
+        feature_type=SourceDisplay,
+    )
+    display_source.image_file_uri = str(Path(test_path) / "stars.exr")
+    display_color_space = display_source.set_userdefined_color_space()
+    display_color_space.red_spectrum = spectrum_file
+    display_color_space.green_spectrum = spectrum_file
+    display_color_space.blue_spectrum = spectrum_file
+    display_color_space.set_white_point_type_e()
+    display_source.commit()
+
+    scene_sources = p.scene_link.get().sources
+    environment_scene = next(
+        item for item in scene_sources if item.name == "Environment.UserDefined.LoadHydration"
+    )
+    display_scene = next(
+        item for item in scene_sources if item.name == "Display.UserDefined.LoadHydration"
+    )
+
+    loaded_environment = SourceAmbientEnvironment(
+        project=p,
+        name=environment_scene.name,
+        source_instance=environment_scene,
+        default_parameters=None,
+    )
+    loaded_display = SourceDisplay(
+        project=p,
+        name=display_scene.name,
+        source_instance=display_scene,
+        default_parameters=None,
+    )
+
+    assert loaded_environment._source_template.ambient.environment_map.HasField(
+        "user_defined_rgb_space"
+    )
+    assert loaded_environment.color_space is not None
+    assert loaded_environment.set_userdefined_color_space().white_point_type == 1
+
+    assert loaded_display._source_template.display.HasField("user_defined_rbg_space")
+    assert loaded_display._type is not None
+    assert loaded_display.set_userdefined_color_space().white_point_type == 3
+
+    environment_source.delete()
+    display_source.delete()
 
 
 def test_commit_source(speos: Speos):
@@ -1431,9 +2191,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
         project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
     )
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source.commit()
     source.flux.set_luminous()
     # source.set_flux_luminous()
-    source.commit()
 
     # Ask for reset
     source.reset()
@@ -1511,11 +2271,11 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Create + commit
     source = p.create_source(name="1", feature_type=SourceRayFile)
-    # source.set_flux_luminous()
-    source.flux.set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
-    source.spectrum
+    source.spectrum.set_blackbody().temperature = 4000
     source.commit()
+    source.flux.set_luminous()
+    source.flux.value = 360
 
     # Ask for reset
     source.reset()
@@ -1957,3 +2717,201 @@ def test_load_display_source(speos: Speos):
                     [0.31271, 0.32902], abs=0.00001
                 )
                 assert source.axis_system == [10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_uniform_ambient_source(speos: Speos):
+    """Test loading ambient uniform sources from a SPEOS project."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "Source.speos" / "SourceUniformTests.speos",
+    )
+
+    expected_sources = {
+        "Default:235": {
+            "mirrored_extent": False,
+            "sun_direction": [0.0, 0.0, 1.0],
+            "spectrum_type": "blackbody",
+        },
+        "Mirror_True:271": {
+            "mirrored_extent": True,
+            "sun_direction": [0.0, 0.0, 1.0],
+            "spectrum_type": "blackbody",
+        },
+        "Active_Sun:348": {
+            "mirrored_extent": True,
+            "sun_direction": [0.0, 0.8660254037844363, 0.5],
+            "spectrum_type": "blackbody",
+        },
+        "Active_Sun.1:485": {
+            "mirrored_extent": True,
+            "sun_direction": [0.0, 0.8660254037844363, 0.5],
+            "spectrum_type": "library",
+        },
+    }
+
+    assert len(p.sources) == len(expected_sources)
+
+    for source in p.sources:
+        assert source._name in expected_sources
+        expected = expected_sources[source._name]
+
+        assert isinstance(source, SourceAmbientUniform)
+
+        # Public API checks
+        assert source.luminance == 1000.0
+        assert source.mirrored_extent is expected["mirrored_extent"]
+        assert source.zenith_direction == [0.0, 1.0, 0.0]
+        assert source.reverse_zenith_direction is False
+        assert source.set_sun_manual().direction == pytest.approx(expected["sun_direction"])
+        assert source.set_sun_manual().reverse_sun is False
+
+        # Backend template/instance checks
+        assert source._source_template.HasField("ambient")
+        assert source._source_template.ambient.HasField("uniform_ambient")
+        assert source._source_template.ambient.uniform_ambient.spectrum_guid != ""
+        assert source._source_instance.HasField("ambient_properties")
+        assert source._source_instance.ambient_properties.HasField("uniform_ambient_properties")
+        assert source._source_instance.ambient_properties.uniform_ambient_properties.HasField(
+            "manual_sun"
+        )
+
+        sun = source._source_instance.ambient_properties.uniform_ambient_properties.manual_sun
+        assert sun.sun_direction == pytest.approx(expected["sun_direction"])
+        assert sun.reverse_sun is False
+
+        spectrum = speos.client[source._source_template.ambient.uniform_ambient.spectrum_guid].get()
+        if expected["spectrum_type"] == "blackbody":
+            assert spectrum.HasField("blackbody")
+            assert spectrum.blackbody.temperature == 2856.0
+        else:
+            assert spectrum.HasField("library")
+            assert spectrum.library.file_uri.endswith(".spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_cie_standard_overcast_source(speos: Speos):
+    """Test loading ambient CIE Standard Overcast Sky sources from SPEOS file."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "Source.speos" / "SourceCieStandardOvercastSkyTests.speos",
+    )
+    # Find sources using regex to match names with unique ID suffixes
+    sources = p.find(
+        name="CIE Standard Overcast.*",
+        name_regex=True,
+        feature_type=SourceAmbientCieStandardOvercastSky,
+    )
+    assert len(sources) >= 2
+
+    # Find and verify first source (with blackbody spectrum)
+    source1 = next((s for s in sources if "Overcast Sky.1" in s._name), None)
+    assert source1 is not None
+    assert isinstance(source1, SourceAmbientCieStandardOvercastSky)
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.luminance == 1000.0
+
+    # Verify backend structure
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("cie_overcast")
+    assert source1._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.HasField("cie_overcast_properties")
+
+    # Check spectrum is blackbody
+    spectrum1 = speos.client[source1._source_template.ambient.cie_overcast.spectrum_guid].get()
+    assert spectrum1.HasField("blackbody")
+    assert spectrum1.blackbody.temperature == 2856.0
+
+    # Find and verify second source (with library spectrum)
+    source2 = next((s for s in sources if "Overcast Sky.2" in s._name), None)
+    assert source2 is not None
+    assert isinstance(source2, SourceAmbientCieStandardOvercastSky)
+    assert source2.zenith_direction == [0, 0, 1]
+    assert source2.reverse_zenith_direction is False
+    assert source2.luminance == 1000.0
+
+    # Verify backend structure for source 2
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("cie_overcast")
+    assert source2._source_template.ambient.cie_overcast.spectrum_guid != ""
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.HasField("cie_overcast_properties")
+
+    # Check spectrum is library
+    spectrum2 = speos.client[source2._source_template.ambient.cie_overcast.spectrum_guid].get()
+    assert spectrum2.HasField("library")
+    assert spectrum2.library.file_uri.endswith(".spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_source_timeline(speos: Speos):
+    """Test source timeline."""
+    # Import a speos file (timeline deactivated)
+    p = Project(
+        speos=speos, path=Path(test_path) / "TimelineExample.speos" / "TimelineExample.speos"
+    )
+
+    # Retrieve all sources and check that flux variation file are no set.
+    # Then, set flux variation file and relative lag, and commit.
+    # The, check that flux variation file and relative lag are correctly set on server
+    i = 0
+    for source_feat in p.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that no flux variation file is set, neither relative lag
+        assert source_feat.flux_variation_file_uri is None
+        assert source_feat.relative_lag is None
+
+        # Set flux variation file
+        source_feat.flux_variation_file_uri = (
+            test_path / "TimelineExample.speos" / "flux_variation.json"
+        )
+
+        # Set relative lag
+        source_feat.relative_lag = i * 10
+
+        source_feat.commit()
+
+        # Check data on server
+        source_on_server: ProtoSourceTemplate = speos.client[
+            source_feat.source_template_link.key
+        ].get()
+        assert source_on_server.HasField("surface")
+        assert source_on_server.surface.HasField("timeline")
+        assert source_on_server.surface.timeline.flux_variation_file_uri != ""
+        assert source_on_server.surface.timeline.relative_lag == i * 10
+
+        i = i + 1
+
+    # Export simulation into .speos file (so that we load it after to check source timelines)
+    simu_feat: SimulationInverse = p.find(
+        name=".*", name_regex=True, feature_type=SimulationInverse
+    )[0]
+    simu_feat.stop_condition_passes_number = 5
+    simu_feat.commit()
+    simu_name = simu_feat._name
+    path_for_export = Path(test_path) / "TimelineExample.speos" / "TimelineExample_exported"
+    simu_feat.export(export_path=path_for_export)
+
+    # Load exported file and check that timeline data are correctly loaded
+    p2 = Project(
+        speos=speos, path=path_for_export / (simu_name + ".speos") / (simu_name + ".speos")
+    )
+
+    # Retrieve all sources and check that flux variation file and relative lag are set.
+    j = 0
+    for source_feat in p2.find(name=".*", name_regex=True, feature_type=SourceSurface):
+        source_feat: SourceSurface
+
+        # check that flux variation file is set
+        assert source_feat.flux_variation_file_uri is not None
+        assert source_feat.flux_variation_file_uri != ""
+
+        # check that relative lag is set
+        assert source_feat.relative_lag == j * 10
+
+        j = j + 1
+
+    remove_file(str(path_for_export))

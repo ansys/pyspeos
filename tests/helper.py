@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -139,7 +139,8 @@ def remove_file(path):
             ["docker", "exec", DOCKER_CONTAINER_NAME, "rm", "-rf", Path(path).as_posix()]
         )
     else:
-        rmtree(Path(path))
+        if Path(path).exists():
+            rmtree(Path(path))
 
 
 def approx_comparison(value1, value2):

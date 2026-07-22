@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -22,6 +22,7 @@
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
+from pathlib import Path
 from typing import Iterator, List
 
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
@@ -102,16 +103,43 @@ class SceneLink(CrudItem):
         self._stub.delete(self)
 
     # Actions
-    def load_file(self, file_uri: str) -> None:
+    def load_file(self, file_uri: Path | str, password: str | None = None) -> None:
         """
         Load speos file to fill the scene.
 
         Parameters
         ----------
-        file_uri : str
+        file_uri : Path | str
             File to be loaded.
+        password : str | None, optional
+            Password needed to open the speos lightbox file.
+            This is only necessary when the user protects the speos light box with a password.
         """
-        self._actions_stub.LoadFile(messages.LoadFile_Request(guid=self.key, file_uri=file_uri))
+        self._actions_stub.LoadFile(
+            messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
+        )
+
+    # Actions
+    def save_file(
+        self, file_uri: Path | str, password: str | None = None, black_boxed: bool = False
+    ) -> None:
+        """
+        Save the scene into SpeosLightBox file.
+
+        Parameters
+        ----------
+        file_uri: Path | str
+            File to be saved.
+        password: str | None, optional
+            Password needed to save the speos lightbox file.
+        black_boxed: bool, optional
+            If ``True``, the speos light box file will be black boxed.
+        """
+        self._actions_stub.SaveFile(
+            messages.SaveFile_Request(
+                guid=self.key, file_uri=str(file_uri), password=password, is_black_boxed=black_boxed
+            )
+        )
 
     def get_source_ray_paths(
         self,

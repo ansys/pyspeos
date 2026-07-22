@@ -27,7 +27,7 @@ jobs:
     name: Syncer
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -46,7 +46,7 @@ jobs:
 
     # Label based on modified files
     - name: Label based on changed files
-      uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+      uses: actions/labeler@b8dd2d9be0f68b860e7dae5dae7d772984eacd6d # v6.2.0
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -108,7 +108,7 @@ jobs:
       pull-requests: write  # Required to update PR with changelog information
     runs-on: ubuntu-latest
     steps:
-    - uses: ansys/actions/doc-changelog@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+    - uses: ansys/actions/doc-changelog@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
       with:
         token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
         use-conventional-commits: true
@@ -123,7 +123,7 @@ jobs:
       pull-requests: read   # Required to read PR metadata
     steps:
       - name: Check commit name
-        uses: ansys/actions/check-pr-title@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        uses: ansys/actions/check-pr-title@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -133,7 +133,7 @@ jobs:
     permissions:
       contents: read   # Required to read workflow files and check for security issues
     steps:
-      - uses: ansys/actions/check-actions-security@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+      - uses: ansys/actions/check-actions-security@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -145,7 +145,7 @@ jobs:
     permissions:
       contents: read   # Required to read repository content for vulnerability scanning
     steps:
-      - uses: ansys/actions/check-vulnerabilities@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+      - uses: ansys/actions/check-vulnerabilities@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           python-package-name: ${{ env.PACKAGE_NAME }}
@@ -160,58 +160,31 @@ jobs:
       contents: read   # Required to read repository content for type checking
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
           enable-cache: false
           prune-cache: true
 
-      - name: Create virtual environment
-        run: uv venv .venv
-
       - name: Install dependencies
         run: |
-          source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+          uv sync --frozen --only-group quality --no-install-project
 
-      # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
+      # NOTE: At the moment this will only run on a subset of files like ansys/speos/core/speos.py
+      # See the pyproject.toml configuration for more information on excluded files/folders
       - name: Run Ty on selected files
         run: |
           source .venv/bin/activate
-          ty check src/ansys/speos/core/ examples/ \
-            --exclude src/ansys/speos/core/body.py \
-            --exclude src/ansys/speos/core/face.py \
-            --exclude src/ansys/speos/core/bsdf.py \
-            --exclude src/ansys/speos/core/launcher.py \
-            --exclude src/ansys/speos/core/intensity.py \
-            --exclude src/ansys/speos/core/ground_plane.py \
-            --exclude src/ansys/speos/core/geo_ref.py \
-            --exclude src/ansys/speos/core/logger.py \
-            --exclude src/ansys/speos/core/lxp.py \
-            --exclude src/ansys/speos/core/part.py \
-            --exclude src/ansys/speos/core/opt_prop.py \
-            --exclude src/ansys/speos/core/project.py \
-            --exclude src/ansys/speos/core/proto_message_utils.py \
-            --exclude src/ansys/speos/core/source.py \
-            --exclude src/ansys/speos/core/spectrum.py \
-            --exclude src/ansys/speos/core/simulation.py \
-            --exclude src/ansys/speos/core/sensor.py \
-            --exclude src/ansys/speos/core/__init__.py \
-            --exclude src/ansys/speos/core/generic \
-            --exclude src/ansys/speos/core/kernel \
-            --exclude src/ansys/speos/core/workflow \
-            --exclude examples/core \
-            --exclude examples/kernel \
-            --exclude examples/workflow
+          ty check
 
   doc-style:
     name: Documentation style check
@@ -220,7 +193,7 @@ jobs:
       contents: read   # Required to read documentation files for style checking
     steps:
       - name: PyAnsys documentation style checks
-        uses: ansys/actions/doc-style@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        uses: ansys/actions/doc-style@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -238,7 +211,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - name: Build wheelhouse and perform smoke test
-        uses: ansys/actions/build-wheelhouse@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        uses: ansys/actions/build-wheelhouse@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           attest-provenance: true
           library-name: ${{ env.PACKAGE_NAME }}
@@ -254,7 +227,7 @@ jobs:
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -262,7 +235,7 @@ jobs:
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
 
       - name: Login to GitHub Packages
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ghcr.io/ansys
           username: ${{ github.actor }}
@@ -277,7 +250,7 @@ jobs:
           docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
 
       - name: Run Ansys documentation building action
-        uses: ansys/actions/doc-build@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        uses: ansys/actions/doc-build@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
@@ -285,6 +258,8 @@ jobs:
           checkout: false
           dependencies: "pandoc"
           needs-quarto: true
+          optional-dependencies-name: 'graphics'
+          group-dependencies-name: 'doc'
 
       - name: Stop container
         shell: bash
@@ -292,83 +267,36 @@ jobs:
           docker kill speos-rpc
           docker rm speos-rpc
 
-  # NOTE: Should this job be using ansys/actions/tests-pytest ?
+  doc-deploy-pr:
+    name: Deploy PR documentation
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
+    needs: [doc-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to update files on the gh-pages branch
+      pull-requests: write # Needed to create deployment comments on PRs
+    steps:
+      - uses: ansys/actions/doc-deploy-pr@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
+        with:
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          maximum-pr-doc-deployments: 5
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   testing:
     name: Testing and coverage
     needs: [smoke-tests]
-    runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Set up headless display
-        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-      - name: Create Python virtual environment
-        shell: bash
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -c "import sys; print(sys.executable)"
-
-      - name: Install packages for testing
-        shell: bash
-        run: |
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install --upgrade build wheel
-          pip install .[tests]
-
-      - name: Login to GitHub Packages
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        with:
-          registry: ghcr.io/ansys
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Start container
-        shell: bash
-        env:
-          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0 -m 25000000
-
-      - name: Run pytest
-        shell: bash
-        run: |
-          . .venv/bin/activate
-          pytest -xs
-
-      - name: Upload Coverage Results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: coverage-html-ubuntu
-          path: .cov/html
-          retention-days: 7
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          files: .cov/xml
-
-      - name: Stop container
-        shell: bash
-        run: |
-          docker kill speos-rpc
-          docker rm speos-rpc
+    with:
+      python-versions: '["3.14"]'
+      speos-versions: '["dev"]'
+    secrets:
+      LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    uses: ./.github/workflows/reusable-speos-tests.yml
 
   build-library:
     name: Build library
@@ -380,7 +308,7 @@ jobs:
       id-token: write       # Required for OIDC token generation (for provenance signing)
     steps:
       - name: Build library source and wheel artifacts
-        uses: ansys/actions/build-library@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        uses: ansys/actions/build-library@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
         with:
           attest-provenance: true
           library-name: ${{ env.PACKAGE_NAME }}

@@ -14,7 +14,11 @@ from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
+    ObserverSensorParameters,
     PhotometricCameraParameters,
+    PolarIntensityDimensionsParameters,
+    PolarIntensityFormatTypes,
+    PolarIntensitySensorParameters,
 )
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
@@ -22,7 +26,10 @@ from ansys.speos.core.kernel.client import (
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
+    SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
+    SensorPolarIntensity,
     SensorRadiance,
 )
 
@@ -191,6 +198,27 @@ sensor1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 sensor1.commit()
 print(sensor1)
 
+# Modify photometric camera properties (including diffraction effects)
+sensor1.distortion_file_uri = (
+    assets_data_path / "CameraInputFiles" / "diffractive_effects.OPTDistortion"
+)
+sensor1.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+)
+sensor1.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+)
+sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+)
+wl = sensor1.set_mode_photometric().set_wavelengths_range()
+wl.start = 486
+wl.end = 655
+wl.sampling = 13
+sensor1.set_mode_photometric().consider_diffraction_effects = True
+sensor1.commit()
+print(sensor1)
+
 # ## Reset
 #
 # Possibility to reset local values from the one available in the server.
@@ -249,5 +277,182 @@ face = p.find(name="TheBodyB/TheFaceF", feature_type=Face)[0]
 sensor5.geometries = [face]
 sensor5.commit()
 print(sensor5)
+
+# ### Immersive sensor
+#
+# An immersive sensor wraps the observer in a virtual cube and records light arriving from all
+# six directions (front, back, left, right, top, bottom).  It can be used with both direct and
+# inverse simulations.
+#
+
+# Create an immersive sensor and commit it to show its default settings.
+
+sensor6 = p.create_sensor(name="Immersive.1", feature_type=SensorImmersive)
+print(sensor6)  # local: not yet on server
+
+sensor6.commit()
+print(sensor6)  # now on server
+
+# **Customise the sensor**
+#
+# The sampling controls the pixel count per cube face, the integration angle is used for
+# direct simulations, and the wavelengths range selects the spectral window.
+
+sensor6.sampling = 256
+sensor6.integration_angle = 10.0
+sensor6.stereo_interocular_distance = 50
+
+wl = sensor6.set_wavelengths_range()
+wl.start = 380.0
+wl.end = 780.0
+wl.sampling = 20
+
+# Exclude the bottom face so rays from below are not recorded.
+sensor6.exclude_bottom = True
+
+# Separate results by light source.
+sensor6.set_layer_type_source()
+
+# Reposition the sensor (Origin, X-axis, Y-axis, Z-axis).
+sensor6.axis_system = [5, 0, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor6.commit()
+print(sensor6)
+
+# **Reset and delete**
+
+sensor6.sampling = 512  # local modification — not yet committed
+sensor6.reset()  # restores the last committed value (256)
+print(sensor6)
+
+sensor6.delete()
+print(sensor6)
+
+# ### Observer sensor
+#
+# An observer sensor places multiple virtual viewpoints on a sphere around the scene.
+# It is useful when you want to sample a setup from several directions with one feature.
+#
+# **Default values**
+
+sensor7 = p.create_sensor(name="Observer.1", feature_type=SensorObserver)
+print(sensor7)  # local: not yet on server
+
+sensor7.commit()
+print(sensor7)  # now on server
+
+# **Customise the sensor**
+#
+# The focal distance defines the observer plane, ``distance`` controls the radius of the
+# sampling sphere, and the angular range controls how many viewpoints are created.
+
+sensor7.focal = 320.0
+sensor7.integration_angle = 7.5
+sensor7.distance = 130.0
+sensor7.stereo_interocular_distance = 63.0
+
+observer_wl = sensor7.set_wavelengths_range()
+observer_wl.start = 430.0
+observer_wl.end = 670.0
+observer_wl.sampling = 18
+
+observer_dims = sensor7.set_dimensions()
+observer_dims.x_start = -90.0
+observer_dims.x_end = 90.0
+observer_dims.x_sampling = 110
+observer_dims.y_start = -70.0
+observer_dims.y_end = 70.0
+observer_dims.y_sampling = 75
+
+observer_angles = sensor7.set_angular_range()
+observer_angles.x_start = -55.0
+observer_angles.x_end = 55.0
+observer_angles.x_sampling = 9
+observer_angles.y_start = -42.0
+observer_angles.y_end = 42.0
+observer_angles.y_sampling = 6
+
+# Separate the recorded results by source and move the sensor frame.
+sensor7.set_layer_type_source()
+sensor7.axis_system = [10, 0, 15, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor7.commit()
+print(sensor7)
+
+# **Create from parameter dataclass**
+#
+# Observer sensors can also be configured in one shot with a parameter dataclass.
+
+observer_params = ObserverSensorParameters(
+    focal=280.0,
+    integration_angle=6.0,
+    distance=110.0,
+    interocular_distance=66.0,
+    axis_system=[5, 10, 15, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    layer_type="by_source",
+)
+sensor8 = p.create_sensor(
+    name="Observer.Parameters",
+    feature_type=SensorObserver,
+    parameters=observer_params,
+)
+sensor8.commit()
+print(sensor8)
+
+# **Reset and delete**
+
+sensor7.distance = 300.0  # local modification — not yet committed
+sensor7.stereo_interocular_distance = None
+sensor7.reset()  # restores the last committed values from the server
+print(sensor7)
+
+sensor8.delete()
+print(sensor8)
+
+sensor7.delete()
+print(sensor7)
+
+# ### Polar intensity sensor
+#
+# A polar intensity sensor generates an IES/Eulumdat photometric file from the simulation.
+# It supports format selection, explicit angular sampling, and far-field or near-field setup.
+
+sensor_polar = p.create_sensor(name="PolarIntensity.1", feature_type=SensorPolarIntensity)
+print(sensor_polar)  # local: not yet on server
+
+sensor_polar.commit()
+print(sensor_polar)  # now on server
+
+# Customise format, sampling and field configuration.
+assert isinstance(sensor_polar, SensorPolarIntensity)
+sensor_polar.set_format_eulumdat()
+sensor_polar.set_constant_sampling()
+sensor_polar.horizontal_sampling = 180
+sensor_polar.vertical_sampling = 90
+sensor_polar.set_far_field()
+sensor_polar.integration_angle = 1
+sensor_polar.axis_system = [0, 0, 25, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+sensor_polar.commit()
+print(sensor_polar)
+
+# The same sensor can be created directly from parameter dataclasses.
+polar_param = PolarIntensitySensorParameters(
+    format=PolarIntensityFormatTypes.iesna_b,
+    dimensions=PolarIntensityDimensionsParameters(horizontal_sampling=37, vertical_sampling=37),
+    integration_angle=1.0,
+    axis_system=[10, 0, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+)
+
+sensor_polar_param = p.create_sensor(
+    name="PolarIntensity.Parameters",
+    feature_type=SensorPolarIntensity,
+    parameters=polar_param,
+)
+sensor_polar_param.commit()
+print(sensor_polar_param)
+
+sensor_polar_param.delete()
+sensor_polar.delete()
 
 speos.close()

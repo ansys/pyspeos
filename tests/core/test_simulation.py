@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,12 +29,14 @@ import re
 from threading import Thread
 from time import sleep
 from types import SimpleNamespace
-import typing
 
+from ansys.api.speos.job.v2.job_pb2 import Result
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
+from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.generic.general_methods import normalize_vector
 from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.generic.version_checker import server_version_checker
@@ -47,8 +49,82 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import IS_DOCKER, test_path
+from ansys.speos.core.workflow.open_result import export_xmp_to_image
+from tests.conftest import IS_DOCKER, local_test_path, test_path
 from tests.helper import does_file_exist, remove_file
+
+
+def _create_source_group_test_prerequisites(
+    p: Project,
+) -> tuple[SensorIrradiance, SourceLuminaire, SourceLuminaire]:
+    """Create prerequisites for source group simulation tests."""
+    root_part = p.create_root_part()
+    face_1 = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face_1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
+    opt_prop.commit()
+
+    sensor = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
+    sensor.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor.commit()
+
+    source_1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
+    source_1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source_1.commit()
+
+    source_2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
+    source_2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source_2.commit()
+
+    return sensor, source_1, source_2
+
+
+def _validate_source_groups_support_or_skip() -> None:
+    """Return the committed simulation or skip if the current server ignores source groups."""
+    check_version = server_version_checker.is_version_supported(2026, 1, 2)
+    if not check_version:
+        pytest.skip("Current Speos server is not supporting source group.")
+
+
+def test_source_group_api_local_validation(monkeypatch):
+    """Test source group API logic in isolation without any Speos server connection."""
+    monkeypatch.setattr(server_version_checker, "_version", None)
+
+    sim = BaseSimulation.__new__(BaseSimulation)
+    sim._project = None
+    sim._simulation_instance = messages.Scene.SimulationInstance(name="Direct.SourceGroups")
+
+    sim.source_paths = ["source.1", "source.2"]
+
+    source_group = sim.add_source_group(name="Group.1", source_paths=["source.1"])
+    assert source_group.name == "Group.1"
+    assert source_group.source_paths == ["source.1"]
+    assert len(sim.source_groups) == 1
+
+    sim.source_groups[0].source_paths = ["source.1", "source.2"]
+    assert sim.source_groups[0].source_paths == ["source.1", "source.2"]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.add_source_group(name="Group.2", source_paths=["source.3"])
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.source_paths = ["source.1"]
+    assert sim.source_paths == ["source.1", "source.2"]
+
+    sim.remove_source_group("Group.1")
+    assert sim.source_groups == []
+
+    monkeypatch.setattr(server_version_checker, "_version", "2025.2.0")
+    with pytest.raises(
+        NotImplementedError, match="needs a Speos Version of 2026 R1 SP2 or higher."
+    ):
+        sim.add_source_group(name="Group.Unsupported", source_paths=["source.1"])
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -150,6 +226,91 @@ def test_create_direct(speos: Speos):
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_source_groups_commit_and_reset(speos: Speos):
+    """Test source groups with commit, validation, and reset."""
+    _validate_source_groups_support_or_skip()
+    p = Project(speos=speos)
+    sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
+
+    sim = p.create_simulation(name="Direct.SourceGroups", feature_type=SimulationDirect)
+    sim.sensor_paths = [sensor]
+    sim.source_paths = [source_1, source_2]
+
+    source_group = sim.add_source_group(name="Group.1", source_paths=[source_1])
+    assert source_group.name == "Group.1"
+    assert source_group.source_paths == [source_1._name]
+    assert len(sim.source_groups) == 1
+    assert sim.source_groups[0].name == "Group.1"
+
+    sim.source_groups[0].source_paths = [source_1, source_2]
+    assert sim.source_groups[0].source_paths == [
+        source_1._name,
+        source_2._name,
+    ]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.add_source_group(name="Group.2", source_paths=["Unknown.Source"])
+
+    sim.commit()
+    assert sim.source_groups[0].source_paths == [
+        source_1._name,
+        source_2._name,
+    ]
+
+    sim.clear_source_groups()
+    assert sim.source_groups == []
+
+    sim.reset()
+    assert len(sim.source_groups) == 1
+    assert sim.source_groups[0].name == "Group.1"
+    assert sim.source_groups[0].source_paths == [source_1._name, source_2._name]
+
+    with pytest.raises(ValueError, match="Source group paths must be included"):
+        sim.source_paths = [source_1._name]
+
+    sim.remove_source_group("Group.1")
+    assert sim.source_groups == []
+    sim.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_load_source_groups_from_exported_file(speos: Speos):
+    """Test loading source groups from an exported simulation file."""
+    export_root = Path(test_path) / "source_group_export"
+    remove_file(str(export_root))
+
+    try:
+        _validate_source_groups_support_or_skip()
+        p = Project(speos=speos)
+        sensor, source_1, source_2 = _create_source_group_test_prerequisites(p)
+
+        sim = p.create_simulation(name="Direct.SourceGroups.Export", feature_type=SimulationDirect)
+        sim.sensor_paths = [sensor]
+        sim.source_paths = [source_1, source_2]
+        sim.add_source_group(name="Group.Export", source_paths=[source_1, source_2])
+        sim.commit()
+        sim.export(export_path=export_root)
+
+        exported_path = (
+            export_root / f"{sim.get(key='name')}.speos" / f"{sim.get(key='name')}.speos"
+        )
+        assert does_file_exist(str(exported_path))
+
+        loaded_project = Project(speos=speos, path=str(exported_path))
+        loaded_sim = loaded_project.find(
+            name="Direct.SourceGroups.Export",
+            feature_type=SimulationDirect,
+        )[0]
+
+        assert loaded_sim.source_paths == [source_1._name, source_2._name]
+        assert len(loaded_sim.source_groups) == 1
+        assert loaded_sim.source_groups[0].name == "Group.Export"
+        assert loaded_sim.source_groups[0].source_paths == [source_1._name, source_2._name]
+    finally:
+        remove_file(str(export_root))
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -1144,6 +1305,7 @@ def test_stop_computation(speos: Speos):
     assert difference.seconds < 25
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(
@@ -1191,8 +1353,7 @@ def test_export_old_version(monkeypatch, tmp_path):
     saved_requests = []
 
     class FakeActionsStub:
-        @typing.override
-        def SaveFile(self, request):
+        def SaveFile(self, request):  # noqa: N802
             saved_requests.append(request)
 
     project = SimpleNamespace(
@@ -1747,6 +1908,114 @@ def test_simulation_nested_classes_errors():
         BaseSimulation.SourceSampling(None, stable_ctr=False)
 
 
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_no_stop_condition_direct(speos: Speos):
+    """Test _check_job warns and applies defaults when direct simulation has no stop condition.
+
+    Uses Prism.speos to load a direct simulation. After loading, the job has no
+    ``direct_mc_simulation_properties`` set. Setting ``automatic_save_frequency`` creates the
+    properties field without any stop condition, simulating the load/commit scenario where job
+    properties are created without stop conditions. Verifies that a ``UserWarning`` is emitted and
+    default stop conditions are then applied.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    # Touch direct_mc_simulation_properties by setting a non-stop-condition field.
+    # This creates the properties message without any stop condition fields.
+    sim.automatic_save_frequency = 1800
+
+    # Verify the job properties exist but have no stop conditions
+    assert sim._job.HasField("direct_mc_simulation_properties")
+    assert not sim._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number")
+    assert not sim._job.direct_mc_simulation_properties.HasField("stop_condition_duration")
+
+    # _check_job should warn and restore defaults
+    with pytest.warns(UserWarning, match="simulation stop condition"):
+        sim._check_job()
+
+    # After _check_job, default stop conditions should be applied
+    from ansys.speos.core.generic.parameters import DirectSimulationParameters
+
+    default_params = DirectSimulationParameters()
+    assert sim.stop_condition_rays_number == default_params.stop_condition_rays_number
+    assert sim.stop_condition_duration == default_params.stop_condition_duration
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_no_stop_condition_inverse(speos: Speos):
+    """Test _check_job warns and applies defaults when inverse simulation has no stop condition.
+
+    Uses Inverse_simu.speos to load an inverse simulation. Setting ``automatic_save_frequency``
+    creates the job properties without stop conditions, then verifies that ``_check_job`` emits
+    a warning and restores ``InverseSimulationParameters`` defaults.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Inverse_simu.speos" / "Inverse_simu.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+
+    # Touch inverse_mc_simulation_properties without setting any stop condition
+    sim.automatic_save_frequency = 1800
+
+    # Verify the job properties exist but have no stop conditions
+    assert sim._job.HasField("inverse_mc_simulation_properties")
+    assert not sim._job.inverse_mc_simulation_properties.HasField("stop_condition_duration")
+    assert not sim._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
+
+    # _check_job should warn and restore defaults
+    with pytest.warns(UserWarning, match="simulation stop condition"):
+        sim._check_job()
+
+    # After _check_job, default stop conditions should be applied
+    from ansys.speos.core.generic.parameters import InverseSimulationParameters
+
+    default_params = InverseSimulationParameters()
+    assert sim.stop_condition_passes_number == default_params.stop_condition_passes_number
+    assert sim.stop_condition_duration == default_params.stop_condition_duration
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_check_job_with_stop_conditions_no_warning(speos: Speos):
+    """Test _check_job does not warn when simulations already have stop conditions set.
+
+    Uses Prism.speos (direct) and Inverse_simu.speos (inverse) and ensures no warning is emitted
+    when stop conditions are present.
+    """
+    import warnings
+
+    # --- Direct simulation with stop condition set ---
+    p_direct = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim_direct = p_direct.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    # Setting stop_condition_rays_number creates direct_mc_simulation_properties with a valid
+    # stop condition
+    sim_direct.stop_condition_rays_number = 100000
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sim_direct._check_job()  # Should not raise
+
+    # --- Inverse simulation with stop condition set ---
+    p_inv = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Inverse_simu.speos" / "Inverse_simu.speos"),
+    )
+    sim_inv = p_inv.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    # Ensure stop condition via passes number
+    sim_inv.stop_condition_passes_number = 5
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sim_inv._check_job()  # Should not raise
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_texture_normalization(speos: Speos):
     """Test texture normalization set methods."""
@@ -1769,3 +2038,102 @@ def test_texture_normalization(speos: Speos):
         sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization
         == simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
     )
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline(speos: Speos):
+    """Test Inverse Simulation Timeline functionality."""
+    p = Project(speos=speos)
+
+    # timeline: initialized defaults
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    assert not sim1._job.inverse_mc_simulation_properties.HasField("timeline")
+    assert not sim1.timeline
+    assert sim1.start_time is None
+
+    # timeline: enabled defaults
+    sim1.timeline = True
+    assert sim1.timeline is True
+    assert sim1.start_time == 0.0
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is True
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.0
+
+    # timeline: adjusting start_time
+    sim1.start_time = 0.1
+    assert sim1.start_time == 0.1
+    assert sim1._job.inverse_mc_simulation_properties.timeline.start_time == 0.1
+
+    # timeline: disabling timeline clears field
+    sim1.timeline = False
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
+
+    # timeline: setting start time with timeline disabled throws error
+    with pytest.raises(TypeError, match="Timeline must be enabled to set start_time"):
+        sim1.start_time = 0.2
+
+    # timeline: setting start time to None removes field
+    sim1.timeline = True
+    sim1.start_time = None
+    assert sim1.timeline is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("timeline") is False
+    assert sim1.start_time is None
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_timeline_results(speos: Speos):
+    """Test Inverse Simulation Timeline XMP results."""
+    # timeline: check simulation results based on timeline setting
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Timeline.speos" / "Timeline.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    sim.stop_condition_passes_number = 3
+
+    # check the png file size
+    def _has_nonzero_result(simulation: SimulationInverse, result: Result) -> bool:
+        # Retrieve result name (needed to call export_xmp_to_image)
+        result_name = ""
+        if result.HasField("path"):
+            result_name = Path(result.path).name
+        elif result.HasField("upload_response"):
+            result_name = result.upload_response.info.file_name
+        else:
+            assert False, "Result does not have a valid path or upload_response field"
+
+        # Export the xmp into image, and check the file size to determine if the result is nonzero
+        img_path = export_xmp_to_image(simulation, result_name)
+        filesize = None
+        if img_path.HasField("path"):
+            filesize = Path(img_path.path).stat().st_size
+        elif img_path.HasField("upload_response"):
+            file_transfer_1 = FileTransfer(speos.client)
+            res = file_transfer_1.download_file(
+                file_uri=img_path.upload_response.info.uri, download_location=local_test_path
+            )
+            filesize = res.info.file_size
+        else:
+            assert False, "Result does not have a valid path or upload_response field"
+
+        if filesize > 2000:
+            return True
+        else:
+            return False
+
+    # the target moves within camera FOV -> nonzero result
+    sim.timeline = True
+    sim.start_time = 0.5
+    speos_results = sim.compute_CPU()
+    assert _has_nonzero_result(sim, speos_results[0])
+
+    # the target is outside camera FOV -> zero result
+    sim.start_time = 0.0
+    speos_results = sim.compute_CPU()
+    assert not _has_nonzero_result(sim, speos_results[0])
+
+    # the target is nominally within camera FOV -> nonzero result
+    sim.timeline = False
+    speos_results = sim.compute_CPU()
+    assert _has_nonzero_result(sim, speos_results[0])
