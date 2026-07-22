@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -22,22 +22,39 @@
 
 """Test basic using project."""
 
+from copy import deepcopy
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
-from ansys.speos.core.generic.parameters import IrradianceSensorParameters, RadianceSensorParameters
+from ansys.speos.core.generic.parameters import (
+    IrradianceSensorParameters,
+    RadianceSensorParameters,
+)
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
+    SensorObserver,
+    SensorPolarIntensity,
     SensorRadiance,
+    SensorXMPIntensity,
 )
-from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
+from ansys.speos.core.simulation import SimulationDirect, SimulationInverse
+from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
+    SourceAmbientNaturalLight,
+    SourceDisplay,
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 from tests.conftest import test_path
+from tests.helper import clean_all_dbs
 
 
 def test_find_feature(speos: Speos):
@@ -366,10 +383,11 @@ def test_from_file(speos: Speos):
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)
     assert len(feat_ops) == 1
-    assert type(feat_ops[0]) is OptProp
+    assert isinstance(feat_ops[0], OptProp)
 
     # And that the feature retrieved has a real impact on the project
-    feat_ops[0].set_surface_mirror(reflectance=60).commit()
+    feat_ops[0].set_surface_mirror().reflectance = 60
+    feat_ops[0].commit()
     mat2 = p.scene_link.get().materials[2]
     if mat2.HasField("sop_guid"):
         assert speos.client[mat2.sop_guid].get().HasField("mirror")
@@ -596,14 +614,19 @@ def test_preview_visual_data(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_sensor_creation_errors(speos: Speos):
+def test_creation_errors(speos: Speos):
     """Test to validate errors on sensor creation."""
-    p = Project(
-        speos=speos,
-        path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
-        ),
-    )
+    p = Project(speos=speos)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_sensor(name="test", feature_type=SourceSurface)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_source(name="test", feature_type=SensorRadiance)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_simulation(name="test", feature_type=SensorIrradiance)
+
     with pytest.raises(TypeError, match="Irradiance3DSensorParameters"):
         p.create_sensor(
             name="Sensor3D", feature_type=Sensor3DIrradiance, parameters=RadianceSensorParameters()
@@ -620,9 +643,441 @@ def test_sensor_creation_errors(speos: Speos):
             feature_type=SensorIrradiance,
             parameters=RadianceSensorParameters(),
         )
+    with pytest.raises(TypeError, match="PolarIntensitySensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorPolarIntensity,
+            parameters=RadianceSensorParameters(),
+        )
     with pytest.raises(TypeError, match="CameraSensorParameters"):
         p.create_sensor(
             name="irradiance_sensor",
             feature_type=SensorCamera,
             parameters=RadianceSensorParameters(),
         )
+
+    with pytest.raises(TypeError, match="ObserverSensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorObserver,
+            parameters=RadianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="SurfaceSourceParameters"):
+        p.create_source(
+            name="surface_source",
+            feature_type=SourceSurface,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="LuminaireSourceParameters"):
+        p.create_source(
+            name="luminaire_source",
+            feature_type=SourceLuminaire,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="RayFileSourceParameters"):
+        p.create_source(
+            name="rayfile_source",
+            feature_type=SourceRayFile,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="DisplayParameters"):
+        p.create_source(
+            name="display_source",
+            feature_type=SourceDisplay,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="AmbientNaturalLightParameters"):
+        p.create_source(
+            name="ambient_light",
+            feature_type=SourceAmbientNaturalLight,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="AmbientEnvironmentParameters"):
+        p.create_source(
+            name="ambient_light",
+            feature_type=SourceAmbientEnvironment,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="DirectSimulationParameters"):
+        p.create_simulation(
+            name="simulation",
+            feature_type=SimulationDirect,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="InverseSimulationParameters"):
+        p.create_simulation(
+            name="simulation",
+            feature_type=SimulationInverse,
+            parameters=IrradianceSensorParameters(),
+        )
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_unsupported_type(speos: Speos):
+    """Test that _create_speos_feature_preview returns the plotter unchanged for unsupported types.
+
+    Covers the early-return branch when the feature is not one of the recognised types
+    (e.g. OptProp, SimulationDirect, GroundPlane).
+    """
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+
+    mock_plotter = MagicMock()
+
+    # OptProp is not a supported type – plotter must come back unchanged
+    opt_feature = p.find(name=".*", name_regex=True, feature_type=OptProp)[0]
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=opt_feature, scene_seize=100.0
+    )
+    assert result is mock_plotter
+    mock_plotter.plot.assert_not_called()
+
+    # SimulationDirect is also not a supported type
+    sim_feature = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sim_feature, scene_seize=100.0
+    )
+    assert result is mock_plotter
+    mock_plotter.plot.assert_not_called()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_sensor_irradiance(speos: Speos):
+    """Test _create_speos_feature_preview for SensorIrradiance (case _: branch).
+
+    SensorIrradiance falls through to the default ``case _`` branch which calls
+    ``plotter.plot(speos_feature.visual_data.data, ...)``.
+    The coordinate-system branch then plots x/y/z axes (3-axis path).
+    """
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Irradiance.Preview", feature_type=SensorIrradiance)
+    sensor.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # visual data plotted + x/y/z coordinate axes = at least 4 calls
+    assert mock_plotter.plot.call_count >= 4
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_sensor_radiance(speos: Speos):
+    """Test _create_speos_feature_preview for SensorRadiance (case _: branch, 2-axis coords).
+
+    SensorRadiance also uses ``case _`` for the mesh plot, but only x/y axes are drawn
+    (SensorRadiance | SourceSurface coordinate branch).
+    """
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Radiance.Preview", feature_type=SensorRadiance)
+    sensor.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # 1 mesh plot + 2 coordinate axes (x=red, y=green) = 3 calls
+    assert mock_plotter.plot.call_count >= 3
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_sensor_camera(speos: Speos):
+    """Test _create_speos_feature_preview for SensorCamera (case _: branch, 3-axis coords)."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.Preview", feature_type=SensorCamera)
+    sensor.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    sensor.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
+    sensor.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # mesh plot(s) + 3 coordinate axes = at least 4 calls
+    assert mock_plotter.plot.call_count >= 4
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_sensor_xmp_intensity(speos: Speos):
+    """Test _create_speos_feature_preview for SensorXMPIntensity (case _: branch, no coords)."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Intensity_test.speos" / "Intensity_test.speos"),
+    )
+    intensity_sensors = p.find(name=".*", name_regex=True, feature_type=SensorXMPIntensity)
+    assert len(intensity_sensors) >= 1
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=intensity_sensors[0], scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # at least the mesh/data plot call
+    assert mock_plotter.plot.call_count >= 1
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_source_luminaire(speos: Speos):
+    """Test _create_speos_feature_preview for SourceLuminaire (ray branch, 3-axis coords)."""
+    p = Project(speos=speos)
+    p.create_root_part().commit()
+    sr = p.create_source(name="Luminaire.Preview", feature_type=SourceLuminaire)
+    sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    sr.spectrum.set_halogen()
+    sr.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sr, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # ray arrows + 3 coordinate axes = at least 4 calls
+    assert mock_plotter.plot.call_count >= 4
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_source_rayfile(speos: Speos):
+    """Test _create_speos_feature_preview for SourceRayFile (ray branch, 3-axis coords)."""
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    # Add a ray-file source so the SourceRayFile branch is exercised
+    sr = p.create_source(name="RayFile.Preview", feature_type=SourceRayFile)
+    sr.ray_file_uri = Path(test_path) / "Rays.ray"
+    sr.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sr, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # ray arrows + 3 coordinate axes = at least 4 calls
+    assert mock_plotter.plot.call_count >= 4
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_source_surface(speos: Speos):
+    """Test _create_speos_feature_preview for SourceSurface (ray branch, 2-axis coords)."""
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    surface_sources = p.find(name=".*", name_regex=True, feature_type=SourceSurface)
+    assert len(surface_sources) >= 1
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=surface_sources[0], scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # ray arrows + 2 coordinate axes (x=red, y=green) = at least 3 calls
+    assert mock_plotter.plot.call_count >= 3
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_speos_feature_preview_lightbox(speos: Speos):
+    """Test _create_speos_feature_preview for LightBox covering both mesh and ray sub-branches.
+
+    The LightBox ``case LightBox()`` branch iterates over visual_data entries:
+    - When ``data.data`` is a list → ray arrows are plotted.
+    - When ``data.data`` is a PolyData mesh → mesh is plotted with edge/color kwargs.
+    The coordinate system (3-axis) is then drawn from the first visual_data entry.
+    """
+    from ansys.speos.core.component import LightBox
+
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
+    )
+    lightboxes = p.find(name=".*", name_regex=True, feature_type=LightBox)
+    assert len(lightboxes) >= 1
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=lightboxes[0], scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # at least one plotter.plot call from either ray arrows or mesh data
+    assert mock_plotter.plot.call_count >= 1
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_create_speos_feature_preview_lightbox_ray_data(speos: Speos):
+    """Test _create_speos_feature_preview LightBox branch when visual_data contains ray entries.
+
+    Uses the second lightbox in Direct.1.speos which contains a ray-file source,
+    exercising the ``isinstance(data.data, list)`` inner branch.
+    """
+    from ansys.speos.core.component import LightBox
+
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
+    )
+    lightboxes = p.find(name=".*", name_regex=True, feature_type=LightBox)
+    assert len(lightboxes) >= 2
+
+    mock_plotter = MagicMock()
+    # Iterate over both lightboxes to ensure both mesh and ray sub-branches are hit
+    for lb in lightboxes:
+        mock_plotter.reset_mock()
+        p._create_speos_feature_preview(plotter=mock_plotter, speos_feature=lb, scene_seize=100.0)
+        assert mock_plotter.plot.call_count >= 1
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_scene_seize_zero(speos: Speos):
+    """Test _create_speos_feature_preview with scene_seize=0 (edge case).
+
+    Ensures that a zero scene size does not cause errors and the plotter is still returned.
+    """
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Irradiance.Zero", feature_type=SensorIrradiance)
+    sensor.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=sensor, scene_seize=0.0
+    )
+    assert result is mock_plotter
+    assert mock_plotter.plot.call_count >= 1
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_speos_feature_preview_3d_irradiance(speos: Speos):
+    """Test _create_speos_feature_preview for Sensor3DIrradiance (case _: branch, no coords).
+
+    Sensor3DIrradiance does not populate a coordinate system, so only the mesh plot is expected.
+    """
+    p = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
+    ssr_3d = p.create_sensor(name="Sensor3D.Preview", feature_type=Sensor3DIrradiance)
+    body_feat = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    ssr_3d.geometries = [body_feat.geo_path]
+    ssr_3d.commit()
+
+    mock_plotter = MagicMock()
+    result = p._create_speos_feature_preview(
+        plotter=mock_plotter, speos_feature=ssr_3d, scene_seize=100.0
+    )
+
+    assert result is mock_plotter
+    # At least one plot call for the 3D mesh
+    assert mock_plotter.plot.call_count >= 1
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_change_loaded_mesh(speos: Speos):
+    """Test changed loaded mesh."""
+    # load initial file
+    p = Project(speos=speos, path=str(Path(test_path) / "MeshChange.speos" / "MeshChange.speos"))
+    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+    assert isinstance(body_1, Body)
+    face_1 = body_1._geom_features[0]
+    assert isinstance(face_1, Face)
+
+    # store original data
+    orig_value = deepcopy(face_1._face)
+
+    # change vertice
+    vertices = list(face_1._face.vertices)
+    for i, value in enumerate(face_1._face.vertices):
+        if (i + 2) % 3 == 0:
+            vertices[i] = 1
+    face_1._face.vertices[:] = vertices
+    face_1.commit()
+
+    # validate change occurred
+    assert face_1._face != orig_value
+
+    # export simulation
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    assert isinstance(sim, SimulationDirect)
+    sim.export(Path(test_path) / "changed")
+
+    # clean up
+    clean_all_dbs(speos.client)
+
+    # load change model
+    p = Project(
+        speos=speos, path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos")
+    )
+    # remove portection
+    p.remove_mesh_protection()
+
+    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+    assert isinstance(body_1, Body)
+    face_1 = body_1._geom_features[0]
+    assert isinstance(face_1, Face)
+
+    # no change happened
+    # @todo if this fails server side bug has been fixed and temporary remove protection function
+    # can be deprecated
+    if not server_version_checker.is_version_supported(2026, 1, 3):
+        assert face_1._face == orig_value
+        vertices = list(face_1._face.vertices)
+        for i, value in enumerate(face_1._face.vertices):
+            if (i + 2) % 3 == 0:
+                vertices[i] = 1
+        face_1._face.vertices[:] = vertices
+        face_1.commit()
+        assert face_1._face != orig_value
+        sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+        assert isinstance(sim, SimulationDirect)
+        sim.export(Path(test_path) / "changed_with_removed_protection")
+
+        # clean up
+        clean_all_dbs(speos.client)
+        p = Project(
+            speos=speos,
+            path=str(
+                Path(test_path)
+                / "changed_with_removed_protection"
+                / "MeshChange.speos"
+                / "MeshChange.speos"
+            ),
+        )
+        p.remove_mesh_protection()
+        body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+        assert isinstance(body_1, Body)
+        face_1 = body_1._geom_features[0]
+        assert isinstance(face_1, Face)
+
+        # validate that with remove protection change did happen
+        assert face_1._face != orig_value
+    else:
+        assert face_1._face != orig_value

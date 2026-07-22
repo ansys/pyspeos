@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 """Provides a way to gather Speos features."""
 
 from __future__ import annotations
@@ -33,19 +34,29 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    AmbientUniformParameters,
+    AmbientUsStandardParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
+    DisplayParameters,
+    ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
+    ObserverSensorParameters,
+    OptPropParameters,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
@@ -53,6 +64,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
+from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -64,7 +76,10 @@ from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -77,8 +92,13 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import (
     BaseSource,
+    SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
+    SourceAmbientUsStandard,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -106,11 +126,13 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
-    path : str
-        The project will be loaded from this speos file.
-        By default, ``""``, means create from empty.
+    path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = None
+        The project will be loaded from this speos file or lightbox instance.
+       By default, ``None``, means create from empty.
+    context : Optional[str]
+        For internal use only.
 
     Attributes
     ----------
@@ -118,16 +140,47 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
-        self.client = speos.client
+    def __init__(
+        self,
+        speos: Union[Speos, SpeosClient],
+        path: Optional[Union[str, Path, LightBoxFileInstance]] = "",
+        context: Optional[str] = None,
+    ):
+        match speos:
+            case Speos():
+                self.client = speos.client
+            case SpeosClient():
+                self.client = speos
+            case _:
+                raise TypeError(f"Incorrect type for speos: {type(speos)}")
         """Speos instance client."""
-        self.scene_link = speos.client.scenes().create()
+        self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
-        path = str(path)
-        if len(path):
-            self.scene_link.load_file(path)
-            self._fill_features()
+        match path:
+            case None | "":
+                pass
+            case str() | Path():
+                self.scene_link.load_file(str(path))
+                self._fill_features(context=context)
+            case LightBoxFileInstance():
+                self.scene_link.load_file(file_uri=str(path.file), password=path.password)
+                scene_data = self.scene_link.get()
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
+                    self._fill_features(context=context)
+            case _:
+                raise TypeError(f"Unsupported path type: {type(path)}")
+
+    def remove_mesh_protection(self):
+        """Remove mesh protection from the project loaded from *.speos file.
+
+        But this removes all features unsupported by speos rpc server.
+        """
+        msg = self.scene_link.get()
+        self.scene_link = self.client.scenes().create()
+        self.scene_link.set(msg)
+        self._features = []
+        self._fill_features()
 
     # def list(self):
     #    """Return all feature key as a tree.
@@ -174,8 +227,11 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
+            SourceAmbientUsStandard,
             SourceAmbientEnvironment,
+            SourceAmbientUniform,
         ]
     ]:
         """Property of project's sources inside.
@@ -186,7 +242,8 @@ class Project:
         ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceRayFile, \
         ansys.speos.core.source.SourceAmbientNaturalLight, \
-        ansys.speos.core.source.SourceAmbientEnvironment]]
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientUniform]]
             List of source features.
 
         """
@@ -201,7 +258,13 @@ class Project:
         self,
     ) -> List[
         Union[
-            Sensor3DIrradiance, SensorCamera, SensorIrradiance, SensorRadiance, SensorXMPIntensity
+            Sensor3DIrradiance,
+            SensorCamera,
+            SensorImmersive,
+            SensorIrradiance,
+            SensorPolarIntensity,
+            SensorRadiance,
+            SensorXMPIntensity,
         ]
     ]:
         """Property of project's sensors inside.
@@ -210,7 +273,9 @@ class Project:
         -------
         List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
             List of sensor features.
@@ -250,6 +315,7 @@ class Project:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -263,6 +329,9 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters]
+             Allows to provide parameters to overwrite default parameters.
+
 
         Returns
         -------
@@ -278,9 +347,28 @@ class Project:
 
         if metadata is None:
             metadata = {}
-        feature = opt_prop.OptProp(
-            project=self, name=name, description=description, metadata=metadata
-        )
+        if parameters:
+            if not isinstance(parameters, OptPropParameters):
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(parameters))} instead of OptPropParameters"
+                )
+
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=parameters,
+            )
+        else:
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=OptPropParameters(),
+            )
         self._features.append(feature)
         return feature
 
@@ -295,16 +383,26 @@ class Project:
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
                 RayFileSourceParameters,
+                AmbientCieStandardOvercastSkyParameters,
                 AmbientNaturalLightParameters,
+                AmbientUsStandardParameters,
                 AmbientEnvironmentParameters,
+                AmbientUniformParameters,
+                AmbientCieStandardGeneralSkyParameters,
+                DisplayParameters,
             ]
         ] = None,
     ) -> Union[
         SourceSurface,
         SourceRayFile,
         SourceLuminaire,
+        SourceAmbientCieStandardOvercastSky,
         SourceAmbientNaturalLight,
+        SourceAmbientUsStandard,
         SourceAmbientEnvironment,
+        SourceAmbientUniform,
+        SourceAmbientCieStandardGeneralSky,
+        SourceDisplay,
     ]:
         """Create a new Source feature.
 
@@ -322,7 +420,10 @@ class Project:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceAmbientNaturalLight, \
-            ansys.speos.core.source.SourceAmbientEnvironment].
+            ansys.speos.core.source.SourceAmbientUsStandard, \
+            ansys.speos.core.source.SourceAmbientEnvironment, \
+             ansys.speos.core.source.SourceAmbientUniform, \
+            ansys.speos.core.source.SourceDisplay].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -331,14 +432,22 @@ class Project:
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
-        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
+        ansys.speos.core.generic.parameters.AmbientUsStandardParameters,\
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
+        ansys.speos.core.generic.parameters.AmbientUniformParameters,\
+        ansys.speos.core.generic.parameters.DisplayParamaters]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
-        ansys.speos.core.source.SourceAmbientEnvironment]
+        Union[ansys.speos.core.source.SourceSurface,\
+        ansys.speos.core.source.SourceRayFile,\
+        ansys.speos.core.source.SourceLuminaire,\
+        ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientUsStandard,\
+        ansys.speos.core.source.SourceAmbientEnvironment,\
+        ansys.speos.core.source.SourceAmbientUniform,\
+        ansys.speos.core.source.SourceDisplay]
             Source class instance.
         """
         if metadata is None:
@@ -397,6 +506,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceDisplay":
+                if parameters is None:
+                    parameters = DisplayParameters()
+                elif not isinstance(parameters, DisplayParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DisplayParameters"
+                    )
+                feature = SourceDisplay(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SourceAmbientNaturalLight":
                 if parameters is None:
                     parameters = AmbientNaturalLightParameters()
@@ -427,6 +551,67 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientUsStandard":
+                if parameters is None:
+                    parameters = AmbientUsStandardParameters()
+                elif not isinstance(parameters, AmbientUsStandardParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUsStandardParameters"
+                    )
+                feature = SourceAmbientUsStandard(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientUniform":
+                if parameters is None:
+                    parameters = AmbientUniformParameters()
+                elif not isinstance(parameters, AmbientUniformParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUniformParameters"
+                    )
+                feature = SourceAmbientUniform(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientCieStandardOvercastSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardOvercastSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardOvercastSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of "
+                        f"AmbientCieStandardOvercastSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardOvercastSky(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientCieStandardGeneralSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardGeneralSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardGeneralSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientCieStandardGeneralSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardGeneralSky(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -434,8 +619,13 @@ class Project:
                         SourceSurface,
                         SourceLuminaire,
                         SourceRayFile,
+                        SourceAmbientCieStandardOvercastSky,
                         SourceAmbientNaturalLight,
+                        SourceAmbientUsStandard,
                         SourceAmbientEnvironment,
+                        SourceAmbientUniform,
+                        SourceAmbientCieStandardGeneralSky,
+                        SourceDisplay,
                     ],
                 )
                 raise TypeError(msg)
@@ -582,10 +772,20 @@ class Project:
                 CameraSensorParameters,
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
+                ImmersiveSensorParameters,
+                ObserverSensorParameters,
+                PolarIntensitySensorParameters,
             ]
         ] = None,
     ) -> Union[
-        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+        SensorCamera,
+        SensorRadiance,
+        SensorIrradiance,
+        Sensor3DIrradiance,
+        SensorXMPIntensity,
+        SensorImmersive,
+        SensorObserver,
+        SensorPolarIntensity,
     ]:
         """Create a new Sensor feature.
 
@@ -603,7 +803,10 @@ class Project:
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
-            ansys.speos.core.sensor.SensorXMPIntensity].
+            ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SensorObserver, \
+            ansys.speos.core.sensor.SensorImmersive, \
+            ansys.speos.core.sensor.SensorPolarIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -612,14 +815,18 @@ class Project:
         ansys.speos.core.generic.parameters.RadianceSensorParameters,\
         ansys.speos.core.generic.parameters.CameraSensorParameters,\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
-        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters]]
+        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
+        ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
+        ansys.speos.core.generic.parameters.ObserverSensorParameters,\
+        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -708,6 +915,51 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorImmersive":
+                if parameters is None:
+                    parameters = ImmersiveSensorParameters()
+                elif not isinstance(parameters, ImmersiveSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ImmersiveSensorParameters"
+                    )
+                feature = SensorImmersive(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorObserver":
+                if parameters is None:
+                    parameters = ObserverSensorParameters()
+                elif not isinstance(parameters, ObserverSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ObserverSensorParameters"
+                    )
+                feature = SensorObserver(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorPolarIntensity":
+                if parameters is None:
+                    parameters = PolarIntensitySensorParameters()
+                elif not isinstance(parameters, PolarIntensitySensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of PolarIntensitySensorParameters"
+                    )
+                feature = SensorPolarIntensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -717,6 +969,9 @@ class Project:
                         SensorCamera,
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
+                        SensorImmersive,
+                        SensorObserver,
+                        SensorPolarIntensity,
                     ],
                 )
                 raise TypeError(msg)
@@ -777,6 +1032,38 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_lightbox(
+        self,
+        name: str,
+        lightbox: Optional[LightBoxFileInstance] = None,
+    ) -> LightBox:
+        """Create lightbox import features.
+
+        Parameters
+        ----------
+        name: str
+            name of the lightbox import
+        lightbox: Optional[ansys.speos.core.component.LightBoxFileInstance] = None
+            LightBoxFileInstance (file path, password, and axis_system) to import.
+            If None, an empty lightbox will be created.
+
+        Returns
+        -------
+        ansys.speos.core.component.LightBox
+            Lightbox feature.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
+            raise ValueError(msg)
+        feature = LightBox(
+            parent_project=self,
+            name=name,
+            instance=lightbox,
+        )
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -788,17 +1075,21 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
+            SourceAmbientUniform,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
             Sensor3DIrradiance,
             SensorXMPIntensity,
+            SensorPolarIntensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
             SimulationVirtualBSDF,
+            LightBox,
             part.Part,
             body.Body,
             face.Face,
@@ -827,13 +1118,17 @@ class Project:
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceAmbientEnvironment, \
         ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientUniform, \
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
-        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.component.LightBox, \
+        ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
         ansys.speos.core.ground_plane.GroundPlane]]
@@ -967,6 +1262,7 @@ class Project:
         # Delete each feature that was created
         for f in self._features:
             f.delete()
+            f = None
         self._features.clear()
 
         return self
@@ -1047,6 +1343,23 @@ class Project:
         """Return the string representation of the project's scene."""
         return proto_message_utils.dict_to_str(dict=self._to_dict())
 
+    def _fill_subparts(
+        self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
+    ):
+        for sp in sub_parts:
+            sp_feat = feat_host.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
+            sp_feat.part_link = self.client[sp.part_guid]
+            part_data = sp_feat.part_link.get()
+            sp_feat._part_instance = sp
+            sp_feat._part = (
+                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            )
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+            self._fill_subparts(sub_parts=part_data.parts, feat_host=sp_feat)
+
     def _fill_bodies(
         self,
         body_guids: List[str],
@@ -1055,6 +1368,8 @@ class Project:
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
+            if not b_data.face_guids:
+                continue
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
@@ -1103,13 +1418,25 @@ class Project:
             if ssr_inst.metadata["UniqueId"] == "":
                 ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
+        for scene_inst in scene_data.scenes:
+            if scene_inst.metadata["UniqueId"] == "":
+                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
         for sim_inst in scene_data.simulations:
+            # Bug fix for Multi source blackbox issue
+            sources = []
+            for source in sim_inst.source_paths:
+                if source not in sources:
+                    sources.append(source)
+            sim_inst.source_paths[:] = sources
+            # end bug fix for multi source blackbox issue to be removed when 261 is no longer
+            # supported
             if sim_inst.metadata["UniqueId"] == "":
                 sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         self.scene_link.set(data=scene_data)
 
-    def _fill_features(self):
+    def _fill_features(self, context: Optional[str] = None):
         """Fill project features from a scene."""
         self._add_unique_ids()
 
@@ -1131,18 +1458,7 @@ class Project:
         root_part_feat._part = root_part_data
         # instead of root_part_feat.reset() - this avoid a useless read in server
 
-        for sp in root_part_data.parts:
-            sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
-            if sp.description.startswith("UniqueId_"):
-                idx = sp.description.find("_")
-                sp_feat._unique_id = sp.description[idx + 1 :]
-            sp_feat.part_link = self.client[sp.part_guid]
-            part_data = sp_feat.part_link.get()
-            sp_feat._part_instance = sp
-            sp_feat._part = (
-                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
-            )
-            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+        self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
 
         for mat_inst in scene_data.materials:
             if len(self.find(name=mat_inst.name)) == 0:
@@ -1174,6 +1490,13 @@ class Project:
                     source_instance=src_inst,
                     default_parameters=None,
                 )
+            elif src_inst.HasField("display_properties"):
+                src_feat = SourceDisplay(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
             elif src_inst.HasField("ambient_properties"):
                 if src_inst.ambient_properties.HasField("natural_light_properties"):
                     src_feat = SourceAmbientNaturalLight(
@@ -1189,7 +1512,36 @@ class Project:
                         source_instance=src_inst,
                         default_parameters=None,
                     )
+                elif src_inst.ambient_properties.HasField("us_standard_properties"):
+                    src_feat = SourceAmbientUsStandard(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
+                    src_feat = SourceAmbientUniform(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("cie_overcast_properties"):
+                    src_feat = SourceAmbientCieStandardOvercastSky(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("cie_general_properties"):
+                    src_feat = SourceAmbientCieStandardGeneralSky(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
             if src_feat is not None:
+                src_feat._source_path = context + src_feat._name if context else src_feat._name
                 self._features.append(src_feat)
 
         # ground plane
@@ -1238,8 +1590,37 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_parameters=None,
                 )
+            elif ssr_inst.HasField("polar_intensity_properties"):
+                ssr_feat = SensorPolarIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("immersive_properties"):
+                ssr_feat = SensorImmersive(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("observer_properties"):
+                ssr_feat = SensorObserver(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
+
+        for scene_inst in scene_data.scenes:
+            lightbox_scene = LightBox(
+                parent_project=self,
+                name=scene_inst.name,
+                instance=scene_inst,
+            )
+            self._features.append(lightbox_scene)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
@@ -1378,6 +1759,7 @@ class Project:
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
+                LightBox,
             ),
         ):
             return plotter
@@ -1385,6 +1767,27 @@ class Project:
         ray_path_scale_factor = 0.2
 
         match speos_feature:
+            case LightBox():
+                for data in speos_feature.visual_data:
+                    if isinstance(data.data, list):
+                        for visual_ray in data.data:
+                            tmp = visual_ray._VisualArrow__data
+                            visual_ray._VisualArrow__data.points[1] = (
+                                ray_path_scale_factor
+                                * scene_seize
+                                * (tmp.points[1] - tmp.points[0])
+                                + tmp.points[0]
+                            )
+                            plotter.plot(visual_ray.data, color=visual_ray.color)
+                    else:
+                        plotter.plot(
+                            data.data,
+                            show_edges=True,
+                            line_width=2,
+                            edge_color="red",
+                            color="orange",
+                            opacity=0.5,
+                        )
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     display_ray = visual_ray.data.copy(deep=True)
@@ -1405,8 +1808,13 @@ class Project:
                     opacity=0.5,
                 )
 
-        if speos_feature.visual_data.coordinates is not None:
-            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+        visual_coordinate_data = (
+            speos_feature.visual_data.coordinates
+            if not isinstance(speos_feature.visual_data, list)
+            else speos_feature.visual_data[0].coordinates
+        )
+        if visual_coordinate_data is not None:
+            display_coordinates = copy.deepcopy(visual_coordinate_data)
             display_origin = display_coordinates.origin
             display_coordinates.x_axis.points[:] = (
                 display_coordinates.x_axis.points - display_origin
@@ -1428,6 +1836,7 @@ class Project:
                     | SensorCamera()
                     | SourceLuminaire()
                     | SourceRayFile()
+                    | LightBox()
                 ):
                     plotter.plot(display_coordinates.x_axis, color="red")
                     plotter.plot(display_coordinates.y_axis, color="green")

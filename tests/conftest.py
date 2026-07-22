@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -102,7 +102,7 @@ def speos():
 # set test_path var depending on if we are using the servers in a docker container or not
 local_test_path = local_path / "assets"
 if IS_DOCKER:
-    test_path = "/app/assets/"
+    test_path = Path("/app/assets/")
 else:
     test_path = local_test_path
 

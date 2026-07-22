@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -42,6 +42,7 @@ from ansys.speos.core.generic.parameters import (
     DirectSimulationParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
+    TextureNormalizationTypes,
     VirtualBSDFSimulationParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
@@ -54,6 +55,8 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
 from ansys.speos.core.source import BaseSource
+
+MIN_SOURCE_GROUPS_VERSION = (26, 1, 2)
 
 
 class BaseSimulation:
@@ -338,6 +341,74 @@ class BaseSimulation:
         def minimum_energy_percentage(self, value: float) -> None:
             self._weight.minimum_energy_percentage = value
 
+    class SourceGroup:
+        """Source group for simulation source layering.
+
+        Parameters
+        ----------
+        simulation : BaseSimulation
+            Simulation owning the source group.
+        source_group : messages.Scene.SimulationInstance.SourceGroup
+            Source group message to wrap.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope.
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use ``add_source_group()`` or
+        ``source_groups`` on simulation classes.
+        """
+
+        @min_speos_version(
+            MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+        )
+        def __init__(
+            self,
+            simulation: BaseSimulation,
+            source_group: messages.Scene.SimulationInstance.SourceGroup,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = (
+                    "Use simulation.add_source_group() or simulation.source_groups "
+                    "to access SourceGroup instances."
+                )
+                raise RuntimeError(msg)
+            self._simulation = simulation
+            self._source_group = source_group
+
+        @property
+        def name(self) -> str:
+            """Name of the source group.
+
+            Returns
+            -------
+            str
+                Group name.
+            """
+            return self._source_group.name
+
+        @name.setter
+        def name(self, value: str) -> None:
+            self._source_group.name = value
+
+        @property
+        def source_paths(self) -> List[str]:
+            """Source paths assigned to the group.
+
+            Returns
+            -------
+            List[str]
+                Grouped source paths.
+            """
+            return list(self._source_group.source_paths)
+
+        @source_paths.setter
+        def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
+            normalized_paths = self._simulation._normalize_source_paths(source_paths)
+            self._simulation._validate_source_paths(normalized_paths)
+            self._source_group.source_paths[:] = normalized_paths
+
     def __init__(
         self,
         project: project.Project,
@@ -442,13 +513,157 @@ class BaseSimulation:
 
     @source_paths.setter
     def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
-        src_paths = []
+        src_paths = self._normalize_source_paths(source_paths)
+        if hasattr(self._simulation_instance, "source_groups"):
+            for source_group in self._simulation_instance.source_groups:
+                self._validate_source_paths(
+                    list(source_group.source_paths),
+                    allowed_source_paths=src_paths,
+                )
+        self._simulation_instance.source_paths[:] = src_paths
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def _normalize_source_paths(self, source_paths: List[Union[str, BaseSource]]) -> List[str]:
+        """Normalize source path values to their string representation.
+
+        Raises
+        ------
+        TypeError
+            If any element in ``source_paths`` is not a string or ``BaseSource`` instance.
+        """
+        normalized_paths = []
         for path in source_paths:
             if isinstance(path, str):
-                src_paths.append(path)
+                normalized_paths.append(path)
             elif isinstance(path, BaseSource):
-                src_paths.append(path._name)
-        self._simulation_instance.source_paths[:] = src_paths
+                normalized_paths.append(path._source_path)
+            else:
+                raise TypeError(
+                    "Source_paths values must be strings or BaseSource instances, "
+                    f"got {type(path).__name__}: {path}"
+                )
+        return normalized_paths
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def _validate_source_paths(
+        self, source_paths: List[str], allowed_source_paths: Optional[List[str]] = None
+    ) -> None:
+        """Validate that source group paths are included in simulation source paths.
+
+        Raises
+        ------
+        ValueError
+            If any source path is not included in ``allowed_source_paths``.
+        """
+        if allowed_source_paths is None:
+            allowed_source_paths = self.source_paths
+        allowed_source_paths_set = set(allowed_source_paths)
+        invalid_paths = [path for path in source_paths if path not in allowed_source_paths_set]
+        if invalid_paths:
+            invalid_source_paths = ", ".join(invalid_paths)
+            msg = (
+                "Source group paths must be included in simulation source_paths. "
+                f"Invalid source paths: {invalid_source_paths}"
+            )
+            raise ValueError(msg)
+
+    @property
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def source_groups(self) -> List[BaseSimulation.SourceGroup]:
+        """Source groups assigned to the simulation.
+
+        Returns
+        -------
+        List[ansys.speos.core.simulation.BaseSimulation.SourceGroup]
+            Source groups bound to the simulation instance.
+        """
+        if hasattr(self._simulation_instance, "source_groups"):
+            return [
+                BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+                for source_group in self._simulation_instance.source_groups
+            ]
+        else:
+            return None
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def add_source_group(
+        self, name: str, source_paths: List[Union[str, BaseSource]]
+    ) -> BaseSimulation.SourceGroup:
+        """Add a source group to the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group.
+        source_paths : List[Union[str, BaseSource]]
+            Sources to add to the group. Each path must already belong to
+            ``source_paths`` of the simulation.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation.SourceGroup
+            Added source group wrapper.
+
+        Raises
+        ------
+        ValueError
+            If one of the given source paths is not included in the simulation.
+        """
+        normalized_paths = self._normalize_source_paths(source_paths)
+        self._validate_source_paths(normalized_paths)
+        source_group = self._simulation_instance.source_groups.add()
+        source_group.name = name
+        source_group.source_paths[:] = normalized_paths
+        return BaseSimulation.SourceGroup(self, source_group, stable_ctr=True)
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def remove_source_group(self, name: str) -> BaseSimulation:
+        """Remove a source group from the simulation.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source group to remove.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+
+        Raises
+        ------
+        ValueError
+            If no source group with the provided name exists.
+        """
+        for index, source_group in enumerate(self._simulation_instance.source_groups):
+            if source_group.name == name:
+                del self._simulation_instance.source_groups[index]
+                return self
+        raise ValueError(f"Source group '{name}' not found.")
+
+    @min_speos_version(
+        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
+    )
+    def clear_source_groups(self) -> BaseSimulation:
+        """Remove all source groups from the simulation.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+        """
+        del self._simulation_instance.source_groups[:]
+        return self
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
     #     """Set geometries that the simulation will take into account.
@@ -544,29 +759,39 @@ class BaseSimulation:
         None
 
         """
-        simulation_features = [
-            _
-            for _ in self._project._features
-            if isinstance(_, (SimulationDirect, SimulationInverse))
-        ]
-        if len(simulation_features) > 1:
-            warnings.warn(
-                "Limitation : only the first inverse/direct simulation is "
-                "exported and stop conditions are not exported.",
-                stacklevel=2,
-            )
-        if self is simulation_features[0]:
+        if server_version_checker.is_version_supported(2026, 1, 1):  # >= 26r1 sp1
+            # Save or Update the job
+            if self.job_link is None:
+                self.job_link = self._project.client.jobs().create(message=self._job)
+            elif self.job_link.get() != self._job:
+                self.job_link.set(data=self._job)  # Update only if job data has changed
+
             export_path = Path(export_path)
-            self._project.scene_link.stub._actions_stub.SaveFile(
-                messages.SaveFile_Request(
-                    guid=self._project.scene_link.key,
-                    file_uri=str(export_path / (self._name + ".speos")),
+            self.job_link.save_file(file_path=str(export_path / (self._name + ".speos")))
+        else:  # < 26r1 sp1
+            simulation_features = [
+                _
+                for _ in self._project._features
+                if isinstance(_, (SimulationDirect, SimulationInverse))
+            ]
+            if len(simulation_features) > 1:
+                warnings.warn(
+                    "Limitation : only the first inverse/direct simulation is "
+                    "exported and stop conditions are not exported.",
+                    stacklevel=2,
                 )
-            )
-        else:
-            raise ValueError(
-                "Selected simulation is not the first simulation feature, it can't be exported."
-            )
+            if self is simulation_features[0]:
+                export_path = Path(export_path)
+                self._project.scene_link.stub._actions_stub.SaveFile(
+                    messages.SaveFile_Request(
+                        guid=self._project.scene_link.key,
+                        file_uri=str(export_path / (self._name + ".speos")),
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Selected simulation is not the first simulation feature, it can't be exported."
+                )
 
     def _export_vtp(self) -> List[Path]:
         """Export the simulation results into vtp files.
@@ -626,6 +851,59 @@ class BaseSimulation:
             vtp_files.append(merge_vtp(vtp_paths=vtp_files))
         return vtp_files
 
+    @property
+    def texture_normalization(self) -> Union[TextureNormalizationTypes]:
+        """Return Texture Normalization Type of the Simulation.
+
+        Returns
+        -------
+        Union[TextureNormalizationTypes]
+            Provides clear text readable texture normalization applied during simulation.
+        """
+        match getattr(
+            self._simulation_template, self._template_class
+        ).texture.texture_normalization:
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE:
+                return TextureNormalizationTypes.none
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED:
+                return TextureNormalizationTypes.unspecified
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE:
+                return TextureNormalizationTypes.color_from_texture
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
+                return TextureNormalizationTypes.color_from_bsdf
+
+    def set_texture_normalization_unspecified(self) -> BaseSimulation:
+        """Set texture normalization to unspecified."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
+        )
+        return self
+
+    def set_texture_normalization_none(self) -> BaseSimulation:
+        """Disable texture normalization."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
+        )
+        return self
+
+    def set_texture_normalization_color_from_texture(self) -> BaseSimulation:
+        """Set texture normalization to color-from-texture mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE
+        )
+        return self
+
+    def set_texture_normalization_color_from_bsdf(self) -> BaseSimulation:
+        """Set texture normalization to color-from-BSDF mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+        )
+        return self
+
     def compute_CPU(
         self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
     ) -> Union[tuple[list[Result], list[Path]], list[Result]]:
@@ -645,6 +923,7 @@ class BaseSimulation:
             List of simulation results or 2 lists of simulation results
              and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.CPU
 
         if threads_number is not None:
@@ -674,6 +953,7 @@ class BaseSimulation:
             List of simulation results or 2 lists of simulation results
              and exported vtp results.
         """
+        self._check_job()
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
         if export_vtp:
@@ -685,6 +965,40 @@ class BaseSimulation:
         """Stop the simulation computation."""
         if self.job_link is not None:
             self.job_link.stop()
+
+    def _check_job(self) -> None:
+        """Check job stop conditions."""
+        stop_condition_error = False
+        if self._job.HasField("direct_mc_simulation_properties"):
+            job_props = self._job.direct_mc_simulation_properties
+            if not (
+                job_props.HasField("stop_condition_duration")
+                or job_props.HasField("stop_condition_rays_number")
+            ):
+                stop_condition_error = True
+        elif self._job.HasField("inverse_mc_simulation_properties"):
+            job_props = self._job.inverse_mc_simulation_properties
+            if not (
+                job_props.HasField("stop_condition_duration")
+                or job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+            ):
+                stop_condition_error = True
+
+        if stop_condition_error:
+            warnings.warn(
+                "In the current RPC version, simulation stop condition information may be lost "
+                "when loading a .speos file. Please define a stop condition explicitly. Default "
+                "stop conditions have been applied so the simulation does not run infinitely.",
+                stacklevel=2,
+            )
+            if self._job.HasField("direct_mc_simulation_properties"):
+                default_sim_paras = DirectSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_rays_number = default_sim_paras.stop_condition_rays_number
+            elif self._job.HasField("inverse_mc_simulation_properties"):
+                default_sim_paras = InverseSimulationParameters()
+                self.stop_condition_duration = default_sim_paras.stop_condition_duration
+                self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
@@ -1007,7 +1321,7 @@ class SimulationDirect(BaseSimulation):
             self.set_weight().minimum_energy_percentage = (
                 default_parameters.minimum_energy_percentage
             )
-            self.light_expert = default_parameters.light_expoert
+            self.light_expert = default_parameters.light_expert
             self.stop_condition_rays_number = default_parameters.stop_condition_rays_number
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
@@ -1294,6 +1608,9 @@ class SimulationInverse(BaseSimulation):
             self.set_weight().minimum_energy_percentage = (
                 default_parameters.minimum_energy_percentage
             )
+            self.timeline = default_parameters.timeline
+            if self.timeline:
+                self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
             self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
@@ -1369,6 +1686,53 @@ class SimulationInverse(BaseSimulation):
             simulation_template_pb2.CIE_1964
         )
         return self
+
+    @property
+    def timeline(self) -> bool:
+        """Switch to enable/disable the simulation timeline.
+
+        Returns
+        -------
+        bool
+            State of timeline activation.
+        """
+        return self._job.inverse_mc_simulation_properties.HasField("timeline")
+
+    @timeline.setter
+    def timeline(self, value: bool) -> None:
+        props = self._job.inverse_mc_simulation_properties
+
+        if value:
+            if not props.HasField("timeline"):
+                timeline = props.timeline
+                timeline.start_time = InverseSimulationParameters.start_time
+        else:
+            props.ClearField("timeline")
+
+    @property
+    def start_time(self) -> Optional[float]:
+        """Timeline start time (s).
+
+        Returns
+        -------
+        Optional[float]
+            the start time (s) of the simulation timeline,
+            or None to disable timeline
+
+        """
+        if self._job.inverse_mc_simulation_properties.HasField("timeline"):
+            return self._job.inverse_mc_simulation_properties.timeline.start_time
+        else:
+            return None
+
+    @start_time.setter
+    def start_time(self, value: Optional[float]) -> None:
+        if not self.timeline:
+            raise TypeError("Timeline must be enabled to set start_time")
+        if value is None:
+            self._job.inverse_mc_simulation_properties.ClearField("timeline")
+        else:
+            self._job.inverse_mc_simulation_properties.timeline.start_time = value
 
     @property
     def dispersion(self) -> bool:
@@ -1684,7 +2048,7 @@ class SimulationInteractive(BaseSimulation):
         if default_parameters is not None:
             self.ambient_material_file_uri = default_parameters.ambient_material_uri
             # Default job parameters
-            self.light_expert = default_parameters.light_expoert
+            self.light_expert = default_parameters.light_expert
             self.impact_report = default_parameters.impact_report
             # Default values
             self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
