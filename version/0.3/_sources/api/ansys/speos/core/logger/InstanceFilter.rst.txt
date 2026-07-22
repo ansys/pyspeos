@@ -1,0 +1,107 @@
+
+
+
+
+
+
+:class:`InstanceFilter`
+=======================
+
+.. py:class:: ansys.speos.core.logger.InstanceFilter(name='')
+
+   Bases: :py:obj:`logging.Filter`
+
+
+   
+   Ensures that the ``instance_name`` record always exists.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: InstanceFilter
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~filter`
+            - Filter the record.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.logger import InstanceFilter
+
+
+
+Method detail
+-------------
+
+.. py:method:: filter(record)
+
+   
+   Filter the record.
+
+
+   :Parameters:
+
+       **record** : :obj:`logging.LogRecord`
+           Record to filter.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           Whether the record is valid.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

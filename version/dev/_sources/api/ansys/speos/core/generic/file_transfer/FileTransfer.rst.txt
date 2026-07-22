@@ -1,0 +1,286 @@
+
+
+
+
+
+
+:class:`FileTransfer`
+=====================
+
+
+.. py:class:: ansys.speos.core.generic.file_transfer.FileTransfer(speos_client)
+
+   
+   Class to help performing file(s) transfer.
+
+
+   :Parameters:
+
+       **speos_client** : :obj:`ansys.speos.core.kernel.client.SpeosClient`
+           The Speos instance client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: FileTransfer
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~upload_file`
+            - Upload a file to a server.
+          * - :py:attr:`~upload_folder`
+            - Upload several files to a server.
+          * - :py:attr:`~download_file`
+            - Download a file from a server.
+          * - :py:attr:`~download_folder`
+            - Download several files from a server.
+          * - :py:attr:`~reserve`
+            - Reserve an uri.
+          * - :py:attr:`~delete`
+            - Delete a file from a server.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.file_transfer import FileTransfer
+
+
+
+Method detail
+-------------
+
+.. py:method:: upload_file(file_path, reserved_file_uri = '')
+
+   
+   Upload a file to a server.
+
+
+   :Parameters:
+
+       **file_path: Path**
+           File's path to be uploaded.
+
+       **reserved_file_uri: str, optional**
+           Optional - In case an uri was already reserved in server for the file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.api.speos.file.v1.file_transfer_pb2.Upload_Response`
+           Object created from file_transfer.proto file, response of Upload procedure.
+           Contains for example file uri and upload duration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: upload_folder(folder_path, main_file_name, reserved_main_file_uri = '')
+
+   
+   Upload several files to a server.
+
+
+   :Parameters:
+
+       **folder_path: Path**
+           Folder's path containing all files to upload.
+
+       **main_file_name: str**
+           Name of the file that will be considered as main.
+           Other files will be dependencies of main.
+
+       **reserved_main_file_uri: str, optional**
+           Optional - In case an uri was already reserved in server for the main file.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.api.speos.file.v1.file_transfer_pb2.Upload_Response`]
+           Object created from file_transfer.proto file, response of Upload procedure.
+           Contains for example file uri and upload duration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: download_file(file_uri, download_location)
+
+   
+   Download a file from a server.
+
+
+   :Parameters:
+
+       **file_uri: str**
+           File's uri on the server.
+
+       **download_location: Path**
+           Path of download location.
+
+
+
+   :Returns:
+
+       :obj:`ansys.api.speos.file.v1.file_transfer_pb2.Download_Response`
+           Object created from file_transfer.proto file.
+           Contains for example file uri, file name, file size and download duration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: download_folder(main_file_uri, download_location)
+
+   
+   Download several files from a server.
+
+
+   :Parameters:
+
+       **main_file_uri** : :class:`python:str`
+           Main file's uri on the server - this file and all its dependencies will be downloaded.
+
+       **download_location** : :obj:`Path`
+           Path of download location.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.api.speos.file.v1.file_transfer_pb2.Download_Response`]
+           Object created from file_transfer.proto file.
+           Contains for example file uri, file name, file size and download duration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reserve()
+
+   
+   Reserve an uri.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           File's uri reserved on the server.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete(file_uri)
+
+   
+   Delete a file from a server.
+
+
+   :Parameters:
+
+       **file_uri: str**
+           File's uri on the server.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,81 @@
+
+
+
+
+
+
+:class:`SopTypes`
+=================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SopTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Allowed mapping types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SopTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~optical_polished`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SopTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: optical_polished
+   :value: 'optical_polished'
+
+
+
+
+
+

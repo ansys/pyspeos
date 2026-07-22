@@ -1,0 +1,117 @@
+
+
+
+
+
+
+The ``generic`` package
+===========================
+
+.. py:module:: ansys.speos.core.generic
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: generic
+.. tab-set::
+
+
+    .. tab-item:: Submodules
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.constants`
+            - Collection of all constants used in pySpeos.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.file_transfer`
+            - Module to handle file transfer to a server.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.general_methods`
+            - General methods and helpers collection.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters`
+            - Collection of all parameter dataclasses used in PySpeos.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.version_checker`
+            - Module to ease version checks.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.visualization_methods`
+            - Provides the ``VisualData`` class.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-fa-file"></span> constants</api/ansys/speos/core/generic/constants/index>
+    <span class="nf nf-fa-file"></span> file_transfer</api/ansys/speos/core/generic/file_transfer/index>
+    <span class="nf nf-fa-file"></span> general_methods</api/ansys/speos/core/generic/general_methods/index>
+    <span class="nf nf-fa-file"></span> parameters</api/ansys/speos/core/generic/parameters/index>
+    <span class="nf nf-fa-file"></span> version_checker</api/ansys/speos/core/generic/version_checker/index>
+    <span class="nf nf-fa-file"></span> visualization_methods</api/ansys/speos/core/generic/visualization_methods/index>
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+
+Package with generic function constants and parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+

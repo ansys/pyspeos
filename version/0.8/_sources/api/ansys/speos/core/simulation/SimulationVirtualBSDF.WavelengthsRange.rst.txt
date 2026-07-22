@@ -1,0 +1,192 @@
+
+
+
+
+
+
+:class:`WavelengthsRange`
+=========================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange(wavelengths_range, default_values = True, stable_ctr = False)
+
+   
+   Range of wavelengths.
+
+   By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
+
+   :Parameters:
+
+       **wavelengths_range** : :obj:`ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange`
+           Wavelengths range protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_wavelengths_range method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WavelengthsRange
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~start`
+            - Start value of wavelength.
+          * - :py:attr:`~end`
+            - End value of wavelength.
+          * - :py:attr:`~sampling`
+            - Wavelength sampling.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF import WavelengthsRange
+
+Property detail
+---------------
+
+.. py:property:: start
+   :type: float
+
+
+   
+   Start value of wavelength.
+
+
+   :Parameters:
+
+       **value: float**
+           Start wavelength to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Start wavelength.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: end
+   :type: float
+
+
+   
+   End value of wavelength.
+
+
+   :Parameters:
+
+       **value: float**
+           End wavelength to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           End wavelength.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sampling
+   :type: int
+
+
+   
+   Wavelength sampling.
+
+
+   :Parameters:
+
+       **value: int**
+           wavelength sampling to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Wavelength sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

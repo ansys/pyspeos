@@ -1,0 +1,412 @@
+
+
+
+
+
+
+:class:`RayPath`
+================
+
+.. py:class:: ansys.speos.core.lxp.RayPath(raypath, sensor_contribution = False)
+
+   
+   Framework representing a singular raypath.
+
+
+   :Parameters:
+
+       **raypath** : :obj:`ansys.api.speos.lpf.v2.lpf_file_reader__v2__pb2.RayPath`
+           Raypath object
+
+       **sensor_contribution** : :ref:`bool <python:bltin-boolean-values>`
+           Defines if sensor contributions are stored within the data.
+           By default ``False``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: RayPath
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Method to retrieve any information from RayPath object
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~nb_impacts`
+            - Number of impacts contained in raypath.
+          * - :py:attr:`~impacts`
+            - XYZ coordinates for each impact
+          * - :py:attr:`~wl`
+            - Wavelength of the ray
+          * - :py:attr:`~body_ids`
+            - Body id of interacted body for each impact.
+          * - :py:attr:`~face_ids`
+            - Face id of interacted body for each impact.
+          * - :py:attr:`~last_direction`
+            - Last direction of the ray
+          * - :py:attr:`~intersection_type`
+            - Intersection type of the ray for each impact
+          * - :py:attr:`~sensor_contribution`
+            - Provide sensor contribution information for each sensor
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - 
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.lxp import RayPath
+
+Property detail
+---------------
+
+.. py:property:: nb_impacts
+   :type: int
+
+
+   
+   Number of impacts contained in raypath.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Number of impacts
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: impacts
+   :type: list[list[float]]
+
+
+   
+   XYZ coordinates for each impact
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:list`\[:class:`python:float`]]
+           list containing the impact coordinates [[x0,y0,z0],[x1,y1,z1],...]
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: wl
+   :type: float
+
+
+   
+   Wavelength of the ray
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Wavelength in nm
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: body_ids
+   :type: list[int]
+
+
+   
+   Body id of interacted body for each impact.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:int`]
+           list of body IDs for each impact
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: face_ids
+   :type: list[int]
+
+
+   
+   Face id of interacted body for each impact.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:int`]
+           list of face IDs for each impact
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: last_direction
+   :type: list[float]
+
+
+   
+   Last direction of the ray
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           last direction of the rays as list[x,y,z]
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: intersection_type
+   :type: list[int]
+
+
+   
+   Intersection type of the ray for each impact
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:int`]
+           intersection type at each impact
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   available intersection types: 
+
+   - StatusAbsorbed = 0
+   - StatusSpecularTransmitted = 1
+   - StatusGaussianTransmitted = 2
+   - StatusLambertianTransmitted = 3
+   - StatusVolumicDiffused = 4
+   - StatusJustEmitted = 5
+   - StatusDiracTransmitted = 6
+   - StatusError = 7
+   - StatusErrorVolumicBodyNotClosed = 8
+   - StatusErrorVolumeConflict = 9
+   - StatusError2DTangency = 10
+   - StatusError2DIntersect3DWarning = 11
+   - StatusErrorNonOpticalMaterial = 12
+   - StatusErrorIntersection = 13
+   - StatusErrorNonOpticalMaterialAtEmission = 14
+   - StatusError3DTextureSupportTangency = 15
+   - StatusLast = 16
+   - StatusFirst = -7
+   - StatusDiracReflected = -6
+   - StatusReserved = -5
+   - StatusGrinStep = -4
+   - StatusLambertianReflected = -3
+   - StatusGaussianReflected = -2
+   - StatusSpecularReflected = -1
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sensor_contribution
+   :type: Union[None, list[dict]]
+
+
+   
+   Provide sensor contribution information for each sensor
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:data:`python:None`, :class:`python:list`\[:class:`python:dict`]]
+           If no sensor contribution None will be returned. If there is sensor contribution a dictionary with             following information will be returned:            {"sensor_id": sc.sensor_id,
+           "position": [sc.coordinates.x, sc.coordinates.y]}
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key='')
+
+   
+   Method to retrieve any information from RayPath object
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Name of property
+
+
+
+   :Returns:
+
+       :obj:`property`
+           values/content of the associated property
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+
+
+

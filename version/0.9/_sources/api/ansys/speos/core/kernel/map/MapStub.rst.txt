@@ -1,0 +1,116 @@
+
+
+
+
+
+
+:class:`MapStub`
+================
+
+
+.. py:class:: ansys.speos.core.kernel.map.MapStub(channel)
+
+   
+   Database interactions for map actions.
+
+
+   :Parameters:
+
+       **channel** : :obj:`grpc.Channel`
+           Channel to use for the stub.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   The best way to get a MapStub is to retrieve it from SpeosClient via
+   maps() method. Like in the following example:
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> speos = Speos()
+   >>> map_db = speos.client.maps()
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MapStub
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~export_xmp_to_image`
+            - Export XMP file to PNG file.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.map import MapStub
+
+
+
+Method detail
+-------------
+
+.. py:method:: export_xmp_to_image(xmp_file_uri, image_file_uri)
+
+   
+   Export XMP file to PNG file.
+
+
+   :Parameters:
+
+       **xmp_file_uri** : :obj:`Path` | :class:`python:str`
+           XMP file to be exported.
+
+       **image_file_uri** : :obj:`Path` | :class:`python:str`
+           PNG file to be created.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

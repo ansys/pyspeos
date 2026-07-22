@@ -1,0 +1,177 @@
+
+
+
+
+
+
+:class:`LayerTypeFace`
+======================
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.LayerTypeFace(layer_type_face, default_values = True, stable_ctr = False)
+
+   
+   Type of layer : Face.
+
+   Includes in the result one layer per surface selected.
+   By default, a filtering mode by last impact is chosen.
+
+   :Parameters:
+
+       **layer_type_face** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace`
+           LayerTypeFace protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_layer_type_face method available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypeFace
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sca_filtering_mode_intersected_one_time`
+            - Set the filtering mode as intersected one time.
+          * - :py:attr:`~set_sca_filtering_mode_last_impact`
+            - Set the filtering mode as last impact.
+          * - :py:attr:`~set_layers`
+            - Set the layers.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import LayerTypeFace
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sca_filtering_mode_intersected_one_time()
+
+   
+   Set the filtering mode as intersected one time.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeFace`
+           LayerTypeFace.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sca_filtering_mode_last_impact()
+
+   
+   Set the filtering mode as last impact.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeFace`
+           LayerTypeFace.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layers(values)
+
+   
+   Set the layers.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:obj:`ansys.speos.core.sensor.BaseSensor.FaceLayer`]
+           List of layers
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeFace`
+           LayerTypeFace.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

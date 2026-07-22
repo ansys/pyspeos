@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`LuminousFluxParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LuminousFluxParameters
+
+   
+   Luminous Flux Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LuminousFluxParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~value`
+            - Luminous flux value.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LuminousFluxParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: value
+   :type:  float
+   :value: 683
+
+
+   
+   Luminous flux value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,222 @@
+
+
+
+
+
+
+:class:`SourceAmbientCieStandardOvercastSky`
+============================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientCieStandardOvercastSky(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   CIE overcast ambient source.
+
+   This source uses the dedicated ``CieOvercast`` protobuf template structure.
+
+   By default, luminance is set to 1000 cd/m^2 and [0, 0, 1] is used as the
+   zenith direction.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.AmbientCieStandardOvercastSkyParameters`]
+           If defined the values in the SourceAmbientCieStandardOvercastSky instance will be
+           overwritten by the values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientCieStandardOvercastSky
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~luminance`
+            - Luminance of the CIE overcast ambient source.
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction of the CIE overcast ambient source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Reverse zenith direction of the CIE overcast ambient source.
+          * - :py:attr:`~spectrum`
+            - Spectrum of the CIE overcast ambient source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientCieStandardOvercastSky
+
+Property detail
+---------------
+
+.. py:property:: luminance
+   :type: float
+
+
+   
+   Luminance of the CIE overcast ambient source.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Luminance value in cd/m^2.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Zenith direction of the CIE overcast ambient source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Direction defining the zenith of the ambient source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Reverse zenith direction of the CIE overcast ambient source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: spectrum
+   :type: ansys.speos.core.spectrum.Spectrum
+
+
+   
+   Spectrum of the CIE overcast ambient source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum associated with this source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

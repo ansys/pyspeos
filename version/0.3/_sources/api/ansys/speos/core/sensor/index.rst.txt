@@ -1,0 +1,101 @@
+
+
+
+
+
+
+The ``sensor.py`` module
+========================
+
+.. py:module:: ansys.speos.core.sensor
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: sensor
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.sensor.BaseSensor`
+            - Base class for Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.sensor.SensorCamera`
+            - Sensor feature: Camera.
+
+
+          * - :py:obj:`~ansys.speos.core.sensor.SensorIrradiance`
+            - Sensor feature: Irradiance.
+
+
+          * - :py:obj:`~ansys.speos.core.sensor.SensorRadiance`
+            - Sensor feature: Radiance.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BaseSensor</api/ansys/speos/core/sensor/BaseSensor>
+    <span class="nf nf-cod-symbol_class"></span> SensorCamera</api/ansys/speos/core/sensor/SensorCamera>
+    <span class="nf nf-cod-symbol_class"></span> SensorIrradiance</api/ansys/speos/core/sensor/SensorIrradiance>
+    <span class="nf nf-cod-symbol_class"></span> SensorRadiance</api/ansys/speos/core/sensor/SensorRadiance>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Sensor.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

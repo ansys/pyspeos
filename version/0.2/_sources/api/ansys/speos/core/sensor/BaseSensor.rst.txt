@@ -1,0 +1,320 @@
+
+
+
+
+
+
+:class:`BaseSensor`
+===================
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/sensor/BaseSensor.WavelengthsRange
+    /api/ansys/speos/core/sensor/BaseSensor.Dimensions
+    /api/ansys/speos/core/sensor/BaseSensor.Colorimetric
+    /api/ansys/speos/core/sensor/BaseSensor.Spectral
+    /api/ansys/speos/core/sensor/BaseSensor.FaceLayer
+    /api/ansys/speos/core/sensor/BaseSensor.LayerTypeFace
+    /api/ansys/speos/core/sensor/BaseSensor.LayerTypeSequence
+    /api/ansys/speos/core/sensor/BaseSensor.LayerTypeIncidenceAngle
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor(project, name, description = '', metadata = None, sensor_instance = None)
+
+   
+   Base class for Sensor.
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Mapping`\[:class:`python:str`, :class:`python:str`]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not has to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+   :Attributes:
+
+       **sensor_template_link** : :obj:`ansys.speos.core.kernel.sensor_template.SensorTemplateLink`
+           Link object for the sensor template in database.
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a Super class, **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: BaseSensor
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the project - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sensor_template_link`
+            - Link object for the sensor template in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the sensor.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import BaseSensor
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sensor_template_link
+   :value: None
+
+
+   
+   Link object for the sensor template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the project - read only.
+
+
+   :Parameters:
+
+       **key: str**
+           ..
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor`
+           Sensor feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor`
+           Sensor feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor`
+           Sensor feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.sensor.BaseSensor.WavelengthsRange
+    ansys.speos.core.sensor.BaseSensor.Dimensions
+    ansys.speos.core.sensor.BaseSensor.Colorimetric
+    ansys.speos.core.sensor.BaseSensor.Spectral
+    ansys.speos.core.sensor.BaseSensor.FaceLayer
+    ansys.speos.core.sensor.BaseSensor.LayerTypeFace
+    ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
+    ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle
+
+
+
+

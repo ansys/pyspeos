@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`IntensitySensorDimensionsConoscopicParameters`
+======================================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensitySensorDimensionsConoscopicParameters
+
+   
+   Dataclass for Intensity Sensor dimension in case of conoscopic.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensitySensorDimensionsConoscopicParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~theta_max`
+            - Maximum theta angle for the conoscopic type (in degrees).
+          * - :py:attr:`~theta_sampling`
+            - Theta sampling for the conoscopic type.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensitySensorDimensionsConoscopicParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: theta_max
+   :type:  float
+   :value: 45
+
+
+   
+   Maximum theta angle for the conoscopic type (in degrees).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: theta_sampling
+   :type:  int
+   :value: 90
+
+
+   
+   Theta sampling for the conoscopic type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

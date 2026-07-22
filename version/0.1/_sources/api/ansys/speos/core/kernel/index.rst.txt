@@ -1,0 +1,162 @@
+
+
+
+
+
+
+The ``kernel`` package
+==========================
+
+.. py:module:: ansys.speos.core.kernel
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: kernel
+.. tab-set::
+
+
+    .. tab-item:: Submodules
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.body`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.client`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.crud`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.face`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.intensity_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.job`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.part`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.proto_message_utils`
+            - 
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.scene`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sensor_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.simulation_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sop_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.source_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.spectrum`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.vop_template`
+            - Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-fa-file"></span> body</api/ansys/speos/core/kernel/body/index>
+    <span class="nf nf-fa-file"></span> client</api/ansys/speos/core/kernel/client/index>
+    <span class="nf nf-fa-file"></span> crud</api/ansys/speos/core/kernel/crud/index>
+    <span class="nf nf-fa-file"></span> face</api/ansys/speos/core/kernel/face/index>
+    <span class="nf nf-fa-file"></span> intensity_template</api/ansys/speos/core/kernel/intensity_template/index>
+    <span class="nf nf-fa-file"></span> job</api/ansys/speos/core/kernel/job/index>
+    <span class="nf nf-fa-file"></span> part</api/ansys/speos/core/kernel/part/index>
+    <span class="nf nf-fa-file"></span> proto_message_utils</api/ansys/speos/core/kernel/proto_message_utils/index>
+    <span class="nf nf-fa-file"></span> scene</api/ansys/speos/core/kernel/scene/index>
+    <span class="nf nf-fa-file"></span> sensor_template</api/ansys/speos/core/kernel/sensor_template/index>
+    <span class="nf nf-fa-file"></span> simulation_template</api/ansys/speos/core/kernel/simulation_template/index>
+    <span class="nf nf-fa-file"></span> sop_template</api/ansys/speos/core/kernel/sop_template/index>
+    <span class="nf nf-fa-file"></span> source_template</api/ansys/speos/core/kernel/source_template/index>
+    <span class="nf nf-fa-file"></span> spectrum</api/ansys/speos/core/kernel/spectrum/index>
+    <span class="nf nf-fa-file"></span> vop_template</api/ansys/speos/core/kernel/vop_template/index>
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+
+This module manages low-level interactions and internal operations of the project.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+

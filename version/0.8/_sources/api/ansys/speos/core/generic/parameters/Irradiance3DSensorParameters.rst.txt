@@ -1,0 +1,230 @@
+
+
+
+
+
+
+:class:`Irradiance3DSensorParameters`
+=====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.Irradiance3DSensorParameters
+
+   
+   Parameters class for 3D Irradiance Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Irradiance3DSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sensor_type`
+            - Type of the sensor.
+          * - :py:attr:`~measures`
+            - Measurement activation state.
+          * - :py:attr:`~integration_type`
+            - Integration type.
+          * - :py:attr:`~rayfile_type`
+            - Rayfile type stored.
+          * - :py:attr:`~layer_type`
+            - Layer separation type.
+          * - :py:attr:`~geometries`
+            - Sensor geometry.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import Irradiance3DSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sensor_type
+   :type:  Union[SensorTypes, ColorimetricParameters, SensorTypes]
+
+   
+   Type of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: measures
+   :type:  MeasuresParameters
+
+   
+   Measurement activation state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_type
+   :type:  Union[IntegrationTypes, IntegrationTypes]
+
+   
+   Integration type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: rayfile_type
+   :type:  Union[RayfileTypes]
+
+   
+   Rayfile type stored.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  Union[LayerTypes, LayerTypes]
+
+   
+   Layer separation type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geometries
+   :type:  Optional[list]
+   :value: None
+
+
+   
+   Sensor geometry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

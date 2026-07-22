@@ -1,0 +1,124 @@
+
+
+
+
+
+
+:class:`OptPropParameters`
+==========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.OptPropParameters
+
+   
+   Store default values for optical properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: OptPropParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_parameters`
+            - SOP parameters used for optical properties.
+          * - :py:attr:`~vop_parameters`
+            - VOP parameters used for optical properties.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import OptPropParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sop_parameters
+   :type:  Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters, List[TextureLayerParameters]]]
+
+   
+   SOP parameters used for optical properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: vop_parameters
+   :type:  Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]]
+
+   
+   VOP parameters used for optical properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
