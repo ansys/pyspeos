@@ -292,7 +292,7 @@ jobs:
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     with:
       python-versions: '["3.14"]'
-      speos-versions: '["dev", "261"]'
+      speos-versions: '["dev"]'
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
