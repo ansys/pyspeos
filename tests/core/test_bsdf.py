@@ -22,6 +22,7 @@
 
 """Unit tests for PySpeos BSDF module."""
 
+from copy import deepcopy
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
@@ -498,9 +499,10 @@ def test_bsdf_error_management(speos: Speos):
     thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
     data = BxdfDatapoint(False, 0, thetas, phis, brdf)
     with pytest.raises(ValueError, match="Phi values need to be between"):
-        t_phi = data.phi_values
+        t_phi = deepcopy(data.phi_values)
         t_phi.append(7)
         data.phi_values = t_phi
+
     with pytest.raises(ValueError, match="Theta values for Transmission need to be between"):
         data.theta_values = t_phi
     t_phi = data.phi_values
