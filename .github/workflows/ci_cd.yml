@@ -98,7 +98,6 @@ jobs:
             --exclude src/ansys/speos/core/ground_plane.py \
             --exclude src/ansys/speos/core/geo_ref.py \
             --exclude src/ansys/speos/core/logger.py \
-            --exclude src/ansys/speos/core/lxp.py \
             --exclude src/ansys/speos/core/part.py \
             --exclude src/ansys/speos/core/opt_prop.py \
             --exclude src/ansys/speos/core/project.py \

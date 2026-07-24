@@ -73,14 +73,14 @@ class RayPath:
         self._nb_impacts = len(raypath.impacts)
         self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
         self._wl = raypath.wavelengths[0]
-        self._body_ids = raypath.body_context_ids
-        self._face_ids = raypath.unique_face_ids
+        self._body_ids = [int(i) for i in raypath.body_context_ids]
+        self._face_ids = [int(i) for i in raypath.unique_face_ids]
         self._last_direction = [
             raypath.lastDirection.x,
             raypath.lastDirection.y,
             raypath.lastDirection.z,
         ]
-        self._intersection_type = raypath.interaction_statuses
+        self._intersection_type = [int(i) for i in raypath.interaction_statuses]
         if sensor_contribution:
             self._sensor_contribution = [
                 {
@@ -464,7 +464,7 @@ class LightPathFinder:
         nb_ray: int = 100,
         max_ray_length: float = 50.0,
         ray_filter: bool = False,
-        project: Project = None,
+        project: Optional[Project] = None,
         screenshot: Optional[Union[str, Path]] = None,
     ) -> LightPathFinder:
         """Preview LPF file with pyvista.
@@ -520,5 +520,9 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        plotter.show(screenshot=screenshot)
+        if screenshot:
+            screenshot = str(screenshot)
+            plotter.show(screenshot=screenshot)
+        else:
+            plotter.show()
         return self
