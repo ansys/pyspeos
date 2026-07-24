@@ -129,12 +129,12 @@ class BaseBSDF:
 
         Parameters
         ----------
-        value : List[ansys.speos.core.bsdf.BxdfDatapoint]
+        value : Union[None, List[ansys.speos.core.bsdf.BxdfDatapoint]]
             BxdfDatapoint data to be written.
 
         Returns
         -------
-        Collection[ansys.speos.core.bsdf.BxdfDatapoint]
+        Union[None, List[ansys.speos.core.bsdf.BxdfDatapoint]]
             BxdfDatapoint data to be filled or modified.
         """
         return self._brdf
@@ -158,12 +158,12 @@ class BaseBSDF:
 
         Parameters
         ----------
-        value : List[ansys.speos.core.bsdf.BxdfDatapoint]
+        value : Union[None, List[ansys.speos.core.bsdf.BxdfDatapoint]]
             BxdfDatapoint data to be written.
 
         Returns
         -------
-        Collection[ansys.speos.core.bsdf.BxdfDatapoint]
+        Union[None, List[ansys.speos.core.bsdf.BxdfDatapoint]]
             BxdfDatapoint data to be filled or modified.
         """
         return self._btdf
@@ -207,7 +207,7 @@ class BaseBSDF:
 
         Returns
         -------
-        List[Union[List[float], None], Union[List[float], None]]
+        Tuple[List[float], List[float]]
             Returns a nested list of incidence angels for reflective and transmittive
             data if not available the value will be None
         """
@@ -391,12 +391,12 @@ class InterpolationEnhancement:
 
         Parameters
         ----------
-        value : refractive index.
+        value : float
             Refractive index on reflection side.
 
         Returns
         -------
-        float
+        Union[float, None]
             Refractive index on reflection side.
 
         """
@@ -414,12 +414,12 @@ class InterpolationEnhancement:
 
         Parameters
         ----------
-        value : refractive index.
+        value : float.
             Refractive index on transmission side.
 
         Returns
         -------
-        float
+        Union[float, None]
             Refractive index on transmission side.
         """
         return float(self.__cones_data.refractive_index_2)
@@ -675,7 +675,7 @@ class AnisotropicBSDF(BaseBSDF):
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos Object to connect to speos rpc server
-    file_path : Union[pathlib.Path, str]
+    file_path : Optional[Union[Path, str]]
         File path to bsdf file
     """
 
@@ -828,7 +828,7 @@ class AnisotropicBSDF(BaseBSDF):
 
         Returns
         -------
-        Union[List[float], float]
+        List[float]
             First value is for reflection second for transmission
         """
         return self._spectrum_incidence
@@ -861,7 +861,7 @@ class AnisotropicBSDF(BaseBSDF):
 
         Returns
         -------
-        Union[List[float], float]
+        List[float]
             First value is for reflection second for transmission
         """
         return self._spectrum_anisotropy
@@ -884,17 +884,17 @@ class AnisotropicBSDF(BaseBSDF):
             )
 
     @property
-    def reflection_spectrum(self):
+    def reflection_spectrum(self) -> tuple[Collection[float], Collection[float]]:
         """Reflection Spectrum of the bsdf.
 
         Parameters
         ----------
-        value : List[Collection[float], Collection[float]]
+        value : tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf
 
         Returns
         -------
-        Tuple[Collection[float], Collection[float]]
+        tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf.
         """
         return self._reflection_spectrum
@@ -907,17 +907,17 @@ class AnisotropicBSDF(BaseBSDF):
             raise ValueError("You need the same number of wavelength and energy values")
 
     @property
-    def transmission_spectrum(self):
+    def transmission_spectrum(self) -> tuple[Collection[float], Collection[float]]:
         """Transmission  Spectrum of the bsdf.
 
         Parameters
         ----------
-        value : Tuple[Collection[float], Collection[float]]
+        value : tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf
 
         Returns
         -------
-        Tuple[Collection[float], Collection[float]]
+        tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf.
 
         """
@@ -1027,7 +1027,7 @@ class SpectralBRDF(BaseBSDF):
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos Object to connect to speos rpc server
-    file_path : Union[pathlib.Path, str]
+    file_path : Optional[Union[pathlib.Path, str]]
         File path to bsdf file
     """
 
@@ -1448,12 +1448,12 @@ class BxdfDatapoint:
 
         Parameters
         ----------
-        value : Union[Collection[float], np.array]
+        value : Union[Collection[float], np.array, None]
             bxdf data in shape theta_values, phi_values
 
         Returns
         -------
-        np.array
+        Union[None, np.ndarray]
             bxdf data in shape theta_values, phi_values
 
         """
@@ -1544,7 +1544,7 @@ class BxdfDatapoint:
 
         Parameters
         ----------
-        value : List[float]
+        value : Collection[float]
             List of bxdf theta values.
 
         Returns
@@ -1579,7 +1579,7 @@ class BxdfDatapoint:
 
         Parameters
         ----------
-        value : List[float]
+        value : Collection[float]
             List of bxdf phi values.
 
         Returns

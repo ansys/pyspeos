@@ -477,9 +477,9 @@ class LightPathFinder:
             Length of last ray.
         ray_filter : bool
             Boolean to decide if filtered rays or all rays should be shown.
-        project : ansys.speos.core.project.Project
+        project : Optional[ansys.speos.core.project.Project]
             Speos Project/Geometry to be added to pyvista visualisation.
-        screenshot : str or Path or ``None``
+        screenshot : Optional[Union[str, Path]]
             Path to save a screenshot of the plotter. If defined Plotter will only create the
             screenshot
 
