@@ -83,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: |
           source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement ansys-speos-core[graphics]
 
       # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
       - name: Run Ty on selected files
