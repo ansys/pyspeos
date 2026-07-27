@@ -203,12 +203,12 @@ class BaseBSDF:
 
     @property
     def incident_angles(self) -> Tuple[List[float], List[float]]:
-        """List of incident angles for reflection and transmission.
+        """Tuple of lists of incident angles for reflection and transmission.
 
         Returns
         -------
         Tuple[List[float], List[float]]
-            Returns a nested list of incidence angels for reflective and transmittive
+            Returns a Tuple of lists of incidence angles for reflective and transmittive
             data if not available the value will be None
         """
         if self.has_transmission and self.btdf is not None:
@@ -340,7 +340,7 @@ class InterpolationEnhancement:
 
             Parameters
             ----------
-            args: tuple
+            args: Tuple
                 Dictionary or iterable of key-value pairs.
             kwargs: dict
                 Key-value pairs to update the dictionary.
@@ -745,7 +745,7 @@ class AnisotropicBSDF(BaseBSDF):
         self._stub.Load(file_name)
         return self._stub.Export(Empty())
 
-    def _extract_bsdf(self) -> tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
+    def _extract_bsdf(self) -> Tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
         if not self._grpcbsdf:
             raise ValueError("No BSDF data to extract, please import a bsdf file first.")
         self.description = self._grpcbsdf.description
@@ -780,7 +780,7 @@ class AnisotropicBSDF(BaseBSDF):
                 )
         return brdf, btdf
 
-    def _extract_spectrum(self) -> tuple[np.ndarray, np.ndarray]:
+    def _extract_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
         if not self._grpcbsdf:
             raise ValueError("No spectrum data to extract, please import a bsdf file first.")
         if self.has_reflection:
@@ -884,40 +884,40 @@ class AnisotropicBSDF(BaseBSDF):
             )
 
     @property
-    def reflection_spectrum(self) -> tuple[Collection[float], Collection[float]]:
+    def reflection_spectrum(self) -> Tuple[Collection[float], Collection[float]]:
         """Reflection Spectrum of the bsdf.
 
         Parameters
         ----------
-        value : tuple[Collection[float], Collection[float]]
+        value : Tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf
 
         Returns
         -------
-        tuple[Collection[float], Collection[float]]
+        Tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf.
         """
         return self._reflection_spectrum
 
     @reflection_spectrum.setter
-    def reflection_spectrum(self, value: tuple[Collection[float], Collection[float]]):
+    def reflection_spectrum(self, value: Tuple[Collection[float], Collection[float]]):
         if len(value[0]) == len(value[1]):
             self._reflection_spectrum = value
         else:
             raise ValueError("You need the same number of wavelength and energy values")
 
     @property
-    def transmission_spectrum(self) -> tuple[Collection[float], Collection[float]]:
+    def transmission_spectrum(self) -> Tuple[Collection[float], Collection[float]]:
         """Transmission  Spectrum of the bsdf.
 
         Parameters
         ----------
-        value : tuple[Collection[float], Collection[float]]
+        value : Tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf
 
         Returns
         -------
-        tuple[Collection[float], Collection[float]]
+        Tuple[Collection[float], Collection[float]]
             The spectrum is used to modulate the bsdf.
 
         """
@@ -1116,7 +1116,7 @@ class SpectralBRDF(BaseBSDF):
 
     def _extract_bsdf(
         self,
-    ) -> tuple[Union[List[BxdfDatapoint], None], Union[List[BxdfDatapoint], None]]:
+    ) -> Tuple[Union[List[BxdfDatapoint], None], Union[List[BxdfDatapoint], None]]:
         if self._grpcbsdf is None:
             raise ValueError("No BSDF data to extract, please import a bsdf file first.")
         self.description = self._grpcbsdf.description
