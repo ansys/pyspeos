@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
+import tempfile
 from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
@@ -37,8 +38,11 @@ import numpy as np
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    IESNA_A_B_DIMENSIONS,
+    AngularRangeParameters,
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
@@ -46,6 +50,7 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
     IntensitySensorDimensionsXAsMeridianParameters,
@@ -62,7 +67,11 @@ from ansys.speos.core.generic.parameters import (
     MeasuresParameters,
     MonoChromaticParameters,
     NearfieldParameters,
+    ObserverSensorParameters,
     PhotometricCameraParameters,
+    PolarIntensityDimensionsParameters,
+    PolarIntensityFormatTypes,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayfileTypes,
     SensorTypes,
@@ -165,6 +174,106 @@ class BaseSensor:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
             self._sensor_instance.ClearField("lxp_properties")
+
+    class AngularRange:
+        """Angular range for Observer sensor locations on a sphere.
+
+        By default, horizontal angles range from -45.0 to 45.0 with a sampling of 5,
+        and vertical angles range from -30.0 to 30.0 with a sampling of 3.
+
+        Parameters
+        ----------
+        angular_range : ansys.api.speos.sensor.v1.common_pb2.AngularRange
+            AngularRange protobuf object to modify.
+        default_parameters : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+            If defined, the values in the sensor instance are overwritten by the values
+            of the dataclass.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope.
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use ``set_angular_range``
+        method available in sensor classes.
+        """
+
+        def __init__(
+            self,
+            angular_range: common_pb2.AngularRange,
+            default_parameters: Optional[AngularRangeParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "AngularRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._angular_range = angular_range
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[AngularRangeParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.x_start = default_parameters.x_start
+            self.x_end = default_parameters.x_end
+            self.x_sampling = default_parameters.x_sampling
+            self.y_start = default_parameters.y_start
+            self.y_end = default_parameters.y_end
+            self.y_sampling = default_parameters.y_sampling
+
+        @property
+        def x_start(self) -> float:
+            """Minimum value on x axis in degrees."""
+            return self._angular_range.x_start
+
+        @x_start.setter
+        def x_start(self, value: float):
+            self._angular_range.x_start = value
+
+        @property
+        def x_end(self) -> float:
+            """Maximum value on x axis in degrees."""
+            return self._angular_range.x_end
+
+        @x_end.setter
+        def x_end(self, value: float):
+            self._angular_range.x_end = value
+
+        @property
+        def x_sampling(self) -> int:
+            """Sampling value on x axis."""
+            return self._angular_range.x_sampling
+
+        @x_sampling.setter
+        def x_sampling(self, value: int):
+            self._angular_range.x_sampling = value
+
+        @property
+        def y_start(self) -> float:
+            """Minimum value on y axis in degrees."""
+            return self._angular_range.y_start
+
+        @y_start.setter
+        def y_start(self, value: float):
+            self._angular_range.y_start = value
+
+        @property
+        def y_end(self) -> float:
+            """Maximum value on y axis in degrees."""
+            return self._angular_range.y_end
+
+        @y_end.setter
+        def y_end(self, value: float):
+            self._angular_range.y_end = value
+
+        @property
+        def y_sampling(self) -> int:
+            """Sampling value on y axis."""
+            return self._angular_range.y_sampling
+
+        @y_sampling.setter
+        def y_sampling(self, value: int):
+            self._angular_range.y_sampling = value
 
     class WavelengthsRange:
         """Range of wavelengths.
@@ -1403,6 +1512,14 @@ class SensorCamera(BaseSensor):
                 self, default_parameters: Optional[ColorParameters] = None
             ) -> None:
                 if not default_parameters:
+                    if self._mode_color.HasField("balance_mode_userwhite"):
+                        self.set_balance_mode_user_white()
+                    elif self._mode_color.HasField("balance_mode_display"):
+                        self.set_balance_mode_display_primaries()
+                    elif self._mode_color.HasField("balance_mode_greyworld"):
+                        self.set_balance_mode_grey_world()
+                    elif self._mode_color.HasField("balance_mode_none"):
+                        self.set_balance_mode_none()
                     return
                 if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
@@ -1625,6 +1742,7 @@ class SensorCamera(BaseSensor):
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
+                self.consider_diffraction_effects = default_parameters.consider_diffraction_effects
                 if default_parameters.transmittance_file_uri:
                     self.transmittance_file_uri = default_parameters.transmittance_file_uri
                 match default_parameters.png_bits:
@@ -1661,6 +1779,8 @@ class SensorCamera(BaseSensor):
                 default_parameters=None,
                 stable_ctr=stable_ctr,
             )
+            if self._mode_photometric.HasField("color_mode_color"):
+                self.set_mode_color()
 
         @property
         def acquisition_integration(self) -> float:
@@ -1742,6 +1862,35 @@ class SensorCamera(BaseSensor):
         @gamma_correction.setter
         def gamma_correction(self, value: float) -> None:
             self._mode_photometric.gamma_correction = value
+
+        @property
+        @general_methods.min_speos_version(26, 1, 3)
+        def consider_diffraction_effects(self) -> bool:
+            """Whether to consider diffraction effects in the Camera Sensor.
+
+            Parameters
+            ----------
+            value : bool
+                Enable (True) or disable (False) diffraction effects. By default, ``False``.
+
+            Returns
+            -------
+            bool
+                Whether diffraction effects are considered.
+
+            Notes
+            -----
+            This feature is available in Speos 2026 R1 SP3 or later. Not all Distortion files
+            do contain diffractive effects. You may get an RPC error on commit when using a
+            distortion file that does not contain diffractive effects while having set this
+            option to true.
+            """
+            return self._mode_photometric.consider_diffraction_effects
+
+        @consider_diffraction_effects.setter
+        @general_methods.min_speos_version(26, 1, 3)
+        def consider_diffraction_effects(self, value: bool) -> None:
+            self._mode_photometric.consider_diffraction_effects = value
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
             """Choose 08-bits for png.
@@ -1877,7 +2026,7 @@ class SensorCamera(BaseSensor):
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
-            self._camera_props.trajectory_file_uri = str(Path(uri))
+            self._camera_props.trajectory_file_uri = str(uri)
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
@@ -1927,6 +2076,11 @@ class SensorCamera(BaseSensor):
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         if not default_parameters:
+            template = self._sensor_template.camera_sensor_template
+            if template.HasField("sensor_mode_photometric"):
+                self.set_mode_photometric()
+            elif template.HasField("sensor_mode_geometric"):
+                self.set_mode_geometric()
             return
         if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
             self._type = SensorCamera.Photometric(
@@ -1962,6 +2116,7 @@ class SensorCamera(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_camera_pos = np.array(feature_pos_info[:3])
             feature_camera_x_dir = np.array(feature_pos_info[3:6])
@@ -2033,6 +2188,42 @@ class SensorCamera(BaseSensor):
             self._visual_data.coordinates.x_axis = feature_camera_x_dir
             self._visual_data.coordinates.y_axis = feature_camera_y_dir
             self._visual_data.coordinates.z_axis = feature_camera_z_dir
+
+            # camera trajectory path
+            if self.photometric is not None and self.photometric.trajectory_file_uri != "":
+                trajectory_path = Path(self.photometric.trajectory_file_uri)
+                skip_trajectory = False
+
+                # For distant server, the client used file transfer to upload the trajectory file.
+                # Then we need to download it to be able to read it and display the trajectory.
+                if not trajectory_path.is_file():
+                    try:
+                        file_transfer = FileTransfer(self._project.client)
+                        down_res = file_transfer.download_file(
+                            file_uri=self.photometric.trajectory_file_uri,
+                            download_location=Path(tempfile.gettempdir()),
+                        )
+                        trajectory_path = Path(tempfile.gettempdir()) / down_res.info.file_name
+                    except Exception:
+                        # If the download fails, just skip the trajectory display without failing
+                        # the whole visualization.
+                        skip_trajectory = True
+
+                if not skip_trajectory:
+                    import json
+
+                    json_info = None
+                    with trajectory_path.open("r") as f:
+                        json_info = json.load(f)
+                    trajectory_points = [
+                        [
+                            item["Origin"].get("X", 0.0) + feature_camera_pos[0],
+                            item["Origin"].get("Y", 0.0) + feature_camera_pos[1],
+                            item["Origin"].get("Z", 0.0) + feature_camera_pos[2],
+                        ]
+                        for item in json_info.get("Trajectory", [])
+                    ]
+                    self._visual_data.add_data_polyline(points=trajectory_points)
 
             self._visual_data.updated = True
             return self._visual_data
@@ -2504,6 +2695,7 @@ class SensorIrradiance(BaseSensor):
         if self._visual_data.updated is True:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_irradiance_pos = np.array(feature_pos_info[:3])
             feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
@@ -3270,6 +3462,7 @@ class SensorRadiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_radiance_pos = np.array(feature_pos_info[:3])
             feature_radiance_x_dir = np.array(feature_pos_info[3:6])
@@ -3853,11 +4046,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_radiometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3941,11 +4137,14 @@ class Sensor3DIrradiance(BaseSensor):
                         self.set_integration_radial()
                 return
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                default_parameters=None,
-                stable_ctr=stable_ctr,
-            )
+            if self._sensor_type_photometric.HasField("integration_type_radial"):
+                self.set_integration_radial()
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -4212,6 +4411,7 @@ class Sensor3DIrradiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             mesh_geo_paths = self.get(key="geo_paths")
             for mesh_geo_path in mesh_geo_paths:
                 if len(self._project.find(name=mesh_geo_path, feature_type=core.face.Face)) != 0:
@@ -5441,3 +5641,1088 @@ class SensorXMPIntensity(BaseSensor):
     @axis_system.setter
     def axis_system(self, value: list[float]):
         self._sensor_instance.intensity_properties.axis_system[:] = value
+
+
+class SensorImmersive(BaseSensor):
+    """Sensor feature: Immersive.
+
+    An immersive sensor wraps the observer inside a cube and collects light from all six faces.
+    By default, a sampling of 600 pixels per face, an integration angle of 5 degrees, a spectral
+    range from 400 nm to 700 nm (sampling 13), no layer separation, and no face exclusions are
+    chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : ansys.speos.core.generic.parameters.ImmersiveSensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[ImmersiveSensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        self._layer_type = None
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[ImmersiveSensorParameters] = None
+    ) -> None:
+        if default_parameters:
+            self.sampling = default_parameters.sampling
+            self.integration_angle = default_parameters.integration_angle
+            self.stereo_interocular_distance = default_parameters.interocular_distance
+            _wl = self.set_wavelengths_range()
+            _wl.start = default_parameters.wavelengths_range.start
+            _wl.end = default_parameters.wavelengths_range.end
+            _wl.sampling = default_parameters.wavelengths_range.sampling
+            self.axis_system = default_parameters.axis_system
+            if default_parameters.layer_type == LayerTypes.none:
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            self.exclude_front = default_parameters.exclude_front
+            self.exclude_back = default_parameters.exclude_back
+            self.exclude_left = default_parameters.exclude_left
+            self.exclude_right = default_parameters.exclude_right
+            self.exclude_top = default_parameters.exclude_top
+            self.exclude_bottom = default_parameters.exclude_bottom
+            return
+
+        # Load state from existing template/instance (reset path)
+        if self._sensor_instance.immersive_properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif self._sensor_instance.immersive_properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+
+    # ------------------------------------------------------------------
+    # Template-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def sampling(self) -> int:
+        """Pixel count (horizontal and vertical) per cube face.
+
+        Parameters
+        ----------
+        value : int
+            Pixel count per face. By default, ``600``.
+
+        Returns
+        -------
+        int
+            Current sampling value.
+        """
+        return self._sensor_template.immersive_sensor_template.sampling
+
+    @sampling.setter
+    def sampling(self, value: int) -> None:
+        self._sensor_template.immersive_sensor_template.sampling = int(value)
+
+    @property
+    def integration_angle(self) -> float:
+        """Integration angle in degrees for direct simulations.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle (degrees). By default, ``5.0``.
+
+        Returns
+        -------
+        float
+            Current integration angle.
+        """
+        return self._sensor_template.immersive_sensor_template.integration_angle
+
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> None:
+        self._sensor_template.immersive_sensor_template.integration_angle = float(value)
+
+    @property
+    def stereo_interocular_distance(self) -> float:
+        """Stereo interocular distance in mm.
+
+        Parameters
+        ----------
+        value : None | float
+            Set stereo interocular distance in mm.
+            By default, None as deactivate the stereo setting.
+            Or, set value to stereo interocular distance value will activate
+            the stereo setting.
+
+        Returns
+        -------
+        float
+            Current stereo interocular distance in mm.
+            If stereo setting is not activated, distance will be 0 mm.
+        """
+        return self._sensor_template.immersive_sensor_template.stereo.interocular_distance
+
+    @stereo_interocular_distance.setter
+    def stereo_interocular_distance(self, value: None | float) -> None:
+        if value is not None:
+            self._sensor_template.immersive_sensor_template.stereo.interocular_distance = value
+        else:
+            self._sensor_template.immersive_sensor_template.ClearField("stereo")
+
+    def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
+        """Configure the wavelength range of the sensor.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
+            Wavelength range object.
+        """
+        return BaseSensor.WavelengthsRange(
+            wavelengths_range=self._sensor_template.immersive_sensor_template.wavelengths_range,
+            stable_ctr=True,
+        )
+
+    @property
+    def exclude_front(self) -> bool:
+        """Whether the front face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.front
+
+    @exclude_front.setter
+    def exclude_front(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.front = bool(value)
+
+    @property
+    def exclude_back(self) -> bool:
+        """Whether the back face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.back
+
+    @exclude_back.setter
+    def exclude_back(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.back = bool(value)
+
+    @property
+    def exclude_left(self) -> bool:
+        """Whether the left face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.left
+
+    @exclude_left.setter
+    def exclude_left(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.left = bool(value)
+
+    @property
+    def exclude_right(self) -> bool:
+        """Whether the right face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.right
+
+    @exclude_right.setter
+    def exclude_right(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.right = bool(value)
+
+    @property
+    def exclude_top(self) -> bool:
+        """Whether the top face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.top
+
+    @exclude_top.setter
+    def exclude_top(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.top = bool(value)
+
+    @property
+    def exclude_bottom(self) -> bool:
+        """Whether the bottom face is excluded.
+
+        Parameters
+        ----------
+        value : bool
+
+        Returns
+        -------
+        bool
+        """
+        return self._sensor_template.immersive_sensor_template.exclude_faces.bottom
+
+    @exclude_bottom.setter
+    def exclude_bottom(self, value: bool) -> None:
+        self._sensor_template.immersive_sensor_template.exclude_faces.bottom = bool(value)
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position of the sensor.
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            X is Front, Y is Top, Z is Right.
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+        """
+        return list(self._sensor_instance.immersive_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.immersive_properties.axis_system[:] = value
+
+    @property
+    def layer(self) -> Union[str, None]:
+        """Current layer separation type.
+
+        Returns
+        -------
+        Union[str, None]
+            ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+        """
+        return self._layer_type
+
+    def set_layer_type_none(self) -> SensorImmersive:
+        """Set layer separation to *None* (no layer separation).
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorImmersive
+            This immersive sensor.
+        """
+        self._sensor_instance.immersive_properties.layer_type_none.SetInParent()
+        self._layer_type = LayerTypes.none
+        return self
+
+    def set_layer_type_source(self) -> SensorImmersive:
+        """Set layer separation to *by source*.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorImmersive
+            This immersive sensor.
+        """
+        self._sensor_instance.immersive_properties.layer_type_source.SetInParent()
+        self._layer_type = LayerTypes.by_source
+        return self
+
+
+class SensorPolarIntensity(BaseSensor):
+    """Class for polar intensity sensor.
+
+    A polar intensity sensor generates a photometric file (IESNA A/B/C or Eulumdat) from a
+    simulation.  It supports both far-field (integration angle) and near-field (cell distance +
+    diameter) configurations as well as explicit dimensional sampling or adaptive sampling from a
+    file.
+
+    By default, IESNA C format, explicit dimensions (360 × 90), far-field with integration angle
+    of 5 degrees, and the origin axis system are used.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : \
+    ansys.speos.core.generic.parameters.PolarIntensitySensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+
+    Notes
+    -----
+    ``PolarIntensityProperties`` in the scene proto only contains an ``axis_system`` field –
+    there is no layer-type separation for polar intensity sensors.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[PolarIntensitySensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[PolarIntensitySensorParameters] = None
+    ) -> None:
+        """Populate the sensor template and instance from parameters or from a loaded state.
+
+        Parameters
+        ----------
+        default_parameters : PolarIntensitySensorParameters, optional
+            When provided, the sensor is initialised from these values.
+            When ``None``, the sensor is reconstructed from an already-populated
+            ``_sensor_template`` (load-from-file path).
+        """
+        if default_parameters is not None:
+            # --- format ---
+            match default_parameters.format:
+                case PolarIntensityFormatTypes.iesna_a:
+                    self.set_format_iesna_a()
+                case PolarIntensityFormatTypes.iesna_b:
+                    self.set_format_iesna_b()
+                case PolarIntensityFormatTypes.iesna_c:
+                    self.set_format_iesna_c()
+                case PolarIntensityFormatTypes.eulumdat:
+                    self.set_format_eulumdat()
+
+            # --- sampling ---
+            if isinstance(default_parameters.dimensions, str):
+                self.set_adaptive_sampling()
+                self.adaptive_sampling_file = default_parameters.dimensions
+            else:
+                self._set_sampling_dimensions(
+                    horizontal_sampling=default_parameters.dimensions.horizontal_sampling,
+                    vertical_sampling=default_parameters.dimensions.vertical_sampling,
+                )
+
+            # --- field ---
+            if default_parameters.near_field is not None:
+                self.set_near_field()
+                self.cell_distance = default_parameters.near_field.cell_distance
+                self.cell_diameter = default_parameters.near_field.cell_diameter
+            else:
+                self.set_far_field()
+                self.integration_angle = default_parameters.integration_angle
+
+            # --- instance ---
+            self.axis_system = default_parameters.axis_system
+            return
+
+        # --- load-from-file path: reconstruct state from already-populated proto ---
+        template = self._sensor_template.polar_intensity_sensor_template
+        # Nothing extra to reconstruct; properties are read directly from proto on demand.
+        _ = template  # reference to avoid lint warning
+
+    # ------------------------------------------------------------------
+    # Format setters
+    # ------------------------------------------------------------------
+
+    def set_format_iesna_a(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type A.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_a.SetInParent()
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_iesna_b(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type B.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_b.SetInParent()
+        _dimensions = IESNA_A_B_DIMENSIONS
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_iesna_c(self) -> SensorPolarIntensity:
+        """Set output format to IESNA type C.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.iesna_c.SetInParent()
+        _dimensions = PolarIntensityDimensionsParameters()
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    def set_format_eulumdat(self) -> SensorPolarIntensity:
+        """Set output format to Eulumdat.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.eulumdat.SetInParent()
+        _dimensions = PolarIntensityDimensionsParameters()
+        self._set_sampling_dimensions(
+            _dimensions.horizontal_sampling, _dimensions.vertical_sampling
+        )
+        return self
+
+    # ------------------------------------------------------------------
+    # Sampling setters / properties
+    # ------------------------------------------------------------------
+    def set_constant_sampling(self):
+        """Use constant samplign instead of an adaptive-sampling file.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.dimensions.SetInParent()
+
+    def _set_sampling_dimensions(
+        self,
+        horizontal_sampling: int,
+        vertical_sampling: int,
+    ) -> SensorPolarIntensity:
+        """Use explicit horizontal and vertical sampling.
+
+        Parameters
+        ----------
+        horizontal_sampling : int, optional
+            Number of horizontal samples.
+            By default, ``720``.
+        vertical_sampling : int, optional
+            Number of vertical samples.
+            By default, ``361``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        template.dimensions.horizontal_sampling = int(horizontal_sampling)
+        template.dimensions.vertical_sampling = int(vertical_sampling)
+        return self
+
+    def set_adaptive_sampling(self) -> SensorPolarIntensity:
+        """Use an adaptive-sampling file instead of explicit dimensions.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        self._sensor_template.polar_intensity_sensor_template.ClearField("dimensions")
+        return self
+
+    @property
+    def adaptive_sampling_file(self) -> Union[Path, None]:
+        """Location of the adaptive-sampling file.
+
+        Parameters
+        ----------
+        uri : Union[str, Path]
+            Path to the adaptive-sampling file.
+
+
+        Returns
+        -------
+        Union[Path, None]
+            Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
+        """
+        if not self._sensor_template.polar_intensity_sensor_template.HasField("dimensions"):
+            return Path(self._sensor_template.polar_intensity_sensor_template.adaptive_sampling_uri)
+
+    @adaptive_sampling_file.setter
+    def adaptive_sampling_file(self, value: Union[Path, None]):
+        template = self._sensor_template.polar_intensity_sensor_template
+        if value is None:
+            template.ClearField("adaptive_sampling_uri")
+            self.set_constant_sampling()
+        else:
+            if template.HasField("dimensions"):
+                raise TypeError(
+                    "Constant sampling is active; switch to adaptive sampling with "
+                    "set_adaptove_sampling() first."
+                )
+            template.adaptive_sampling_uri = str(value)
+
+    @property
+    def horizontal_sampling(self) -> Union[int, None]:
+        """Number of horizontal samples.
+
+        Parameters
+        ----------
+        value : int
+            Number of horizontal samples of the intensity file.
+
+        Returns
+        -------
+        Union[int, None]
+            Horizontal sampling count, or ``None`` if adaptive sampling is active.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("dimensions"):
+            return template.dimensions.horizontal_sampling
+        return None
+
+    @horizontal_sampling.setter
+    def horizontal_sampling(self, value: int) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("dimensions"):
+            raise TypeError(
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
+            )
+        template.dimensions.horizontal_sampling = int(value)
+
+    @property
+    def vertical_sampling(self) -> Union[int, None]:
+        """Number of vertical samples.
+
+        Parameters
+        ----------
+        value : int
+            Number of vertical samples of the intensity file.
+
+        Returns
+        -------
+        Union[int, None]
+            Vertical sampling count, or ``None`` if adaptive sampling is active.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("dimensions"):
+            return template.dimensions.vertical_sampling
+        return None
+
+    @vertical_sampling.setter
+    def vertical_sampling(self, value: int) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("dimensions"):
+            raise TypeError(
+                "Adaptive sampling is active; switch to constant sampling with "
+                "set_constant_sampling() first."
+            )
+        template.dimensions.vertical_sampling = int(value)
+
+    # ------------------------------------------------------------------
+    # Field setters / properties
+    # ------------------------------------------------------------------
+
+    def set_far_field(self) -> SensorPolarIntensity:
+        """Configure the sensor for far-field measurement.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("far_field"):
+            template.far_field.SetInParent()
+            self.integration_angle = 1
+        return self
+
+    def set_near_field(self) -> SensorPolarIntensity:
+        """Configure the sensor for near-field measurement.
+
+        Default cell distance is ``10`` mm and default cell diameter is ``0.3491`` mm.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorPolarIntensity
+            This polar intensity sensor.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            template.near_field.SetInParent()
+            nf = NearfieldParameters()
+            self.cell_distance = nf.cell_distance
+            self.cell_diameter = nf.cell_diameter
+        return self
+
+    @property
+    def integration_angle(self) -> Union[float, None]:
+        """Far-field integration angle in degrees.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle (degrees).
+
+        Returns
+        -------
+        Union[float, None]
+            Integration angle, or ``None`` when the sensor is in near-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("far_field"):
+            return template.far_field.integration_angle
+        return None
+
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("far_field"):
+            raise TypeError("Sensor is in near-field mode; call set_far_field() first.")
+        template.far_field.integration_angle = float(value)
+
+    @property
+    def cell_distance(self) -> Union[float, None]:
+        """Distance of the measurement cell from the sensor origin in mm.
+
+        Parameters
+        ----------
+        value : float
+            Cell distance in mm.
+
+        Returns
+        -------
+        Union[float, None]
+            Cell distance, or ``None`` when the sensor is in far-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("near_field"):
+            return template.near_field.cell_distance
+        return None
+
+    @cell_distance.setter
+    def cell_distance(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
+        template.near_field.cell_distance = float(value)
+
+    @property
+    def cell_diameter(self) -> Union[float, None]:
+        """Diameter of the measurement cell in mm.
+
+        The diameter is derived from ``cell_distance`` and the stored
+        ``cell_integration_angle`` via ``2 * cell_distance * tan(cell_integration_angle)``.
+
+        Parameters
+        ----------
+        value : float
+            Cell diameter in mm.
+
+        Returns
+        -------
+        Union[float, None]
+            Cell diameter, or ``None`` when the sensor is in far-field mode.
+        """
+        template = self._sensor_template.polar_intensity_sensor_template
+        if template.HasField("near_field"):
+            return (
+                2
+                * template.near_field.cell_distance
+                * np.tan(np.radians(template.near_field.cell_integration_angle))
+            )
+        return None
+
+    @cell_diameter.setter
+    def cell_diameter(self, value: float) -> None:
+        template = self._sensor_template.polar_intensity_sensor_template
+        if not template.HasField("near_field"):
+            raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
+        template.near_field.cell_integration_angle = np.degrees(
+            np.arctan(float(value) / 2.0 / template.near_field.cell_distance)
+        )
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position of the sensor.
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+
+        Notes
+        -----
+        ``PolarIntensityProperties`` contains only an ``axis_system``; there is no
+        layer-type separation for polar intensity sensors.
+        """
+        return list(self._sensor_instance.polar_intensity_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.polar_intensity_properties.axis_system[:] = value
+
+
+class SensorObserver(BaseSensor):
+    """Sensor feature: Observer.
+
+    An observer sensor places multiple sensor instances on a sphere around a focal point,
+    configured by angular ranges and optional stereo parameters.
+    By default, a focal length of 250mm, integration angle of 5 degrees, a spectral range
+    from 400nm to 700nm (sampling 13), sphere distance of 100mm, and horizontal angular range
+    from -45 to 45 degrees with 5 sampling, vertical range from -30 to 30 degrees with 3 sampling
+    are chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : ansys.speos.core.generic.parameters.ObserverSensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[ObserverSensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        self._layer_type = None
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[ObserverSensorParameters] = None
+    ) -> None:
+        if default_parameters:
+            self.focal = default_parameters.focal
+            self.integration_angle = default_parameters.integration_angle
+            self.distance = default_parameters.distance
+            self.stereo_interocular_distance = default_parameters.interocular_distance
+            self.axis_system = default_parameters.axis_system
+            if default_parameters.layer_type == LayerTypes.none:
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            # Set wavelengths range
+            _wl = self.set_wavelengths_range()
+            _wl.start = default_parameters.wavelengths_range.start
+            _wl.end = default_parameters.wavelengths_range.end
+            _wl.sampling = default_parameters.wavelengths_range.sampling
+
+            # Set dimensions
+            _dim = self.set_dimensions()
+            _dim._fill_parameters(default_parameters.dimensions)
+
+            # Set angular range for sensor locations
+            _ang = self.set_angular_range()
+            _ang._fill_parameters(default_parameters.sensors_locations)
+            return
+
+    # ------------------------------------------------------------------
+    # Template-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def focal(self) -> float:
+        """Focal distance (distance between sensor radiance plan and observer point).
+
+        Parameters
+        ----------
+        value : float
+            Focal length in mm. By default, ``250.0``.
+
+        Returns
+        -------
+        float
+            Current focal distance.
+        """
+        return self._sensor_template.observer_sensor_template.focal
+
+    @focal.setter
+    def focal(self, value: float) -> None:
+        self._sensor_template.observer_sensor_template.focal = float(value)
+
+    @property
+    def integration_angle(self) -> float:
+        """Integration angle in degrees for direct simulations.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle (degrees). By default, ``5.0``.
+
+        Returns
+        -------
+        float
+            Current integration angle.
+        """
+        return self._sensor_template.observer_sensor_template.integration_angle
+
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> None:
+        self._sensor_template.observer_sensor_template.integration_angle = float(value)
+
+    @property
+    def distance(self) -> float:
+        """Distance (radius of sphere on which sensors are placed).
+
+        Parameters
+        ----------
+        value : float
+            Sphere radius in mm. By default, ``100.0``.
+
+        Returns
+        -------
+        float
+            Current distance value.
+        """
+        return self._sensor_template.observer_sensor_template.distance
+
+    @distance.setter
+    def distance(self, value: float) -> None:
+        self._sensor_template.observer_sensor_template.distance = float(value)
+
+    @property
+    def stereo_interocular_distance(self) -> Union[float, None]:
+        """Stereo interocular distance in mm.
+
+        Parameters
+        ----------
+        value : None | float
+            Set stereo interocular distance in mm.
+            By default, None as deactivate the stereo setting.
+            Or, set value to stereo interocular distance value will activate
+            the stereo setting.
+
+        Returns
+        -------
+        Union[float, None]
+            Current stereo interocular distance in mm.
+            If stereo setting is not activated, None will be returned.
+        """
+        if self._sensor_template.observer_sensor_template.HasField("stereo"):
+            return self._sensor_template.observer_sensor_template.stereo.interocular_distance
+
+    @stereo_interocular_distance.setter
+    def stereo_interocular_distance(self, value: None | float) -> None:
+        if value is not None:
+            self._sensor_template.observer_sensor_template.stereo.interocular_distance = value
+        else:
+            self._sensor_template.observer_sensor_template.ClearField("stereo")
+
+    def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
+        """Configure the wavelength range of the sensor.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
+            Wavelength range object.
+        """
+        return BaseSensor.WavelengthsRange(
+            wavelengths_range=self._sensor_template.observer_sensor_template.wavelengths_range,
+            stable_ctr=True,
+        )
+
+    def set_dimensions(self) -> BaseSensor.Dimensions:
+        """Set the dimensions of the sensor.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.Dimensions
+            Dimension class
+        """
+        return BaseSensor.Dimensions(
+            sensor_dimensions=self._sensor_template.observer_sensor_template.dimensions,
+            stable_ctr=True,
+        )
+
+    def set_angular_range(self) -> BaseSensor.AngularRange:
+        """Configure the angular range for sensor locations on the sphere.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.AngularRange
+            Angular range object.
+        """
+        return BaseSensor.AngularRange(
+            angular_range=self._sensor_template.observer_sensor_template.sensors_locations,
+            stable_ctr=True,
+        )
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position of the sensor.
+
+        Whereas Horizontal direction is represented by X-Component and vertical by Z-Component of
+        the axis-system
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+        """
+        return list(self._sensor_instance.observer_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.observer_properties.axis_system[:] = value
+
+    @property
+    def layer(self) -> Union[str, None]:
+        """Current layer separation type.
+
+        Returns
+        -------
+        Union[str, None]
+            ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+        """
+        return self._layer_type
+
+    def set_layer_type_none(self) -> SensorObserver:
+        """
+        Define layer separation type as None.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorIrradiance
+            irradiance class instance
+
+        """
+        self._sensor_instance.observer_properties.layer_type_none.SetInParent()
+        self._layer_type = LayerTypes.none
+        return self
+
+    def set_layer_type_source(self) -> SensorObserver:
+        """Define layer separation as by source.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorIrradiance
+           irradiance class instance
+
+        """
+        self._sensor_instance.observer_properties.layer_type_source.SetInParent()
+        self._layer_type = LayerTypes.by_source
+        return self

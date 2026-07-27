@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# (c) 2025 ANSYS, Inc. Unauthorized use, distribution, or duplication is prohibited.
 """Module to handle file transfer to a server.
 
 This module allows to transfer files to and from a server.

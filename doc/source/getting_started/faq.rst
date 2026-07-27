@@ -15,7 +15,7 @@ in conjunction with external Python libraries.
 What Ansys license is needed to run the Speos service?
 ------------------------------------------------------
 
-The Speos service requires an **Ansys Speos** license to run.
+The Speos service requires an **Speos** license to run.
 
 .. button-ref:: index
     :ref-type: doc
