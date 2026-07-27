@@ -31,7 +31,7 @@ from pathlib import Path
 
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
-import grpc
+from grpc import _channel
 
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import SpeosClient
@@ -95,7 +95,7 @@ class FileTransfer:
             Contains for example file uri and upload duration.
         """
         if not file_path.exists() or not file_path.is_file():
-            raise ValueError("Incorrect file_path : " + file_path)
+            raise ValueError("Incorrect file_path : " + str(file_path))
 
         with file_path.open("rb") as file:
             chunk_iterator = self._file_to_chunks(file, file_path.name)
@@ -109,7 +109,7 @@ class FileTransfer:
 
             try:
                 return self._file_transfer_service_stub.Upload(chunk_iterator, metadata=metadata)
-            except grpc._channel._InactiveRpcError as e:
+            except _channel._InactiveRpcError as e:
                 err = (
                     '"file_name" field in Chunk is missing or "reserved-file-uri"'
                     + " key/value not provided in ClientContext's metadata"
@@ -144,11 +144,11 @@ class FileTransfer:
             Contains for example file uri and upload duration.
         """
         if not folder_path.exists() or not folder_path.is_dir():
-            raise ValueError("Incorrect folder_path : " + folder_path)
+            raise ValueError("Incorrect folder_path : " + str(folder_path))
 
         main_file_path = folder_path / main_file_name
         if not main_file_path.exists() or not main_file_path.is_file():
-            raise ValueError("Incorrect main_file_path : " + main_file_path)
+            raise ValueError("Incorrect main_file_path : " + str(main_file_path))
 
         upload_responses = []
         add_dependencies_request = file_transfer__v1__pb2.AddDependencies_Request()
@@ -217,7 +217,7 @@ class FileTransfer:
         """
         start_time = datetime.datetime.now()
         if not download_location.exists() or not download_location.is_dir():
-            raise ValueError("Incorrect download_location : " + download_location)
+            raise ValueError("Incorrect download_location : " + str(download_location))
 
         chunks = self._file_transfer_service_stub.Download(
             file_transfer__v1__pb2.Download_Request(uri=file_uri)
@@ -281,7 +281,7 @@ class FileTransfer:
             Contains for example file uri, file name, file size and download duration.
         """
         if not download_location.exists() or not download_location.is_dir():
-            raise ValueError("Incorrect download_location : " + download_location)
+            raise ValueError("Incorrect download_location : " + str(download_location))
 
         response = []
 
