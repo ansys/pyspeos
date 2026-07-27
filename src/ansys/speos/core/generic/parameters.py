@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Literal, List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
@@ -138,7 +138,7 @@ class LayerBySequenceParameters:
     """Layer separation type Parameters  for Sequence separation."""
 
     maximum_nb_of_sequence: int = 10
-     """Maximum number of sequences stored in the Speos result file."""
+    """Maximum number of sequences stored in the Speos result file."""
     sequence_type: Union[Literal[SequenceTypes.by_face], Literal[SequenceTypes.by_geometry]] = (
         SequenceTypes.by_geometry
     )
