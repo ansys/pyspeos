@@ -69,7 +69,7 @@ class FileTransfer:
 
             if first_chunk:
                 if self._is_gte_26r1:
-                    chunk.file_name = file_name
+                    chunk.file_name = file_name  # ty: ignore
                 first_chunk = False
 
             yield chunk
