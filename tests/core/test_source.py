@@ -1950,9 +1950,7 @@ def test_create_thermic_source(speos: Speos):
     op1.geometries = [GeoRef.from_native_link("BodyB")]
     op1.commit()
 
-    source1 = p.create_source(
-        name="Thermic.1", feature_type=SourceThermic, parameters=ThermicSourceParameters()
-    )
+    source1 = p.create_source(name="Thermic.1", feature_type=SourceThermic)
     source1.set_emissive_faces().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source1.commit()
 
@@ -2080,6 +2078,14 @@ def test_create_thermic_source(speos: Speos):
         source3._intensity.set_cos().total_angle == new_default_parameter.intensity_type.total_angle
     )
     source3.delete()
+
+    # test error parameters
+    with pytest.raises(TypeError, match="ThermicSourceParameters"):
+        p.create_source(
+            name="Thermic.error",
+            feature_type=SourceThermic,
+            parameters=AmbientEnvironmentParameters(),
+        )
 
     # test loading
     p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceThermicTests.speos")
