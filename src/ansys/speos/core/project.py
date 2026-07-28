@@ -47,6 +47,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
+    EmissiveFacesParameters,
     ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
@@ -60,6 +61,8 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    TemperatureFieldParameters,
+    ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
@@ -102,6 +105,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from ansys.speos.core.speos import Speos
 
@@ -232,6 +236,7 @@ class Project:
             SourceAmbientUsStandard,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
+            SourceThermic,
         ]
     ]:
         """Property of project's sources inside.
@@ -383,6 +388,7 @@ class Project:
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
                 RayFileSourceParameters,
+                ThermicSourceParameters,
                 AmbientCieStandardOvercastSkyParameters,
                 AmbientNaturalLightParameters,
                 AmbientUsStandardParameters,
@@ -403,6 +409,7 @@ class Project:
         SourceAmbientUniform,
         SourceAmbientCieStandardGeneralSky,
         SourceDisplay,
+        SourceThermic,
     ]:
         """Create a new Source feature.
 
@@ -612,6 +619,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceThermic":
+                if parameters is None:
+                    parameters = ThermicSourceParameters()
+                elif not isinstance(parameters, ThermicSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ThermicSourceParameters"
+                    )
+                feature = SourceThermic(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -626,6 +648,7 @@ class Project:
                         SourceAmbientUniform,
                         SourceAmbientCieStandardGeneralSky,
                         SourceDisplay,
+                        SourceThermic,
                     ],
                 )
                 raise TypeError(msg)
@@ -1075,6 +1098,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceThermic,
             SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
@@ -1485,6 +1509,13 @@ class Project:
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("thermic_properties"):
+                src_feat = SourceThermic(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,

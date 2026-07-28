@@ -1570,3 +1570,39 @@ class OptPropParameters:
         VopTypes.none
     )
     """VOP parameters used for optical properties."""
+
+
+@dataclass
+class EmissiveFacesParameters:
+    """Emissive Faces Parameters."""
+
+    emissive_faces: list[str] = field(default_factory=lambda: [])
+    """List of emissive faces."""
+    temperature: float = 2000.0
+    """Temperature of the faces."""
+
+
+@dataclass
+class TemperatureFieldParameters:
+    """Temperature Field Parameters."""
+
+    temperature_field_uri: Union[str, Path] = ""
+    """Path to the temperature field file."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
+    """Axis system used to position temperature field."""
+    sop: Union[SopMirrorParameters, SopLibraryParameters] = field(default_factory=lambda: SopMirrorParameters())
+    """Surface optical properties parameters."""
+
+
+@dataclass
+class ThermicSourceParameters:
+    """Thermic Source Parameters."""
+
+    emittance_type: Union[EmissiveFacesParameters, TemperatureFieldParameters] = (
+        field(default_factory=lambda: EmissiveFacesParameters()))
+    """Emittance parameters for the thermic source."""
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    """Intensity parameters for the thermic source."""

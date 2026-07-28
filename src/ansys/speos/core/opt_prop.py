@@ -64,7 +64,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
-from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
@@ -109,6 +109,7 @@ class BaseSop:
                 "Please use a subclass or set stable_ctr=True if you know what you're doing."
             )
         self._sop_template = sop_template
+        self._sop_template_link = None
         # Create material instance
         self._material_instance = mat_inst
         self._mirror = None
@@ -321,6 +322,14 @@ class BaseSop:
         """
         if self._sop_template.HasField("library"):
             return self._library
+
+    def reset(self):
+        # Reset sop template
+        if self.sop_template_link is not None:
+            self._sop_template = self.sop_template_link.get()
+            self._sync_sop_properties()
+        else:
+            self._sync_sop_properties()
 
 
 class BaseVop:

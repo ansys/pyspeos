@@ -43,10 +43,12 @@ from ansys.speos.core.generic.parameters import (
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
+    EmissiveFacesParameters,
     FluxFromFileParameters,
     IntensitAsymmetricGaussianParameters,
     IntensityCosParameters,
     IntensityFluxParameters,
+    IntensityLambertianParameters,
     IntensityLibraryParameters,
     IntensityOrientationAxisSystemParameters,
     IntensityOrientationType,
@@ -61,10 +63,12 @@ from ansys.speos.core.generic.parameters import (
     SpectrumMonochromaticParameters,
     SpectrumType,
     SurfaceSourceParameters,
+    TemperatureFieldParameters,
+    ThermicSourceParameters,
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
-    WhitePointType,
+    WhitePointType, SopMirrorParameters,
 )
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.simulation import SimulationInverse
@@ -1918,51 +1922,164 @@ def test_create_uniform_ambient_source(speos: Speos):
     source3.delete()
 
 
+@pytest.mark.supported_speos_version(min=252)
 def test_create_thermic_source(speos: Speos):
     """Test creation of thermic source."""
     p = Project(speos=speos)
 
-    source1 = p.create_source(name="Thermic Source", feature_type=SourceThermic)
-    # Geometry
-    root_part = p.create_root_part().commit()
-    body_b1 = root_part.create_body(name="TheBodyB1").commit()
-    face_b1_f1 = (
-        body_b1.create_face(name="TheFaceF1")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-        .commit()
-    )
-    # Optical Property
-    p.create_optical_property("OpaqueMirror50").set_volume_opaque().set_surface_mirror(
-        reflectance=50
-    ).set_geometries(geometries=[body_b1.geo_path]).commit()
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
+    face_2 = body_b.create_face(name="FaceB2")
+    face_2.vertices = [0, 1, 0, 1, 0, 0, 1, 1, 0]
+    face_2.facets = [0, 1, 2]
+    face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_2.commit()
+    root_part.commit()
 
-    source1.set_emissive_faces(geometries=[(face_b1_f1.geo_path, False)])
+    op1 = p.create_optical_property(name="Material.1")
+    op1.commit()
+    op1.set_volume_none()
+    op1.set_surface_mirror().reflectance = 0
+    op1.commit()
+    op1.geometries =[GeoRef.from_native_link("BodyB")]
+    op1.commit()
+
+    source1 = p.create_source(name="Thermic.1", feature_type=SourceThermic, parameters=ThermicSourceParameters())
+    source1.set_emissive_faces().geometries = [(GeoRef.from_native_link("BodyB"),False)]
     source1.commit()
 
-    assert source1._source_template.thermic.HasField("emissives_faces")
-    assert source1._source_template.thermic.emissives_faces.temperature == 2000
-    assert source1._source_instance.HasField("thermic_properties")
-    assert source1._source_instance.thermic_properties.HasField("emissive_faces_properties")
+    assert source1.source_template_link is not None
+    assert source1.source_template_link.get().HasField("thermic")
+    assert source1.source_template_link.get().thermic.HasField("emissives_faces")
     assert (
-        source1._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0].geo_path
-        == "TheBodyB1/TheFaceF1"
+            source1.source_template_link.get().thermic.emissives_faces.temperature
+            == ThermicSourceParameters().emittance_type.temperature
     )
-    assert (
-        source1._source_instance.thermic_properties.emissive_faces_properties.geo_paths[
-            0
-        ].reverse_normal
-        is False
-    )
-
     intensity = speos.client[source1.source_template_link.get().thermic.intensity_guid]
     assert intensity.get().HasField("cos")
-    assert intensity.get().cos.N == 1
 
-    source1.emissive_faces_temperature = 3500
-    assert source1._source_template.thermic.emissives_faces.temperature == 3500
-    assert source1.emissive_faces_temperature == 3500
+    assert source1._source_instance.HasField("thermic_properties")
+    thermic_properties = source1._source_instance.thermic_properties
+    assert thermic_properties.HasField("emissive_faces_properties")
+    assert thermic_properties.emissive_faces_properties.geo_paths[0].geo_path == "BodyB"
+    assert thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal == False
+
+    # change temperature
+    source1.set_emissive_faces().temperature = 5000
+    source1.commit()
+    assert source1.set_emissive_faces().temperature == 5000
+    assert source1.source_template_link.get().thermic.HasField("emissives_faces")
+    assert source1.source_template_link.get().thermic.emissives_faces.temperature == 5000
+
+    # temperature field
+    source1.set_temperature_field().temperature_field_uri = (
+            Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    source1.commit()
+    assert source1.set_temperature_field().temperature_field_uri == str(
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    assert source1.source_template_link.get().thermic.HasField("temperature_field")
+    assert source1.source_template_link.get().thermic.temperature_field.temperature_field_uri != ""
+    assert thermic_properties.HasField("temperature_field_properties")
+    assert thermic_properties.temperature_field_properties.axis_plane == ORIGIN[:9]
+    assert source1.set_temperature_field().sop.sop_mirror.reflectance == 0
+
+    # Properties
+    # temperature field axis_plane
+    source1.set_temperature_field().axis_plane = [10, 10, 15, 1, 0, 0, 0, 1, 0]
+    source1.commit()
+    assert source1.set_temperature_field().axis_plane == [10, 10, 15, 1, 0, 0, 0, 1, 0]
+    assert thermic_properties.HasField("temperature_field_properties")
+    assert thermic_properties.temperature_field_properties.axis_plane == [
+        10,
+        10,
+        15,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+    ]
+
+    # sop properties
+    source1.set_temperature_field().sop.sop_mirror.reflectance = 50
+    source1.commit()
+    assert source1.set_temperature_field().sop.sop_mirror.reflectance == 50
+    source1.set_temperature_field().sop.set_surface_library().file_uri = (
+            Path(test_path) / "R_test.anisotropicbsdf"
+    )
+    source1.commit()
+    assert source1.set_temperature_field().sop.sop_library.file_uri == str(
+        Path(test_path) / "R_test.anisotropicbsdf"
+    )
+    source1.delete()
+
+    # test parameters
+    new_default_parameter = ThermicSourceParameters()
+    new_default_parameter.emittance_type = EmissiveFacesParameters()
+    new_default_parameter.emittance_type.emissive_faces = [(GeoRef.from_native_link("BodyB"), False)]
+    new_default_parameter.emittance_type.temperature = 6000.0
+    new_default_parameter.intensity_type = IntensityLambertianParameters()
+    source2 = p.create_source(
+        name="Thermic.2", feature_type=SourceThermic, parameters=new_default_parameter
+    )
+    source2.commit()
+
+    assert source2.source_template_link.get().thermic.HasField("emissives_faces")
+    assert source2._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0].geo_path == "BodyB"
+    assert source2._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal == False
+    # assert source2._intensity.set_cos().n == new_default_parameter.intensity_type.n
+    assert (
+            source2._intensity.set_cos().total_angle == new_default_parameter.intensity_type.total_angle
+    )
+    source2.delete()
+
+    # test parameters
+    new_default_parameter = ThermicSourceParameters()
+    new_default_parameter.emittance_type = TemperatureFieldParameters()
+    new_default_parameter.emittance_type.temperature_field_uri = (
+            Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    new_default_parameter.emittance_type.axis_system = ORIGIN[0:9]
+    new_default_parameter.emittance_type.sop = SopMirrorParameters()
+    new_default_parameter.emittance_type.sop.reflectance = 0
+    new_default_parameter.intensity_type = IntensityCosParameters()
+    new_default_parameter.intensity_type.n = 5
+    source3 = p.create_source(
+        name="Thermic.3", feature_type=SourceThermic, parameters=new_default_parameter
+    )
+    source3.commit()
+
+    assert source3.source_template_link.get().thermic.HasField("temperature_field")
+    assert source3._source_instance.thermic_properties.temperature_field_properties.axis_plane == ORIGIN[0:9]
+    assert source3._intensity.set_cos().n == new_default_parameter.intensity_type.n
+    assert (
+            source3._intensity.set_cos().total_angle == new_default_parameter.intensity_type.total_angle
+    )
+    source3.delete()
+
+    # test loading
+    p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceThermicTests.speos")
+
+    source4 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
+    assert source4._intensity.set_cos().n == 1
+    assert source4._intensity.set_cos().total_angle == 180
+    assert source4.set_emissive_faces().temperature == 2000.0
+
+    source5 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
+    assert source5._intensity.set_cos().n == 1
+    assert source5._intensity.set_cos().total_angle == 180
+    assert source5.set_temperature_field().temperature_field_uri == str(
+        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    )
+    assert source5.set_temperature_field().sop.sop_mirror.reflectance == 0
 
 
 def test_keep_same_internal_feature(speos: Speos):
@@ -2033,18 +2150,17 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
 
     # THERMIC SOURCE
-    source4 = SourceThermic(project=p, name="Thermic.1")
-    source4.emissive_faces_temperature = 2000
+    source4 = SourceThermic(project=p, name="Thermic.1", default_parameters=ThermicSourceParameters())
+    source4.set_temperature_field().temperature_field_uri = str(
+        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    )
     source4.commit()
+    intensity_guid = source4.source_template_link.get().thermic.intensity_guid
 
     # Modify field type
-    source4.set_temperature_field()
-    uri = str(Path(test_path) / "dummy.OPTTemperatureField")
-    source4.set_temperature_field_uri(uri)
-    sop_guid = source4._source_template.thermic.temperature_field.sop_guid
-    assert source4._source_template.thermic.temperature_field.temperature_field_uri == uri
-    assert source4.temperature_field_uri == uri
-    assert source4._source_template.thermic.temperature_field.sop_guid == sop_guid
+    source4._intensity.set_cos().n = 5
+    source4.commit()
+    assert source4.source_template_link.get().thermic.intensity_guid == intensity_guid
 
     source1.delete()
     source2.delete()
@@ -2468,6 +2584,45 @@ def test_surface_modify_after_reset(speos: Speos):
         0,
     ]
 
+    source.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_thermic_modify_after_reset(speos: Speos):
+    """Test reset of thermic source, and then modify."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    source = SourceThermic(
+        project=p, name="Thermic.1", default_parameters=ThermicSourceParameters()
+    )
+    source.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    )
+    source.commit()
+
+    # Ask for reset
+    source.reset()
+
+    # Modify after a reset
+    # Template
+    assert source._source_template.thermic.temperature_field.temperature_field_uri == str(
+        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    )
+    assert source._intensity.intensity_template_link.get().cos.N == 1
+    assert source._source_instance.thermic_properties.temperature_field_properties.axis_plane == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+    ]
+    source.set_temperature_field().axis_plane = [50,50,50,1,0,0,0,0,-1]
+    assert source._source_instance.thermic_properties.temperature_field_properties.axis_plane == [50,50,50,1,0,0,0,0,-1]
     source.delete()
 
 
