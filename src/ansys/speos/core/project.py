@@ -47,7 +47,6 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
-    EmissiveFacesParameters,
     ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
@@ -61,7 +60,6 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
-    TemperatureFieldParameters,
     ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )

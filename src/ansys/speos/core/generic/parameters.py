@@ -1590,7 +1590,9 @@ class TemperatureFieldParameters:
     """Path to the temperature field file."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
     """Axis system used to position temperature field."""
-    sop: Union[SopMirrorParameters, SopLibraryParameters] = field(default_factory=lambda: SopMirrorParameters())
+    sop: Union[SopMirrorParameters, SopLibraryParameters] = field(
+        default_factory=lambda: SopMirrorParameters()
+    )
     """Surface optical properties parameters."""
 
 
@@ -1598,8 +1600,9 @@ class TemperatureFieldParameters:
 class ThermicSourceParameters:
     """Thermic Source Parameters."""
 
-    emittance_type: Union[EmissiveFacesParameters, TemperatureFieldParameters] = (
-        field(default_factory=lambda: EmissiveFacesParameters()))
+    emittance_type: Union[EmissiveFacesParameters, TemperatureFieldParameters] = field(
+        default_factory=lambda: EmissiveFacesParameters()
+    )
     """Emittance parameters for the thermic source."""
     intensity_type: Union[
         IntensityLambertianParameters,

@@ -64,7 +64,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
-from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
