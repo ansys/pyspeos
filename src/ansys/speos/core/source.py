@@ -60,7 +60,6 @@ from ansys.speos.core.generic.parameters import (
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
-    SopLibraryParameters,
     SopMirrorParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
