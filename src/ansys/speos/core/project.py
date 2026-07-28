@@ -428,7 +428,8 @@ class Project:
             ansys.speos.core.source.SourceAmbientUsStandard, \
             ansys.speos.core.source.SourceAmbientEnvironment, \
              ansys.speos.core.source.SourceAmbientUniform, \
-            ansys.speos.core.source.SourceDisplay].
+            ansys.speos.core.source.SourceDisplay, \
+            ansys.speos.core.source.SourceThermic].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -436,6 +437,7 @@ class Project:
         ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
+        ansys.speos.core.generic.parameters.ThermicSourceParameters, \
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
         ansys.speos.core.generic.parameters.AmbientUsStandardParameters,\
         ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
@@ -452,7 +454,8 @@ class Project:
         ansys.speos.core.source.SourceAmbientUsStandard,\
         ansys.speos.core.source.SourceAmbientEnvironment,\
         ansys.speos.core.source.SourceAmbientUniform,\
-        ansys.speos.core.source.SourceDisplay]
+        ansys.speos.core.source.SourceDisplay, \
+        ansys.speos.core.source.SourceThermic]
             Source class instance.
         """
         if metadata is None:
@@ -1137,7 +1140,8 @@ class Project:
         Returns
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
-        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceThermic, \
+        ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceAmbientEnvironment, \
         ansys.speos.core.source.SourceAmbientNaturalLight, \
         ansys.speos.core.source.SourceAmbientUniform, \
