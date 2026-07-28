@@ -1361,8 +1361,8 @@ class SopTypes(str, Enum):
 class SopMirrorParameters:
     """SOP Mirror Parameters Dataclass."""
 
-    reflectance = 100
-    """Rreflectance of a perfect mirror."""
+    reflectance: float = 100
+    """Reflectance of a perfect mirror."""
 
 
 @dataclass
@@ -1591,7 +1591,7 @@ class TemperatureFieldParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
     """Axis system used to position temperature field."""
     sop: Union[SopMirrorParameters, SopLibraryParameters] = field(
-        default_factory=lambda: SopMirrorParameters()
+        default_factory=lambda: SopMirrorParameters(reflectance=0)
     )
     """Surface optical properties parameters."""
 
