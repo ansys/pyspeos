@@ -1923,7 +1923,7 @@ def test_create_uniform_ambient_source(speos: Speos):
     source3.delete()
 
 
-@pytest.mark.supported_speos_version(min=252)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_thermic_source(speos: Speos):
     """Test creation of thermic source."""
     p = Project(speos=speos)

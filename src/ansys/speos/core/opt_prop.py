@@ -332,11 +332,9 @@ class BaseSop:
 
         """
         # Reset sop template
-        if self.sop_template_link is not None:
-            self._sop_template = self.sop_template_link.get()
-            self._sync_sop_properties()
-        else:
-            self._sync_sop_properties()
+        if self._sop_template_link is not None:
+            self._sop_template = self._sop_template_link.get()
+        self._sync_sop_properties()
         return self
 
 

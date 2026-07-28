@@ -2566,9 +2566,9 @@ class SourceThermic(BaseSource):
             # SOP
             match type(default_parameters.sop).__name__:
                 case "SopMirrorParameters":
-                    self._sop.set_surface_mirror().reflectance = 0
+                    self._sop.set_surface_mirror().reflectance = default_parameters.sop.reflectance
                 case "SopLibraryParameters":
-                    self._sop = SopLibraryParameters()
+                    self._sop.set_surface_library().file_uri = default_parameters.sop.file_uri
                 case _:
                     raise ValueError(
                         "Unsupported SOP type: {}".format(type(default_parameters.sop).__name__)
@@ -2693,13 +2693,25 @@ class SourceThermic(BaseSource):
                     default_parameters.emittance_type.temperature
                 )
             case "TemperatureFieldParameters":
-                self.set_temperature_field().temperature_field_uri = (
-                    default_parameters.emittance_type.temperature_field_uri
-                )
-                self.set_temperature_field().axis_plane = (
-                    default_parameters.emittance_type.axis_system
-                )
-                self.set_temperature_field().sop.set_surface_mirror().reflectance = 0
+                tf = self.set_temperature_field()
+                tf.temperature_field_uri = default_parameters.emittance_type.temperature_field_uri
+                tf.axis_plane = default_parameters.emittance_type.axis_system
+
+                match type(default_parameters.emittance_type.sop).__name__:
+                    case "SopMirrorParameters":
+                        tf.sop.set_surface_mirror().reflectance = (
+                            default_parameters.emittance_type.sop.reflectance
+                        )
+                    case "SopLibraryParameters":
+                        tf.sop.set_surface_library().file_uri = (
+                            default_parameters.emittance_type.sop.file_uri
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported SOP type: {}".format(
+                                type(default_parameters.emittance_type.sop).__name__
+                            )
+                        )
             case _:
                 raise ValueError(
                     "Unsupported emittance type: {}".format(
