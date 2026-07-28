@@ -443,6 +443,11 @@ print(source_thermic)  # local: default values before commit
 # +
 # Reuse geometry created earlier in the example (TheBodyD/TheFaceF)
 thermic_face = p.find(name="TheBodyD/TheFaceF", feature_type=Face)[0]
+thermic_face_op = p.create_optical_property(name="ThermicFaceOP.1")
+thermic_face_op.set_volume_none()
+thermic_face_op.set_surface_mirror().reflectance = 0
+thermic_face_op.geometries = [thermic_face]
+thermic_face_op.commit()
 source_thermic.set_emissive_faces().geometries = [(thermic_face, False)]
 source_thermic.set_emissive_faces().temperature = 3000  # temperature in K
 source_thermic.commit()
