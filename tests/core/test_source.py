@@ -1970,7 +1970,7 @@ def test_create_thermic_source(speos: Speos):
     thermic_properties = source1._source_instance.thermic_properties
     assert thermic_properties.HasField("emissive_faces_properties")
     assert thermic_properties.emissive_faces_properties.geo_paths[0].geo_path == "BodyB"
-    assert thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal == False
+    assert thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal is False
 
     # change temperature
     source1.set_emissive_faces().temperature = 5000
@@ -2046,7 +2046,7 @@ def test_create_thermic_source(speos: Speos):
         source2._source_instance.thermic_properties.emissive_faces_properties.geo_paths[
             0
         ].reverse_normal
-        == False
+        is False
     )
     # assert source2._intensity.set_cos().n == new_default_parameter.intensity_type.n
     assert (
