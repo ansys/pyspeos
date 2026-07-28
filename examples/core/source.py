@@ -27,6 +27,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 
 # -
@@ -419,6 +420,71 @@ d_src.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 d_src.image_file_uri = assets_data_path / "test_display_source.1.speos" / "pyspeos.png"
 d_src.commit()
 print(d_src)
+
+# +
+d_src.delete()
+# -
+
+# ### Thermic source
+
+# A thermic source emits radiation based on thermal properties of surfaces.
+# Two exitance modes are available: **emissive faces** (uniform temperature per face set)
+# and **temperature field** (temperature distribution read from a file).
+
+# #### Emissive faces mode
+#
+# Create a thermic source and assign geometry faces with a uniform temperature.
+
+# +
+source_thermic = p.create_source(name="Thermic.1", feature_type=SourceThermic)
+print(source_thermic)  # local: default values before commit
+# -
+
+# +
+# Reuse geometry created earlier in the example (TheBodyD/TheFaceF)
+thermic_face = p.find(name="TheBodyD/TheFaceF", feature_type=Face)[0]
+source_thermic.set_emissive_faces().geometries = [(thermic_face, False)]
+source_thermic.set_emissive_faces().temperature = 3000  # temperature in K
+source_thermic.commit()
+print(source_thermic)
+# -
+
+# +
+# Increase temperature and recommit
+source_thermic.set_emissive_faces().temperature = 5000
+source_thermic.commit()
+print(source_thermic)
+# -
+
+# #### Temperature field mode
+#
+# Switch the same source to temperature field mode. The temperature distribution
+# is read from an `.OPTTemperatureField` file. An axis plane positions the field
+# in the scene, and a surface optical property (SOP) controls reflectance.
+
+# +
+temperature_field_file = assets_data_path / "TemperatureField_Tank.OPTTemperatureField"
+source_thermic.set_temperature_field().temperature_field_uri = temperature_field_file
+source_thermic.set_temperature_field().axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+print(source_thermic.set_temperature_field().axis_plane)  # default axis plane
+# -
+
+# +
+# Adjust SOP mirror reflectance for the temperature field surface
+source_thermic.set_temperature_field().sop.set_surface_mirror().reflectance = 10
+source_thermic.commit()
+print(source_thermic)
+# -
+
+# +
+# Reset to server state and verify temperature field uri is preserved
+source_thermic.reset()
+print(source_thermic.set_temperature_field().temperature_field_uri)
+# -
+
+# +
+source_thermic.delete()
+# -
 
 # ### Clean up
 
