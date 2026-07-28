@@ -2832,23 +2832,19 @@ class SourceThermic(BaseSource):
             if self.set_temperature_field()._sop._sop_template_link is None:
                 if self.set_temperature_field()._sop._sop_template is not None:
                     # Fill sop_guid(s) field according to the server capability regarding textures
-                    self.set_temperature_field()._sop.sop_template_link = (
+                    self.set_temperature_field()._sop._sop_template_link = (
                         self._speos_client.sop_templates().create(
                             message=self.set_temperature_field()._sop._sop_template
                         )
                     )
                     self._source_template.thermic.temperature_field.sop_guid = (
-                        self.set_temperature_field()._sop.sop_template_link.key
+                        self.set_temperature_field()._sop._sop_template_link.key
                     )
-                    # if self._speos_client.scenes()._is_texture_available:
-                    #     self._source_instance.sop_guid = self.sop_template_link.key
-                    # else:
-                    #     self._source_instance.sop_guids.append(self.sop_template_link.key)
             elif (
-                self.set_temperature_field()._sop.sop_template_link.get()
+                self.set_temperature_field()._sop._sop_template_link.get()
                 != self.set_temperature_field()._sop._sop_template
             ):
-                self.set_temperature_field()._sop.sop_template_link.set(
+                self.set_temperature_field()._sop._sop_template_link.set(
                     data=self.set_temperature_field()._sop._sop_template
                 )  # Only update if sop template has changed
 
