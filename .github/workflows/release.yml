@@ -57,17 +57,17 @@ jobs:
       contents: read   # Required to read repository content for type checking
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
           enable-cache: false
           prune-cache: true
@@ -78,7 +78,7 @@ jobs:
       - name: Install dependencies
         run: |
           source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement ansys-speos-core[graphics]
 
       # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
       - name: Run Ty on selected files
@@ -88,13 +88,11 @@ jobs:
             --exclude src/ansys/speos/core/body.py \
             --exclude src/ansys/speos/core/component.py \
             --exclude src/ansys/speos/core/face.py \
-            --exclude src/ansys/speos/core/bsdf.py \
             --exclude src/ansys/speos/core/launcher.py \
             --exclude src/ansys/speos/core/intensity.py \
             --exclude src/ansys/speos/core/ground_plane.py \
             --exclude src/ansys/speos/core/geo_ref.py \
             --exclude src/ansys/speos/core/logger.py \
-            --exclude src/ansys/speos/core/lxp.py \
             --exclude src/ansys/speos/core/part.py \
             --exclude src/ansys/speos/core/opt_prop.py \
             --exclude src/ansys/speos/core/project.py \
@@ -151,7 +149,7 @@ jobs:
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -159,7 +157,7 @@ jobs:
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
 
       - name: Login to GitHub Packages
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ghcr.io/ansys
           username: ${{ github.actor }}
@@ -182,6 +180,8 @@ jobs:
           checkout: false
           dependencies: "pandoc texlive-latex-extra latexmk texlive-luatex texlive-fonts-extra"
           needs-quarto: true
+          optional-dependencies-name: 'graphics'
+          group-dependencies-name: 'doc'
 
       - name: Stop container
         shell: bash
@@ -193,79 +193,13 @@ jobs:
   testing:
     name: Testing and coverage
     needs: [smoke-tests]
-    runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-
-      - name: Set up headless display
-        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-      - name: Create Python virtual environment
-        shell: bash
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -c "import sys; print(sys.executable)"
-
-      - name: Install packages for testing
-        shell: bash
-        run: |
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install --upgrade build wheel
-          pip install .[tests]
-
-      - name: Login to GitHub Packages
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
-        with:
-          registry: ghcr.io/ansys
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Start container
-        shell: bash
-        env:
-          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:261 --transport_insecure --host 0.0.0.0 -m 25000000
-
-      - name: Run pytest
-        shell: bash
-        run: |
-          . .venv/bin/activate
-          pytest -xs
-
-      - name: Upload Coverage Results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: coverage-html-ubuntu
-          path: .cov/html
-          retention-days: 7
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          files: .cov/xml
-
-      - name: Stop container
-        shell: bash
-        run: |
-          docker kill speos-rpc
-          docker rm speos-rpc
+    secrets:
+      LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    uses: ./.github/workflows/reusable-speos-tests.yml
 
   build-library:
     name: Build library

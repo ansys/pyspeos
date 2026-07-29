@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 """Provides a way to gather Speos features."""
 
 from __future__ import annotations
@@ -38,9 +39,11 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
+    AmbientCieStandardOvercastSkyParameters,
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AmbientUniformParameters,
+    AmbientUsStandardParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
@@ -51,7 +54,9 @@ from ansys.speos.core.generic.parameters import (
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
+    ObserverSensorParameters,
     OptPropParameters,
+    PolarIntensitySensorParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
@@ -73,6 +78,8 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorImmersive,
     SensorIrradiance,
+    SensorObserver,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -86,9 +93,11 @@ from ansys.speos.core.simulation import (
 from ansys.speos.core.source import (
     BaseSource,
     SourceAmbientCieStandardGeneralSky,
+    SourceAmbientCieStandardOvercastSky,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceAmbientUniform,
+    SourceAmbientUsStandard,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -218,7 +227,9 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
+            SourceAmbientUsStandard,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
         ]
@@ -251,6 +262,7 @@ class Project:
             SensorCamera,
             SensorImmersive,
             SensorIrradiance,
+            SensorPolarIntensity,
             SensorRadiance,
             SensorXMPIntensity,
         ]
@@ -263,6 +275,7 @@ class Project:
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
             List of sensor features.
@@ -370,7 +383,9 @@ class Project:
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
                 RayFileSourceParameters,
+                AmbientCieStandardOvercastSkyParameters,
                 AmbientNaturalLightParameters,
+                AmbientUsStandardParameters,
                 AmbientEnvironmentParameters,
                 AmbientUniformParameters,
                 AmbientCieStandardGeneralSkyParameters,
@@ -381,7 +396,9 @@ class Project:
         SourceSurface,
         SourceRayFile,
         SourceLuminaire,
+        SourceAmbientCieStandardOvercastSky,
         SourceAmbientNaturalLight,
+        SourceAmbientUsStandard,
         SourceAmbientEnvironment,
         SourceAmbientUniform,
         SourceAmbientCieStandardGeneralSky,
@@ -403,6 +420,7 @@ class Project:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceAmbientNaturalLight, \
+            ansys.speos.core.source.SourceAmbientUsStandard, \
             ansys.speos.core.source.SourceAmbientEnvironment, \
              ansys.speos.core.source.SourceAmbientUniform, \
             ansys.speos.core.source.SourceDisplay].
@@ -414,6 +432,7 @@ class Project:
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
+        ansys.speos.core.generic.parameters.AmbientUsStandardParameters,\
         ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
         ansys.speos.core.generic.parameters.AmbientUniformParameters,\
         ansys.speos.core.generic.parameters.DisplayParamaters]]
@@ -425,6 +444,7 @@ class Project:
         ansys.speos.core.source.SourceRayFile,\
         ansys.speos.core.source.SourceLuminaire,\
         ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientUsStandard,\
         ansys.speos.core.source.SourceAmbientEnvironment,\
         ansys.speos.core.source.SourceAmbientUniform,\
         ansys.speos.core.source.SourceDisplay]
@@ -531,6 +551,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceAmbientUsStandard":
+                if parameters is None:
+                    parameters = AmbientUsStandardParameters()
+                elif not isinstance(parameters, AmbientUsStandardParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientUsStandardParameters"
+                    )
+                feature = SourceAmbientUsStandard(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SourceAmbientUniform":
                 if parameters is None:
                     parameters = AmbientUniformParameters()
@@ -540,6 +575,22 @@ class Project:
                         f"{str(type(parameters))} instead of AmbientUniformParameters"
                     )
                 feature = SourceAmbientUniform(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SourceAmbientCieStandardOvercastSky":
+                if parameters is None:
+                    parameters = AmbientCieStandardOvercastSkyParameters()
+                elif not isinstance(parameters, AmbientCieStandardOvercastSkyParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of "
+                        f"AmbientCieStandardOvercastSkyParameters"
+                    )
+                feature = SourceAmbientCieStandardOvercastSky(
                     project=self,
                     name=name,
                     description=description,
@@ -568,7 +619,9 @@ class Project:
                         SourceSurface,
                         SourceLuminaire,
                         SourceRayFile,
+                        SourceAmbientCieStandardOvercastSky,
                         SourceAmbientNaturalLight,
+                        SourceAmbientUsStandard,
                         SourceAmbientEnvironment,
                         SourceAmbientUniform,
                         SourceAmbientCieStandardGeneralSky,
@@ -720,6 +773,8 @@ class Project:
                 Irradiance3DSensorParameters,
                 IntensityXMPSensorParameters,
                 ImmersiveSensorParameters,
+                ObserverSensorParameters,
+                PolarIntensitySensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -729,6 +784,8 @@ class Project:
         Sensor3DIrradiance,
         SensorXMPIntensity,
         SensorImmersive,
+        SensorObserver,
+        SensorPolarIntensity,
     ]:
         """Create a new Sensor feature.
 
@@ -747,7 +804,9 @@ class Project:
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
-            ansys.speos.core.sensor.SensorImmersive].
+            ansys.speos.core.sensor.SensorObserver, \
+            ansys.speos.core.sensor.SensorImmersive, \
+            ansys.speos.core.sensor.SensorPolarIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -757,7 +816,9 @@ class Project:
         ansys.speos.core.generic.parameters.CameraSensorParameters,\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
-        ansys.speos.core.generic.parameters.ImmersiveSensorParameters]]
+        ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
+        ansys.speos.core.generic.parameters.ObserverSensorParameters,\
+        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -765,7 +826,7 @@ class Project:
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
-        ansys.speos.core.sensor.SensorImmersive]
+        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -869,6 +930,36 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorObserver":
+                if parameters is None:
+                    parameters = ObserverSensorParameters()
+                elif not isinstance(parameters, ObserverSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of ObserverSensorParameters"
+                    )
+                feature = SensorObserver(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorPolarIntensity":
+                if parameters is None:
+                    parameters = PolarIntensitySensorParameters()
+                elif not isinstance(parameters, PolarIntensitySensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of PolarIntensitySensorParameters"
+                    )
+                feature = SensorPolarIntensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -879,6 +970,8 @@ class Project:
                         Sensor3DIrradiance,
                         SensorXMPIntensity,
                         SensorImmersive,
+                        SensorObserver,
+                        SensorPolarIntensity,
                     ],
                 )
                 raise TypeError(msg)
@@ -982,6 +1075,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientCieStandardOvercastSky,
             SourceAmbientNaturalLight,
             SourceAmbientEnvironment,
             SourceAmbientUniform,
@@ -990,6 +1084,7 @@ class Project:
             SensorCamera,
             Sensor3DIrradiance,
             SensorXMPIntensity,
+            SensorPolarIntensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
@@ -1027,6 +1122,7 @@ class Project:
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
+        ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
@@ -1416,8 +1512,22 @@ class Project:
                         source_instance=src_inst,
                         default_parameters=None,
                     )
+                elif src_inst.ambient_properties.HasField("us_standard_properties"):
+                    src_feat = SourceAmbientUsStandard(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
                 elif src_inst.ambient_properties.HasField("uniform_ambient_properties"):
                     src_feat = SourceAmbientUniform(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("cie_overcast_properties"):
+                    src_feat = SourceAmbientCieStandardOvercastSky(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
@@ -1480,8 +1590,22 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_parameters=None,
                 )
+            elif ssr_inst.HasField("polar_intensity_properties"):
+                ssr_feat = SensorPolarIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
             elif ssr_inst.HasField("immersive_properties"):
                 ssr_feat = SensorImmersive(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("observer_properties"):
+                ssr_feat = SensorObserver(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,

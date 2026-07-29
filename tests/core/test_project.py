@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,12 +29,18 @@ from unittest.mock import MagicMock
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
-from ansys.speos.core.generic.parameters import IrradianceSensorParameters, RadianceSensorParameters
+from ansys.speos.core.generic.parameters import (
+    IrradianceSensorParameters,
+    RadianceSensorParameters,
+)
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
+    SensorObserver,
+    SensorPolarIntensity,
     SensorRadiance,
     SensorXMPIntensity,
 )
@@ -610,12 +616,17 @@ def test_preview_visual_data(speos: Speos):
 @pytest.mark.supported_speos_versions(min=252)
 def test_creation_errors(speos: Speos):
     """Test to validate errors on sensor creation."""
-    p = Project(
-        speos=speos,
-        path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
-        ),
-    )
+    p = Project(speos=speos)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_sensor(name="test", feature_type=SourceSurface)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_source(name="test", feature_type=SensorRadiance)
+
+    with pytest.raises(TypeError, match="Requested feature"):
+        p.create_simulation(name="test", feature_type=SensorIrradiance)
+
     with pytest.raises(TypeError, match="Irradiance3DSensorParameters"):
         p.create_sensor(
             name="Sensor3D", feature_type=Sensor3DIrradiance, parameters=RadianceSensorParameters()
@@ -632,10 +643,23 @@ def test_creation_errors(speos: Speos):
             feature_type=SensorIrradiance,
             parameters=RadianceSensorParameters(),
         )
+    with pytest.raises(TypeError, match="PolarIntensitySensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorPolarIntensity,
+            parameters=RadianceSensorParameters(),
+        )
     with pytest.raises(TypeError, match="CameraSensorParameters"):
         p.create_sensor(
             name="irradiance_sensor",
             feature_type=SensorCamera,
+            parameters=RadianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="ObserverSensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorObserver,
             parameters=RadianceSensorParameters(),
         )
 
@@ -1023,34 +1047,37 @@ def test_change_loaded_mesh(speos: Speos):
     # no change happened
     # @todo if this fails server side bug has been fixed and temporary remove protection function
     # can be deprecated
-    assert face_1._face == orig_value
-    vertices = list(face_1._face.vertices)
-    for i, value in enumerate(face_1._face.vertices):
-        if (i + 2) % 3 == 0:
-            vertices[i] = 1
-    face_1._face.vertices[:] = vertices
-    face_1.commit()
-    assert face_1._face != orig_value
-    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    assert isinstance(sim, SimulationDirect)
-    sim.export(Path(test_path) / "changed_with_removed_protection")
+    if not server_version_checker.is_version_supported(2026, 1, 3):
+        assert face_1._face == orig_value
+        vertices = list(face_1._face.vertices)
+        for i, value in enumerate(face_1._face.vertices):
+            if (i + 2) % 3 == 0:
+                vertices[i] = 1
+        face_1._face.vertices[:] = vertices
+        face_1.commit()
+        assert face_1._face != orig_value
+        sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+        assert isinstance(sim, SimulationDirect)
+        sim.export(Path(test_path) / "changed_with_removed_protection")
 
-    # clean up
-    clean_all_dbs(speos.client)
-    p = Project(
-        speos=speos,
-        path=str(
-            Path(test_path)
-            / "changed_with_removed_protection"
-            / "MeshChange.speos"
-            / "MeshChange.speos"
-        ),
-    )
-    p.remove_mesh_protection()
-    body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
-    assert isinstance(body_1, Body)
-    face_1 = body_1._geom_features[0]
-    assert isinstance(face_1, Face)
+        # clean up
+        clean_all_dbs(speos.client)
+        p = Project(
+            speos=speos,
+            path=str(
+                Path(test_path)
+                / "changed_with_removed_protection"
+                / "MeshChange.speos"
+                / "MeshChange.speos"
+            ),
+        )
+        p.remove_mesh_protection()
+        body_1 = p.find(name=".*", name_regex=True, feature_type=Body)[0]
+        assert isinstance(body_1, Body)
+        face_1 = body_1._geom_features[0]
+        assert isinstance(face_1, Face)
 
-    # validate that with remove protection change did happen
-    assert face_1._face != orig_value
+        # validate that with remove protection change did happen
+        assert face_1._face != orig_value
+    else:
+        assert face_1._face != orig_value

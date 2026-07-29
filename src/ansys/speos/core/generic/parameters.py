@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -264,6 +264,8 @@ class PhotometricCameraParameters:
     """Gamma correction Value for the Camera Sensor."""
     transmittance_file_uri: Union[str, Path] = ""
     """Transmittance spectrum location"""
+    consider_diffraction_effects: bool = False
+    """Enable diffraction effects in the Camera Sensor. Available in Speos 0.16.3+."""
 
 
 @dataclass
@@ -498,6 +500,81 @@ class IntensityXMPSensorParameters:
     """Parameters used when the sensor is near field."""
 
 
+class PolarIntensityFormatTypes(str, Enum):
+    """Polar intensity sensor format types."""
+
+    iesna_a = "iesna_a"
+    """Generate an IESNA type A photometric file."""
+    iesna_b = "iesna_b"
+    """Generate an IESNA type B photometric file."""
+    iesna_c = "iesna_c"
+    """Generate an IESNA type C photometric file."""
+    eulumdat = "eulumdat"
+    """Generate an Eulumdat photometric file."""
+
+
+@dataclass
+class PolarIntensityDimensionsParameters:
+    """Dimensions (sampling) for a polar intensity sensor.
+
+    Parameters
+    ----------
+    horizontal_sampling : int, optional
+        Number of horizontal samples of the intensity file (IESNA or EULUMDAT).
+        By default, ``720``.
+    vertical_sampling : int, optional
+        Number of vertical samples of the intensity file (IESNA or EULUMDAT).
+        By default, ``361``.
+    """
+
+    horizontal_sampling: int = 720
+    """Number of horizontal samples."""
+    vertical_sampling: int = 361
+    """Number of vertical samples."""
+
+
+IESNA_A_B_DIMENSIONS = PolarIntensityDimensionsParameters(37, 37)
+
+
+@dataclass
+class PolarIntensitySensorParameters:
+    """Parameters for :class:`~ansys.speos.core.sensor.SensorPolarIntensity`.
+
+    Parameters
+    ----------
+    format : PolarIntensityFormatTypes, optional
+        Output file format. Accepted values: ``"iesna_a"``, ``"iesna_b"``,
+        ``"iesna_c"``, ``"eulumdat"``.
+        By default, ``PolarIntensityFormatTypes.iesna_c``.
+    dimensions : Union[PolarIntensityDimensionsParameters, str, Path], optional
+        Either explicit horizontal/vertical sampling (``PolarIntensityDimensionsParameters``)
+        or a path to an adaptive-sampling file (``str``).
+        By default, ``PolarIntensityDimensionsParameters()``.
+    near_field : Optional[NearfieldParameters], optional
+        Near-field configuration. When ``None``, the sensor is in far-field mode.
+        By default, ``None``.
+    integration_angle : float, optional
+        Far-field integration angle in degrees. Used only when ``near_field`` is ``None``.
+        By default, ``5.0``.
+    axis_system : list[float], optional
+        Position of the sensor ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    """
+
+    format: PolarIntensityFormatTypes = PolarIntensityFormatTypes.iesna_c
+    """Output file format."""
+    dimensions: Union[PolarIntensityDimensionsParameters, str, Path] = field(
+        default_factory=PolarIntensityDimensionsParameters
+    )
+    """Sampling definition: explicit dimensions or adaptive-sampling file URI."""
+    near_field: Optional[NearfieldParameters] = None
+    """Near-field parameters. ``None`` means far-field mode."""
+    integration_angle: float = 1.0
+    """Far-field integration angle in degrees."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+
+
 @dataclass
 class ImmersiveSensorParameters:
     """Parameters for :class:`~ansys.speos.core.sensor.SensorImmersive`.
@@ -569,6 +646,99 @@ class ImmersiveSensorParameters:
     """Exclude bottom face."""
     interocular_distance: Optional[float] = None
     """Distance between viewpoints in mm."""
+
+
+@dataclass
+class AngularRangeParameters:
+    """Parameters for angular range configuration of Observer sensor locations.
+
+    Parameters
+    ----------
+    x_start : float, optional
+        Horizontal start angle in degrees. By default, ``-45``.
+    x_end : float, optional
+        Horizontal end angle in degrees. By default, ``45``.
+    x_sampling : int, optional
+        Horizontal angle sampling. By default, ``5``.
+    y_start : float, optional
+        Vertical start angle in degrees. By default, ``-30``.
+    y_end : float, optional
+        Vertical end angle in degrees. By default, ``30``.
+    y_sampling : int, optional
+        Vertical angle sampling. By default, ``3``.
+    """
+
+    x_start: float = -45.0
+    """Horizontal start angle in degrees."""
+    x_end: float = 45.0
+    """Horizontal end angle in degrees."""
+    x_sampling: int = 5
+    """Horizontal angle sampling."""
+    y_start: float = -30.0
+    """Vertical start angle in degrees."""
+    y_end: float = 30.0
+    """Vertical end angle in degrees."""
+    y_sampling: int = 3
+    """Vertical angle sampling."""
+
+
+@dataclass
+class ObserverSensorParameters:
+    """Parameters for SensorObserver.
+
+    Parameters
+    ----------
+    focal : float, optional
+        Distance between the sensor radiance plan and the observer point in mm.
+        The larger the focal, the closer to the object.
+        By default, ``50.0``.
+    integration_angle : float, optional
+        Integration angle in degrees for direct simulations.
+        By default, ``5.0``.
+    wavelengths_range : ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
+        Spectral range to use for simulation.
+        By default, a range from 400nm to 700nm with sampling of 13.
+    dimensions : ansys.speos.core.generic.parameters.DimensionsParameters, optional
+        Dimensions of the sensor.
+        By default, ``x_start=-50``, ``x_end=50``, ``y_start=-50``, ``y_end=50``.
+    distance : float, optional
+        Radius of the sphere on which the sensors will be placed in mm.
+        By default, ``1000.0``.
+    sensors_locations : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+        Locations of the sensors on the sphere.
+        By default, horizontal range from -180 to 180 degrees with 9 sampling,
+        vertical range from -90 to 90 degrees with 9 sampling.
+    interocular_distance : float, optional
+        Distance between the left and right eyes for stereo mode in mm.
+        By default, None (stereo disabled).
+    axis_system : list[float], optional
+        Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
+    """
+
+    focal: float = 50.0
+    """Distance between sensor radiance plan and observer point in mm."""
+    integration_angle: float = 5.0
+    """Integration angle in degrees."""
+    wavelengths_range: WavelengthsRangeParameters = field(
+        default_factory=WavelengthsRangeParameters
+    )
+    """Spectral range."""
+    dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
+    """Sensor dimensions."""
+    distance: float = 1000.0
+    """Radius of sphere where sensors are placed in mm."""
+    sensors_locations: AngularRangeParameters = field(default_factory=AngularRangeParameters)
+    """Angular locations of sensors on the sphere."""
+    interocular_distance: Optional[float] = None
+    """Distance between viewpoints in mm for stereo mode."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
 
 
 # =============================================================================
@@ -897,6 +1067,20 @@ class AmbientCieStandardGeneralSkyParameters:
 
 
 @dataclass
+class AmbientCieStandardOvercastSkyParameters:
+    """Ambient CIE Standard Overcast Sky Parameters."""
+
+    luminance: float = 1000.0
+    """Luminance value in cd/m^2."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    spectrum_type: Union[SpectrumLibraryParameters, SpectrumBlackBodyParameters] = field(
+        default_factory=SpectrumBlackBodyParameters
+    )
+    """Spectrum type for the overcast ambient source (blackbody or library spectra only)."""
+
+
+@dataclass
 class AmbientNaturalLightParameters:
     """Ambient Natural Light Parameters."""
 
@@ -904,6 +1088,20 @@ class AmbientNaturalLightParameters:
     """Whether the sky contribution is enabled."""
     turbidity: float = 3.0
     """Atmospheric turbidity value."""
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector."""
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+    """Sun definition, automatic or manual."""
+
+
+@dataclass
+class AmbientUsStandardParameters:
+    """Ambient U.S. Standard Parameters."""
+
     zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
     """Zenith direction vector."""
     north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])

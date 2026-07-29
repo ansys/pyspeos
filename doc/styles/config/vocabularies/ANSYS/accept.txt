@@ -11,3 +11,5 @@ Solver
 untrusted
 Zemax
 SpeosRPC
+synopsys
+Synopsys

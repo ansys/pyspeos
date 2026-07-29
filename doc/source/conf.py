@@ -152,6 +152,7 @@ if BUILD_EXAMPLES:
         "examples/kernel/scene-job": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/modify-scene": "_static/thumbnails/pySpeos_520x520.png",
         "examples/workflow/open-result": "_static/thumbnails/workflow_open_result.png",
+        "examples/workflow/export-vtp": "_static/thumbnails/vtp_520x520.png",
         "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
     }
     nbsphinx_prompt_width = ""
