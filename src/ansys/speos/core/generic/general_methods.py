@@ -244,13 +244,11 @@ def retrieve_speos_install_dir(
         installations = get_available_ansys_installations()  # {261: 'C:\\...\\v261', ...}
         ansys_loc = (
             installations.get(int(version))  # dict keys are int
-            or os.environ.get(f"AWP_ROOT{version}")  # fallback: env var
+            or os.environ.get(f"AWP_ROOT{version}", "")  # fallback: env var
         )
-        if ansys_loc:
-            path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
-        else:
+        path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
+        if not ansys_loc:
             error_no_install(speos_rpc_path or "<unset>", int(version))
-            path = Path()  # for type checker; this line is never reached
 
     # --- verify executable exists -----------------------------------------
     speos_exec = path / ("SpeosRPC_Server.exe" if os.name == "nt" else "SpeosRPC_Server.x")
@@ -273,6 +271,12 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> Tuple[int, int, 
     gamma : float
         Gamma value.
         By default : ``0.8``
+
+    Returns
+    -------
+    Tuple[int, int, int, int]
+        A tuple representing the RGBA color value, where each component is an integer in the range
+        0-255.
     """
     wavelength = float(wavelength)
     if 380 <= wavelength <= 440:
