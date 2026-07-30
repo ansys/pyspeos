@@ -1742,7 +1742,10 @@ class SensorCamera(BaseSensor):
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
-                self.consider_diffraction_effects = default_parameters.consider_diffraction_effects
+                if self._mode_photometric.HasField("consider_diffraction_effects"):
+                    self.consider_diffraction_effects = (
+                        default_parameters.consider_diffraction_effects
+                    )
                 if default_parameters.transmittance_file_uri:
                     self.transmittance_file_uri = default_parameters.transmittance_file_uri
                 match default_parameters.png_bits:
