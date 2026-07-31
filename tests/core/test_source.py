@@ -2087,21 +2087,26 @@ def test_create_thermic_source(speos: Speos):
             parameters=AmbientEnvironmentParameters(),
         )
 
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_thermic_source(speos: Speos):
     # test loading
     p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceThermicTests.speos")
 
-    source4 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
-    assert source4._intensity.set_cos().n == 1
-    assert source4._intensity.set_cos().total_angle == 180
-    assert source4.emittance_type.temperature == 2000.0
+    source1 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
+    assert source1._intensity.set_cos().n == 1
+    assert source1._intensity.set_cos().total_angle == 180
+    assert source1.emittance_type.temperature == 2000.0
 
-    source5 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
-    assert source5._intensity.set_cos().n == 1
-    assert source5._intensity.set_cos().total_angle == 180
-    assert source5.emittance_type.temperature_field_uri == str(
+    source2 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
+    assert source2._intensity.set_cos().n == 3
+    assert source2._intensity.set_cos().total_angle == 180
+    assert source2.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
-    assert source5.emittance_type.sop.sop_mirror.reflectance == 0
+    assert source2.emittance_type.sop.sop_library.file_uri == str(
+        Path(test_path) / "Source.speos" / "Abs10_8f93-e71a-7190-73b2..simplescattering"
+    )
 
 
 def test_keep_same_internal_feature(speos: Speos):

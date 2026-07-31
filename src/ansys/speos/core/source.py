@@ -70,7 +70,7 @@ from ansys.speos.core.generic.parameters import (
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
-    WhitePointType,
+    WhitePointType, EmissiveFacesParameters,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
@@ -2409,7 +2409,7 @@ class SourceThermic(BaseSource):
             self,
             emissive_faces,
             emissive_faces_props,
-            default_values: bool = True,
+            default_parameters: Optional[EmissiveFacesParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -2417,10 +2417,16 @@ class SourceThermic(BaseSource):
                 raise RuntimeError(msg)
             self._emissive_faces = emissive_faces
             self._emissive_faces_props = emissive_faces_props
-            if default_values:
-                self._emissive_faces.SetInParent()
-                self.temperature = 2000
-                self.geometries = []
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[EmissiveFacesParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+
+            self.geometries = default_parameters.emissive_faces
+            self.temperature = default_parameters.temperature
 
         @property
         def temperature(self) -> float:
@@ -2539,14 +2545,7 @@ class SourceThermic(BaseSource):
                     mat_inst=None,
                     stable_ctr=True,
                 )
-                if self._sop_template.HasField("mirror"):
-                    self._sop.set_surface_mirror().reflectance = (
-                        self._sop_template.mirror.reflectance
-                    )
-                elif self._sop_template.HasField("library"):
-                    self._sop.set_surface_library().file_uri = (
-                        self._sop_template.library.sop_file_uri
-                    )
+                self._sop._sync_sop_properties()
             else:
                 self._sop_template = ProtoSOPTemplate(
                     name=name + ".SOP", description="", metadata={}
@@ -2692,32 +2691,11 @@ class SourceThermic(BaseSource):
         # Emittance
         match type(default_parameters.emittance_type).__name__:
             case "EmissiveFacesParameters":
-                self.set_emissive_faces().geometries = (
-                    default_parameters.emittance_type.emissive_faces
-                )
-                self.set_emissive_faces().temperature = (
-                    default_parameters.emittance_type.temperature
-                )
+                ef = self.set_emissive_faces()
+                ef._fill_parameters(default_parameters.emittance_type)
             case "TemperatureFieldParameters":
                 tf = self.set_temperature_field()
-                tf.temperature_field_uri = default_parameters.emittance_type.temperature_field_uri
-                tf.axis_plane = default_parameters.emittance_type.axis_system
-
-                match type(default_parameters.emittance_type.sop).__name__:
-                    case "SopMirrorParameters":
-                        tf.sop.set_surface_mirror().reflectance = (
-                            default_parameters.emittance_type.sop.reflectance
-                        )
-                    case "SopLibraryParameters":
-                        tf.sop.set_surface_library().file_uri = (
-                            default_parameters.emittance_type.sop.file_uri
-                        )
-                    case _:
-                        raise ValueError(
-                            "Unsupported SOP type: {}".format(
-                                type(default_parameters.emittance_type.sop).__name__
-                            )
-                        )
+                tf._fill_parameters(default_parameters.emittance_type)
             case _:
                 raise ValueError(
                     "Unsupported emittance type: {}".format(
@@ -2759,7 +2737,7 @@ class SourceThermic(BaseSource):
             self._exitance_type = SourceThermic.EmissiveFaces(
                 emissive_faces=self._source_template.thermic.emissives_faces,
                 emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._exitance_type, SourceThermic.EmissiveFaces):
@@ -2830,7 +2808,7 @@ class SourceThermic(BaseSource):
                 self._exitance_type = SourceThermic.EmissiveFaces(
                     emissive_faces=self._source_template.thermic.emissives_faces,
                     emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
-                    default_values=False,
+                    default_parameters=None,
                     stable_ctr=True,
                 )
             elif (
