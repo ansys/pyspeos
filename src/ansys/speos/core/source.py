@@ -2532,25 +2532,28 @@ class SourceThermic(BaseSource):
             self._project = project
             self._temperature_field = temperature_field
             self._temperature_field_props = temperature_field_props
-
             if self._temperature_field.sop_guid != "":
                 self._sop_template = self._project.client[temperature_field.sop_guid].get()
+                self._sop = BaseSop(
+                    sop_template=self._sop_template,
+                    mat_inst=None,
+                    stable_ctr=True,
+                )
+                if self._sop_template.HasField("mirror"):
+                    self._sop.set_surface_mirror().reflectance = self._sop_template.mirror.reflectance
+                elif self._sop_template.HasField("library"):
+                    self._sop.set_surface_library().file_uri = self._sop_template.library.sop_file_uri
             else:
                 self._sop_template = ProtoSOPTemplate(
                     name=name + ".SOP", description="", metadata={}
                 )
-                # self._opt_prop = OptProp(
-                #     project=self._project, name=name + ".SOP", description='', metadata={}
-                # )
-                # self._sop_template = self._opt_prop.sop_template_link
-                # self._sop_template.mirror.reflectance = 0
-            self._sop = BaseSop(
-                sop_template=self._sop_template,
-                mat_inst=None,
-                sop_parameters=SopMirrorParameters(),
-                stable_ctr=True,
-            )
-            self._sop.set_surface_mirror().reflectance = 0
+                self._sop = BaseSop(
+                    sop_template=self._sop_template,
+                    mat_inst=None,
+                    sop_parameters=SopMirrorParameters(),
+                    stable_ctr=True,
+                )
+                self._sop.set_surface_mirror().reflectance = 0
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(
@@ -2813,6 +2816,45 @@ class SourceThermic(BaseSource):
                 self._source_instance.thermic_properties.temperature_field_properties
             )
         return self._exitance_type
+
+
+    @property
+    def emittance_type(self) -> Union[SourceThermic.EmissiveFaces, SourceThermic.TemperatureField]:
+        """return emittance type of thermic source."""
+        if self._source_template.thermic.HasField("emissives_faces"):
+            if self._exitance_type is None:
+                # Happens in case of project created via load of speos file
+                self._exitance_type = SourceThermic.EmissiveFaces(
+                    emissive_faces=self._source_template.thermic.emissives_faces,
+                    emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
+                    default_values=False,
+                    stable_ctr=True,
+                )
+            elif self._exitance_type._emissive_faces is not self._source_template.thermic.emissives_faces:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._exitance_type._emissive_faces = self._source_template.thermic.emissives_faces
+                self._exitance_type._emissive_faces_props = (
+                    self._source_instance.thermic_properties.emissive_faces_properties
+                )
+        elif self._source_template.thermic.HasField("temperature_field"):
+            if self._exitance_type is None:
+                # Happens in case of project created via load of speos file
+                self._exitance_type = SourceThermic.TemperatureField(
+                    name=self._name,
+                    project=self._project,
+                    temperature_field=self._source_template.thermic.temperature_field,
+                    temperature_field_props=self._source_instance.thermic_properties.temperature_field_properties,
+                    default_parameters=None,
+                    stable_ctr=True,
+                )
+            elif self._exitance_type._temperature_field is not self._source_template.thermic.temperature_field:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._exitance_type._temperature_field = self._source_template.thermic.temperature_field
+                self._exitance_type._temperature_field_props = (
+                    self._source_instance.thermic_properties.temperature_field_properties
+                )
+        return self._exitance_type
+
 
     def commit(self) -> SourceThermic:
         """Save feature: send the local data to the speos server database.

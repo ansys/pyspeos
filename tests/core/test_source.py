@@ -1971,9 +1971,9 @@ def test_create_thermic_source(speos: Speos):
     assert thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal is False
 
     # change temperature
-    source1.set_emissive_faces().temperature = 5000
+    source1.emittance_type.temperature = 5000
     source1.commit()
-    assert source1.set_emissive_faces().temperature == 5000
+    assert source1.emittance_type.temperature == 5000
     assert source1.source_template_link.get().thermic.HasField("emissives_faces")
     assert source1.source_template_link.get().thermic.emissives_faces.temperature == 5000
 
@@ -1982,20 +1982,20 @@ def test_create_thermic_source(speos: Speos):
         Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
     )
     source1.commit()
-    assert source1.set_temperature_field().temperature_field_uri == str(
+    assert source1.emittance_type.temperature_field_uri == str(
         Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
     )
     assert source1.source_template_link.get().thermic.HasField("temperature_field")
     assert source1.source_template_link.get().thermic.temperature_field.temperature_field_uri != ""
     assert thermic_properties.HasField("temperature_field_properties")
     assert thermic_properties.temperature_field_properties.axis_plane == ORIGIN[:9]
-    assert source1.set_temperature_field().sop.sop_mirror.reflectance == 0
+    assert source1.emittance_type.sop.sop_mirror.reflectance == 0
 
     # Properties
     # temperature field axis_plane
-    source1.set_temperature_field().axis_plane = [10, 10, 15, 1, 0, 0, 0, 1, 0]
+    source1.emittance_type.axis_plane = [10, 10, 15, 1, 0, 0, 0, 1, 0]
     source1.commit()
-    assert source1.set_temperature_field().axis_plane == [10, 10, 15, 1, 0, 0, 0, 1, 0]
+    assert source1.emittance_type.axis_plane == [10, 10, 15, 1, 0, 0, 0, 1, 0]
     assert thermic_properties.HasField("temperature_field_properties")
     assert thermic_properties.temperature_field_properties.axis_plane == [
         10,
@@ -2010,14 +2010,14 @@ def test_create_thermic_source(speos: Speos):
     ]
 
     # sop properties
-    source1.set_temperature_field().sop.sop_mirror.reflectance = 50
+    source1.emittance_type.sop.sop_mirror.reflectance = 50
     source1.commit()
-    assert source1.set_temperature_field().sop.sop_mirror.reflectance == 50
-    source1.set_temperature_field().sop.set_surface_library().file_uri = (
+    assert source1.emittance_type.sop.sop_mirror.reflectance == 50
+    source1.emittance_type.sop.set_surface_library().file_uri = (
         Path(test_path) / "R_test.anisotropicbsdf"
     )
     source1.commit()
-    assert source1.set_temperature_field().sop.sop_library.file_uri == str(
+    assert source1.emittance_type.sop.sop_library.file_uri == str(
         Path(test_path) / "R_test.anisotropicbsdf"
     )
     source1.delete()
@@ -2093,15 +2093,15 @@ def test_create_thermic_source(speos: Speos):
     source4 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
     assert source4._intensity.set_cos().n == 1
     assert source4._intensity.set_cos().total_angle == 180
-    assert source4.set_emissive_faces().temperature == 2000.0
+    assert source4.emittance_type.temperature == 2000.0
 
     source5 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
     assert source5._intensity.set_cos().n == 1
     assert source5._intensity.set_cos().total_angle == 180
-    assert source5.set_temperature_field().temperature_field_uri == str(
+    assert source5.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
-    assert source5.set_temperature_field().sop.sop_mirror.reflectance == 0
+    assert source5.emittance_type.sop.sop_mirror.reflectance == 0
 
 
 def test_keep_same_internal_feature(speos: Speos):
