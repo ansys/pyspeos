@@ -52,6 +52,7 @@ from ansys.speos.core.generic.parameters import (
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
+    EmissiveFacesParameters,
     FluxFromFileParameters,
     IntensityFluxParameters,
     IntensityOrientationType,
@@ -70,7 +71,7 @@ from ansys.speos.core.generic.parameters import (
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
-    WhitePointType, EmissiveFacesParameters,
+    WhitePointType,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
