@@ -42,7 +42,7 @@ jobs:
     permissions:
       contents: read   # Required to read repository content for vulnerability scanning
     steps:
-      - uses: ansys/actions/check-vulnerabilities@d946b24b9a765f4169bcc94afdb27bd1a0533741 # v10.3.2
+      - uses: ansys/actions/check-vulnerabilities@244028c6311885d559e18453642a5fa820d6360d # zizmor: ignore[stale-action-refs]
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           python-package-name: ${{ env.PACKAGE_NAME }}
@@ -102,7 +102,6 @@ jobs:
             --exclude src/ansys/speos/core/simulation.py \
             --exclude src/ansys/speos/core/sensor.py \
             --exclude src/ansys/speos/core/__init__.py \
-            --exclude src/ansys/speos/core/generic \
             --exclude src/ansys/speos/core/kernel \
             --exclude src/ansys/speos/core/workflow \
             --exclude examples/core \

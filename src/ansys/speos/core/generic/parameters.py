@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 import datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
@@ -139,7 +139,7 @@ class LayerBySequenceParameters:
 
     maximum_nb_of_sequence: int = 10
     """Maximum number of sequences stored in the Speos result file."""
-    sequence_type: Union[SequenceTypes.by_face, SequenceTypes.by_geometry] = (
+    sequence_type: Union[Literal[SequenceTypes.by_face], Literal[SequenceTypes.by_geometry]] = (
         SequenceTypes.by_geometry
     )
     """Defines how sequences are calculated"""
@@ -162,7 +162,7 @@ class LayerByFaceParameters:
     geometries: Optional[list[GeometryLayerParameters]] = None
     """List of Geometry Layers"""
     sca_filtering_types: Union[
-        SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
+        Literal[SCAFilteringTypes.intersected_one_time], Literal[SCAFilteringTypes.last_impact]
     ] = SCAFilteringTypes.last_impact
     """Defines how result data is filtered."""
 
@@ -220,8 +220,8 @@ class ColorParameters:
     """Camera Color Mode Parameters."""
 
     balance_mode: Union[
-        ColorBalanceModeTypes.none,
-        ColorBalanceModeTypes.grey_world,
+        Literal[ColorBalanceModeTypes.none],
+        Literal[ColorBalanceModeTypes.grey_world],
         BalanceModeUserWhiteParameters,
         BalanceModeDisplayPrimariesParameters,
     ] = ColorBalanceModeTypes.none
@@ -250,7 +250,7 @@ class PhotometricCameraParameters:
         default_factory=ColorParameters
     )
     """Color mode of the Camera Sensor."""
-    layer_type: Union[LayerTypes.none, LayerTypes.by_source] = LayerTypes.none
+    layer_type: Union[Literal[LayerTypes.none], Literal[LayerTypes.by_source]] = LayerTypes.none
     """Layer separation parameter."""
     png_bits: PngBits = PngBits.png_16
     """PNG bit resolution of the Camera Sensor."""
@@ -379,7 +379,10 @@ class IrradianceSensorParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     sensor_type: Union[
-        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+        Literal[SensorTypes.photometric],
+        Literal[SensorTypes.radiometric],
+        ColorimetricParameters,
+        SpectralParameters,
     ] = SensorTypes.photometric
     """Type of the sensor."""
     integration_type: IntegrationTypes = IntegrationTypes.planar
@@ -389,9 +392,9 @@ class IrradianceSensorParameters:
     rayfile_type: Union[RayfileTypes] = RayfileTypes.none
     """Type of rayfile stored by the sensor."""
     layer_type: Union[
-        LayerTypes.none,
-        LayerTypes.by_source,
-        LayerTypes.by_polarization,
+        Literal[LayerTypes.none],
+        Literal[LayerTypes.by_source],
+        Literal[LayerTypes.by_polarization],
         LayerByFaceParameters,
         LayerBySequenceParameters,
         LayerByIncidenceAngleParameters,
@@ -410,7 +413,10 @@ class RadianceSensorParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     sensor_type: Union[
-        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+        Literal[SensorTypes.photometric],
+        Literal[SensorTypes.radiometric],
+        ColorimetricParameters,
+        SpectralParameters,
     ] = SensorTypes.photometric
     """Type of the sensor."""
     focal_length: float = 250.0
@@ -421,8 +427,8 @@ class RadianceSensorParameters:
     observer: Union[None, list[float]] = None
     """The position of the observer point."""
     layer_type: Union[
-        LayerTypes.none,
-        LayerTypes.by_source,
+        Literal[LayerTypes.none],
+        Literal[LayerTypes.by_source],
         LayerByFaceParameters,
         LayerBySequenceParameters,
     ] = LayerTypes.none
@@ -433,19 +439,19 @@ class RadianceSensorParameters:
 class Irradiance3DSensorParameters:
     """Parameters class for 3D Irradiance Sensor."""
 
-    sensor_type: Union[SensorTypes.photometric, ColorimetricParameters, SensorTypes.radiometric] = (
-        SensorTypes.photometric
-    )
+    sensor_type: Union[
+        Literal[SensorTypes.photometric], ColorimetricParameters, Literal[SensorTypes.radiometric]
+    ] = SensorTypes.photometric
     """Type of the sensor."""
     measures: MeasuresParameters = field(default_factory=MeasuresParameters)
     """Measurement activation state."""
-    integration_type: Union[IntegrationTypes.planar, IntegrationTypes.radial] = (
+    integration_type: Union[Literal[IntegrationTypes.planar], Literal[IntegrationTypes.radial]] = (
         IntegrationTypes.planar
     )
     """Integration type."""
     rayfile_type: Union[RayfileTypes] = RayfileTypes.none
     """Rayfile type stored."""
-    layer_type: Union[LayerTypes.none, LayerTypes.by_source] = LayerTypes.none
+    layer_type: Union[Literal[LayerTypes.none], Literal[LayerTypes.by_source]] = LayerTypes.none
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
@@ -482,7 +488,10 @@ class IntensityXMPSensorParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     sensor_type: Union[
-        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+        Literal[SensorTypes.photometric],
+        ColorimetricParameters,
+        SpectralParameters,
+        Literal[SensorTypes.radiometric],
     ] = SensorTypes.photometric
     """Type of the sensor."""
     orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
@@ -490,8 +499,8 @@ class IntensityXMPSensorParameters:
     viewing_direction: IntensitySensorViewingTypes = IntensitySensorViewingTypes.from_source
     """Viewing direction used for the result."""
     layer_type: Union[
-        LayerTypes.none,
-        LayerTypes.by_source,
+        Literal[LayerTypes.none],
+        Literal[LayerTypes.by_source],
         LayerByFaceParameters,
         LayerBySequenceParameters,
     ] = LayerTypes.none
