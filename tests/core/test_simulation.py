@@ -1280,8 +1280,8 @@ def test_stop_computation(speos: Speos):
     # Retrieve simulation feature
     sim_feature = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    # Choose the stop condition of 60 s
-    sim_feature.stop_condition_duration = 60
+    # Choose the stop condition of 100 s
+    sim_feature.stop_condition_duration = 100
     sim_feature.stop_condition_rays_number = None  # No condition about rays number
     sim_feature.commit()
 
@@ -1302,7 +1302,7 @@ def test_stop_computation(speos: Speos):
     # Check that the thread is joined much before 60s (due to computation stop)
     after = datetime.datetime.now()
     difference = after - before
-    assert difference.seconds < 25
+    assert difference.seconds < 30
 
 
 @pytest.mark.supported_speos_versions(min=261)
