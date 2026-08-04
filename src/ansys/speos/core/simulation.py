@@ -869,16 +869,14 @@ class BaseSimulation:
             case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
                 return TextureNormalizationTypes.color_from_bsdf
 
-    def set_texture_normalization_unspecified(self) -> BaseSimulation:
-        """Set texture normalization to unspecified."""
+    def set_texture_disabled(self) -> BaseSimulation:
+        """Disable texture handling."""
         template = getattr(self._simulation_template, self._template_class)
-        template.texture.texture_normalization = (
-            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
-        )
+        template.ClearField("texture")
         return self
 
     def set_texture_normalization_none(self) -> BaseSimulation:
-        """Disable texture normalization."""
+        """Use both the image texture and the texture mapping optical properties."""
         template = getattr(self._simulation_template, self._template_class)
         template.texture.texture_normalization = (
             simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
