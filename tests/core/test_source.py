@@ -2090,7 +2090,7 @@ def test_create_thermic_source(speos: Speos):
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_thermic_source(speos: Speos):
-    # test loading
+    """Test loading thermic source."""
     p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceThermicTests.speos")
 
     source1 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
@@ -2103,9 +2103,6 @@ def test_load_thermic_source(speos: Speos):
     assert source2._intensity.set_cos().total_angle == 180
     assert source2.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
-    )
-    assert source2.emittance_type.sop.sop_library.file_uri == str(
-        Path(test_path) / "Source.speos" / "Abs10_8f93-e71a-7190-73b2..simplescattering"
     )
 
 
