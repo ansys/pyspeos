@@ -58,6 +58,7 @@ from ansys.speos.core.generic.parameters import (
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
+    SopLibraryParameters,
     SopMirrorParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
@@ -2087,6 +2088,67 @@ def test_create_thermic_source(speos: Speos):
             parameters=AmbientEnvironmentParameters(),
         )
 
+    # test inner class guard: EmissiveFaces and TemperatureField must not be instantiated directly
+    with pytest.raises(
+        RuntimeError, match="EmissiveFaces class instantiated outside of class scope"
+    ):
+        SourceThermic.EmissiveFaces(emissive_faces=None, emissive_faces_props=None)
+    with pytest.raises(
+        RuntimeError, match="TemperatureField class instantiated outside of class scope"
+    ):
+        SourceThermic.TemperatureField(
+            name="x", project=None, temperature_field=None, temperature_field_props=None
+        )
+
+    # test TypeError for unsupported geometry type in EmissiveFaces.geometries setter
+    source_ef_err = p.create_source(name="Thermic.GeoErr", feature_type=SourceThermic)
+    with pytest.raises(TypeError, match="is not supported as Surface Source geometry input"):
+        source_ef_err.set_emissive_faces().geometries = [("unsupported_string", False)]
+    source_ef_err.delete()
+
+    # test ValueError for invalid emittance type in _fill_parameters
+    bad_emittance_params = ThermicSourceParameters()
+    bad_emittance_params.emittance_type = IntensityLambertianParameters()
+    with pytest.raises(ValueError, match="Unsupported emittance type"):
+        p.create_source(
+            name="Thermic.BadEmittance", feature_type=SourceThermic, parameters=bad_emittance_params
+        )
+
+    # test ValueError for invalid intensity type in _fill_parameters
+    bad_intensity_params = ThermicSourceParameters()
+    bad_intensity_params.intensity_type = SopMirrorParameters()
+    with pytest.raises(ValueError, match="Unsupported intensity type"):
+        p.create_source(
+            name="Thermic.BadIntensity", feature_type=SourceThermic, parameters=bad_intensity_params
+        )
+
+    # test ValueError for unsupported SOP type in TemperatureField._fill_parameters
+    source_invalid_sop = p.create_source(name="Thermic.InvalidSop", feature_type=SourceThermic)
+    tf_invalid = source_invalid_sop.set_temperature_field()
+    invalid_sop_params = TemperatureFieldParameters()
+    invalid_sop_params.sop = IntensityLambertianParameters()
+    with pytest.raises(ValueError, match="Unsupported SOP type"):
+        tf_invalid._fill_parameters(invalid_sop_params)
+    source_invalid_sop.delete()
+
+    # test TemperatureFieldParameters with SopLibraryParameters
+    sop_lib_params = ThermicSourceParameters()
+    sop_lib_params.emittance_type = TemperatureFieldParameters()
+    sop_lib_params.emittance_type.temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    sop_lib_params.emittance_type.sop = SopLibraryParameters(
+        file_uri=Path(test_path) / "R_test.anisotropicbsdf"
+    )
+    source_sop_lib = p.create_source(
+        name="Thermic.SopLib", feature_type=SourceThermic, parameters=sop_lib_params
+    )
+    source_sop_lib.commit()
+    assert source_sop_lib.emittance_type.sop.sop_library.file_uri == str(
+        Path(test_path) / "R_test.anisotropicbsdf"
+    )
+    source_sop_lib.delete()
+
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_thermic_source(speos: Speos):
@@ -2097,6 +2159,10 @@ def test_load_thermic_source(speos: Speos):
     assert source1._intensity.set_cos().n == 1
     assert source1._intensity.set_cos().total_angle == 180
     assert source1.emittance_type.temperature == 2000.0
+    assert (
+        source1.set_emissive_faces().geometries[0].geo_path
+        == "Surface:3875380806/face.1:2856391864"
+    )
 
     source2 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
     assert source2._intensity.set_cos().n == 3
@@ -2661,6 +2727,43 @@ def test_thermic_modify_after_reset(speos: Speos):
     ]
     source.delete()
 
+    # --- emissive faces: reset then set_emissive_faces ref-mismatch branch ---
+    source_ef = SourceThermic(
+        project=p, name="Thermic.EF.Reset", default_parameters=ThermicSourceParameters()
+    )
+    source_ef.set_emissive_faces().temperature = 3000.0
+    assert source_ef._source_template.thermic.emissives_faces.temperature == 3000.0
+    source_ef.reset()
+    # reset() skips sop.reset() for emissive-faces sources (no temperature_field branch)
+    assert source_ef._source_template.thermic.emissives_faces.temperature == 3000.0
+    # set_emissive_faces() detects ref mismatch and updates internal refs
+    source_ef.set_emissive_faces().temperature = 4500.0
+    assert source_ef._source_template.thermic.emissives_faces.temperature == 4500.0
+
+    # --- emittance_type property ref-mismatch for emissive faces after reset ---
+    ef_type = source_ef.emittance_type
+    assert isinstance(ef_type, SourceThermic.EmissiveFaces)
+    source_ef.reset()
+    ef_type_after = source_ef.emittance_type  # must update stale refs
+    assert isinstance(ef_type_after, SourceThermic.EmissiveFaces)
+    assert ef_type_after._emissive_faces is source_ef._source_template.thermic.emissives_faces
+    source_ef.delete()
+
+    # --- emittance_type property ref-mismatch for temperature field after reset ---
+    source_tf = SourceThermic(
+        project=p, name="Thermic.TF.Type", default_parameters=ThermicSourceParameters()
+    )
+    source_tf.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    tf_type = source_tf.emittance_type
+    assert isinstance(tf_type, SourceThermic.TemperatureField)
+    source_tf.reset()
+    tf_type_after = source_tf.emittance_type  # must update stale refs
+    assert isinstance(tf_type_after, SourceThermic.TemperatureField)
+    assert tf_type_after._temperature_field is source_tf._source_template.thermic.temperature_field
+    source_tf.delete()
+
 
 def test_delete_source(speos: Speos):
     """Test delete of source."""
@@ -2687,6 +2790,19 @@ def test_delete_source(speos: Speos):
 
     assert len(p.scene_link.get().sources) == 0
     assert source1._source_instance.HasField("rayfile_properties")  # local
+
+    # Create + commit a SourceThermic and verify delete
+    source_thermic = SourceThermic(
+        project=p, name="Thermic.Del", default_parameters=ThermicSourceParameters()
+    )
+    source_thermic.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    source_thermic.commit()
+    assert source_thermic.source_template_link is not None
+    source_thermic.delete()
+    assert source_thermic.source_template_link is None
+    assert source_thermic._unique_id is None
 
 
 def test_print_source(speos: Speos):
