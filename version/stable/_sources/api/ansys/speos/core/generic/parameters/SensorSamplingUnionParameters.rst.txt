@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`SensorSamplingUnionParameters`
+======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SensorSamplingUnionParameters
+
+   
+   Sensor Sampling Union Parameters used in virtual BSDF Simulation Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorSamplingUnionParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~theta_sampling`
+            - Sampling count in the theta direction.
+          * - :py:attr:`~phi_sampling`
+            - Sampling count in the phi direction.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SensorSamplingUnionParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: theta_sampling
+   :type:  int
+   :value: 45
+
+
+   
+   Sampling count in the theta direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: phi_sampling
+   :type:  int
+   :value: 180
+
+
+   
+   Sampling count in the phi direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

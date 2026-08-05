@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``body.py`` module
+======================
+
+.. py:module:: ansys.speos.core.kernel.body
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: body
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.body.BodyLink`
+            - Link object for a body in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.body.BodyStub`
+            - Database interactions for body.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoBody`
+            - Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BodyLink</api/ansys/speos/core/kernel/body/BodyLink>
+    <span class="nf nf-cod-symbol_class"></span> BodyStub</api/ansys/speos/core/kernel/body/BodyStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoBody
+
+   
+   Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

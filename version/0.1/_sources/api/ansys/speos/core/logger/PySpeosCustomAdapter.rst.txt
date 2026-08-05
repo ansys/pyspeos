@@ -1,0 +1,240 @@
+
+
+
+
+
+
+:class:`PySpeosCustomAdapter`
+=============================
+
+.. py:class:: ansys.speos.core.logger.PySpeosCustomAdapter(logger, extra=None)
+
+   Bases: :py:obj:`logging.LoggerAdapter`
+
+
+   
+   Keeps the reference to the speos instance name dynamic.
+
+   If we use the standard approach, which is supplying **extra** input
+   to the logger, we would need to keep inputing speos instances
+   every time we do a log.
+   Using adapters, we only need to specify the speos instance that
+   we are referring to once.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PySpeosCustomAdapter
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~process`
+            - Process the logging message and keyword arguments passed in to
+          * - :py:attr:`~log_to_file`
+            - Add a file handler to the logger.
+          * - :py:attr:`~log_to_stdout`
+            - Add a standard output handler to the logger.
+          * - :py:attr:`~setLevel`
+            - Change the log level of the object and the attached handlers.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~level`
+            - 
+          * - :py:attr:`~file_handler`
+            - 
+          * - :py:attr:`~stdout_handler`
+            - 
+          * - :py:attr:`~logger`
+            - 
+          * - :py:attr:`~std_out_handler`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.logger import PySpeosCustomAdapter
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: level
+   :value: None
+
+
+.. py:attribute:: file_handler
+   :value: None
+
+
+.. py:attribute:: stdout_handler
+   :value: None
+
+
+.. py:attribute:: logger
+
+.. py:attribute:: std_out_handler
+
+
+
+Method detail
+-------------
+
+.. py:method:: process(msg, kwargs)
+
+   
+   Process the logging message and keyword arguments passed in to
+   a logging call to insert contextual information. You can either
+   manipulate the message itself, the keyword args or both. Return
+   the message and kwargs modified (or not) to suit your needs.
+
+   Normally, you'll only need to override this one method in a
+   LoggerAdapter subclass for your specific needs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: log_to_file(filename = FILE_NAME, level = LOG_LEVEL)
+
+   
+   Add a file handler to the logger.
+
+
+   :Parameters:
+
+       **filename** : :class:`python:str`, :obj:`optional`
+           Name of the file to write log messages to. The default is
+           ``"pyspeos.log"``.
+
+       **level** : :class:`python:str`, :obj:`optional`
+           Level of logging. The default is ``10``, in which case the
+           ``logging.DEBUG`` level is used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: log_to_stdout(level=LOG_LEVEL)
+
+   
+   Add a standard output handler to the logger.
+
+
+   :Parameters:
+
+       **level** : :class:`python:int`, :obj:`optional`
+           Level of logging. The default is ``10``, in which case the
+           ``logging.DEBUG`` level is used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: setLevel(level='DEBUG')
+
+   
+   Change the log level of the object and the attached handlers.
+
+
+   :Parameters:
+
+       **level** : :class:`python:int`, :obj:`optional`
+           Level of logging. The default is ``10``, in which case the
+           ``logging.DEBUG`` level is used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

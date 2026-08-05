@@ -1,0 +1,291 @@
+
+
+
+
+
+
+:class:`Dimensions`
+===================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.Dimensions(sensor_dimensions, default_values = True, stable_ctr = False)
+
+   
+   Dimensions of the sensor.
+
+   By default, for both x and y axis: from -50mm to 50mm is chosen, with a sampling of 100.
+
+   :Parameters:
+
+       **sensor_dimensions** : :obj:`ansys.api.speos.sensor.v1.common_pb2.SensorDimensions`
+           SensorDimensions protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_dimensions method available in sensor
+   classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Dimensions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_x_start`
+            - Set the minimum value on x axis.
+          * - :py:attr:`~set_x_end`
+            - Set the maximum value on x axis.
+          * - :py:attr:`~set_x_sampling`
+            - Set the sampling value on x axis.
+          * - :py:attr:`~set_y_start`
+            - Set the minimum value on y axis.
+          * - :py:attr:`~set_y_end`
+            - Set the maximum value on y axis.
+          * - :py:attr:`~set_y_sampling`
+            - Set the sampling value on y axis.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import Dimensions
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_x_start(value = -50)
+
+   
+   Set the minimum value on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum value on x axis (mm).
+           By default, ``-50``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_x_end(value = 50)
+
+   
+   Set the maximum value on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum value on x axis (mm).
+           By default, ``50``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_x_sampling(value = 100)
+
+   
+   Set the sampling value on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The number of pixels of the XMP map on x axis.
+           By default, ``100``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_y_start(value = -50)
+
+   
+   Set the minimum value on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum value on y axis (mm).
+           By default, ``-50``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_y_end(value = 50)
+
+   
+   Set the maximum value on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum value on y axis (mm).
+           By default, ``50``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_y_sampling(value = 100)
+
+   
+   Set the sampling value on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The number of pixels of the XMP map on y axis.
+           By default, ``100``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimensions.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

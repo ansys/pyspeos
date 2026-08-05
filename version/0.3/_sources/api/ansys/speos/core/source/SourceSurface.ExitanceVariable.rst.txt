@@ -1,0 +1,161 @@
+
+
+
+
+
+
+:class:`ExitanceVariable`
+=========================
+
+.. py:class:: ansys.speos.core.source.SourceSurface.ExitanceVariable(exitance_variable, exitance_variable_props, default_values = True, stable_ctr = False)
+
+   
+   Type of surface source existence : existence variable.
+
+
+   :Parameters:
+
+       **exitance_variable** : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+           ..
+
+       **ExitanceVariable**
+           Existence variable to complete.
+
+       **exitance_variable_props** : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+           ..
+
+       **SurfaceProperties.ExitanceVariableProperties**
+           Existence variable properties to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_exitance_variable method available in
+   Source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ExitanceVariable
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_xmp_file_uri`
+            - Set existence xmp file.
+          * - :py:attr:`~set_axis_plane`
+            - Set position of the existence map.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceSurface import ExitanceVariable
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_xmp_file_uri(uri)
+
+   
+   Set existence xmp file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           XMP file describing existence.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface.ExitanceVariable`
+           ExitanceVariable of surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_axis_plane(axis_plane = None)
+
+   
+   Set position of the existence map.
+
+
+   :Parameters:
+
+       **axis_plane** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface.ExitanceVariable`
+           ExitanceVariable of surface Source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

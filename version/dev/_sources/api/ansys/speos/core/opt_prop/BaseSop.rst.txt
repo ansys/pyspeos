@@ -1,0 +1,255 @@
+
+
+
+
+
+
+:class:`BaseSop`
+================
+
+.. toctree::
+   :hidden:
+
+    SopMirror</api/ansys/speos/core/opt_prop/BaseSop.SopMirror>
+    SopLibrary</api/ansys/speos/core/opt_prop/BaseSop.SopLibrary>
+
+
+.. py:class:: ansys.speos.core.opt_prop.BaseSop(sop_template, mat_inst, sop_parameters = None, stable_ctr=False)
+
+   
+   Base class for Surface Optical Property helpers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a superclass and is not intended to be instantiated directly.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BaseSop
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_surface_mirror`
+            - Define SOP as a perfect specular surface.
+          * - :py:attr:`~set_surface_opticalpolished`
+            - Set SOP to transparent or perfectly polished surface (e.g. glass).
+          * - :py:attr:`~set_surface_library`
+            - Configure SOP to use a library file.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_mirror`
+            - Mirror helper for the current SOP template.
+          * - :py:attr:`~sop_library`
+            - SOP library parameters when SOP is of library type.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop import BaseSop
+
+Property detail
+---------------
+
+.. py:property:: sop_mirror
+   :type: Optional[BaseSop]
+
+
+   
+   Mirror helper for the current SOP template.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`ansys.speos.core.opt_prop.BaseSop.SopMirror`]
+           Mirror helper when the active SOP field is ``mirror``, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sop_library
+   :type: Optional[BaseSop]
+
+
+   
+   SOP library parameters when SOP is of library type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`ansys.speos.core.opt_prop.BaseSop.SopLibrary`]
+           Library helper containing ``sop_file_uri`` when SOP is of library
+           type, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_surface_mirror()
+
+   
+   Define SOP as a perfect specular surface.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.BaseSop.SopMirror`
+           Returns mirror helper for chaining.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_surface_opticalpolished()
+
+   
+   Set SOP to transparent or perfectly polished surface (e.g. glass).
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.BaseSop`
+           Returns self for chaining.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_surface_library()
+
+   
+   Configure SOP to use a library file.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.BaseSop.SopLibrary`
+           Returns library helper for chaining.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.opt_prop.BaseSop.SopMirror
+    ansys.speos.core.opt_prop.BaseSop.SopLibrary
+
+
+
+
