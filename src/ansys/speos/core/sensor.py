@@ -78,12 +78,10 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
-from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
-from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -136,11 +134,8 @@ class BaseSensor:
             metadata = {}
 
         if sensor_instance is None:
-            # Keep both local templates; dispatch picks the active one at commit/reset time.
+            # Create local SensorTemplate
             self._sensor_template = ProtoSensorTemplate(
-                name=name, description=description, metadata=metadata
-            )
-            self._sensor_template_v2 = ProtoSensorTemplateV2(
                 name=name, description=description, metadata=metadata
             )
             # Create local SensorInstance
@@ -154,16 +149,6 @@ class BaseSensor:
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
-
-    @property
-    def _use_v2(self) -> bool:
-        """Return True if the server supports sensor.v2 (>= 2027.1.0)."""
-        return server_version_checker.is_version_supported(2027, 1, 0)
-
-    @property
-    def _local_sensor_template(self) -> ProtoSensorTemplate | ProtoSensorTemplateV2:
-        """Return local sensor template matching the current server generation."""
-        return self._sensor_template_v2 if self._use_v2 else self._sensor_template
 
     @property
     def lxp_path_number(self) -> Union[None, int]:
@@ -1046,7 +1031,7 @@ class BaseSensor:
             if self.sensor_template_link is None:
                 out_dict["sensor"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
-                    message=self._local_sensor_template,
+                    message=self._sensor_template,
                 )
             else:
                 out_dict["sensor"] = proto_message_utils._replace_guids(
@@ -1118,25 +1103,15 @@ class BaseSensor:
             self._sensor_instance.metadata["UniqueId"] = self._unique_id
 
         # Save or Update the sensor template (depending on if it was already saved before)
-        # Choose v1 or v2 based on server version
         if self.sensor_template_link is None:
-            if self._use_v2:
-                self.sensor_template_link = self._project.client.sensor_templates_v2().create(
-                    message=self._sensor_template_v2
-                )
-            else:
-                self.sensor_template_link = self._project.client.sensor_templates().create(
-                    message=self._sensor_template
-                )
+            self.sensor_template_link = self._project.client.sensor_templates().create(
+                message=self._sensor_template
+            )
             self._sensor_instance.sensor_guid = self.sensor_template_link.key
-        else:
-            # Update if template has changed
-            if self._use_v2:
-                if self.sensor_template_link.get() != self._sensor_template_v2:
-                    self.sensor_template_link.set(data=self._sensor_template_v2)
-            else:
-                if self.sensor_template_link.get() != self._sensor_template:
-                    self.sensor_template_link.set(data=self._sensor_template)
+        elif self.sensor_template_link.get() != self._sensor_template:
+            self.sensor_template_link.set(
+                data=self._sensor_template
+            )  # Only update if the template has changed
 
         # Update the scene with the sensor instance
         if self._project.scene_link:
@@ -1173,10 +1148,7 @@ class BaseSensor:
         """
         # Reset sensor template
         if self.sensor_template_link is not None:
-            if self._use_v2:
-                self._sensor_template_v2 = self.sensor_template_link.get()
-            else:
-                self._sensor_template = self.sensor_template_link.get()
+            self._sensor_template = self.sensor_template_link.get()
 
         # Reset sensor instance
         if self._project.scene_link is not None:
@@ -2529,11 +2501,6 @@ class SensorCamera(BaseSensor):
         )
         values_v2 = ["focal_length", "imager_distance", "f_number"]
         values_v4 = ["focal_length", "imager_distance", "f_number", "Transmittance Spectrum"]
-
-        if self._use_v2:
-            # On v2-capable servers we persist through sensor.v2 only.
-            return super().commit()
-
         try:
             super().commit()
         except grpc.RpcError:
