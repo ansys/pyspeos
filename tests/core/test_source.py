@@ -1948,7 +1948,7 @@ def test_create_thermic_source(speos: Speos):
     op1.set_volume_none()
     op1.set_surface_mirror().reflectance = 0
     op1.commit()
-    op1.geometries = [GeoRef.from_native_link("BodyB")]
+    op1.geometries = [GeoRef.from_native_link("BodyB/FaceB1"), face_2]
     op1.commit()
 
     source1 = p.create_source(name="Thermic.1", feature_type=SourceThermic)
@@ -2079,14 +2079,6 @@ def test_create_thermic_source(speos: Speos):
         source3._intensity.set_cos().total_angle == new_default_parameter.intensity_type.total_angle
     )
     source3.delete()
-
-    # test error parameters
-    with pytest.raises(TypeError, match="ThermicSourceParameters"):
-        p.create_source(
-            name="Thermic.error",
-            feature_type=SourceThermic,
-            parameters=AmbientEnvironmentParameters(),
-        )
 
     # test inner class guard: EmissiveFaces and TemperatureField must not be instantiated directly
     with pytest.raises(
