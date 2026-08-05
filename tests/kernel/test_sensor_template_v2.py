@@ -32,20 +32,16 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.skipif(
-    not server_version_checker.is_version_supported(2027, 1, 0),
-    reason="Sensor v2 requires Speos >= 2027.1.0",
-)
+@pytest.mark.supported_speos_versions(min=271)
 def test_sensor_template_v2_camera(speos: Speos):
     """Test the camera sensor template v2."""
     assert speos.client.healthy is True
-
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Sensor v2 requires Speos >= 2027.1.0")
     # Get DB
     sensor_t_db = speos.client.sensor_templates_v2()
 
     camera_input_files_path = Path(test_path) / "CameraInputFiles"
-    green_spectrum = str(camera_input_files_path / "CameraSensitivityGreen.spectrum")
-    transmittance = str(camera_input_files_path / "CameraTransmittance.spectrum")
     distortion = str(camera_input_files_path / "CameraDistortion_130deg.OPTDistortion")
 
     # Create camera sensor template v2 with monochromatic mode
@@ -54,19 +50,7 @@ def test_sensor_template_v2_camera(speos: Speos):
             name="camera_monochrome_v2",
             description="Camera sensor template v2 mode monochromatic",
             camera=ProtoSensorTemplateV2.Camera(
-                sensor_mode_photometric=ProtoSensorTemplateV2.Camera.ModePhotometric(
-                    acquisition_integration=0.01,
-                    acquisition_lag_time=0,
-                    transmittance_spectrum_guid=transmittance,
-                    gamma_correction=2.2,
-                    png_bits=4,  # PNG_16
-                    mode_monochromatic=ProtoSensorTemplateV2.Camera.ModePhotometric.ModeMonochromatic(
-                        spectrum_guid=green_spectrum
-                    ),
-                    wavelengths_range=ProtoSensorTemplateV2.WavelengthsRange(
-                        w_start=400, w_end=800, w_sampling=10
-                    ),
-                ),
+                mode_geometric=ProtoSensorTemplateV2.Camera.ModeGeometric(),
                 focal_length=4,
                 imager_distance=10,
                 f_number=30,
@@ -98,14 +82,12 @@ def test_sensor_template_v2_camera(speos: Speos):
     camera_t0.delete()
 
 
-@pytest.mark.skipif(
-    not server_version_checker.is_version_supported(2027, 1, 0),
-    reason="Sensor v2 requires Speos >= 2027.1.0",
-)
+@pytest.mark.supported_speos_versions(min=271)
 def test_sensor_template_v2_irradiance(speos: Speos):
     """Test the irradiance sensor template v2."""
     assert speos.client.healthy is True
-
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Sensor v2 requires Speos >= 2027.1.0")
     # Get DB
     sensor_t_db = speos.client.sensor_templates_v2()
 
@@ -139,14 +121,12 @@ def test_sensor_template_v2_irradiance(speos: Speos):
     irr_t0.delete()
 
 
-@pytest.mark.skipif(
-    not server_version_checker.is_version_supported(2027, 1, 0),
-    reason="Sensor v2 requires Speos >= 2027.1.0",
-)
+@pytest.mark.supported_speos_versions(min=271)
 def test_sensor_template_v2_list(speos: Speos):
     """Test listing sensor template v2."""
     assert speos.client.healthy is True
-
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Sensor v2 requires Speos >= 2027.1.0")
     # Get DB
     sensor_t_db = speos.client.sensor_templates_v2()
 
