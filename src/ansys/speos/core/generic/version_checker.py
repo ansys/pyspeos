@@ -22,6 +22,8 @@
 
 """Module to ease version checks."""
 
+import warnings
+
 
 def check_version(input_version: str, major: int, minor: int, patch: int) -> bool:
     """Check that the input version is greater than or equal to the major.minor.patch.
@@ -51,6 +53,12 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
         if int(values[1]) > minor:
             return True
         elif int(values[1]) == minor:
+            if isinstance(values[2], str):
+                warnings.warn(
+                    f"Version {input_version} is a pre-release version. "
+                    f"Please use a release version for accurate version checking."
+                )
+                return True
             if int(values[2]) >= patch:
                 return True
 
