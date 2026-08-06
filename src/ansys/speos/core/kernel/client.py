@@ -495,6 +495,7 @@ None]
         List[IntensityTemplateLink],
         List[SourceTemplateLink],
         List[SensorTemplateLink],
+        List[SensorTemplateLinkV2],
         List[SimulationTemplateLink],
         List[SceneLink],
         List[JobLink],
@@ -519,6 +520,7 @@ List[ansys.speos.core.kernel.spectrum.SpectrumLink], \
 List[ansys.speos.core.kernel.intensity_template.IntensityTemplateLink], \
 List[ansys.speos.core.kernel.source_template.SourceTemplateLink], \
 List[ansys.speos.core.kernel.sensor_template.SensorTemplateLink], \
+List[ansys.speos.core.kernel.sensor_template.SensorTemplateLinkV2], \
 List[ansys.speos.core.kernel.simulation_template.SimulationTemplateLink], \
 List[ansys.speos.core.kernel.scene.SceneLink], \
 List[ansys.speos.core.kernel.job.JobLink], \
@@ -542,6 +544,8 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return [x for x in self.source_templates().list() if x.key in keys]
         elif item_type == SensorTemplateLink:
             return [x for x in self.sensor_templates().list() if x.key in keys]
+        elif item_type == SensorTemplateLinkV2:
+            return [x for x in self.sensor_templates_v2().list() if x.key in keys]
         elif item_type == SimulationTemplateLink:
             return [x for x in self.simulation_templates().list() if x.key in keys]
         elif item_type == SceneLink:
