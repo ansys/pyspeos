@@ -109,6 +109,7 @@ class BaseSop:
                 "Please use a subclass or set stable_ctr=True if you know what you're doing."
             )
         self._sop_template = sop_template
+        self._sop_template_link = None
         # Create material instance
         self._material_instance = mat_inst
         self._mirror = None
@@ -321,6 +322,20 @@ class BaseSop:
         """
         if self._sop_template.HasField("library"):
             return self._library
+
+    def reset(self) -> BaseSop:
+        """Reset local templates and sop instance from the server.
+
+        Returns
+        -------
+        BaseSop
+
+        """
+        # Reset sop template
+        if self._sop_template_link is not None:
+            self._sop_template = self._sop_template_link.get()
+        self._sync_sop_properties()
+        return self
 
 
 class BaseVop:
