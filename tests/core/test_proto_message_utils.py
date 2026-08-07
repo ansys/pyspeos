@@ -490,7 +490,6 @@ def test_flatten_dict(speos: Speos):
         "metadata",
         "scenes",
     ]
-    print(res)
     if check_version(ansys_api_speos_version, 0, 16, 0):
         expected_keys.append("sub_scene_anchor_axis_system")
     if check_version(ansys_api_speos_version, 0, 17, 0):
