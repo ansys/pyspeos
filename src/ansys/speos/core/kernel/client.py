@@ -462,10 +462,9 @@ None]
             for ssr_v2 in self.sensor_templates_v2().list():
                 if ssr_v2.key == key:
                     return ssr_v2
-        else:
-            for ssr in self.sensor_templates().list():
-                if ssr.key == key:
-                    return ssr
+        for ssr in self.sensor_templates().list():
+            if ssr.key == key:
+                return ssr
         for sim in self.simulation_templates().list():
             if sim.key == key:
                 return sim
