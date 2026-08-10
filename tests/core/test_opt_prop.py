@@ -456,8 +456,8 @@ def test_error_reporting(speos: Speos):
         layer.normal_map.roughness = 2.0
 
     with pytest.raises(RuntimeError):
-        BaseSop(op._sop_template, op._material_instance)
-        BaseVop(op._vop_template, op._material_instance)
+        BaseSop("BaseSopErr")
+        BaseVop("BaseVopErr")
         TextureLayer.BaseTextureMap(layer, TextureTypes.image)
 
 

@@ -81,8 +81,9 @@ class BaseSop:
 
     def __init__(
         self,
-        sop_template: ProtoSOPTemplate,
-        mat_inst: ProtoScene.MaterialInstance,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
         sop_parameters: Optional[
             Union[SopMirrorParameters, SopLibraryParameters, SopTypes.optical_polished],
         ] = None,
@@ -92,10 +93,13 @@ class BaseSop:
 
         Parameters
         ----------
-        sop_template : ansys.speos.core.kernel.sop_template.ProtoSOPTemplate
-            Surface optical property template to wrap.
-        mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
-            Material instance that owns the SOP settings.
+        name : str
+            Name of the feature owning the SOP. The SOP template is named
+            ``name + ".SOP"``.
+        description : str, optional
+            Description of the SOP template.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata to attach to the SOP template.
         sop_parameters : Optional[Union[\
         ansys.speos.core.generic.parameters.SopLibraryParameters, \
         ansys.speos.core.generic.parameters.SopMirrorParameters, \
@@ -108,14 +112,60 @@ class BaseSop:
                 "BaseSop is not intended to be instantiated directly."
                 "Please use a subclass or set stable_ctr=True if you know what you're doing."
             )
-        self._sop_template = sop_template
-        # Create material instance
-        self._material_instance = mat_inst
+        # Create SOP template
+        self._sop_template = ProtoSOPTemplate(
+            name=name + ".SOP", description=description, metadata=metadata or {}
+        )
+        self.sop_template_link = None
+        """Link object for the sop template in database."""
         self._mirror = None
         self._library = None
 
         if sop_parameters:
             self._fill_parameters_sop(sop_parameters)
+
+    def _commit_sop_template(self, speos_client):
+        """Create or update the SOP template on the Speos server.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.kernel.client.SpeosClient
+            Client used to reach the SOP template database.
+        """
+        if self.sop_template_link is None:
+            if self._sop_template is not None:
+                self.sop_template_link = speos_client.sop_templates().create(
+                    message=self._sop_template
+                )
+        elif self.sop_template_link.get() != self._sop_template:
+            # Only update if sop template has changed
+            self.sop_template_link.set(data=self._sop_template)
+
+    def _reset_sop_template(self):
+        """Reset the local SOP template from the server-side data."""
+        if self.sop_template_link is not None:
+            self._sop_template = self.sop_template_link.get()
+        self._sync_sop_properties()
+
+    def _delete_sop_template(self):
+        """Delete the SOP template from the server and clear the local link."""
+        if self.sop_template_link is not None:
+            self.sop_template_link.delete()
+            self.sop_template_link = None
+
+    def _fill_sop_template(self, speos_client, sop_guid: str):
+        """Populate the local SOP template from a server-side SOP template.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.kernel.client.SpeosClient
+            Client used to reach the SOP template database.
+        sop_guid : str
+            SOP template GUID.
+        """
+        self.sop_template_link = speos_client[sop_guid]
+        self._sop_template = self.sop_template_link.get()
+        self._sync_sop_properties()
 
     def _sync_sop_properties(self):
         """Synchronize cached SOP helper objects with the current SOP template."""
@@ -477,8 +527,9 @@ class BaseVop:
 
     def __init__(
         self,
-        vop_template: Union[None, ProtoVOPTemplate],
-        mat_inst: ProtoScene.MaterialInstance,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
         vop_parameters: Optional[
             Union[VopTypes.none, VopTypes.opaque, VopLibraryParameters, VopOpticParameters]
         ] = None,
@@ -488,10 +539,13 @@ class BaseVop:
 
         Parameters
         ----------
-        vop_template : Union[None, ansys.speos.core.kernel.vop_template.ProtoVOPTemplate]
-            Volume optical property template to wrap.
-        mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
-            Material instance that owns the VOP settings.
+        name : str
+            Name of the feature owning the VOP. The VOP template is named
+            ``name + ".VOP"``.
+        description : str, optional
+            Description of the VOP template.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata to attach to the VOP template.
         vop_parameters : Optional[Union[\
         ansys.speos.core.generic.parameters.VopTypes.none,\
         ansys.speos.core.generic.parameters.VopTypes.opaque, \
@@ -505,16 +559,70 @@ class BaseVop:
                 "BaseVop is not intended to be instantiated directly."
                 "Please use a subclass or set stable_ctr=True if you know what you're doing."
             )
-        # Create VOP template
-        self._vop_template = vop_template
-        # Create material instance
-        self._material_instance = mat_inst
+        # The VOP template is created lazily by the set_volume_*() methods
+        self._vop_template = None
+        self._vop_template_name = name + ".VOP"
+        self._vop_template_description = description
+        self._vop_template_metadata = dict(metadata or {})
+        self.vop_template_link = None
+        """Link object for the vop template in database."""
 
         self._vop_optic = None
         self._vop_library = None
 
         if vop_parameters:
             self._fill_parameters_vop(vop_parameters)
+
+    def _new_vop_template(self) -> ProtoVOPTemplate:
+        """Create an empty VOP template.
+
+        Returns
+        -------
+        ansys.speos.core.kernel.vop_template.ProtoVOPTemplate
+            Newly created VOP template.
+        """
+        return ProtoVOPTemplate(
+            name=self._vop_template_name,
+            description=self._vop_template_description,
+            metadata=self._vop_template_metadata,
+        )
+
+    def _commit_vop_template(self, speos_client):
+        """Create, update or delete the VOP template on the Speos server.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.kernel.client.SpeosClient
+            Client used to reach the VOP template database.
+        """
+        if self.vop_template_link is None:
+            if self._vop_template is not None:
+                self.vop_template_link = speos_client.vop_templates().create(
+                    message=self._vop_template
+                )
+        elif self.vop_template_link.get() != self._vop_template:
+            if self._vop_template is not None:
+                # Only update if vop template has changed
+                self.vop_template_link.set(data=self._vop_template)
+            else:
+                # if vop template is set to None, delete it from server
+                self.vop_template_link.delete()
+                self.vop_template_link = None
+
+    def _reset_vop_template(self):
+        """Reset the local VOP template from the server-side data."""
+        if self.vop_template_link is not None:
+            self._vop_template = self.vop_template_link.get()
+            if self._vop_template.HasField("optic"):
+                self.set_volume_optic()
+            if self._vop_template.HasField("library"):
+                self.set_volume_library()
+
+    def _delete_vop_template(self):
+        """Delete the VOP template from the server and clear the local link."""
+        if self.vop_template_link is not None:
+            self.vop_template_link.delete()
+            self.vop_template_link = None
 
     def _fill_parameters_vop(
         self,
@@ -590,11 +698,7 @@ class BaseVop:
             Returns self (as the OptProp that owns this VOP helper).
         """
         if self._vop_template is None:
-            self._vop_template = ProtoVOPTemplate(
-                name=self._material_instance.name + ".VOP",
-                description=self._material_instance.description,
-                metadata=self._material_instance.metadata,
-            )
+            self._vop_template = self._new_vop_template()
         self._vop_template.opaque.SetInParent()
         return self
 
@@ -609,11 +713,7 @@ class BaseVop:
             Returns VOP Helper.
         """
         if self._vop_template is None:
-            self._vop_template = ProtoVOPTemplate(
-                name=self._material_instance.name + ".VOP",
-                description=self._material_instance.description,
-                metadata=self._material_instance.metadata,
-            )
+            self._vop_template = self._new_vop_template()
             self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
         elif self._vop_template.HasField("optic"):
             self._vop_optic = self.VopOptic(self, None, stable_ctr=True)
@@ -631,11 +731,7 @@ class BaseVop:
             Returns VOP Library helper.
         """
         if self._vop_template is None:
-            self._vop_template = ProtoVOPTemplate(
-                name=self._material_instance.name + ".VOP",
-                description=self._material_instance.description,
-                metadata=self._material_instance.metadata,
-            )
+            self._vop_template = self._new_vop_template()
         self._vop_template.library.SetInParent()
         self._vop_library = self.VopLibrary(self, stable_ctr=True)
         return self._vop_library
@@ -1589,14 +1685,16 @@ class TextureLayer(BaseSop):
         """
         self._project = opt_prop._project
         self._opt_prop = opt_prop
-        self.sop_template_link = None
-        if metadata is None:
-            metadata = {}
-        self._sop_template = ProtoSOPTemplate(
-            name=name + ".SOP", description=description, metadata=metadata
+        super().__init__(
+            name,
+            description=description,
+            metadata=metadata,
+            sop_parameters=(
+                default_parameters.sop_parameters if default_parameters else SopMirrorParameters()
+            ),
+            stable_ctr=True,
         )
-        self._material_instance = opt_prop._material_instance
-        self._material_instance.texture.SetInParent()
+        opt_prop._material_instance.texture.SetInParent()
         self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
         self._normal_map = None
         self._image_map = None
@@ -1605,17 +1703,7 @@ class TextureLayer(BaseSop):
         self._index = None
 
         if default_parameters:
-            super().__init__(
-                self._sop_template,
-                self._material_instance,
-                default_parameters.sop_parameters,
-                stable_ctr=True,
-            )
             self._fill_parameters(default_parameters)
-        else:
-            super().__init__(
-                self._sop_template, self._material_instance, SopMirrorParameters(), stable_ctr=True
-            )
 
     def _fill_parameters(self, default_parameters: Optional[TextureLayerParameters] = None):
         """Fill texture layer parameters from default parameters.
@@ -1751,92 +1839,40 @@ class TextureLayer(BaseSop):
             self._texture_template.ClearField("anisotropy_map_properties")
         return self
 
-    def _commit(self) -> "TextureLayer":
-        """Save or update the SOP template on the Speos server.
+    def _sync_texture_helpers(self, texture_layer: ProtoScene.MaterialInstance.Texture.Layer):
+        """Rebuild the local texture helpers from a server-side texture layer.
 
-        Returns
-        -------
-        ansys.speos.core.opt_prop.TextureLayer
-            Returns self after committing.
+        This method performs no server call: the caller provides the already
+        retrieved texture layer message.
+
+        Parameters
+        ----------
+        texture_layer : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance.Texture.Layer
+            Texture layer protobuf message to synchronize from.
         """
-        # Save or Update the sop template (depending on if it was already saved before)
-        if self.sop_template_link is None:
-            if self._sop_template is not None:
-                self.sop_template_link = self._project.client.sop_templates().create(
-                    message=self._sop_template
-                )
-                # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
-                self._texture_template.sop_guid = self.sop_template_link.key
-        elif self.sop_template_link.get() != self._sop_template:
-            self.sop_template_link.set(
-                data=self._sop_template
-            )  # Only update if sop template has changed
-        return self
-
-    def _reset(self) -> "TextureLayer":
-        """Reset local texture layer data from server-side data.
-
-        Returns
-        -------
-        ansys.speos.core.opt_prop.TextureLayer
-            Returns self after resetting.
-        """
-        # Reset sop template
-        if self.sop_template_link is not None:
-            self._sop_template = self.sop_template_link.get()
-            self._sync_sop_properties()
-            self._normal_map = None
-            self._aniso_map = None
-            self._image_map = None
-        if self._project.scene_link is not None:
-            scene_data = self._project.scene_link.get()
-            mat_inst = next(
-                (
-                    x
-                    for x in scene_data.materials
-                    if x.metadata["UniqueId"] == self._material_instance.metadata["UniqueId"]
-                ),
-                None,
-            )
-            if mat_inst is not None:
-                self._material_instance = mat_inst
-                self._texture_template = mat_inst.texture.layers[self._index]
-                if self._texture_template.HasField("anisotropy_map_properties"):
-                    self.set_anisotropy_map()
-                if self._texture_template.HasField("normal_map_properties"):
-                    if self._sop_template.texture.normal_map.HasField("from_image"):
-                        self.set_normal_map_from_image()
-                    elif self._sop_template.texture.normal_map.HasField("from_normal_map"):
-                        self.set_normal_map_from_normal_map()
-                if self._texture_template.HasField("image_properties"):
-                    self.set_image_texture()
-        return self
+        self._texture_template = texture_layer
+        self._normal_map = None
+        self._aniso_map = None
+        self._image_map = None
+        if texture_layer.HasField("anisotropy_map_properties"):
+            self.set_anisotropy_map()
+        if texture_layer.HasField("normal_map_properties"):
+            if self._sop_template.texture.normal_map.HasField("from_image"):
+                self.set_normal_map_from_image()
+            elif self._sop_template.texture.normal_map.HasField("from_normal_map"):
+                self.set_normal_map_from_normal_map()
+        if texture_layer.HasField("image_properties"):
+            self.set_image_texture()
 
     def delete(self) -> "TextureLayer":
-        """Delete the SOP template layer from the server and update local state.
+        """Delete this texture layer from its optical property and from the server.
 
         Returns
         -------
         ansys.speos.core.opt_prop.TextureLayer
             Returns self after deletion.
         """
-        # Delete the sop template
-        check = self._opt_prop.texture if self._opt_prop.texture is not None else []
-        if len(check) < 2:
-            raise RuntimeError("Cannot delete last remaining layer.")
-        if self.sop_template_link is not None:
-            self.sop_template_link.delete()
-            self.sop_template_link = None
-        self._texture_template.ClearField("sop_guid")
-        layers = self._material_instance.texture.layers
-        layers.pop(self._index)
-        self._opt_prop.texture.pop(self._index)
-        self._opt_prop.commit()
-        self._material_instance.texture.ClearField("layers")
-        self._material_instance.texture.layers.extend(layers)
-        self._texture_template = None
-        # Reset the _unique_id
-        self._unique_id = None
+        self._opt_prop.delete_texture_layer(self)
         return self
 
     def _fill(self, sop_guid: str, texture: ProtoScene.MaterialInstance.Texture.Layer):
@@ -1849,8 +1885,7 @@ class TextureLayer(BaseSop):
         texture : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance.Texture.Layer
             The texture layer protobuf message.
         """
-        self.sop_template_link = self._project.client[sop_guid]
-        self._sop_template = self.sop_template_link.get()
+        self._fill_sop_template(self._project.client, sop_guid)
         self._texture_template = texture
 
 
@@ -1902,50 +1937,47 @@ class OptProp(BaseVop, BaseSop):
         self._name = name
         self._project = project
         self._unique_id = None
-        self.sop_template_link = None
-        """Link object for the sop template in database."""
-        self.vop_template_link = None
-        """Link object for the vop template in database."""
-
-        # Create SOP template
-        if metadata is None:
-            metadata = {}
-        self._sop_template = ProtoSOPTemplate(
-            name=name + ".SOP", description=description, metadata=metadata
-        )
-
-        # Create VOP template
-        self._vop_template = None
+        self._texture = None
 
         # Create material instance
         self._material_instance = ProtoScene.MaterialInstance(
-            name=name, description=description, metadata=metadata
+            name=name, description=description, metadata=metadata or {}
         )
-        self._texture = None
+
+        sop_parameters = default_parameters.sop_parameters if default_parameters else None
+        BaseSop.__init__(
+            self,
+            name,
+            description=description,
+            metadata=metadata,
+            sop_parameters=(
+                sop_parameters
+                if isinstance(sop_parameters, (SopTypes, SopMirrorParameters, SopLibraryParameters))
+                else None
+            ),
+            stable_ctr=True,
+        )
+        BaseVop.__init__(
+            self,
+            name,
+            description=description,
+            metadata=metadata,
+            vop_parameters=default_parameters.vop_parameters if default_parameters else None,
+            stable_ctr=True,
+        )
 
         # Default values
         self.geometries = None
 
         if default_parameters:
             self._fill_parameters(default_parameters)
-        else:
-            BaseSop.__init__(
-                self,
-                self._sop_template,
-                self._material_instance,
-                sop_parameters=None,
-                stable_ctr=True,
-            )
-            BaseVop.__init__(
-                self,
-                self._vop_template,
-                self._material_instance,
-                vop_parameters=None,
-                stable_ctr=True,
-            )
 
     def _fill_parameters(self, default_parameters: OptPropParameters):
         """Fill optical property parameters from default parameters.
+
+        Only the texture layer parameters are handled here. The SOP and VOP
+        parameters are applied by :meth:`BaseSop.__init__` and
+        :meth:`BaseVop.__init__`.
 
         Parameters
         ----------
@@ -1954,27 +1986,9 @@ class OptProp(BaseVop, BaseSop):
         ], optional
             Default optical property parameters to apply.
         """
-        BaseVop.__init__(
-            self,
-            self._vop_template,
-            self._material_instance,
-            vop_parameters=default_parameters.vop_parameters,
-            stable_ctr=True,
-        )
-        if isinstance(
-            default_parameters.sop_parameters, (SopTypes, SopMirrorParameters, SopLibraryParameters)
-        ):
-            BaseSop.__init__(
-                self,
-                self._sop_template,
-                self._material_instance,
-                sop_parameters=default_parameters.sop_parameters,
-                stable_ctr=True,
-            )
-        elif isinstance(default_parameters.sop_parameters, list):
-            self._sop_template = None
+        if isinstance(default_parameters.sop_parameters, list):
             self.texture = [
-                TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)
+                TextureLayer(self, f"Layer{i}", default_parameters=layer)
                 for i, layer in enumerate(default_parameters.sop_parameters)
             ]
 
@@ -2081,7 +2095,7 @@ class OptProp(BaseVop, BaseSop):
         if self._texture is None:
             self._texture = []
             if self._sop_template is not None:
-                self.sop_template = None
+                self._sop_template = None
         new_layer = TextureLayer(
             opt_prop=self,
             name=name,
@@ -2105,6 +2119,34 @@ class OptProp(BaseVop, BaseSop):
         """
         layer_name = f"Layer{len(self._texture) if self._texture else 0}"
         return self._create_texture_layer_by_parameters(name=layer_name)
+
+    def delete_texture_layer(self, layer: "TextureLayer") -> "OptProp":
+        """Delete a texture layer from this optical property and from the server.
+
+        Parameters
+        ----------
+        layer : ansys.speos.core.opt_prop.TextureLayer
+            Texture layer to delete.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Returns self after deletion.
+
+        Raises
+        ------
+        RuntimeError
+            If ``layer`` is the last remaining texture layer.
+        """
+        if self._texture is None or len(self._texture) < 2:
+            raise RuntimeError("Cannot delete last remaining layer.")
+        layer._delete_sop_template()
+        self._texture.remove(layer)
+        layer._texture_template = None
+        layer._index = None
+        # Rebuild the texture layer list of the material instance and update the scene
+        self.commit()
+        return self
 
     def _to_dict(self) -> dict:
         """Return a JSON-serializable dict representing the material instance.
@@ -2243,23 +2285,11 @@ class OptProp(BaseVop, BaseSop):
             self._material_instance.metadata["UniqueId"] = self._unique_id
 
         # Save or Update the vop template (depending on if it was already saved before)
-        if self.vop_template_link is None:
-            if self._vop_template is not None:
-                self.vop_template_link = self._project.client.vop_templates().create(
-                    message=self._vop_template
-                )
-                self._material_instance.vop_guid = self.vop_template_link.key
-        elif self.vop_template_link.get() != self._vop_template:
-            if self._vop_template is not None:
-                self.vop_template_link.set(
-                    data=self._vop_template
-                )  # Only update if vop template has changed
-            else:
-                # if vop template is set to None, delete it from server
-                # and reset the vop_guid reference in material instance
-                self.vop_template_link.delete()
-                self.vop_template_link = None
-                self._material_instance.ClearField("vop_guid")
+        self._commit_vop_template(self._project.client)
+        if self.vop_template_link is not None:
+            self._material_instance.vop_guid = self.vop_template_link.key
+        else:
+            self._material_instance.ClearField("vop_guid")
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.texture:
@@ -2268,29 +2298,24 @@ class OptProp(BaseVop, BaseSop):
             self._material_instance.texture.ClearField("layers")
             layers = []
             for i, layer in enumerate(self.texture):
-                layers.append(layer._texture_template)
                 layer._index = i
                 # Commit each layer to ensure sop templates are created/updated on the server
-                layer._commit()
+                layer._commit_sop_template(self._project.client)
+                if layer.sop_template_link is not None:
+                    layer._texture_template.sop_guid = layer.sop_template_link.key
+                layers.append(layer._texture_template)
             self._material_instance.texture.layers.extend(layers)
         else:
-            if self.sop_template_link is None:
-                if self._sop_template is not None:
-                    # Always clean sop_guids to be sure that we never use both sop_guids and
-                    # sop_guid
-                    self._material_instance.ClearField("sop_guids")
-                    # Fill sop_guid(s) field according to the server capability regarding textures
-                    self.sop_template_link = self._project.client.sop_templates().create(
-                        message=self._sop_template
-                    )
-                    if self._project.client.scenes()._is_texture_available:
-                        self._material_instance.sop_guid = self.sop_template_link.key
-                    else:
-                        self._material_instance.sop_guids.append(self.sop_template_link.key)
-            elif self.sop_template_link.get() != self._sop_template:
-                self.sop_template_link.set(
-                    data=self._sop_template
-                )  # Only update if sop template has changed
+            self._commit_sop_template(self._project.client)
+            if self.sop_template_link is not None:
+                # Always clean sop_guids to be sure that we never use both sop_guids and
+                # sop_guid
+                self._material_instance.ClearField("sop_guids")
+                # Fill sop_guid(s) field according to the server capability regarding textures
+                if self._project.client.scenes()._is_texture_available:
+                    self._material_instance.sop_guid = self.sop_template_link.key
+                else:
+                    self._material_instance.sop_guids.append(self.sop_template_link.key)
 
         # Update the scene with the material instance
         if self._project.scene_link:
@@ -2326,19 +2351,10 @@ class OptProp(BaseVop, BaseSop):
             Returns self after resetting.
         """
         # Reset vop template
-        if self.vop_template_link is not None:
-            self._vop_template = self.vop_template_link.get()
-            if self._vop_template.HasField("optic"):
-                self.set_volume_optic()
-            if self._vop_template.HasField("library"):
-                self.set_volume_library()
+        self._reset_vop_template()
 
         # Reset sop template
-        if self.sop_template_link is not None:
-            self._sop_template = self.sop_template_link.get()
-            self._sync_sop_properties()
-        else:
-            self._sync_sop_properties()
+        self._reset_sop_template()
 
         # Reset material instance
         if self._project.scene_link is not None:
@@ -2352,11 +2368,11 @@ class OptProp(BaseVop, BaseSop):
                 self._material_instance = mat_inst
                 if self._material_instance.HasField("texture"):
                     layers = []
-                    for i, layer in enumerate(self._material_instance.texture.layers):
+                    for i, layer_msg in enumerate(self._material_instance.texture.layers):
                         temp_layer = TextureLayer(self, name="")
-                        temp_layer._fill(layer.sop_guid, layer)
                         temp_layer._index = i
-                        temp_layer._reset()
+                        temp_layer._fill(layer_msg.sop_guid, layer_msg)
+                        temp_layer._sync_texture_helpers(layer_msg)
                         layers.append(temp_layer)
                     self.texture = layers
         return self
@@ -2370,17 +2386,13 @@ class OptProp(BaseVop, BaseSop):
             Returns self after deletion and cleanup.
         """
         # Delete the vop template
-        if self.vop_template_link is not None:
-            self.vop_template_link.delete()
-            self.vop_template_link = None
+        self._delete_vop_template()
 
         # Reset then the vop_guid (as the vop template was deleted just above)
         self._material_instance.vop_guid = ""
 
         # Delete the sop template
-        if self.sop_template_link is not None:
-            self.sop_template_link.delete()
-            self.sop_template_link = None
+        self._delete_sop_template()
 
         # Reset then the sop_guid/sop_guids fields (as the sop template was deleted just above)
         self._material_instance.ClearField("sop_guid")
@@ -2415,13 +2427,9 @@ class OptProp(BaseVop, BaseSop):
         if mat_inst.HasField("sop_guid"):
             self.sop_template_link = self._project.client[mat_inst.sop_guid]
         elif mat_inst.HasField("texture"):
-            texture = []
-            for i, layer in enumerate(mat_inst.texture.layers):
-                cur_layer = TextureLayer(self, name=f"{self._name}.Layer.{i}")
-                cur_layer._fill(layer.sop_guid, layer)
-                cur_layer._index = i
-                texture.append(cur_layer)
-            self.texture = texture
+            # A textured material has no SOP template of its own: each texture layer owns one.
+            # The layers themselves are rebuilt from the material instance by reset() below.
+            self.texture = []
         elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
         else:  # Specific case for ambient material
