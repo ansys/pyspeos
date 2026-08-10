@@ -1030,6 +1030,8 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceLuminaire from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.LuminaireSourceParameters] = None
         If defined the values in the SourceLuminaire instance will be overwritten
@@ -1271,6 +1273,8 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceRayFile from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
         If defined the values in the SourceRayFile instance will
@@ -1629,14 +1633,18 @@ class SourceSurface(BaseSource):
 
     Parameters
     ----------
-    speos_client : ansys.speos.core.kernel.client.SpeosClient
-        The Speos instance client.
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
     name : str
         Name of the source feature.
-    surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
-        Surface source to complete.
-    surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
-        Surface source properties to complete.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceSurface from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.SurfaceSourceParameters] = None
         If defined the values in the SourceSurface instance will be overwritten by the
@@ -2366,7 +2374,7 @@ class SourceSurface(BaseSource):
 class SourceThermic(BaseSource):
     """ThermicSource.
 
-    By default, a flux from intensity file is chosen, with an incandescent spectrum.
+    By default, an emissive faces type with lambertian intensity thermic source is created.
 
     Parameters
     ----------
@@ -2380,8 +2388,10 @@ class SourceThermic(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.ThermicSourceParameters] = None
+        If defined the values in the SourceThermic instance will be overwritten by the
+        values of the data class.
     """
 
     class EmissiveFaces:
@@ -2389,14 +2399,15 @@ class SourceThermic(BaseSource):
 
         Parameters
         ----------
-        emissive_faces : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.
-        EmissiveFaces
+        emissive_faces :\
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.EmissiveFaces
             Emissive faces to complete.
-        emissive_faces_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
-        ThermicProperties.EmissiveFacesProperties
+        emissive_faces_props :\
+            ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.EmissiveFacesProperties
             Emissive faces properties to complete.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.EmissiveFacesParameters] = None
+            Uses default EmissiveFacesParameters parameters.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -2408,8 +2419,10 @@ class SourceThermic(BaseSource):
 
         def __init__(
             self,
-            emissive_faces,
-            emissive_faces_props,
+            emissive_faces: source_pb2.SourceTemplate.Thermic.EmissiveFaces,
+            emissive_faces_props: (
+                ProtoScene.SourceInstance.ThermicProperties.EmissiveFacesProperties
+            ),
             default_parameters: Optional[EmissiveFacesParameters] = None,
             stable_ctr: bool = False,
         ):
@@ -2505,16 +2518,20 @@ class SourceThermic(BaseSource):
 
         Parameters
         ----------
-        temperature_field : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.
-        TemperatureField
+        name : str
+            Name of the feature.
+        project : ansys.speos.core.project.Project
+            Project that will own the feature.
+        temperature_field :\
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.TemperatureField
             Temperature field to complete.
-        temperature_field_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
-        ThermicProperties.TemperatureFieldProperties
+        temperature_field_props :\
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.TemperatureFieldProperties
             Temperature field properties to complete.
-        sop : ansys.speos.core.opt_prop.OptProp, optional
-            Surface optical property wrapper for the temperature field.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.TemperatureFieldParameters
+        ] = None
+            Uses default TemperatureFieldParameters values.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -2526,10 +2543,12 @@ class SourceThermic(BaseSource):
 
         def __init__(
             self,
-            name,
+            name: str,
             project: project.Project,
-            temperature_field,
-            temperature_field_props,
+            temperature_field: source_pb2.SourceTemplate.Thermic.TemperatureField,
+            temperature_field_props: (
+                ProtoScene.SourceInstance.ThermicProperties.TemperatureFieldProperties
+            ),
             default_parameters: Optional[TemperatureFieldParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
