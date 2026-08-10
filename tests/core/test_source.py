@@ -2756,6 +2756,44 @@ def test_thermic_modify_after_reset(speos: Speos):
     assert tf_type_after._temperature_field is source_tf._source_template.thermic.temperature_field
     source_tf.delete()
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
+    root_part.commit()
+
+    op1 = p.create_optical_property(name="Material.1")
+    op1.commit()
+    op1.set_volume_none()
+    op1.set_surface_mirror().reflectance = 50
+    op1.commit()
+    op1.geometries = [GeoRef.from_native_link("BodyB/FaceB1")]
+    op1.commit()
+
+    source2 = p.create_source(name="Thermic.2", feature_type=SourceThermic)
+    source2.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    source2.set_temperature_field().sop.set_surface_mirror().reflectance = 50
+    source2.commit()
+    source2.set_temperature_field().sop.set_surface_mirror().reflectance = 80
+    source2.reset()
+    assert source2.set_temperature_field().sop.set_surface_mirror().reflectance == 50
+    guid_tmp = source2._source_template.thermic.temperature_field.sop_guid
+    source2.set_temperature_field().sop.set_surface_library().file_uri = (
+        Path(test_path) / "R_test.anisotropicbsdf"
+    )
+    source2.commit()
+    assert source2._source_template.thermic.temperature_field.sop_guid == guid_tmp
+    assert (
+        p.client[source2._source_template.thermic.temperature_field.sop_guid]
+        .get()
+        .HasField("library")
+    )
+
 
 def test_delete_source(speos: Speos):
     """Test delete of source."""

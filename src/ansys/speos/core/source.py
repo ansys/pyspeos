@@ -2444,7 +2444,12 @@ class SourceThermic(BaseSource):
 
         @property
         def temperature(self) -> float:
-            """Get the temperature value in K of the thermic source object.
+            """Property of temperature value in K of the thermic source object.
+
+            Parameters
+            ----------
+            float
+                temperature value in K of the thermic source object.
 
             Returns
             -------
@@ -2456,43 +2461,28 @@ class SourceThermic(BaseSource):
 
         @temperature.setter
         def temperature(self, value: float) -> None:
-            """Set the temperature value in K of the thermic source object.
-
-            Parameters
-            ----------
-            float
-                temperature value in K of the thermic source object.
-
-            """
             self._emissive_faces.temperature = float(value)
             return
 
         @property
         def geometries(self) -> List[tuple[GeoRef, bool]]:
-            """Get geometries linked to the thermic source.
+            """Property of geometries linked to the thermic source.
+
+            Parameters
+            ----------
+            geometries: List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for reversing normal direction.
 
             Returns
             -------
             List[tuple[GeoRef, bool]]
-                list of tuple which contains geometry ref and bool for normal direction.
+                list of tuple which contains geometry ref and bool for reversing normal direction.
 
             """
             return self._emissive_faces_props.geo_paths
 
         @geometries.setter
         def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
-            """Set geometries linked to the thermic source.
-
-            Parameters
-            ----------
-            geometries: List[tuple[GeoRef, bool]]
-                list of tuple which contains geometry ref and bool for normal direction.
-
-            Returns
-            -------
-            None
-
-            """
             geo_paths = []
             for gr, reverse_normal in geometries:
                 if isinstance(gr, GeoRef):
@@ -2601,7 +2591,12 @@ class SourceThermic(BaseSource):
 
         @property
         def temperature_field_uri(self) -> str:
-            """Get temperature field file uri.
+            """Property of temperature field file uri.
+
+            Parameters
+            ----------
+            temperature_field_file_uri: Union[str, Path]
+                temperature field file uri.
 
             Returns
             -------
@@ -2613,18 +2608,6 @@ class SourceThermic(BaseSource):
 
         @temperature_field_uri.setter
         def temperature_field_uri(self, temperature_field_uri: Union[str, Path]) -> None:
-            """Set temperature field file uri.
-
-            Parameters
-            ----------
-            temperature_field_file_uri: Union[str, Path]
-                temperature field file uri.
-
-            Returns
-            -------
-            None
-
-            """
             self._temperature_field.temperature_field_uri = str(temperature_field_uri)
 
         @property
