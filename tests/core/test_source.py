@@ -2059,7 +2059,7 @@ def test_create_thermic_source(speos: Speos):
     new_default_parameter.emittance_type.temperature_field_uri = (
         Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
     )
-    new_default_parameter.emittance_type.axis_system = ORIGIN[0:9]
+    new_default_parameter.emittance_type.axis_plane = ORIGIN[0:9]
     new_default_parameter.emittance_type.sop = SopMirrorParameters()
     new_default_parameter.emittance_type.sop.reflectance = 0
     new_default_parameter.intensity_type = IntensityCosParameters()

@@ -1832,7 +1832,7 @@ class SourceSurface(BaseSource):
             if default_parameters is None:
                 return
             self._exitance_variable.SetInParent()
-            self.axis_plane = default_parameters.axis_system
+            self.axis_plane = default_parameters.axis_plane
             self.xmp_file_uri = default_parameters.xmp_file_uri
 
         @property
@@ -1955,7 +1955,7 @@ class SourceSurface(BaseSource):
                     default_parameters.exitance_type.xmp_file_uri
                 )
                 self.set_exitance_variable().axis_plane = (
-                    default_parameters.exitance_type.axis_system
+                    default_parameters.exitance_type.axis_plane
                 )
             case "ConstantExitanceParameters":
                 self.set_exitance_constant().geometries = (
@@ -2576,7 +2576,7 @@ class SourceThermic(BaseSource):
                 return
 
             self.temperature_field_uri = default_parameters.temperature_field_uri
-            self.axis_plane = default_parameters.axis_system
+            self.axis_plane = default_parameters.axis_plane
 
             # SOP
             match type(default_parameters.sop).__name__:

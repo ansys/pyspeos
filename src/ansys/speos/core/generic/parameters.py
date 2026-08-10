@@ -948,7 +948,7 @@ class VariableExitanceParameters:
 
     xmp_file_uri: Union[str, Path] = ""
     """Path to the XMP file defining variable exitance."""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
+    axis_plane: list[float] = field(default_factory=lambda: ORIGIN[0:9])
     """Axis system used to position variable exitance."""
 
 
@@ -1597,7 +1597,7 @@ class TemperatureFieldParameters:
 
     temperature_field_uri: Union[str, Path] = ""
     """Path to the temperature field file."""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
+    axis_plane: list[float] = field(default_factory=lambda: ORIGIN[0:9])
     """Axis system used to position temperature field."""
     sop: Union[SopMirrorParameters, SopLibraryParameters] = field(
         default_factory=lambda: SopMirrorParameters(reflectance=0)
