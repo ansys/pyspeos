@@ -1007,6 +1007,7 @@ def test_reset_texture_property(speos: Speos):
     op1.texture = [layer_2]
     op1.commit()
 
+    # Check after commit
     assert op1._material_instance.texture.layers[
         0
     ].anisotropy_map_properties.mapping_operator.HasField("spherical")
@@ -1032,6 +1033,8 @@ def test_reset_texture_property(speos: Speos):
         ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
         == layer_2.anisotropic_map.uv_mapping.perimeter
     )
+
+    # Modify locally the values
     layer_2.set_surface_mirror()
     assert layer_2._sop_template.HasField("mirror")
     old_values = layer_2.anisotropic_map.uv_mapping
@@ -1056,7 +1059,12 @@ def test_reset_texture_property(speos: Speos):
     assert mapping_op.axis_system == new_values.axis_system
     assert mapping_op.rotation == new_values.rotation
     assert mapping_op.HasField("planar")
-    layer_2._reset()
+
+    # Reset
+    op1.reset()
+    layer_2 = op1.texture[0]
+
+    # Check after reset
     assert layer_2._sop_template.HasField("library")
     mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
     assert mapping_op.axis_system == old_values.axis_system
@@ -1503,9 +1511,7 @@ def test_anisotropic_map_stable_ctr_allowed():
 
 def test_base_sop_mirror_bounds_and_reuse_branch():
     """Cover mirror validation and already-existing mirror branch."""
-    sop_template = ProtoSOPTemplate(name="SOP.Test")
-    mat_inst = ProtoScene.MaterialInstance(name="Mat.Test")
-    sop = BaseSop(sop_template=sop_template, mat_inst=mat_inst, stable_ctr=True)
+    sop = BaseSop(name="SOP.Test", stable_ctr=True)
 
     # First call creates mirror + defaults, second call follows the HasField('mirror') branch.
     sop.set_surface_mirror().reflectance = 50
