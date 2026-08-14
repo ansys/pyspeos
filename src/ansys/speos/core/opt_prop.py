@@ -613,10 +613,25 @@ class BaseVop:
         """Reset the local VOP template from the server-side data."""
         if self.vop_template_link is not None:
             self._vop_template = self.vop_template_link.get()
-            if self._vop_template.HasField("optic"):
-                self.set_volume_optic()
-            if self._vop_template.HasField("library"):
-                self.set_volume_library()
+        self._sync_vop_properties()
+
+    def _sync_vop_properties(self):
+        """Synchronize cached VOP helper objects with the current VOP template."""
+        if self._vop_template is None:
+            self._vop_optic = None
+            self._vop_library = None
+            return
+
+        self._vop_optic = (
+            self.VopOptic(self, None, stable_ctr=True)
+            if self._vop_template.HasField("optic")
+            else None
+        )
+        self._vop_library = (
+            self.VopLibrary(self, stable_ctr=True)
+            if self._vop_template.HasField("library")
+            else None
+        )
 
     def _delete_vop_template(self):
         """Delete the VOP template from the server and clear the local link."""
