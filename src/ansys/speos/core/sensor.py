@@ -32,6 +32,7 @@ import uuid
 import warnings
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
+from ansys.api.speos.sensor.v2 import sensor_pb2 as sensor_v2_pb2
 import grpc
 import numpy as np
 
@@ -78,10 +79,15 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
+from ansys.speos.core.kernel.sensor_template_v2 import (
+    ProtoSensorTemplateV2,
+    SensorTemplateLinkV2,
+)
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -108,13 +114,39 @@ class BaseSensor:
 
     Attributes
     ----------
-    sensor_template_link : ansys.speos.core.kernel.sensor_template.SensorTemplateLink
+    sensor_template_link : Union[\
+    ansys.speos.core.kernel.sensor_template.SensorTemplateLink, \
+    ansys.speos.core.kernel.sensor_template_v2.SensorTemplateLinkV2]
         Link object for the sensor template in database.
 
     Notes
     -----
     This is a Super class, **Do not instantiate this class yourself**
+
+    Sensor templates exist in two protobuf versions. Version 2 (``ansys.api.speos.sensor.v2``)
+    is only available on Speos servers starting from 2027 R1 SP0. On older servers - or for
+    sensor features that do not support it yet - version 1 (``ansys.api.speos.sensor.v1``) is
+    used instead. The version is resolved automatically at instantiation time.
     """
+
+    _SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)
+    """Minimum Speos server version (major, minor, service pack) supporting sensor template v2."""
+
+    _supports_template_v2 = False
+    """Whether the concrete sensor feature is able to handle a sensor template v2."""
+
+    @classmethod
+    def _use_sensor_template_v2(cls) -> bool:
+        """Tell if a newly created sensor template has to use the v2 protobuf definition.
+
+        Returns
+        -------
+        bool
+            ``True`` if the feature supports v2 and the connected server is recent enough.
+        """
+        if not cls._supports_template_v2:
+            return False
+        return server_version_checker.is_version_supported(*cls._SENSOR_TEMPLATE_V2_MIN_VERSION)
 
     def __init__(
         self,
@@ -130,14 +162,13 @@ class BaseSensor:
         self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
+        self._sensor_template_version = 2 if self._use_sensor_template_v2() else 1
         if metadata is None:
             metadata = {}
 
         if sensor_instance is None:
-            # Create local SensorTemplate
-            self._sensor_template = ProtoSensorTemplate(
-                name=name, description=description, metadata=metadata
-            )
+            # Create local SensorTemplate - using the protobuf version supported by the server
+            self._sensor_template = self._new_sensor_template(name, description, metadata)
             # Create local SensorInstance
             self._sensor_instance = ProtoScene.SensorInstance(
                 name=name, description=description, metadata=metadata
@@ -146,9 +177,53 @@ class BaseSensor:
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
             self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
+            # The version of an existing template is deduced from the link retrieved from the
+            # database: a project loaded from a speos file may still hold v1 templates even
+            # when the server would support v2.
+            if self.sensor_template_link is not None:
+                self._sensor_template_version = (
+                    2 if isinstance(self.sensor_template_link, SensorTemplateLinkV2) else 1
+                )
+            self._sensor_template = self._new_sensor_template(name, description, metadata)
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
+
+    def _new_sensor_template(
+        self, name: str, description: str, metadata: Mapping[str, str]
+    ) -> Union[ProtoSensorTemplate, ProtoSensorTemplateV2]:
+        """Create an empty sensor template using the resolved protobuf version.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sensor template.
+        description : str
+            Description of the sensor template.
+        metadata : Mapping[str, str]
+            Metadata of the sensor template.
+
+        Returns
+        -------
+        Union[ansys.speos.core.kernel.sensor_template.ProtoSensorTemplate, \
+        ansys.speos.core.kernel.sensor_template_v2.ProtoSensorTemplateV2]
+            Empty sensor template protobuf message.
+        """
+        if self._sensor_template_version == 2:
+            return ProtoSensorTemplateV2(name=name, description=description, metadata=metadata)
+        return ProtoSensorTemplate(name=name, description=description, metadata=metadata)
+
+    @property
+    def sensor_template_version(self) -> int:
+        """Protobuf version used by the sensor template of this feature.
+
+        Returns
+        -------
+        int
+            ``1`` if ``ansys.api.speos.sensor.v1`` is used, ``2`` if
+            ``ansys.api.speos.sensor.v2`` is used.
+        """
+        return self._sensor_template_version
 
     @property
     def lxp_path_number(self) -> Union[None, int]:
@@ -282,7 +357,9 @@ class BaseSensor:
 
         Parameters
         ----------
-        wavelengths_range : ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange
+        wavelengths_range : Union[\
+        ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.WavelengthsRange]
             Wavelengths range protobuf object to modify.
         default_parameters : \
         ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
@@ -295,6 +372,10 @@ class BaseSensor:
         -----
         **Do not instantiate this class yourself**, use set_wavelengths_range method available in
         sensor classes.
+
+        Sensor template v1 and v2 protobuf objects are both supported. Field names are resolved
+        from the protobuf descriptor, so the ``w_start``/``w_end``/``w_sampling`` layout and the
+        ``wavelength_start``/``wavelength_end`` layout are both handled.
         """
 
         def __init__(
@@ -332,14 +413,14 @@ class BaseSensor:
             float
                 Lower Bound of the wavelength range.
             """
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_start
             else:
                 return self._wavelengths_range.wavelength_start
 
         @start.setter
         def start(self, value: float):
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_start = value
             else:
                 self._wavelengths_range.wavelength_start = value
@@ -358,14 +439,14 @@ class BaseSensor:
             float
                 Upper Bound of the wavelength range.
             """
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_end
             else:
                 return self._wavelengths_range.wavelength_end
 
         @end.setter
         def end(self, value: float):
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_end = value
             else:
                 self._wavelengths_range.wavelength_end = value
@@ -385,12 +466,12 @@ class BaseSensor:
             Union[None, int]:
                 Number of Samples used to split the wavelength range.
             """
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value):
-            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_sampling = value
 
     class Dimensions:
@@ -400,7 +481,9 @@ class BaseSensor:
 
         Parameters
         ----------
-        sensor_dimensions : ansys.api.speos.sensor.v1.common_pb2.SensorDimensions
+        sensor_dimensions : Union[\
+        ansys.api.speos.sensor.v1.common_pb2.SensorDimensions, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Dimensions]
             SensorDimensions protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.DimensionsParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of the
@@ -416,7 +499,10 @@ class BaseSensor:
 
         def __init__(
             self,
-            sensor_dimensions: common_pb2.SensorDimensions,
+            sensor_dimensions: Union[
+                common_pb2.SensorDimensions,
+                sensor_v2_pb2.SensorTemplate.Dimensions,
+            ],
             default_parameters: Optional[DimensionsParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -567,8 +653,10 @@ class BaseSensor:
 
         Parameters
         ----------
-        sensor_type_colorimetric : ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_colorimetric : Union[\
+        ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.ModeColorimetric]
+            SensorTypeColorimetric (v1) or ModeColorimetric (v2) protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.ColorimetricParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
@@ -583,7 +671,10 @@ class BaseSensor:
 
         def __init__(
             self,
-            sensor_type_colorimetric: common_pb2.SensorTypeColorimetric,
+            sensor_type_colorimetric: Union[
+                common_pb2.SensorTypeColorimetric,
+                sensor_v2_pb2.SensorTemplate.ModeColorimetric,
+            ],
             default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -627,8 +718,10 @@ class BaseSensor:
 
         Parameters
         ----------
-        sensor_type_spectral : ansys.api.speos.sensor.v1.common_pb2.SensorTypeSpectral
-            SensorTypeSpectral protobuf object to modify.
+        sensor_type_spectral : Union[\
+        ansys.api.speos.sensor.v1.common_pb2.SensorTypeSpectral, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.ModeSpectral]
+            SensorTypeSpectral (v1) or ModeSpectral (v2) protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.SpectralParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of
             the data class
@@ -643,7 +736,10 @@ class BaseSensor:
 
         def __init__(
             self,
-            sensor_type_spectral: common_pb2.SensorTypeSpectral,
+            sensor_type_spectral: Union[
+                common_pb2.SensorTypeSpectral,
+                sensor_v2_pb2.SensorTemplate.ModeSpectral,
+            ],
             default_parameters: Optional[SpectralParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -1104,9 +1200,14 @@ class BaseSensor:
 
         # Save or Update the sensor template (depending on if it was already saved before)
         if self.sensor_template_link is None:
-            self.sensor_template_link = self._project.client.sensor_templates().create(
-                message=self._sensor_template
-            )
+            if self._sensor_template_version == 2:
+                self.sensor_template_link = self._project.client.sensor_templates_v2().create(
+                    message=self._sensor_template
+                )
+            else:
+                self.sensor_template_link = self._project.client.sensor_templates().create(
+                    message=self._sensor_template
+                )
             self._sensor_instance.sensor_guid = self.sensor_template_link.key
         elif self.sensor_template_link.get() != self._sensor_template:
             self.sensor_template_link.set(
@@ -1742,7 +1843,7 @@ class SensorCamera(BaseSensor):
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
-                if hasattr(self._mode_photometric, "consider_diffraction_effects"):
+                if server_version_checker.is_version_supported(2026, 1, 3):
                     self.consider_diffraction_effects = (
                         default_parameters.consider_diffraction_effects
                     )
@@ -2546,7 +2647,14 @@ class SensorIrradiance(BaseSensor):
     default_parameters : ansys.speos.core.generic.parameters.IrradianceSensorParameters, optional
         If defined the values in the sensor instance will be overwritten by the values of the data
         class
+
+    Notes
+    -----
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
 
     def __init__(
         self,
@@ -2575,25 +2683,124 @@ class SensorIrradiance(BaseSensor):
         self._layer_type = None
         self._fill_parameters(default_parameters)
 
+    @property
+    def _irradiance_template(self):
+        """Irradiance part of the sensor template, whatever the protobuf version used.
+
+        Returns
+        -------
+        Union[ansys.api.speos.sensor.v1.sensor_pb2.IrradianceSensorTemplate, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Irradiance]
+            Protobuf sub-message holding the irradiance sensor template definition.
+        """
+        if self._sensor_template_version == 2:
+            return self._sensor_template.irradiance
+        return self._sensor_template.irradiance_sensor_template
+
+    def _sensor_mode_field(self, mode: str) -> str:
+        """Get the template field name corresponding to a sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        str
+            Name of the protobuf field for the sensor template version in use.
+        """
+        if self._sensor_template_version == 2:
+            return "mode_" + mode
+        return "sensor_type_" + mode
+
+    def _get_sensor_mode(self, mode: str):
+        """Get the protobuf sub-message corresponding to a sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        google.protobuf.message.Message
+            Sub-message of the irradiance sensor template.
+        """
+        return getattr(self._irradiance_template, self._sensor_mode_field(mode))
+
+    def _has_sensor_mode(self, mode: str) -> bool:
+        """Tell if the template currently holds the given sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        bool
+            ``True`` if the sensor mode is the one currently set.
+        """
+        return self._irradiance_template.HasField(self._sensor_mode_field(mode))
+
+    def _set_integration_type(self, integration_type: str) -> None:
+        """Set the integration (illuminance) type on the sensor template.
+
+        Parameters
+        ----------
+        integration_type : str
+            One of ``"planar"``, ``"radial"``, ``"hemispherical"``, ``"cylindrical"``,
+            ``"semi_cylindrical"``.
+        """
+        if self._sensor_template_version == 2:
+            self._irradiance_template.integration_type = getattr(
+                sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
+                "INTEGRATION_TYPE_" + integration_type.upper(),
+            )
+        else:
+            getattr(self._irradiance_template, "illuminance_type_" + integration_type).SetInParent()
+
+    def _has_integration_type(self, integration_type: str) -> bool:
+        """Tell if the template currently uses the given integration (illuminance) type.
+
+        Parameters
+        ----------
+        integration_type : str
+            One of ``"planar"``, ``"radial"``, ``"hemispherical"``, ``"cylindrical"``,
+            ``"semi_cylindrical"``.
+
+        Returns
+        -------
+        bool
+            ``True`` if the integration type is the one currently set.
+        """
+        if self._sensor_template_version == 2:
+            return self._irradiance_template.integration_type == getattr(
+                sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
+                "INTEGRATION_TYPE_" + integration_type.upper(),
+            )
+        return self._irradiance_template.HasField("illuminance_type_" + integration_type)
+
     def _fill_parameters(
         self, default_parameters: Optional[IrradianceSensorParameters] = None
     ) -> None:
         if default_parameters:
             self._sensor_dimensions = self.Dimensions(
-                sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+                sensor_dimensions=self._irradiance_template.dimensions,
                 default_parameters=default_parameters.dimensions,
                 stable_ctr=True,
             )
 
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
                 self._type = BaseSensor.Colorimetric(
-                    sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                    sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
             elif isinstance(default_parameters.sensor_type, SpectralParameters):
                 self._type = BaseSensor.Spectral(
-                    sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                    sensor_type_spectral=self._get_sensor_mode("spectral"),
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
@@ -2658,18 +2865,17 @@ class SensorIrradiance(BaseSensor):
             return
 
         self._sensor_dimensions = self.Dimensions(
-            sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+            sensor_dimensions=self._irradiance_template.dimensions,
             default_parameters=None,
             stable_ctr=True,
         )
-        template = self._sensor_template.irradiance_sensor_template
-        if template.HasField("sensor_type_photometric"):
+        if self._has_sensor_mode("photometric"):
             self.set_type_photometric()
-        elif template.HasField("sensor_type_colorimetric"):
+        elif self._has_sensor_mode("colorimetric"):
             self.set_type_colorimetric()
-        elif template.HasField("sensor_type_radiometric"):
+        elif self._has_sensor_mode("radiometric"):
             self.set_type_radiometric()
-        elif template.HasField("sensor_type_spectral"):
+        elif self._has_sensor_mode("spectral"):
             self.set_type_spectral()
         properties = self._sensor_instance.irradiance_properties
         if properties.HasField("layer_type_none"):
@@ -2825,14 +3031,9 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if (
-            self._sensor_dimensions._sensor_dimensions
-            is not self._sensor_template.irradiance_sensor_template.dimensions
-        ):
+        if self._sensor_dimensions._sensor_dimensions is not self._irradiance_template.dimensions:
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = (
-                self._sensor_template.irradiance_sensor_template.dimensions
-            )
+            self._sensor_dimensions._sensor_dimensions = self._irradiance_template.dimensions
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorIrradiance:
@@ -2845,7 +3046,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor
         """
-        self._sensor_template.irradiance_sensor_template.sensor_type_photometric.SetInParent()
+        self._get_sensor_mode("photometric").SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
@@ -2860,30 +3061,23 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
-        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
-            "sensor_type_colorimetric"
-        ):
+        if self._type is None and self._has_sensor_mode("colorimetric"):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
-        ):
+        elif self._type._sensor_type_colorimetric is not self._get_sensor_mode("colorimetric"):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
-            )
+            self._type._sensor_type_colorimetric = self._get_sensor_mode("colorimetric")
         return self._type
 
     def set_type_radiometric(self) -> SensorIrradiance:
@@ -2896,7 +3090,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
-        self._sensor_template.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
+        self._get_sensor_mode("radiometric").SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
         return self
 
@@ -2911,30 +3105,23 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Spectral
             Spectral type.
         """
-        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
-            "sensor_type_spectral"
-        ):
+        if self._type is None and self._has_sensor_mode("spectral"):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=SpectralParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_spectral
-            is not self._sensor_template.irradiance_sensor_template.sensor_type_spectral
-        ):
+        elif self._type._sensor_type_spectral is not self._get_sensor_mode("spectral"):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = (
-                self._sensor_template.irradiance_sensor_template.sensor_type_spectral
-            )
+            self._type._sensor_type_spectral = self._get_sensor_mode("spectral")
         return self._type
 
     @property
@@ -2967,10 +3154,8 @@ class SensorIrradiance(BaseSensor):
         if not value:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
-            if self._sensor_template.irradiance_sensor_template.HasField(
-                "illuminance_type_semi_cylindrical"
-            ) or self._sensor_template.irradiance_sensor_template.HasField(
-                "illuminance_type_planar"
+            if self._has_integration_type("semi_cylindrical") or self._has_integration_type(
+                "planar"
             ):
                 self._sensor_instance.irradiance_properties.integration_direction[:] = value
             else:
@@ -3002,7 +3187,7 @@ class SensorIrradiance(BaseSensor):
         documentation, the integration direction must be set in the anti-rays direction to integrate
         their signal.
         """
-        self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
+        self._set_integration_type("planar")
         self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
@@ -3014,7 +3199,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
-        self._sensor_template.irradiance_sensor_template.illuminance_type_radial.SetInParent()
+        self._set_integration_type("radial")
         return self
 
     def set_illuminance_type_hemispherical(self) -> SensorIrradiance:
@@ -3025,7 +3210,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
-        self._sensor_template.irradiance_sensor_template.illuminance_type_hemispherical.SetInParent()
+        self._set_integration_type("hemispherical")
         return self
 
     def set_illuminance_type_cylindrical(self) -> SensorIrradiance:
@@ -3036,7 +3221,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
-        self._sensor_template.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
+        self._set_integration_type("cylindrical")
         return self
 
     def set_illuminance_type_semi_cylindrical(self) -> SensorIrradiance:
@@ -3047,7 +3232,7 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
-        self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
+        self._set_integration_type("semi_cylindrical")
         self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
