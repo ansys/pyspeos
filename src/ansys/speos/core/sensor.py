@@ -390,11 +390,6 @@ class BaseSensor:
             self._wavelengths_range = wavelengths_range
             self._fill_parameters(default_parameters)
 
-        @property
-        def _uses_short_field_names(self) -> bool:
-            """Tell if the underlying protobuf object uses the ``w_*`` field naming."""
-            return "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name
-
         def _fill_parameters(
             self, default_parameters: Optional[WavelengthsRangeParameters] = None
         ) -> None:
@@ -418,14 +413,14 @@ class BaseSensor:
             float
                 Lower Bound of the wavelength range.
             """
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_start
             else:
                 return self._wavelengths_range.wavelength_start
 
         @start.setter
         def start(self, value: float):
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_start = value
             else:
                 self._wavelengths_range.wavelength_start = value
@@ -444,14 +439,14 @@ class BaseSensor:
             float
                 Upper Bound of the wavelength range.
             """
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_end
             else:
                 return self._wavelengths_range.wavelength_end
 
         @end.setter
         def end(self, value: float):
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_end = value
             else:
                 self._wavelengths_range.wavelength_end = value
@@ -471,12 +466,12 @@ class BaseSensor:
             Union[None, int]:
                 Number of Samples used to split the wavelength range.
             """
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value):
-            if self._uses_short_field_names:
+            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_sampling = value
 
     class Dimensions:
