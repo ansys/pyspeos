@@ -108,7 +108,7 @@ def irradiance_template(sensor_feature, local: bool = False):
 
 
 def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
-    """Tell if the sensor template holds an irradiance definition.
+    """Get if the sensor template holds an irradiance definition.
 
     Parameters
     ----------
