@@ -282,8 +282,11 @@ class BaseSop:
             Returns mirror helper for chaining.
         """
         self._library = None
-        self._mirror = self.SopMirror(self, stable_ctr=True)
-        if not self._sop_template.HasField("mirror"):
+
+        if self._sop_template.HasField("mirror"):
+            self._mirror = self.SopMirror(self, stable_ctr=True)
+        else:
+            self._mirror = self.SopMirror(self, stable_ctr=True)
             self._mirror.reflectance = SopMirrorParameters().reflectance
         return self._mirror
 
@@ -751,7 +754,6 @@ class BaseVop:
         """
         if self._vop_template is None:
             self._vop_template = self._new_vop_template()
-        self._vop_template.library.SetInParent()
         self._vop_library = self.VopLibrary(self, stable_ctr=True)
         self._vop_optic = None
         return self._vop_library
