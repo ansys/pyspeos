@@ -201,7 +201,7 @@ class BaseSop:
         """
         if isinstance(sop_parameters, SopMirrorParameters):
             self.set_surface_mirror()
-            self.sop_mirror.reflectance = sop_parameters.reflectance
+            self.sop_mirror._fill_parameters(sop_parameters)
         elif sop_parameters == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
         elif isinstance(sop_parameters, SopLibraryParameters):
@@ -212,13 +212,20 @@ class BaseSop:
     class SopMirror:
         """Mirror SOP parameters."""
 
-        def __init__(self, parent: BaseSop, stable_ctr=False):
+        def __init__(
+            self,
+            parent: BaseSop,
+            default_parameters: Optional[SopMirrorParameters] = None,
+            stable_ctr=False,
+        ):
             """Create a mirror helper bound to a parent SOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the mirror protobuf field.
+            default_parameters : Optional[ansys.speos.core.generic.parameters.SopMirrorParameters]
+                Default mirror parameters to apply during initialization.
             stable_ctr : bool, optional
                 Internal guard to prevent unintended direct instantiation.
             """
@@ -230,6 +237,19 @@ class BaseSop:
                 )
             self._parent = parent
             self._parent._sop_template.mirror.SetInParent()
+
+            if default_parameters:
+                self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: SopMirrorParameters):
+            """Fill mirror parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : ansys.speos.core.generic.parameters.SopMirrorParameters
+                Default mirror parameters to apply.
+            """
+            self.reflectance = default_parameters.reflectance
 
         @property
         def reflectance(self) -> float:
@@ -284,10 +304,11 @@ class BaseSop:
         self._library = None
 
         if self._sop_template.HasField("mirror"):
-            self._mirror = self.SopMirror(self, stable_ctr=True)
+            self._mirror = self.SopMirror(self, default_parameters=None, stable_ctr=True)
         else:
-            self._mirror = self.SopMirror(self, stable_ctr=True)
-            self._mirror.reflectance = SopMirrorParameters().reflectance
+            self._mirror = self.SopMirror(
+                self, default_parameters=SopMirrorParameters(), stable_ctr=True
+            )
         return self._mirror
 
     def set_surface_opticalpolished(self) -> BaseSop:
