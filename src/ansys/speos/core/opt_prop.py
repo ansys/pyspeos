@@ -798,10 +798,12 @@ class TextureLayer(BaseSop):
             self,
             mapping,
             default_parameters: Optional[
-                UVMappingCubicParameters,
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
+                Union[
+                    UVMappingCubicParameters,
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                ]
             ] = None,
         ):
             """Initialize a texture mapping operator wrapper.
@@ -824,10 +826,12 @@ class TextureLayer(BaseSop):
         def _fill_parameters(
             self,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
         ):
             """Fill mapping operator parameters from default parameters.
@@ -1608,10 +1612,12 @@ class TextureLayer(BaseSop):
             self,
             parent: TextureLayer,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
             stable_ctr=False,
         ):
@@ -1641,10 +1647,12 @@ class TextureLayer(BaseSop):
         def _fill_parameters(
             self,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
         ):
             """Fill anisotropy map parameters from default parameters.
