@@ -1635,3 +1635,34 @@ def test_texture_layer_parameters_build_all_maps(speos: Speos):
     assert not hasattr(layer, "normal_map_property")
 
     op.delete()
+
+
+def test_helper_properties_without_template(speos: Speos):
+    """Check that SOP/VOP helper properties return None when the template is not set."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="NoTemplate")
+
+    # A brand new optical property has no VOP template at all.
+    assert op._vop_template is None
+    assert op.vop_optic is None  # this should return None, not crash
+    assert op.vop_library is None  # this should return None, not crash
+
+    # Going back to "no volume property" must not break the accessors either.
+    op.set_volume_optic()
+    assert op.vop_optic is not None
+    assert op.vop_library is None  # still None because we didn't set a library
+    op.set_volume_none()
+    assert op.vop_optic is None  # both back to None
+    assert op.vop_library is None  # both back to None
+
+    op.set_volume_library()
+    assert op.vop_library is not None
+    assert op.vop_optic is None  # still None because we didn't set an optic
+    op.set_volume_none()
+    assert op.vop_optic is None  # both back to None
+    assert op.vop_library is None  # both back to None
+
+    # A textured material has no SOP template of its own.
+    op._sop_template = None
+    assert op.sop_library is None
+    assert op.sop_mirror is None

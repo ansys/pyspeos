@@ -265,7 +265,8 @@ class BaseSop:
         Optional[ansys.speos.core.opt_prop.BaseSop.SopMirror]
             Mirror helper when the active SOP field is ``mirror``, otherwise ``None``.
         """
-        return self._mirror
+        if self._sop_template is not None:
+            return self._mirror
 
     def set_surface_mirror(self) -> BaseSop.SopMirror:
         """Define SOP as a perfect specular surface.
@@ -369,7 +370,7 @@ class BaseSop:
             Library helper containing ``sop_file_uri`` when SOP is of library
             type, otherwise ``None``.
         """
-        if self._sop_template.HasField("library"):
+        if self._sop_template is not None and self._sop_template.HasField("library"):
             return self._library
 
 
@@ -677,7 +678,7 @@ class BaseVop:
             Optic helper containing index, absorption, and constringence when
             VOP is of optic type, otherwise ``None``.
         """
-        if self._vop_template.HasField("optic"):
+        if self._vop_template is not None and self._vop_template.HasField("optic"):
             return self._vop_optic
 
     @property
@@ -690,7 +691,7 @@ class BaseVop:
             Library helper containing ``material_file_uri`` when VOP is of
             library type, otherwise ``None``.
         """
-        if self._vop_template.HasField("library"):
+        if self._vop_template is not None and self._vop_template.HasField("library"):
             return self._vop_library
 
     def set_volume_none(self) -> "OptProp":
