@@ -1732,19 +1732,22 @@ class TextureLayer(BaseSop):
         """
         if default_parameters.image_texture_parameters:
             self._image_map = TextureLayer.ImageTexture(
-                self._texture_template,
+                self,
                 default_parameters.image_texture_parameters,
                 stable_ctr=True,
             )
         if default_parameters.normal_map_parameters:
             self._normal_map = TextureLayer.NormalMap(
-                self._texture_template,
+                self,
                 default_parameters.normal_map_parameters,
                 stable_ctr=True,
             )
         if default_parameters.anisotropy_map_parameters:
-            if default_parameters.anisotropy_map_parameters:
-                self.normal_map_property = default_parameters.anisotropy_map_parameters
+            self._aniso_map = TextureLayer.AnisotropicMap(
+                self,
+                default_parameters.anisotropy_map_parameters,
+                stable_ctr=True,
+            )
 
     @property
     def image_texture(self) -> ImageTexture:

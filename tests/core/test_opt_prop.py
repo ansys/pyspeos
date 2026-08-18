@@ -1558,10 +1558,9 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
         ),
     )
 
-    # Current implementation passes an internal protobuf layer into map helpers.
-    # Keep this behavior covered until constructor wiring is refactored.
-    with pytest.raises(AttributeError, match="_sop_template"):
-        TextureLayer(op, "Layer.Coverage", default_parameters=params)
+    layer = TextureLayer(op, "Layer.Coverage", default_parameters=params)
+    assert layer.image_texture is not None
+    assert layer.normal_map is not None
 
     layer = TextureLayer(op, "Layer.Coverage")
     assert layer.set_image_texture() is not None
@@ -1570,3 +1569,49 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
     # Hit branch where image_properties already exists.
     layer._image_map = None
     assert layer.set_image_texture() is not None
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_layer_parameters_build_all_maps(speos: Speos):
+    """Check that TextureLayerParameters builds the image, normal and anisotropy maps."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="Texture.Parameters")
+
+    params = TextureLayerParameters(
+        image_texture_parameters=ImageTextureParameters(
+            file_path=Path("image_params.png"),
+            repeat_u=False,
+            mapping=UVMappingPlanarParameters(rotation=20),
+        ),
+        normal_map_parameters=NormalMapParameters(
+            file_path=Path("normal_params.png"),
+            normal_map_type=NormalMapTypes.from_image,
+            roughness=0.5,
+            mapping=UVMappingCubicParameters(rotation=30),
+        ),
+        anisotropy_map_parameters=UVMappingCylindricalParameters(rotation=40),
+    )
+
+    layer = TextureLayer(op, "Layer.Parameters", default_parameters=params)
+
+    assert layer.image_texture is not None
+    assert layer.image_texture.image_file_uri == "image_params.png"
+    assert layer.image_texture.repeat_u is False
+    assert layer.image_texture.uv_mapping.rotation == 20
+
+    assert layer.normal_map is not None
+    assert layer.normal_map.normal_map_file_uri == "normal_params.png"
+    assert layer.normal_map.uv_mapping.rotation == 30
+
+    assert layer.anisotropic_map is not None
+    assert layer.anisotropic_map.uv_mapping.rotation == 40
+
+    # The maps must be bound to the texture layer, not to its protobuf message.
+    assert layer.image_texture._parent is layer
+    assert layer.normal_map._parent is layer
+    assert layer.anisotropic_map._parent is layer
+
+    # No stray attribute created instead of the anisotropy map.
+    assert not hasattr(layer, "normal_map_property")
+
+    op.delete()
