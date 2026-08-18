@@ -1370,8 +1370,8 @@ class SopTypes(str, Enum):
 class SopMirrorParameters:
     """SOP Mirror Parameters Dataclass."""
 
-    reflectance = 100
-    """Rreflectance of a perfect mirror."""
+    reflectance: float = 100
+    """Reflectance of a perfect mirror."""
 
 
 @dataclass

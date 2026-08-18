@@ -35,6 +35,7 @@ from ansys.speos.core.generic.parameters import (
     NormalMapTypes,
     OptPropParameters,
     SopLibraryParameters,
+    SopMirrorParameters,
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
@@ -499,6 +500,25 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
 
     assert op_local.get("definitely_missing_key") is None
     assert "Used key: definitely_missing_key not found" in capsys.readouterr().out
+
+
+def test_sop_mirror_parameters_reflectance_is_a_field():
+    """Check that the mirror reflectance can be customized through the dataclass."""
+    assert SopMirrorParameters().reflectance == 100
+    assert SopMirrorParameters(reflectance=42).reflectance == 42
+
+
+def test_create_optical_property_with_custom_reflectance(speos: Speos):
+    """Check that a custom mirror reflectance is applied to the SOP template."""
+    p = Project(speos=speos)
+
+    op = p.create_optical_property(
+        name="Mirror.CustomReflectance",
+        parameters=OptPropParameters(sop_parameters=SopMirrorParameters(reflectance=42)),
+    )
+
+    assert op.sop_mirror.reflectance == 42
+    assert op._sop_template.mirror.reflectance == 42
 
 
 @pytest.mark.supported_speos_versions(min=252)
