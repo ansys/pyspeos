@@ -1662,7 +1662,52 @@ def test_helper_properties_without_template(speos: Speos):
     assert op.vop_optic is None  # both back to None
     assert op.vop_library is None  # both back to None
 
-    # A textured material has no SOP template of its own.
-    op._sop_template = None
-    assert op.sop_library is None
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_helper_properties_on_textured_material(speos: Speos):
+    """Check that SOP helpers are dropped when the SOP is carried by texture layers."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="TexturedNoSop")
+
+    assert op.sop_mirror is not None
+
+    # A textured material has no SOP template of its own: each layer owns one.
+    op.create_texture_layer()
+    assert op._sop_template is None
     assert op.sop_mirror is None
+    assert op.sop_library is None
+
+
+def test_helper_properties_follow_active_field(speos: Speos):
+    """Check that SOP/VOP helper properties always reflect the active protobuf field."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="ActiveField")
+
+    # Switching between VOP types must never expose a helper of the previous type.
+    optic = op.set_volume_optic()
+    assert op.vop_optic is optic
+    assert op.vop_library is None
+
+    library = op.set_volume_library()
+    assert op.vop_library is library
+    assert op.vop_optic is None
+
+    op.set_volume_opaque()
+    assert op.vop_optic is None
+    assert op.vop_library is None
+
+    assert op.set_volume_optic() is not None
+    assert op.vop_library is None
+
+    # Same expectation on the SOP side.
+    mirror = op.set_surface_mirror()
+    assert op.sop_mirror is mirror
+    assert op.sop_library is None
+
+    sop_library = op.set_surface_library()
+    assert op.sop_library is sop_library
+    assert op.sop_mirror is None
+
+    op.set_surface_opticalpolished()
+    assert op.sop_mirror is None
+    assert op.sop_library is None
