@@ -1370,8 +1370,8 @@ class SopTypes(str, Enum):
 class SopMirrorParameters:
     """SOP Mirror Parameters Dataclass."""
 
-    reflectance = 100
-    """Rreflectance of a perfect mirror."""
+    reflectance: float = 100
+    """Reflectance of a perfect mirror."""
 
 
 @dataclass
@@ -1494,14 +1494,12 @@ class ImageTextureParameters:
     """Whether the image texture repeats along the U direction."""
     repeat_v: bool = True
     """Whether the image texture repeats along the V direction."""
-    mapping: [
-        Union[
-            UVMappingPlanarParameters,
-            UVMappingCubicParameters,
-            UVMappingSphericalParameters,
-            UVMappingCylindricalParameters,
-            UVMappingByData,
-        ]
+    mapping: Union[
+        UVMappingPlanarParameters,
+        UVMappingCubicParameters,
+        UVMappingSphericalParameters,
+        UVMappingCylindricalParameters,
+        UVMappingByData,
     ] = field(default_factory=UVMappingPlanarParameters)
     """Mapping settings applied to the image texture."""
 

@@ -35,6 +35,7 @@ from ansys.speos.core.generic.parameters import (
     NormalMapTypes,
     OptPropParameters,
     SopLibraryParameters,
+    SopMirrorParameters,
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
@@ -499,6 +500,25 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
 
     assert op_local.get("definitely_missing_key") is None
     assert "Used key: definitely_missing_key not found" in capsys.readouterr().out
+
+
+def test_sop_mirror_parameters_reflectance_is_a_field():
+    """Check that the mirror reflectance can be customized through the dataclass."""
+    assert SopMirrorParameters().reflectance == 100
+    assert SopMirrorParameters(reflectance=42).reflectance == 42
+
+
+def test_create_optical_property_with_custom_reflectance(speos: Speos):
+    """Check that a custom mirror reflectance is applied to the SOP template."""
+    p = Project(speos=speos)
+
+    op = p.create_optical_property(
+        name="Mirror.CustomReflectance",
+        parameters=OptPropParameters(sop_parameters=SopMirrorParameters(reflectance=42)),
+    )
+
+    assert op.sop_mirror.reflectance == 42
+    assert op._sop_template.mirror.reflectance == 42
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1558,10 +1578,9 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
         ),
     )
 
-    # Current implementation passes an internal protobuf layer into map helpers.
-    # Keep this behavior covered until constructor wiring is refactored.
-    with pytest.raises(AttributeError, match="_sop_template"):
-        TextureLayer(op, "Layer.Coverage", default_parameters=params)
+    layer = TextureLayer(op, "Layer.Coverage", default_parameters=params)
+    assert layer.image_texture is not None
+    assert layer.normal_map is not None
 
     layer = TextureLayer(op, "Layer.Coverage")
     assert layer.set_image_texture() is not None
@@ -1570,3 +1589,127 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
     # Hit branch where image_properties already exists.
     layer._image_map = None
     assert layer.set_image_texture() is not None
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_layer_parameters_build_all_maps(speos: Speos):
+    """Check that TextureLayerParameters builds the image, normal and anisotropy maps."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="Texture.Parameters")
+
+    params = TextureLayerParameters(
+        image_texture_parameters=ImageTextureParameters(
+            file_path=Path("image_params.png"),
+            repeat_u=False,
+            mapping=UVMappingPlanarParameters(rotation=20),
+        ),
+        normal_map_parameters=NormalMapParameters(
+            file_path=Path("normal_params.png"),
+            normal_map_type=NormalMapTypes.from_image,
+            roughness=0.5,
+            mapping=UVMappingCubicParameters(rotation=30),
+        ),
+        anisotropy_map_parameters=UVMappingCylindricalParameters(rotation=40),
+    )
+
+    layer = TextureLayer(op, "Layer.Parameters", default_parameters=params)
+
+    assert layer.image_texture is not None
+    assert layer.image_texture.image_file_uri == "image_params.png"
+    assert layer.image_texture.repeat_u is False
+    assert layer.image_texture.uv_mapping.rotation == 20
+
+    assert layer.normal_map is not None
+    assert layer.normal_map.normal_map_file_uri == "normal_params.png"
+    assert layer.normal_map.uv_mapping.rotation == 30
+
+    assert layer.anisotropic_map is not None
+    assert layer.anisotropic_map.uv_mapping.rotation == 40
+
+    # The maps must be bound to the texture layer, not to its protobuf message.
+    assert layer.image_texture._parent is layer
+    assert layer.normal_map._parent is layer
+    assert layer.anisotropic_map._parent is layer
+
+    # No stray attribute created instead of the anisotropy map.
+    assert not hasattr(layer, "normal_map_property")
+
+    op.delete()
+
+
+def test_vop_helper_properties(speos: Speos):
+    """Check VOP helper properties."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="TestVOP")
+
+    # A brand new optical property has no VOP template at all.
+    assert op._vop_template is None
+    assert op.vop_optic is None  # this should return None, not crash
+    assert op.vop_library is None  # this should return None, not crash
+
+    # Going back to "no volume property" must not break the accessors either.
+    optic = op.set_volume_optic()
+    assert op._vop_template.HasField("optic")
+    assert op.vop_optic is optic
+    assert op.vop_library is None  # still None because we didn't set a library
+    op.set_volume_none()
+    assert op._vop_template is None
+    assert op.vop_optic is None  # both back to None
+    assert op.vop_library is None  # both back to None
+
+    # Library then Opaque
+    lib = op.set_volume_library()
+    assert op._vop_template.HasField("library")
+    assert op.vop_library is lib
+    assert op.vop_optic is None  # still None because we didn't set an optic
+    op.set_volume_opaque()
+    assert op._vop_template.HasField("opaque")
+    assert op.vop_optic is None  # both back to None
+    assert op.vop_library is None  # both back to None
+
+    # Then back to None again
+    op.set_volume_none()
+    assert op._vop_template is None
+    assert op.vop_optic is None  # both still are None
+    assert op.vop_library is None  # both still are None
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_helper_properties_on_textured_material(speos: Speos):
+    """Check that SOP helpers are dropped when the SOP is carried by texture layers."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="TexturedNoSop")
+
+    assert op.sop_mirror is not None
+
+    # A textured material has no SOP template of its own: each layer owns one.
+    op.create_texture_layer()
+    assert op._sop_template is None
+    assert op.sop_mirror is None
+    assert op.sop_library is None
+
+
+def test_sop_helper_properties(speos: Speos):
+    """Check SOP helper properties."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="TestSOP")
+
+    assert op._sop_template is not None
+
+    # Go for mirror
+    mirror = op.set_surface_mirror()
+    assert op._sop_template.HasField("mirror")
+    assert op.sop_mirror is mirror
+    assert op.sop_library is None
+
+    # Then optical polished
+    op.set_surface_opticalpolished()
+    assert op._sop_template.HasField("optical_polished")
+    assert op.sop_mirror is None
+    assert op.sop_library is None
+
+    # Then library
+    lib = op.set_surface_library()
+    assert op._sop_template.HasField("library")
+    assert op.sop_library is lib
+    assert op.sop_mirror is None

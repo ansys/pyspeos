@@ -153,6 +153,12 @@ class BaseSop:
             self.sop_template_link.delete()
             self.sop_template_link = None
 
+    def _clear_sop_template(self):
+        """Drop the local SOP template, for materials whose SOP is carried elsewhere."""
+        self._sop_template = None
+        self._mirror = None
+        self._library = None
+
     def _fill_sop_template(self, speos_client, sop_guid: str):
         """Populate the local SOP template from a server-side SOP template.
 
@@ -195,7 +201,7 @@ class BaseSop:
         """
         if isinstance(sop_parameters, SopMirrorParameters):
             self.set_surface_mirror()
-            self.sop_mirror.reflectance = sop_parameters.reflectance
+            self.sop_mirror._fill_parameters(sop_parameters)
         elif sop_parameters == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
         elif isinstance(sop_parameters, SopLibraryParameters):
@@ -206,13 +212,20 @@ class BaseSop:
     class SopMirror:
         """Mirror SOP parameters."""
 
-        def __init__(self, parent: BaseSop, stable_ctr=False):
+        def __init__(
+            self,
+            parent: BaseSop,
+            default_parameters: Optional[SopMirrorParameters] = None,
+            stable_ctr=False,
+        ):
             """Create a mirror helper bound to a parent SOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the mirror protobuf field.
+            default_parameters : Optional[ansys.speos.core.generic.parameters.SopMirrorParameters]
+                Default mirror parameters to apply during initialization.
             stable_ctr : bool, optional
                 Internal guard to prevent unintended direct instantiation.
             """
@@ -224,6 +237,19 @@ class BaseSop:
                 )
             self._parent = parent
             self._parent._sop_template.mirror.SetInParent()
+
+            if default_parameters:
+                self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: SopMirrorParameters):
+            """Fill mirror parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : ansys.speos.core.generic.parameters.SopMirrorParameters
+                Default mirror parameters to apply.
+            """
+            self.reflectance = default_parameters.reflectance
 
         @property
         def reflectance(self) -> float:
@@ -276,12 +302,13 @@ class BaseSop:
             Returns mirror helper for chaining.
         """
         self._library = None
+
         if self._sop_template.HasField("mirror"):
-            self._library = None
-            self._mirror = self.SopMirror(self, stable_ctr=True)
+            self._mirror = self.SopMirror(self, default_parameters=None, stable_ctr=True)
         else:
-            self._mirror = self.SopMirror(self, stable_ctr=True)
-            self._mirror.reflectance = SopMirrorParameters().reflectance
+            self._mirror = self.SopMirror(
+                self, default_parameters=SopMirrorParameters(), stable_ctr=True
+            )
         return self._mirror
 
     def set_surface_opticalpolished(self) -> BaseSop:
@@ -355,7 +382,6 @@ class BaseSop:
             Returns library helper for chaining.
         """
         self._mirror = None
-        self._sop_template.library.SetInParent()
         self._library = self.SopLibrary(self, stable_ctr=True)
         return self._library
 
@@ -369,8 +395,7 @@ class BaseSop:
             Library helper containing ``sop_file_uri`` when SOP is of library
             type, otherwise ``None``.
         """
-        if self._sop_template.HasField("library"):
-            return self._library
+        return self._library
 
 
 class BaseVop:
@@ -408,6 +433,8 @@ class BaseVop:
                     "what you're doing."
                 )
             self._parent = parent
+            self._parent._vop_template.optic.SetInParent()
+
             if default_parameters:
                 self._fill_parameters(default_parameters)
 
@@ -677,8 +704,7 @@ class BaseVop:
             Optic helper containing index, absorption, and constringence when
             VOP is of optic type, otherwise ``None``.
         """
-        if self._vop_template.HasField("optic"):
-            return self._vop_optic
+        return self._vop_optic
 
     @property
     def vop_library(self) -> Optional[BaseVop.VopLibrary]:
@@ -690,8 +716,7 @@ class BaseVop:
             Library helper containing ``material_file_uri`` when VOP is of
             library type, otherwise ``None``.
         """
-        if self._vop_template.HasField("library"):
-            return self._vop_library
+        return self._vop_library
 
     def set_volume_none(self) -> "OptProp":
         """Remove any VOP template (no volume optical property).
@@ -702,6 +727,8 @@ class BaseVop:
             Returns self (as the OptProp that owns this VOP helper).
         """
         self._vop_template = None
+        self._vop_optic = None
+        self._vop_library = None
         return self
 
     def set_volume_opaque(self) -> "OptProp":
@@ -715,6 +742,8 @@ class BaseVop:
         if self._vop_template is None:
             self._vop_template = self._new_vop_template()
         self._vop_template.opaque.SetInParent()
+        self._vop_optic = None
+        self._vop_library = None
         return self
 
     def set_volume_optic(
@@ -733,8 +762,8 @@ class BaseVop:
         elif self._vop_template.HasField("optic"):
             self._vop_optic = self.VopOptic(self, None, stable_ctr=True)
         else:
-            self._vop_template.optic.SetInParent()
             self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
+        self._vop_library = None
         return self._vop_optic
 
     def set_volume_library(self) -> BaseVop.VopLibrary:
@@ -747,8 +776,8 @@ class BaseVop:
         """
         if self._vop_template is None:
             self._vop_template = self._new_vop_template()
-        self._vop_template.library.SetInParent()
         self._vop_library = self.VopLibrary(self, stable_ctr=True)
+        self._vop_optic = None
         return self._vop_library
 
     # Deactivated due to a bug on SpeosRPC server side
@@ -797,10 +826,12 @@ class TextureLayer(BaseSop):
             self,
             mapping,
             default_parameters: Optional[
-                UVMappingCubicParameters,
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
+                Union[
+                    UVMappingCubicParameters,
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                ]
             ] = None,
         ):
             """Initialize a texture mapping operator wrapper.
@@ -823,10 +854,12 @@ class TextureLayer(BaseSop):
         def _fill_parameters(
             self,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
         ):
             """Fill mapping operator parameters from default parameters.
@@ -1607,10 +1640,12 @@ class TextureLayer(BaseSop):
             self,
             parent: TextureLayer,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
             stable_ctr=False,
         ):
@@ -1640,10 +1675,12 @@ class TextureLayer(BaseSop):
         def _fill_parameters(
             self,
             default_parameters: Optional[
-                UVMappingPlanarParameters,
-                UVMappingSphericalParameters,
-                UVMappingCylindricalParameters,
-                UVMappingCubicParameters,
+                Union[
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
             ] = None,
         ):
             """Fill anisotropy map parameters from default parameters.
@@ -1732,19 +1769,22 @@ class TextureLayer(BaseSop):
         """
         if default_parameters.image_texture_parameters:
             self._image_map = TextureLayer.ImageTexture(
-                self._texture_template,
+                self,
                 default_parameters.image_texture_parameters,
                 stable_ctr=True,
             )
         if default_parameters.normal_map_parameters:
             self._normal_map = TextureLayer.NormalMap(
-                self._texture_template,
+                self,
                 default_parameters.normal_map_parameters,
                 stable_ctr=True,
             )
         if default_parameters.anisotropy_map_parameters:
-            if default_parameters.anisotropy_map_parameters:
-                self.normal_map_property = default_parameters.anisotropy_map_parameters
+            self._aniso_map = TextureLayer.AnisotropicMap(
+                self,
+                default_parameters.anisotropy_map_parameters,
+                stable_ctr=True,
+            )
 
     @property
     def image_texture(self) -> ImageTexture:
@@ -2035,7 +2075,7 @@ class OptProp(BaseVop, BaseSop):
         for layer in value:
             if not isinstance(layer, TextureLayer):
                 raise ValueError("not a texture")
-        self._sop_template = None
+        self._clear_sop_template()
         self._texture = value
 
     @property
@@ -2109,8 +2149,9 @@ class OptProp(BaseVop, BaseSop):
         """
         if self._texture is None:
             self._texture = []
-            if self._sop_template is not None:
-                self._sop_template = None
+            # As we are adding first layer, we need to clear the SOP template.
+            # It is either sop template or texture layers
+            self._clear_sop_template()
         new_layer = TextureLayer(
             opt_prop=self,
             name=name,
@@ -2308,8 +2349,6 @@ class OptProp(BaseVop, BaseSop):
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.texture:
-            if self._sop_template is not None:
-                self._sop_template = None
             self._material_instance.texture.ClearField("layers")
             layers = []
             for i, layer in enumerate(self.texture):
@@ -2448,5 +2487,5 @@ class OptProp(BaseVop, BaseSop):
         elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
         else:  # Specific case for ambient material
-            self._sop_template = None
+            self._clear_sop_template()
         self.reset()
