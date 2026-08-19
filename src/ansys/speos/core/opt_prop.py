@@ -2104,17 +2104,19 @@ class OptProp(BaseVop, BaseSop):
     @property
     def geometries(
         self,
-    ) -> List[str]:
+    ) -> Optional[List[str]]:
         """Geometries to which this material is applied.
 
         An empty list means "all geometries"; ``None`` means "no geometry".
 
         Returns
         -------
-        List[str]
-            List of geometry references used by this material.
+        Optional[List[str]]
+            List of geometry references used by this material, or ``None``.
         """
-        return self._material_instance.geometries.geo_paths
+        if self._material_instance.HasField("geometries"):
+            return self._material_instance.geometries.geo_paths
+        return None
 
     @geometries.setter
     def geometries(

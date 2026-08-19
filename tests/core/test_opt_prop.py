@@ -174,9 +174,11 @@ def test_create_optical_property(speos: Speos):
         assert "TheBodyB" in geo
 
     op1.geometries = None  # means no geometry
+    assert op1.geometries is None
     assert op1._material_instance.HasField("geometries") is False
 
     op1.geometries = []  # means all geometries
+    assert op1.geometries == []
     assert op1._material_instance.HasField("geometries")
     assert op1._material_instance.geometries.geo_paths == []
 
