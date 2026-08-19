@@ -433,6 +433,8 @@ class BaseVop:
                     "what you're doing."
                 )
             self._parent = parent
+            self._parent._vop_template.optic.SetInParent()
+
             if default_parameters:
                 self._fill_parameters(default_parameters)
 
@@ -760,7 +762,6 @@ class BaseVop:
         elif self._vop_template.HasField("optic"):
             self._vop_optic = self.VopOptic(self, None, stable_ctr=True)
         else:
-            self._vop_template.optic.SetInParent()
             self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
         self._vop_library = None
         return self._vop_optic
