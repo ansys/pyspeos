@@ -1825,43 +1825,66 @@ class TextureLayer(BaseSop):
             self._texture_template.ClearField("image_properties")
         return self
 
-    def set_normal_map_from_image(self):
-        """Activate normal map in this texture layer."""
-        if self._normal_map:
-            self._normal_map._set_normal_map_from_image()
-            return self._normal_map
-        if self._texture_template.HasField("normal_map_properties"):
-            self._normal_map = TextureLayer.NormalMap(
-                self, default_parameters=None, stable_ctr=True
-            )
+    def _set_normal_map(self, normal_map_type: NormalMapTypes) -> TextureLayer.NormalMap:
+        """Activate the normal map in this texture layer with the given source type.
+
+        Parameters
+        ----------
+        normal_map_type : ansys.speos.core.generic.parameters.NormalMapTypes
+            Source type of the normal map.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        # Create _normal_map if it does not exist yet
+        if self._normal_map is None:
+            if self._texture_template.HasField("normal_map_properties"):
+                # If the template already has a normal_map_properties field,
+                # we don't want to overwrite it with default parameters.
+                self._normal_map = TextureLayer.NormalMap(
+                    self, default_parameters=None, stable_ctr=True
+                )
+            else:
+                # Else, create it with default parameters.
+                self._normal_map = TextureLayer.NormalMap(
+                    self,
+                    default_parameters=NormalMapParameters(normal_map_type=normal_map_type),
+                    stable_ctr=True,
+                )
+                # We return here because the normal map has just been created with the correct type.
+                return self._normal_map
+
+        # Set the normal map source type based on the provided normal_map_type.
+        if normal_map_type == NormalMapTypes.from_normal_map:
+            self._normal_map._set_normal_map_from_normal_map()
+        elif normal_map_type == NormalMapTypes.from_image:
             self._normal_map._set_normal_map_from_image()
         else:
-            self._normal_map = TextureLayer.NormalMap(
-                self,
-                default_parameters=NormalMapParameters(),
-                stable_ctr=True,
-            )
+            raise ValueError(f"Unsupported normal map type: {normal_map_type}")
+
         return self._normal_map
 
-    def set_normal_map_from_normal_map(self):
-        """Activate normal map in this texture layer."""
-        if self._normal_map:
-            self._normal_map._set_normal_map_from_normal_map()
-            return self._normal_map
-        if self._texture_template.HasField("normal_map_properties"):
-            self._normal_map = TextureLayer.NormalMap(
-                self, default_parameters=None, stable_ctr=True
-            )
-            self._normal_map._set_normal_map_from_normal_map()
-        else:
-            self._normal_map = TextureLayer.NormalMap(
-                self,
-                default_parameters=NormalMapParameters(
-                    normal_map_type=NormalMapTypes.from_normal_map
-                ),
-                stable_ctr=True,
-            )
-        return self._normal_map
+    def set_normal_map_from_image(self) -> TextureLayer.NormalMap:
+        """Activate normal map sourced from an image in this texture layer.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        return self._set_normal_map(NormalMapTypes.from_image)
+
+    def set_normal_map_from_normal_map(self) -> TextureLayer.NormalMap:
+        """Activate normal map sourced from a normal map file in this texture layer.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        return self._set_normal_map(NormalMapTypes.from_normal_map)
 
     def set_normal_map_to_none(self):
         """Deactivate normal map in this texture layer."""
