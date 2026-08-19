@@ -718,26 +718,26 @@ class BaseVop:
         """
         return self._vop_library
 
-    def set_volume_none(self) -> "OptProp":
+    def set_volume_none(self) -> BaseVop:
         """Remove any VOP template (no volume optical property).
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
+        ansys.speos.core.opt_prop.BaseVop
+            Returns self for chaining.
         """
         self._vop_template = None
         self._vop_optic = None
         self._vop_library = None
         return self
 
-    def set_volume_opaque(self) -> "OptProp":
+    def set_volume_opaque(self) -> BaseVop:
         """Set VOP to non-transparent (opaque) material.
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
+        ansys.speos.core.opt_prop.BaseVop
+            Returns self for chaining.
         """
         if self._vop_template is None:
             self._vop_template = self._new_vop_template()
@@ -2238,7 +2238,7 @@ class OptProp(BaseVop, BaseSop):
             )
 
         if "vop" not in out_dict.keys():
-            # SensorTemplate
+            # VopTemplate
             if self.vop_template_link is None:
                 if self._vop_template is not None:
                     out_dict["vop"] = proto_message_utils._replace_guids(
@@ -2252,7 +2252,7 @@ class OptProp(BaseVop, BaseSop):
                 )
 
         if "sops" not in out_dict.keys():
-            # SensorTemplate
+            # SopTemplate
             if self.sop_template_link is None:
                 if self._sop_template is not None:
                     out_dict["sops"] = [
