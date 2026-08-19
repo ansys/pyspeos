@@ -2177,7 +2177,7 @@ class OptProp(BaseVop, BaseSop):
         return self._create_texture_layer_by_parameters(name=layer_name)
 
     def delete_texture_layer(self, layer: "TextureLayer") -> "OptProp":
-        """Delete a texture layer from this optical property and from the server.
+        """Delete a texture layer from this optical property.
 
         Parameters
         ----------
@@ -2200,8 +2200,17 @@ class OptProp(BaseVop, BaseSop):
         self._texture.remove(layer)
         layer._texture_template = None
         layer._index = None
-        # Rebuild the texture layer list of the material instance and update the scene
-        self.commit()
+
+        # Rebuild the texture layer list of the material instance
+        self._material_instance.texture.ClearField("layers")
+        layers = []
+        for i, layer in enumerate(self.texture):
+            layer._index = i
+            if layer.sop_template_link is not None:
+                layer._texture_template.sop_guid = layer.sop_template_link.key
+            layers.append(layer._texture_template)
+        self._material_instance.texture.layers.extend(layers)
+
         return self
 
     def _to_dict(self) -> dict:
