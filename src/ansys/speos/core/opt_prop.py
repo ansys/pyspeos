@@ -1273,6 +1273,33 @@ class TextureLayer(BaseSop):
             self._mapping = TextureLayer.TextureUVMappingOperator(map_property, mapping_type)
             return self._mapping
 
+        def _fill_mapping_parameters(
+            self,
+            mapping_parameters: Optional[
+                Union[
+                    UVMappingByData,
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
+            ] = None,
+        ):
+            """Apply default parameters to the texture mapping."""
+            if isinstance(
+                mapping_parameters,
+                (
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ),
+            ):
+                self._mapping = self._set_mapping_operator(mapping_parameters)
+            elif mapping_parameters and mapping_parameters.vertices_data_index is not None:
+                self._mapping = self.set_uv_mapping_by_data()
+                self._mapping.vertices_data_index = mapping_parameters.vertices_data_index
+
         @property
         def uv_mapping(
             self,
@@ -1401,24 +1428,7 @@ class TextureLayer(BaseSop):
                     self.image_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(
-                    default_parameters.mapping,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
-                elif (
-                    default_parameters.mapping
-                    and default_parameters.mapping.vertices_data_index is not None
-                ):
-                    self._mapping = self.set_uv_mapping_by_data()
-                    self._mapping.vertices_data_index = (
-                        default_parameters.mapping.vertices_data_index
-                    )
+                self._fill_mapping_parameters(default_parameters.mapping)
 
         @property
         def repeat_u(self) -> bool:
@@ -1514,24 +1524,7 @@ class TextureLayer(BaseSop):
                     self.normal_map_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(
-                    default_parameters.mapping,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
-                elif (
-                    default_parameters.mapping
-                    and default_parameters.mapping.vertices_data_index is not None
-                ):
-                    self._mapping = self.set_uv_mapping_by_data()
-                    self._mapping.vertices_data_index = (
-                        default_parameters.mapping.vertices_data_index
-                    )
+                self._fill_mapping_parameters(default_parameters.mapping)
 
         @property
         def repeat_u(self) -> bool:
@@ -1697,17 +1690,7 @@ class TextureLayer(BaseSop):
             stable_ctr : bool, optional
                 Internal guard to prevent unintended direct instantiation.
             """
-            if default_parameters:
-                if isinstance(
-                    default_parameters,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters)
+            self._fill_mapping_parameters(default_parameters)
 
     @min_speos_version(25, 2, 0)
     def __init__(
