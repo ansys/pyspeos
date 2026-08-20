@@ -963,6 +963,9 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     assert anisotropic.uv_mapping.u_scale == 4
     assert anisotropic.uv_mapping.v_scale == 5
     assert anisotropic.uv_mapping.rotation == 90
+    # repeat_u/repeat_v only apply to image and normal map textures, not anisotropy maps
+    assert not hasattr(anisotropic, "repeat_u")
+    assert not hasattr(anisotropic, "repeat_v")
 
     layer_reuse = TextureLayer(op, "Layer.Reuse")
     layer_reuse.set_image_texture()

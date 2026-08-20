@@ -1382,7 +1382,50 @@ class TextureLayer(BaseSop):
             self._mapping = TextureLayer.TextureMappingByData(map_property, None)
             return self._mapping
 
-    class ImageTexture(BaseTextureMap):
+    class _RepeatableTextureMap(BaseTextureMap):
+        """Texture map base class adding U/V repeat properties (image and normal map only)."""
+
+        def _texture_message(self):
+            """Return the protobuf texture sub-message matching the current texture type."""
+            if self._type == TextureTypes.image:
+                return self._parent._sop_template.texture.image
+            if self._type == TextureTypes.normal_map:
+                return self._parent._sop_template.texture.normal_map
+            raise TypeError(f"Unsupported texture type for texture message: {self._type}")
+
+        @property
+        def repeat_u(self) -> bool:
+            """Whether the texture repeats along the U direction."""
+            return self._texture_message().repeat_along_u
+
+        @repeat_u.setter
+        def repeat_u(self, value: bool):
+            """Set whether the texture repeats along the U direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along U, ``False`` otherwise.
+            """
+            self._texture_message().repeat_along_u = value
+
+        @property
+        def repeat_v(self) -> bool:
+            """Whether the texture repeats along the V direction."""
+            return self._texture_message().repeat_along_v
+
+        @repeat_v.setter
+        def repeat_v(self, value: bool):
+            """Set whether the texture repeats along the V direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along V, ``False`` otherwise.
+            """
+            self._texture_message().repeat_along_v = value
+
+    class ImageTexture(_RepeatableTextureMap):
         """Image texture mapping properties."""
 
         def __init__(
@@ -1431,38 +1474,6 @@ class TextureLayer(BaseSop):
                 self._fill_mapping_parameters(default_parameters.mapping)
 
         @property
-        def repeat_u(self) -> bool:
-            """Whether the texture repeats along the U direction."""
-            return self._parent._sop_template.texture.image.repeat_along_u
-
-        @repeat_u.setter
-        def repeat_u(self, value: bool):
-            """Set whether the image texture repeats along the U direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along U, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.image.repeat_along_u = value
-
-        @property
-        def repeat_v(self) -> bool:
-            """Whether the texture repeats along the V direction."""
-            return self._parent._sop_template.texture.image.repeat_along_v
-
-        @repeat_v.setter
-        def repeat_v(self, value: bool):
-            """Set whether the image texture repeats along the V direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along V, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.image.repeat_along_v = value
-
-        @property
         def image_file_uri(self) -> Optional[str]:
             """URI of the texture bitmap file."""
             return self._parent._sop_template.texture.image.bitmap_file_uri
@@ -1473,7 +1484,7 @@ class TextureLayer(BaseSop):
             if self._type == TextureTypes.image:
                 self._parent._sop_template.texture.image.bitmap_file_uri = str(value)
 
-    class NormalMap(BaseTextureMap):
+    class NormalMap(_RepeatableTextureMap):
         """Normal map texture mapping properties."""
 
         def __init__(
@@ -1525,38 +1536,6 @@ class TextureLayer(BaseSop):
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
                 self._fill_mapping_parameters(default_parameters.mapping)
-
-        @property
-        def repeat_u(self) -> bool:
-            """Whether the normal map repeats along the U direction."""
-            return self._parent._sop_template.texture.normal_map.repeat_along_u
-
-        @repeat_u.setter
-        def repeat_u(self, value: bool):
-            """Set whether the normal map repeats along the U direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along U, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.normal_map.repeat_along_u = value
-
-        @property
-        def repeat_v(self) -> bool:
-            """Whether the normal map repeats along the V direction."""
-            return self._parent._sop_template.texture.normal_map.repeat_along_v
-
-        @repeat_v.setter
-        def repeat_v(self, value: bool):
-            """Set whether the normal map repeats along the V direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along V, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.normal_map.repeat_along_v = value
 
         @property
         def normal_map_file_uri(self) -> Optional[str]:
