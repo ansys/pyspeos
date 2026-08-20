@@ -718,26 +718,26 @@ class BaseVop:
         """
         return self._vop_library
 
-    def set_volume_none(self) -> "OptProp":
+    def set_volume_none(self) -> BaseVop:
         """Remove any VOP template (no volume optical property).
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
+        ansys.speos.core.opt_prop.BaseVop
+            Returns self for chaining.
         """
         self._vop_template = None
         self._vop_optic = None
         self._vop_library = None
         return self
 
-    def set_volume_opaque(self) -> "OptProp":
+    def set_volume_opaque(self) -> BaseVop:
         """Set VOP to non-transparent (opaque) material.
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
+        ansys.speos.core.opt_prop.BaseVop
+            Returns self for chaining.
         """
         if self._vop_template is None:
             self._vop_template = self._new_vop_template()
@@ -1273,6 +1273,33 @@ class TextureLayer(BaseSop):
             self._mapping = TextureLayer.TextureUVMappingOperator(map_property, mapping_type)
             return self._mapping
 
+        def _fill_mapping_parameters(
+            self,
+            mapping_parameters: Optional[
+                Union[
+                    UVMappingByData,
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ]
+            ] = None,
+        ):
+            """Apply default parameters to the texture mapping."""
+            if isinstance(
+                mapping_parameters,
+                (
+                    UVMappingPlanarParameters,
+                    UVMappingSphericalParameters,
+                    UVMappingCylindricalParameters,
+                    UVMappingCubicParameters,
+                ),
+            ):
+                self._mapping = self._set_mapping_operator(mapping_parameters)
+            elif mapping_parameters and mapping_parameters.vertices_data_index is not None:
+                self._mapping = self.set_uv_mapping_by_data()
+                self._mapping.vertices_data_index = mapping_parameters.vertices_data_index
+
         @property
         def uv_mapping(
             self,
@@ -1355,7 +1382,50 @@ class TextureLayer(BaseSop):
             self._mapping = TextureLayer.TextureMappingByData(map_property, None)
             return self._mapping
 
-    class ImageTexture(BaseTextureMap):
+    class _RepeatableTextureMap(BaseTextureMap):
+        """Texture map base class adding U/V repeat properties (image and normal map only)."""
+
+        def _texture_message(self):
+            """Return the protobuf texture sub-message matching the current texture type."""
+            if self._type == TextureTypes.image:
+                return self._parent._sop_template.texture.image
+            elif self._type == TextureTypes.normal_map:
+                return self._parent._sop_template.texture.normal_map
+            raise TypeError(f"Unsupported texture type for texture message: {self._type}")
+
+        @property
+        def repeat_u(self) -> bool:
+            """Whether the texture repeats along the U direction."""
+            return self._texture_message().repeat_along_u
+
+        @repeat_u.setter
+        def repeat_u(self, value: bool):
+            """Set whether the texture repeats along the U direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along U, ``False`` otherwise.
+            """
+            self._texture_message().repeat_along_u = value
+
+        @property
+        def repeat_v(self) -> bool:
+            """Whether the texture repeats along the V direction."""
+            return self._texture_message().repeat_along_v
+
+        @repeat_v.setter
+        def repeat_v(self, value: bool):
+            """Set whether the texture repeats along the V direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along V, ``False`` otherwise.
+            """
+            self._texture_message().repeat_along_v = value
+
+    class ImageTexture(_RepeatableTextureMap):
         """Image texture mapping properties."""
 
         def __init__(
@@ -1401,56 +1471,7 @@ class TextureLayer(BaseSop):
                     self.image_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(
-                    default_parameters.mapping,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
-                elif (
-                    default_parameters.mapping
-                    and default_parameters.mapping.vertices_data_index is not None
-                ):
-                    self._mapping = self.set_uv_mapping_by_data()
-                    self._mapping.vertices_data_index = (
-                        default_parameters.mapping.vertices_data_index
-                    )
-
-        @property
-        def repeat_u(self) -> bool:
-            """Whether the texture repeats along the U direction."""
-            return self._parent._sop_template.texture.image.repeat_along_u
-
-        @repeat_u.setter
-        def repeat_u(self, value: bool):
-            """Set whether the image texture repeats along the U direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along U, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.image.repeat_along_u = value
-
-        @property
-        def repeat_v(self) -> bool:
-            """Whether the texture repeats along the V direction."""
-            return self._parent._sop_template.texture.image.repeat_along_v
-
-        @repeat_v.setter
-        def repeat_v(self, value: bool):
-            """Set whether the image texture repeats along the V direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along V, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.image.repeat_along_v = value
+                self._fill_mapping_parameters(default_parameters.mapping)
 
         @property
         def image_file_uri(self) -> Optional[str]:
@@ -1463,7 +1484,7 @@ class TextureLayer(BaseSop):
             if self._type == TextureTypes.image:
                 self._parent._sop_template.texture.image.bitmap_file_uri = str(value)
 
-    class NormalMap(BaseTextureMap):
+    class NormalMap(_RepeatableTextureMap):
         """Normal map texture mapping properties."""
 
         def __init__(
@@ -1514,56 +1535,7 @@ class TextureLayer(BaseSop):
                     self.normal_map_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(
-                    default_parameters.mapping,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
-                elif (
-                    default_parameters.mapping
-                    and default_parameters.mapping.vertices_data_index is not None
-                ):
-                    self._mapping = self.set_uv_mapping_by_data()
-                    self._mapping.vertices_data_index = (
-                        default_parameters.mapping.vertices_data_index
-                    )
-
-        @property
-        def repeat_u(self) -> bool:
-            """Whether the normal map repeats along the U direction."""
-            return self._parent._sop_template.texture.normal_map.repeat_along_u
-
-        @repeat_u.setter
-        def repeat_u(self, value: bool):
-            """Set whether the normal map repeats along the U direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along U, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.normal_map.repeat_along_u = value
-
-        @property
-        def repeat_v(self) -> bool:
-            """Whether the normal map repeats along the V direction."""
-            return self._parent._sop_template.texture.normal_map.repeat_along_v
-
-        @repeat_v.setter
-        def repeat_v(self, value: bool):
-            """Set whether the normal map repeats along the V direction.
-
-            Parameters
-            ----------
-            value : bool
-                ``True`` to repeat along V, ``False`` otherwise.
-            """
-            self._parent._sop_template.texture.normal_map.repeat_along_v = value
+                self._fill_mapping_parameters(default_parameters.mapping)
 
         @property
         def normal_map_file_uri(self) -> Optional[str]:
@@ -1697,17 +1669,7 @@ class TextureLayer(BaseSop):
             stable_ctr : bool, optional
                 Internal guard to prevent unintended direct instantiation.
             """
-            if default_parameters:
-                if isinstance(
-                    default_parameters,
-                    (
-                        UVMappingPlanarParameters,
-                        UVMappingSphericalParameters,
-                        UVMappingCylindricalParameters,
-                        UVMappingCubicParameters,
-                    ),
-                ):
-                    self._mapping = self._set_mapping_operator(default_parameters)
+            self._fill_mapping_parameters(default_parameters)
 
     @min_speos_version(25, 2, 0)
     def __init__(
@@ -1825,43 +1787,66 @@ class TextureLayer(BaseSop):
             self._texture_template.ClearField("image_properties")
         return self
 
-    def set_normal_map_from_image(self):
-        """Activate normal map in this texture layer."""
-        if self._normal_map:
-            self._normal_map._set_normal_map_from_image()
-            return self._normal_map
-        if self._texture_template.HasField("normal_map_properties"):
-            self._normal_map = TextureLayer.NormalMap(
-                self, default_parameters=None, stable_ctr=True
-            )
+    def _set_normal_map(self, normal_map_type: NormalMapTypes) -> TextureLayer.NormalMap:
+        """Activate the normal map in this texture layer with the given source type.
+
+        Parameters
+        ----------
+        normal_map_type : ansys.speos.core.generic.parameters.NormalMapTypes
+            Source type of the normal map.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        # Create _normal_map if it does not exist yet
+        if self._normal_map is None:
+            if self._texture_template.HasField("normal_map_properties"):
+                # If the template already has a normal_map_properties field,
+                # we don't want to overwrite it with default parameters.
+                self._normal_map = TextureLayer.NormalMap(
+                    self, default_parameters=None, stable_ctr=True
+                )
+            else:
+                # Else, create it with default parameters.
+                self._normal_map = TextureLayer.NormalMap(
+                    self,
+                    default_parameters=NormalMapParameters(normal_map_type=normal_map_type),
+                    stable_ctr=True,
+                )
+                # We return here because the normal map has just been created with the correct type.
+                return self._normal_map
+
+        # Set the normal map source type based on the provided normal_map_type.
+        if normal_map_type == NormalMapTypes.from_normal_map:
+            self._normal_map._set_normal_map_from_normal_map()
+        elif normal_map_type == NormalMapTypes.from_image:
             self._normal_map._set_normal_map_from_image()
         else:
-            self._normal_map = TextureLayer.NormalMap(
-                self,
-                default_parameters=NormalMapParameters(),
-                stable_ctr=True,
-            )
+            raise ValueError(f"Unsupported normal map type: {normal_map_type}")
+
         return self._normal_map
 
-    def set_normal_map_from_normal_map(self):
-        """Activate normal map in this texture layer."""
-        if self._normal_map:
-            self._normal_map._set_normal_map_from_normal_map()
-            return self._normal_map
-        if self._texture_template.HasField("normal_map_properties"):
-            self._normal_map = TextureLayer.NormalMap(
-                self, default_parameters=None, stable_ctr=True
-            )
-            self._normal_map._set_normal_map_from_normal_map()
-        else:
-            self._normal_map = TextureLayer.NormalMap(
-                self,
-                default_parameters=NormalMapParameters(
-                    normal_map_type=NormalMapTypes.from_normal_map
-                ),
-                stable_ctr=True,
-            )
-        return self._normal_map
+    def set_normal_map_from_image(self) -> TextureLayer.NormalMap:
+        """Activate normal map sourced from an image in this texture layer.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        return self._set_normal_map(NormalMapTypes.from_image)
+
+    def set_normal_map_from_normal_map(self) -> TextureLayer.NormalMap:
+        """Activate normal map sourced from a normal map file in this texture layer.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.TextureLayer.NormalMap
+            Normal map helper for chaining.
+        """
+        return self._set_normal_map(NormalMapTypes.from_normal_map)
 
     def set_normal_map_to_none(self):
         """Deactivate normal map in this texture layer."""
@@ -2081,17 +2066,19 @@ class OptProp(BaseVop, BaseSop):
     @property
     def geometries(
         self,
-    ) -> List[str]:
+    ) -> Optional[List[str]]:
         """Geometries to which this material is applied.
 
         An empty list means "all geometries"; ``None`` means "no geometry".
 
         Returns
         -------
-        List[str]
-            List of geometry references used by this material.
+        Optional[List[str]]
+            List of geometry references used by this material, or ``None``.
         """
-        return self._material_instance.geometries.geo_paths
+        if self._material_instance.HasField("geometries"):
+            return self._material_instance.geometries.geo_paths
+        return None
 
     @geometries.setter
     def geometries(
@@ -2177,7 +2164,7 @@ class OptProp(BaseVop, BaseSop):
         return self._create_texture_layer_by_parameters(name=layer_name)
 
     def delete_texture_layer(self, layer: "TextureLayer") -> "OptProp":
-        """Delete a texture layer from this optical property and from the server.
+        """Delete a texture layer from this optical property.
 
         Parameters
         ----------
@@ -2200,8 +2187,17 @@ class OptProp(BaseVop, BaseSop):
         self._texture.remove(layer)
         layer._texture_template = None
         layer._index = None
-        # Rebuild the texture layer list of the material instance and update the scene
-        self.commit()
+
+        # Rebuild the texture layer list of the material instance
+        self._material_instance.texture.ClearField("layers")
+        layers = []
+        for i, layer in enumerate(self.texture):
+            layer._index = i
+            if layer.sop_template_link is not None:
+                layer._texture_template.sop_guid = layer.sop_template_link.key
+            layers.append(layer._texture_template)
+        self._material_instance.texture.layers.extend(layers)
+
         return self
 
     def _to_dict(self) -> dict:
@@ -2238,7 +2234,7 @@ class OptProp(BaseVop, BaseSop):
             )
 
         if "vop" not in out_dict.keys():
-            # SensorTemplate
+            # VopTemplate
             if self.vop_template_link is None:
                 if self._vop_template is not None:
                     out_dict["vop"] = proto_message_utils._replace_guids(
@@ -2252,7 +2248,7 @@ class OptProp(BaseVop, BaseSop):
                 )
 
         if "sops" not in out_dict.keys():
-            # SensorTemplate
+            # SopTemplate
             if self.sop_template_link is None:
                 if self._sop_template is not None:
                     out_dict["sops"] = [
