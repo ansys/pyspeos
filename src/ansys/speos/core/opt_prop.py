@@ -1389,7 +1389,7 @@ class TextureLayer(BaseSop):
             """Return the protobuf texture sub-message matching the current texture type."""
             if self._type == TextureTypes.image:
                 return self._parent._sop_template.texture.image
-            if self._type == TextureTypes.normal_map:
+            elif self._type == TextureTypes.normal_map:
                 return self._parent._sop_template.texture.normal_map
             raise TypeError(f"Unsupported texture type for texture message: {self._type}")
 

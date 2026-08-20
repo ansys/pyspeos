@@ -867,6 +867,9 @@ def test_texture_mapping_helper_local_branches(speos: Speos):
     normal._mapping = None
     assert normal.uv_mapping.vertices_data_index == 1
 
+    with pytest.raises(ValueError, match="Unsupported normal map type"):
+        layer._set_normal_map("unsupported")
+
     anisotropic = layer.set_anisotropy_map()
     anisotropic.set_uv_mapping_by_data().vertices_data_index = 0
     anisotropic._mapping = None
@@ -875,6 +878,12 @@ def test_texture_mapping_helper_local_branches(speos: Speos):
     invalid_map = TextureLayer.BaseTextureMap(layer, "unsupported", stable_ctr=True)
     with pytest.raises(TypeError):
         invalid_map._get_map_property()
+
+    invalid_repeatable_map = TextureLayer._RepeatableTextureMap(
+        layer, "unsupported", stable_ctr=True
+    )
+    with pytest.raises(TypeError):
+        invalid_repeatable_map._texture_message()
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1333,7 +1342,8 @@ def test_delete_texture_property(speos: Speos):
     with pytest.raises(RuntimeError):
         layer.delete()
 
-    op.create_texture_layer()
+    remaining_layer = op.create_texture_layer()
+    op.commit()
     layer.delete()
     op.commit()
     # After delete local link cleared
@@ -1345,6 +1355,7 @@ def test_delete_texture_property(speos: Speos):
     # check layer is also removed downstream
     assert len(op.texture) == 1
     assert len(op._material_instance.texture.layers) == 1
+    assert op._material_instance.texture.layers[0].sop_guid == remaining_layer.sop_template_link.key
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1692,6 +1703,11 @@ def test_helper_properties_on_textured_material(speos: Speos):
     assert op._sop_template is None
     assert op.sop_mirror is None
     assert op.sop_library is None
+
+    # Not functional yet - to be fixed.
+    # op.set_surface_mirror()
+    # assert op.sop_mirror is not None
+    # assert op.texture is None # None because we just set a SOP on the material, not on a layer
 
 
 def test_sop_helper_properties(speos: Speos):
