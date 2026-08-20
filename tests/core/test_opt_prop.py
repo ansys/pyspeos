@@ -49,7 +49,7 @@ from ansys.speos.core.generic.parameters import (
     VopTypes,
 )
 from ansys.speos.core.kernel import ProtoFace
-from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.scene import ProtoScene, SceneStub
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.opt_prop import BaseSop, BaseVop, TextureLayer
@@ -343,7 +343,11 @@ def test_get_optical_property(speos: Speos, capsys):
     assert "optic" not in vop_property_info
     assert "library" not in vop_property_info
     # test sops
-    sop_property_info = op1.get(key="sops")[0]
+    sop_property_info = None
+    if speos.client.scenes()._is_texture_available:
+        sop_property_info = op1.get(key="sop")
+    else:
+        sop_property_info = op1.get(key="sops")[0]
     assert "mirror" in sop_property_info
     assert "optical_polished" not in sop_property_info
     assert "library" not in sop_property_info
@@ -368,7 +372,10 @@ def test_get_optical_property(speos: Speos, capsys):
     assert "optic" in vop_property_info
     assert "library" not in vop_property_info
     # test sops
-    sop_property_info = op2.get(key="sops")[0]
+    if speos.client.scenes()._is_texture_available:
+        sop_property_info = op2.get(key="sop")
+    else:
+        sop_property_info = op2.get(key="sops")[0]
     assert "mirror" not in sop_property_info
     assert "optical_polished" in sop_property_info
     assert "library" not in sop_property_info
@@ -386,7 +393,10 @@ def test_get_optical_property(speos: Speos, capsys):
     # test vop
     assert op3.get(key="vop") is None
     # test sops
-    sop_property_info = op3.get(key="sops")[0]
+    if speos.client.scenes()._is_texture_available:
+        sop_property_info = op3.get(key="sop")
+    else:
+        sop_property_info = op3.get(key="sops")[0]
     assert "mirror" not in sop_property_info
     assert "optical_polished" not in sop_property_info
     assert "library" in sop_property_info
@@ -497,7 +507,10 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
     local_dict = op_local._to_dict()
 
     assert "vop" in local_dict
-    assert "sops" in local_dict
+    if speos.client.scenes()._is_texture_available:
+        assert "sop" in local_dict
+    else:
+        assert "sops" in local_dict
     assert "local:" in str(op_local)
 
     assert op_local.get("definitely_missing_key") is None
@@ -523,6 +536,32 @@ def test_create_optical_property_with_custom_reflectance(speos: Speos):
     assert op._sop_template.mirror.reflectance == 42
 
 
+def _assert_vop_opaque_no_sop(vop_only_dict: dict):
+    assert "vop" in vop_only_dict
+    assert "opaque" in vop_only_dict["vop"]
+    assert "sops" not in vop_only_dict
+    assert "sop" not in vop_only_dict
+
+
+def _assert_sop_optical_polished_no_vop(sop_only_dict: dict, scene_db: SceneStub):
+    if scene_db._is_texture_available:
+        assert "sop" in sop_only_dict
+        assert "optical_polished" in sop_only_dict["sop"]
+    else:
+        assert "sops" in sop_only_dict
+        assert "optical_polished" in sop_only_dict["sops"][0]
+    assert "vop" not in sop_only_dict
+
+
+def _assert_texture_no_vop(texture_one_layer_dict: dict):
+    assert "vop" not in texture_one_layer_dict
+    assert "texture" in texture_one_layer_dict
+    assert len(texture_one_layer_dict["texture"]["layers"]) == 1
+    assert "sop" in texture_one_layer_dict["texture"]["layers"][0]
+    assert "mirror" in texture_one_layer_dict["texture"]["layers"][0]["sop"]
+    assert texture_one_layer_dict["texture"]["layers"][0]["sop"]["mirror"]["reflectance"] == 100
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_opt_prop_to_dict(speos: Speos):
     """Check _to_dict output for SOP, VOP, and texture combinations."""
@@ -533,25 +572,24 @@ def test_opt_prop_to_dict(speos: Speos):
     vop_only = p.create_optical_property(name="ToDict.VopOnly")
     vop_only.set_volume_opaque()
     vop_only._clear_sop_template()
+    # Before commit
+    vop_only_dict = vop_only._to_dict()
+    _assert_vop_opaque_no_sop(vop_only_dict)
+    # After commit
     vop_only.commit()
     vop_only_dict = vop_only._to_dict()
-    assert "vop" in vop_only_dict
-    assert "opaque" in vop_only_dict["vop"]
-    assert "sops" not in vop_only_dict
-    assert "sop" not in vop_only_dict
+    _assert_vop_opaque_no_sop(vop_only_dict)
 
     # SOP only
     sop_only = p.create_optical_property(name="ToDict.SopOnly")
     sop_only.set_surface_opticalpolished()
-    # No commit to test that _to_dict works even if not committed
+    # Before commit
     sop_only_dict = sop_only._to_dict()
-    if scene_db._is_texture_available:
-        assert "sop" in sop_only_dict
-        assert "optical_polished" in sop_only_dict["sop"]
-    else:
-        assert "sops" in sop_only_dict
-        assert "optical_polished" in sop_only_dict["sops"][0]
-    assert "vop" not in sop_only_dict
+    _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
+    # After commit
+    sop_only.commit()
+    sop_only_dict = sop_only._to_dict()
+    _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
 
     # VOP and SOP
     vop_and_sop = p.create_optical_property(name="ToDict.VopAndSop")
@@ -575,14 +613,13 @@ def test_opt_prop_to_dict(speos: Speos):
         # No VOP, texture one layer
         texture_one_layer = p.create_optical_property(name="ToDict.TextureOneLayer")
         texture_one_layer.create_texture_layer()
+        # Before commit
+        texture_one_layer_dict = texture_one_layer._to_dict()
+        _assert_texture_no_vop(texture_one_layer_dict)
+        # After commit
         texture_one_layer.commit()
         texture_one_layer_dict = texture_one_layer._to_dict()
-        assert "vop" not in texture_one_layer_dict
-        assert "texture" in texture_one_layer_dict
-        assert len(texture_one_layer_dict["texture"]["layers"]) == 1
-        assert "sop" in texture_one_layer_dict["texture"]["layers"][0]
-        assert "mirror" in texture_one_layer_dict["texture"]["layers"][0]["sop"]
-        assert texture_one_layer_dict["texture"]["layers"][0]["sop"]["mirror"]["reflectance"] == 100
+        _assert_texture_no_vop(texture_one_layer_dict)
 
         # VOP, texture two layers
         texture_with_vop = p.create_optical_property(name="ToDict.TextureWithVop")

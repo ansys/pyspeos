@@ -2233,6 +2233,60 @@ class OptProp(BaseVop, BaseSop):
                 message=self._material_instance,
             )
 
+            # VopTemplate need to be added to the dict even if no commit was performed yet.
+            if (
+                "vop" not in out_dict.keys()
+                and self.vop_template_link is None
+                and self._vop_template is not None
+            ):
+                out_dict["vop"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client,
+                    message=self._vop_template,
+                )
+
+            # SopTemplate need to be added to the dict even if no commit was performed yet.
+            # Need to make distinction about key name depending on server capability
+            # regarding textures
+            if self._project.client.scenes()._is_texture_available:
+                if (
+                    "sop" not in out_dict.keys()
+                    and self.sop_template_link is None
+                    and self._sop_template is not None
+                ):
+                    out_dict["sop"] = proto_message_utils._replace_guids(
+                        speos_client=self._project.client,
+                        message=self._sop_template,
+                    )
+            else:
+                if (
+                    "sops" not in out_dict.keys()
+                    and self.sop_template_link is None
+                    and self._sop_template is not None
+                ):
+                    out_dict["sops"] = [
+                        proto_message_utils._replace_guids(
+                            speos_client=self._project.client,
+                            message=self._sop_template,
+                        )
+                    ]
+
+            # Texture need to be added to the dict even if no commit was performed yet.
+            if (
+                "texture" in out_dict.keys()
+                and len(out_dict["texture"]["layers"]) == 0
+                and self._texture is not None
+            ):
+                for layer in self._texture:
+                    layer_dict = proto_message_utils._replace_guids(
+                        speos_client=self._project.client,
+                        message=layer._texture_template,
+                    )
+                    layer_dict["sop"] = proto_message_utils._replace_guids(
+                        speos_client=self._project.client,
+                        message=layer._sop_template,
+                    )
+                    out_dict["texture"]["layers"].append(layer_dict)
+
         proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
