@@ -594,9 +594,6 @@ class BaseVop:
             )
         # The VOP template is created lazily by the set_volume_*() methods
         self._vop_template = None
-        self._vop_template_name = name + ".VOP"
-        self._vop_template_description = description
-        self._vop_template_metadata = dict(metadata or {})
         self.vop_template_link = None
         """Link object for the vop template in database."""
 
@@ -606,19 +603,8 @@ class BaseVop:
         if vop_parameters:
             self._fill_parameters_vop(vop_parameters)
 
-    def _new_vop_template(self) -> ProtoVOPTemplate:
-        """Create an empty VOP template.
-
-        Returns
-        -------
-        ansys.speos.core.kernel.vop_template.ProtoVOPTemplate
-            Newly created VOP template.
-        """
-        return ProtoVOPTemplate(
-            name=self._vop_template_name,
-            description=self._vop_template_description,
-            metadata=self._vop_template_metadata,
-        )
+    def _prepare_vop_assignment(self):
+        """Prepare the owning object to receive a VOP type assignment."""
 
     def _commit_vop_template(self, speos_client):
         """Create, update or delete the VOP template on the Speos server.
@@ -745,8 +731,7 @@ class BaseVop:
         ansys.speos.core.opt_prop.BaseVop
             Returns self for chaining.
         """
-        if self._vop_template is None:
-            self._vop_template = self._new_vop_template()
+        self._prepare_vop_assignment()
         self._vop_template.opaque.SetInParent()
         self._vop_optic = None
         self._vop_library = None
@@ -762,10 +747,8 @@ class BaseVop:
         ansys.speos.core.opt_prop.BaseVop.VopOptic
             Returns VOP Helper.
         """
-        if self._vop_template is None:
-            self._vop_template = self._new_vop_template()
-            self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
-        elif self._vop_template.HasField("optic"):
+        self._prepare_vop_assignment()
+        if self._vop_template.HasField("optic"):
             self._vop_optic = self.VopOptic(self, None, stable_ctr=True)
         else:
             self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
@@ -780,8 +763,7 @@ class BaseVop:
         ansys.speos.core.opt_prop.BaseVop.VopLibrary
             Returns VOP Library helper.
         """
-        if self._vop_template is None:
-            self._vop_template = self._new_vop_template()
+        self._prepare_vop_assignment()
         self._vop_library = self.VopLibrary(self, stable_ctr=True)
         self._vop_optic = None
         return self._vop_library
@@ -2047,6 +2029,14 @@ class OptProp(BaseVop, BaseSop):
         if self._sop_template is None:
             self._sop_template = ProtoSOPTemplate(
                 name=self._name + ".SOP",
+                description=self._material_instance.description,
+                metadata=self._material_instance.metadata,
+            )
+
+    def _prepare_vop_assignment(self):
+        if self._vop_template is None:
+            self._vop_template = ProtoVOPTemplate(
+                name=self._name + ".VOP",
                 description=self._material_instance.description,
                 metadata=self._material_instance.metadata,
             )
