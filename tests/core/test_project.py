@@ -52,6 +52,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from tests.conftest import test_path
 from tests.helper import clean_all_dbs
@@ -702,6 +703,13 @@ def test_creation_errors(speos: Speos):
         p.create_source(
             name="ambient_light",
             feature_type=SourceAmbientEnvironment,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="ThermicSourceParameters"):
+        p.create_source(
+            name="thermic_source",
+            feature_type=SourceThermic,
             parameters=IrradianceSensorParameters(),
         )
 
