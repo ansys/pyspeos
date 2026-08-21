@@ -165,7 +165,7 @@ print(op1)
 # +
 print("op1 name: {}".format(op1.get(key="name")))
 print("geometries linked to op1: {}".format(op1.get(key="geo_paths")))
-print("op1 surface optical properties info: {}".format(op1.get(key="sops")))
+print("op1 surface optical properties info: {}".format(op1.get(key="sop")))
 print("op1 volume optical property info: {}".format(op1.get(key="vop")))
 # user can use get with vop type as key word to check volume property type
 print(
@@ -178,7 +178,7 @@ print(op2)
 print("op2 name: {}".format(op2.get(key="name")))
 print(
     "op2 {} optical polished type surface property".format(
-        ("is" if "optical_polished" in op2.get(key="sops")[0] else "is not")
+        ("is" if "optical_polished" in op2.get(key="sop") else "is not")
     )
 )
 # an alternative way to check the type of optical property
@@ -190,7 +190,7 @@ print(
 
 print(op3)
 print("op3 name: {}".format(op3.get(key="name")))
-print("op3 has reflectance value of {}".format(op3.get(key="sops")[0]["mirror"]["reflectance"]))
+print("op3 has reflectance value of {}".format(op3.get(key="sop")["mirror"]["reflectance"]))
 # -
 
 # ### Project Information
@@ -206,12 +206,12 @@ print(p)
 # If you don't, you will still only watch what is committed on the server.
 
 
-print("op1 surface type before update: {}".format(op1.get(key="sops")[0]))
+print("op1 surface type before update: {}".format(op1.get(key="sop")))
 op1.set_volume_optic()
 op1.set_surface_opticalpolished()
 op1.commit()
 print(op1)
-print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
+print("op1 surface type after update: {}".format(op1.get(key="sop")))
 
 
 # ## Reset
