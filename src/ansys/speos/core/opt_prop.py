@@ -189,6 +189,9 @@ class BaseSop:
             else None
         )
 
+    def _prepare_sop_assignment(self):
+        """Prepare the owning object to receive a material-level SOP."""
+
     def _fill_parameters_sop(
         self, sop_parameters: Optional[Union[SopMirrorParameters, SopLibraryParameters, SopTypes]]
     ):
@@ -301,6 +304,7 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop.SopMirror
             Returns mirror helper for chaining.
         """
+        self._prepare_sop_assignment()
         self._library = None
 
         if self._sop_template.HasField("mirror"):
@@ -319,6 +323,7 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop
             Returns self for chaining.
         """
+        self._prepare_sop_assignment()
         self._mirror = None
         self._library = None
         self._sop_template.optical_polished.SetInParent()
@@ -381,6 +386,7 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop.SopLibrary
             Returns library helper for chaining.
         """
+        self._prepare_sop_assignment()
         self._mirror = None
         self._library = self.SopLibrary(self, stable_ctr=True)
         return self._library
@@ -2031,6 +2037,19 @@ class OptProp(BaseVop, BaseSop):
                 TextureLayer(self, f"Layer{i}", default_parameters=layer)
                 for i, layer in enumerate(default_parameters.sop_parameters)
             ]
+
+    def _prepare_sop_assignment(self):
+        """Switch from texture layers to a material-level SOP."""
+        if self._texture is not None:
+            self._texture = None
+            self._material_instance.ClearField("texture")
+
+        if self._sop_template is None:
+            self._sop_template = ProtoSOPTemplate(
+                name=self._name + ".SOP",
+                description=self._material_instance.description,
+                metadata=self._material_instance.metadata,
+            )
 
     @property
     def texture(self) -> Optional[list["TextureLayer"]]:
