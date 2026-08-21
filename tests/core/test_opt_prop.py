@@ -579,6 +579,14 @@ def test_opt_prop_to_dict(speos: Speos):
     vop_only.commit()
     vop_only_dict = vop_only._to_dict()
     _assert_vop_opaque_no_sop(vop_only_dict)
+    # After reset
+    vop_only.reset()
+    vop_only_dict = vop_only._to_dict()
+    _assert_vop_opaque_no_sop(vop_only_dict)
+    # After delete
+    vop_only.delete()
+    vop_only_dict = vop_only._to_dict()
+    _assert_vop_opaque_no_sop(vop_only_dict)
 
     # SOP only
     sop_only = p.create_optical_property(name="ToDict.SopOnly")
@@ -588,6 +596,14 @@ def test_opt_prop_to_dict(speos: Speos):
     _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
     # After commit
     sop_only.commit()
+    sop_only_dict = sop_only._to_dict()
+    _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
+    # After reset
+    sop_only.reset()
+    sop_only_dict = sop_only._to_dict()
+    _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
+    # After delete
+    sop_only.delete()
     sop_only_dict = sop_only._to_dict()
     _assert_sop_optical_polished_no_vop(sop_only_dict, scene_db)
 
@@ -618,6 +634,14 @@ def test_opt_prop_to_dict(speos: Speos):
         _assert_texture_no_vop(texture_one_layer_dict)
         # After commit
         texture_one_layer.commit()
+        texture_one_layer_dict = texture_one_layer._to_dict()
+        _assert_texture_no_vop(texture_one_layer_dict)
+        # After reset
+        texture_one_layer.reset()
+        texture_one_layer_dict = texture_one_layer._to_dict()
+        _assert_texture_no_vop(texture_one_layer_dict)
+        # After delete
+        texture_one_layer.delete()
         texture_one_layer_dict = texture_one_layer._to_dict()
         _assert_texture_no_vop(texture_one_layer_dict)
 
