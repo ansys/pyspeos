@@ -397,20 +397,6 @@ class BaseSop:
         """
         return self._library
 
-    def reset(self) -> BaseSop:
-        """Reset local templates and sop instance from the server.
-
-        Returns
-        -------
-        BaseSop
-
-        """
-        # Reset sop template
-        if self._sop_template_link is not None:
-            self._sop_template = self._sop_template_link.get()
-        self._sync_sop_properties()
-        return self
-
 
 class BaseVop:
     """Base class for Volume Optical Property helpers.
