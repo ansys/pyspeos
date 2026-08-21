@@ -1,0 +1,379 @@
+
+
+
+
+
+
+:class:`SimulationInteractive`
+==============================
+
+.. toctree::
+   :hidden:
+
+    RaysNumberPerSource</api/ansys/speos/core/simulation/SimulationInteractive.RaysNumberPerSource>
+    SourceSampling</api/ansys/speos/core/simulation/SimulationInteractive.SourceSampling>
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationInteractive(project, name, description = '', metadata = None, simulation_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Type of simulation : Interactive.
+
+   By default,
+   geometry distance tolerance is set to 0.01,
+   maximum number of impacts is set to 100,
+   a colorimetric standard is set to CIE 1931,
+   ambient material URI is empty,
+   and weight's minimum energy percentage is set to 0.005.
+   By default, each source will send 100 rays.
+   By default, the simulation deactivates both light expert and impact report.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which simulation shall be created.
+
+       **name** : :class:`python:str`
+           Name of the simulation.
+
+       **description** : :class:`python:str`
+           Description of the Simulation.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **simulation_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance`, :obj:`optional`
+           Simulation instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.InteractiveSimulationParameters`] = :data:`python:None`
+           If defined the values in the interactive simulation instance will be overwritten by the
+           values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SimulationInteractive
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_weight`
+            - Activate weight. Highly recommended to fill.
+          * - :py:attr:`~set_weight_none`
+            - Deactivate weight.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1931`
+            - Set the colorimetric standard to CIE 1931.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1964`
+            - Set the colorimetric standard to CIE 1964.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ambient_material_file_uri`
+            - The ambient material file URI.
+          * - :py:attr:`~rays_number_per_sources`
+            - The number of rays to stop the simulation.
+          * - :py:attr:`~light_expert`
+            - Whether light expert is enabled.
+          * - :py:attr:`~impact_report`
+            - Activate/Deactivate the details in the HTML simulation report.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation import SimulationInteractive
+
+Property detail
+---------------
+
+.. py:property:: ambient_material_file_uri
+   :type: str
+
+
+   
+   The ambient material file URI.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           The ambient material file URI.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: rays_number_per_sources
+   :type: Optional[int]
+
+
+   
+   The number of rays to stop the simulation.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: light_expert
+   :type: bool
+
+
+   
+   Whether light expert is enabled.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if light expert is enabled.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: impact_report
+   :type: bool
+
+
+   
+   Activate/Deactivate the details in the HTML simulation report.
+
+   e.g: number of impacts, position and surface state
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if activated.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_weight()
+
+   
+   Activate weight. Highly recommended to fill.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.Weight`
+           Weight
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_weight_none()
+
+   
+   Deactivate weight.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1931()
+
+   
+   Set the colorimetric standard to CIE 1931.
+
+   2 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1964()
+
+   
+   Set the colorimetric standard to CIE 1964.
+
+   10 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource
+    ansys.speos.core.simulation.SimulationInteractive.SourceSampling
+
+
+
+

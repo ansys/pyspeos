@@ -1,0 +1,361 @@
+
+
+
+
+
+
+:class:`BaseBSDF`
+=================
+
+
+.. py:class:: ansys.speos.core.bsdf.BaseBSDF(speos, stub, namespace)
+
+   
+   Super class for all BSDF datamodels.
+
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           ..
+
+       **stub**
+           grpc stub to connect to BSDF service
+
+       **namespace**
+           grpc namespace for the bsdf
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a Super class, **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BaseBSDF
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_interpolation_enhancement`
+            - Apply automatic interpolation enhancement.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~has_transmission`
+            - Contains the BSDF Transmission data.
+          * - :py:attr:`~has_reflection`
+            - Contains the BSDF Reflection data.
+          * - :py:attr:`~brdf`
+            - List of BRDFDatapoints.
+          * - :py:attr:`~btdf`
+            - List of BTDFDatapoints.
+          * - :py:attr:`~nb_incidents`
+            - Number of incidence angle for reflection and transmission.
+          * - :py:attr:`~incident_angles`
+            - List of incident angles for reflection and transmission.
+          * - :py:attr:`~interpolation_settings`
+            - Interpolation enhancement settings of the bsdf file.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~client`
+            - 
+          * - :py:attr:`~anisotropy_vector`
+            - 
+          * - :py:attr:`~description`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.bsdf import BaseBSDF
+
+Property detail
+---------------
+
+.. py:property:: has_transmission
+   :type: bool
+
+
+   
+   Contains the BSDF Transmission data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: has_reflection
+   :type: bool
+
+
+   
+   Contains the BSDF Reflection data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: brdf
+   :type: collections.abc.Collection[BxdfDatapoint]
+
+
+   
+   List of BRDFDatapoints.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: btdf
+   :type: collections.abc.Collection[BxdfDatapoint]
+
+
+   
+   List of BTDFDatapoints.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: nb_incidents
+   :type: list[int]
+
+
+   
+   Number of incidence angle for reflection and transmission.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:int`]:
+           first value of the list is nb of reflective data, second value is nb of transmittive
+           data
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: incident_angles
+   :type: list[Union[list[float], None], Union[list[float], None]]
+
+
+   
+   List of incident angles for reflection and transmission.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:obj:`Union`\[:class:`python:list`\[:class:`python:float`], :data:`python:None`],Union[:class:`python:list`\[:class:`python:float`], :data:`python:None`]]
+           Returns a nested list of incidence angels for reflective and transmittive
+           data if not available the value will be None
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: interpolation_settings
+   :type: Union[None, InterpolationEnhancement]
+
+
+   
+   Interpolation enhancement settings of the bsdf file.
+
+   If bsdf file does not have interpolation enhancement settings, return None.
+   if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: client
+
+.. py:attribute:: anisotropy_vector
+   :value: [1, 0, 0]
+
+
+.. py:attribute:: description
+   :value: ''
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_interpolation_enhancement(index_1 = 1.0, index_2 = 1.0)
+
+   
+   Apply automatic interpolation enhancement.
+
+   Return interpolation settings to user if settings need change.
+
+   :Parameters:
+
+       **index_1** : :class:`python:float`
+           outside refractive index
+
+       **index_2** : :class:`python:float`
+           inside refractive index
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.bsdf._InterpolationEnhancement`
+           automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

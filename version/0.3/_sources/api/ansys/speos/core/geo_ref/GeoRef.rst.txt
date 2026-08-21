@@ -1,0 +1,166 @@
+
+
+
+
+
+
+:class:`GeoRef`
+===============
+
+.. py:class:: ansys.speos.core.geo_ref.GeoRef(name, description, metadata)
+
+   
+   Represent a CAD object.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: GeoRef
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~to_native_link`
+            - Convert to a native link.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - 
+          * - :py:attr:`~description`
+            - 
+          * - :py:attr:`~metadata`
+            - 
+
+
+   .. tab-item:: Static methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~from_native_link`
+            - Convert a native link to a GeoRef.
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.geo_ref import GeoRef
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: name
+
+.. py:attribute:: description
+
+.. py:attribute:: metadata
+
+
+
+Method detail
+-------------
+
+.. py:method:: from_native_link(geopath)
+   :staticmethod:
+
+
+   
+   Convert a native link to a GeoRef.
+
+
+   :Parameters:
+
+       **geopath** : :class:`python:str`
+           Geometry path.
+
+
+
+   :Returns:
+
+       :obj:`GeoRef`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: to_native_link()
+
+   
+   Convert to a native link.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Geometry path.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

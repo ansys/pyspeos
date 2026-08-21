@@ -1,0 +1,101 @@
+
+
+
+
+
+
+The ``simulation.py`` module
+============================
+
+.. py:module:: ansys.speos.core.simulation
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: simulation
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.simulation.BaseSimulation`
+            - Super Class for all simulations
+
+
+          * - :py:obj:`~ansys.speos.core.simulation.SimulationDirect`
+            - Type of Simulation: Direct.
+
+
+          * - :py:obj:`~ansys.speos.core.simulation.SimulationInverse`
+            - Type of simulation : Inverse.
+
+
+          * - :py:obj:`~ansys.speos.core.simulation.SimulationInteractive`
+            - Type of simulation : Interactive.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BaseSimulation</api/ansys/speos/core/simulation/BaseSimulation>
+    <span class="nf nf-cod-symbol_class"></span> SimulationDirect</api/ansys/speos/core/simulation/SimulationDirect>
+    <span class="nf nf-cod-symbol_class"></span> SimulationInverse</api/ansys/speos/core/simulation/SimulationInverse>
+    <span class="nf nf-cod-symbol_class"></span> SimulationInteractive</api/ansys/speos/core/simulation/SimulationInteractive>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Simulation.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

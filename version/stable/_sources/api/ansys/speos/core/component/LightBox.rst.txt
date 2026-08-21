@@ -1,0 +1,670 @@
+
+
+
+
+
+
+:class:`LightBox`
+=================
+
+
+.. py:class:: ansys.speos.core.component.LightBox(name, parent_project, instance = None)
+
+   
+   Represent the Speos LightBox component feature.
+
+   By default, the global origin axis system is used to position the LightBox.
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **parent_project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **instance** : :obj:`ansys.speos.core.component.LightBoxFileInstance` or :obj:`ansys.speos.core.kernel.scene.ProtoScene.SceneInstance`, :obj:`optional`
+           Source for the LightBox content.
+           
+           - If ``None`` (default), an empty LightBox is created from scratch.
+           - If a :class:`LightBoxFileInstance`, the LightBox is loaded from that file.
+           - If a ``ProtoScene.SceneInstance``, the LightBox is reconstructed from an
+             existing server scene instance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: LightBox
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~find`
+            - Find feature(s) by name (possibility to use regex) and by feature type.
+          * - :py:attr:`~create_root_part`
+            - Create the project root part feature.
+          * - :py:attr:`~create_source`
+            - Create a new Source feature.
+          * - :py:attr:`~create_optical_property`
+            - Create a new Optical Property feature.
+          * - :py:attr:`~commit`
+            - Save the local feature data to the Speos server database.
+          * - :py:attr:`~export`
+            - Save the LightBox feature as a LightBox file.
+          * - :py:attr:`~get`
+            - Get LightBox information from its dictionary representation - read only.
+          * - :py:attr:`~reset`
+            - Reset local data from the Speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature data from the Speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~visual_data`
+            - Get LightBox visualization data.
+          * - :py:attr:`~source_paths`
+            - Get source paths for sources included in the LightBox.
+          * - :py:attr:`~name`
+            - Get the LightBox name.
+          * - :py:attr:`~axis_system`
+            - Coordinate system of the LightBox in the parent scene.
+          * - :py:attr:`~trajectory_file_uri`
+            - Location of the trajectory file.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the LightBox.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.component import LightBox
+
+Property detail
+---------------
+
+.. py:property:: visual_data
+   :type: List[ansys.speos.core.generic.visualization_methods._VisualData]
+
+
+   
+   Get LightBox visualization data.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:obj:`ansys.speos.core.generic.visualization_methods._VisualData`]
+           Visualization payload containing mesh and ray data in absolute coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: source_paths
+   :type: List[str]
+
+
+   
+   Get source paths for sources included in the LightBox.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:str`]
+           Source paths in the form ``<lightbox_name>/<source_name>``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: name
+   :type: str
+
+
+   
+   Get the LightBox name.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Name of the lightbox feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: List[float]
+
+
+   
+   Coordinate system of the LightBox in the parent scene.
+
+   Twelve-element list ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]`` that fully describes
+   the origin and orientation of the LightBox.
+
+   :Parameters:
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`]
+           New coordinate system values.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Current coordinate system values.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: trajectory_file_uri
+   :type: str
+
+
+   
+   Location of the trajectory file.
+
+   This property gets or sets the trajectory .JSON file applied
+   to the lightbox, which describes its motion.
+
+   :Parameters:
+
+       **uri** : :obj:`Union`\[:class:`python:str`, :obj:`pathlib.Path`]
+           format file uri (json).
+
+
+
+   :Returns:
+
+       **uri** : :class:`python:str`
+           format file uri (json).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: find(name, name_regex = False, feature_type = None)
+
+   
+   Find feature(s) by name (possibility to use regex) and by feature type.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **name_regex** : :ref:`bool <python:bltin-boolean-values>`
+           Allows to use regex for name parameter.
+           By default, ``False``, means that regex is not used for name parameter.
+
+       **feature_type** : :obj:`type`
+           Type of the wanted features.
+           Mandatory to fill for geometry features.
+           By default, ``None``, means that all features will be considered
+           (except geometry features).
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`Union`\[:obj:`ansys.speos.core.opt_prop.OptProp`, :obj:`ansys.speos.core.source.SourceSurface`,         :obj:`ansys.speos.core.source.SourceRayFile`, :obj:`ansys.speos.core.source.SourceLuminaire`,         :obj:`ansys.speos.core.source.SourceAmbientEnvironment`,         :obj:`ansys.speos.core.source.SourceAmbientNaturalLight`,         :obj:`ansys.speos.core.sensor.SensorCamera`,         :obj:`ansys.speos.core.sensor.SensorRadiance`, :obj:`ansys.speos.core.sensor.SensorIrradiance`,         :obj:`ansys.speos.core.sensor.Sensor3DIrradiance`, :obj:`ansys.speos.core.sensor.SensorXMPIntensity`,         :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF`,         :obj:`ansys.speos.core.simulation.SimulationDirect`,         :obj:`ansys.speos.core.simulation.SimulationInteractive`,         :obj:`ansys.speos.core.simulation.SimulationInverse`,         :obj:`ansys.speos.core.part.Part`,         :obj:`ansys.speos.core.body.Body`,         :obj:`ansys.speos.core.face.Face`, :obj:`ansys.speos.core.part.Part.SubPart`,         :obj:`ansys.speos.core.ground_plane.GroundPlane`]]
+           Found features.
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> # From name only
+   >>> find(name="Camera.1")
+   >>> # Specify feature type
+   >>> find(name="Camera.1", feature_type=ansys.speos.core.sensor.SensorCamera)
+   >>> # Using regex
+   >>> find(
+   >>>     name="Camera.*",
+   >>>     name_regex=True,
+   >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
+   >>> )
+   Here some examples when looking for a geometry feature:
+   (always precise feature_type)
+
+   >>> # Root part
+   >>> find(name="", feature_type=ansys.speos.core.part.Part)
+   >>> # Body in root part
+   >>> find(name="BodyName", feature_type=ansys.speos.core.body.Body)
+   >>> # Face from body in root part
+   >>> find(name="BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+   >>> # Sub part in root part
+   >>> find(name="SubPartName", feature_type=ansys.speos.core.part.Part.SubPart)
+   >>> # Face in a body from sub part in root part :
+   >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+   >>> # Regex can be use at each level separated by "/"
+   >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+   >>> # All faces of a specific body
+   >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+   >>> # All geometry features at first level (whatever their type: body, face, sub part)
+   >>> find(name=".*", name_regex=True, feature_type=ansys.speos.core.part.Part)
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_root_part(description = '', metadata = None)
+
+   
+   Create the project root part feature.
+
+   If a root part is already created in the project, it is returned.
+
+   :Parameters:
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part`
+           Part feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_source(name, description = '', feature_type = SourceSurface, metadata = None, parameters = None)
+
+   
+   Create a new Source feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **feature_type: type**
+           Source type to be created.
+           By default, ``ansys.speos.core.source.SourceSurface``.
+           Allowed types:
+           Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,             ansys.speos.core.source.SourceLuminaire,             ansys.speos.core.source.SourceDisplay].
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **parameters** : :obj:`Optional`\[:obj:`Union`\[        :obj:`ansys.speos.core.generic.parameters.LuminaireSourceParameters`,        :obj:`ansys.speos.core.generic.parameters.SurfaceSourceParameters`,        :obj:`ansys.speos.core.generic.parameters.RayFileSourceParameters`,        :obj:`ansys.speos.core.generic.parameters.DisplayParamaters`]]
+           Allows to provide parameters to overwrite default parameters.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.source.SourceSurface`, :obj:`ansys.speos.core.source.SourceRayFile`,        :obj:`ansys.speos.core.source.SourceLuminaire`, :obj:`ansys.speos.core.source.SourceDisplay`]
+           Source class instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_optical_property(name, description = '', metadata = None, parameters = None)
+
+   
+   Create a new Optical Property feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **parameters** : :obj:`Optional`\[:obj:`ansys.speos.core.generic.parameters.OptPropParameters`]
+           Allows to provide parameters to overwrite default parameters.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           OptProp feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save the local feature data to the Speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.LightBox`
+           Updated LightBox feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: export(export_path, password = None, black_boxed = False)
+
+   
+   Save the LightBox feature as a LightBox file.
+
+
+   :Parameters:
+
+       **export_path** : :obj:`pathlib.Path` | :class:`python:str`
+           Path of the LightBox file to be saved.
+
+       **password** : :class:`python:str`, :obj:`optional`
+           Password to protect the LightBox file.
+           By default, ``None``, which reads ``PYSPEOS_ENCRYPTED_PASSWORD`` environment variable
+           or falls back to no password protection.
+
+       **black_boxed** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Whether to save the LightBox file as black-boxed.
+           By default, ``False``, which means the LightBox file will not be black-boxed.
+
+
+
+   :Returns:
+
+       :obj:`pathlib.Path`
+           Path to the exported LightBox file.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get(key = '')
+
+   
+   Get LightBox information from its dictionary representation - read only.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`, :obj:`optional`
+           Key prefix used to look up a value.
+           By default, ``""``, which returns the full dictionary.
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           Value found for the given key, or the full dictionary when *key* is empty.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the LightBox.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset local data from the Speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.LightBox`
+           Updated LightBox feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature data from the Speos server database.
+
+   Local object data remain available after deletion.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.LightBox`
+           Updated LightBox feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

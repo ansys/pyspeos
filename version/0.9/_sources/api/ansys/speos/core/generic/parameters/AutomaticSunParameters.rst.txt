@@ -1,0 +1,228 @@
+
+
+
+
+
+
+:class:`AutomaticSunParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AutomaticSunParameters
+
+   
+   Automatic Sun Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: AutomaticSunParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~time_zone`
+            - Time zone used for automatic sun positioning.
+          * - :py:attr:`~longitude`
+            - Longitude used for automatic sun positioning.
+          * - :py:attr:`~latitude`
+            - Latitude used for automatic sun positioning.
+          * - :py:attr:`~year`
+            - 
+          * - :py:attr:`~month`
+            - 
+          * - :py:attr:`~day`
+            - 
+          * - :py:attr:`~hour`
+            - 
+          * - :py:attr:`~minute`
+            - 
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__post_init__`
+            - Initialize year, month, day, hour, minute from time_zone if not set.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AutomaticSunParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: time_zone
+   :type:  str
+   :value: 'CET'
+
+
+   
+   Time zone used for automatic sun positioning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: longitude
+   :type:  float
+   :value: 0.0
+
+
+   
+   Longitude used for automatic sun positioning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: latitude
+   :type:  float
+   :value: 0.0
+
+
+   
+   Latitude used for automatic sun positioning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: year
+   :type:  int
+   :value: -1
+
+
+.. py:attribute:: month
+   :type:  int
+   :value: -1
+
+
+.. py:attribute:: day
+   :type:  int
+   :value: -1
+
+
+.. py:attribute:: hour
+   :type:  int
+   :value: -1
+
+
+.. py:attribute:: minute
+   :type:  int
+   :value: -1
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: __post_init__()
+
+   
+   Initialize year, month, day, hour, minute from time_zone if not set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

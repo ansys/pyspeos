@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``part.py`` module
+======================
+
+.. py:module:: ansys.speos.core.kernel.part
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: part
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.part.PartLink`
+            - Link object for a part in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.part.PartStub`
+            - Database interactions for part.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoPart`
+            - Part protobuf class : ansys.api.speos.part.v1.part_pb2.Part
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> PartLink</api/ansys/speos/core/kernel/part/PartLink>
+    <span class="nf nf-cod-symbol_class"></span> PartStub</api/ansys/speos/core/kernel/part/PartStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoPart
+
+   
+   Part protobuf class : ansys.api.speos.part.v1.part_pb2.Part
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

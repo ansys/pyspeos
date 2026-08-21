@@ -1,0 +1,97 @@
+
+
+
+
+
+
+The ``workflow`` package
+============================
+
+.. py:module:: ansys.speos.core.workflow
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: workflow
+.. tab-set::
+
+
+    .. tab-item:: Submodules
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.workflow.combine_speos`
+            - Provides a way to combine several speos files into one project feature.
+
+
+          * - :py:obj:`~ansys.speos.core.workflow.open_result`
+            - Provides a way to open result of the simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-fa-file"></span> combine_speos</api/ansys/speos/core/workflow/combine_speos/index>
+    <span class="nf nf-fa-file"></span> open_result</api/ansys/speos/core/workflow/open_result/index>
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+
+This module defines processes used in workflows.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+

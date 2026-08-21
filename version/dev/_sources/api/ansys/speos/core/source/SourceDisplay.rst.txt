@@ -1,0 +1,525 @@
+
+
+
+
+
+
+:class:`SourceDisplay`
+======================
+
+
+.. py:class:: ansys.speos.core.source.SourceDisplay(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   Display Source.
+
+   By default, image uri is empty and luminance values is 50.
+
+   This feature wraps both:
+   - ``ansys.api.speos.source.v1.source_pb2.SourceTemplate.Display``
+   - ``ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.DisplayProperties``
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceDisplay
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_pre_defined_color_space`
+            - Set display color space to a predefined color space.
+          * - :py:attr:`~set_userdefined_color_space`
+            - Set user-defined RGB color space for the display.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete display source from server (local data kept).
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~image_file_uri`
+            - Image file URI for the display.
+          * - :py:attr:`~x_start`
+            - Source physical dimension: x_start in millimeters.
+          * - :py:attr:`~x_end`
+            - Source physical dimension: x_end in millimeters.
+          * - :py:attr:`~y_start`
+            - Source physical dimension: y_start in millimeters.
+          * - :py:attr:`~y_end`
+            - Source physical dimension: y_end in millimeters.
+          * - :py:attr:`~luminance`
+            - Luminance value for the display.
+          * - :py:attr:`~contrast_ratio`
+            - Contrast ratio for the display.
+          * - :py:attr:`~axis_system`
+            - Axis system for the display.
+          * - :py:attr:`~intensity`
+            - Intensity settings for the display source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceDisplay
+
+Property detail
+---------------
+
+.. py:property:: image_file_uri
+   :type: str
+
+
+   
+   Image file URI for the display.
+
+   Supported formats include PNG, JPEG, BMP, TIFF, RGB, HDR/EXR where applicable.
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Image file URI referenced by the display.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_start
+   :type: float
+
+
+   
+   Source physical dimension: x_start in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           x_start in millimeters.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_end
+   :type: float
+
+
+   
+   Source physical dimension: x_end in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           x_end in millimeters.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_start
+   :type: float
+
+
+   
+   Source physical dimension: y_start in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           y_start in millimeters.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_end
+   :type: float
+
+
+   
+   Source physical dimension: y_end in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           y_end in millimeters.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: luminance
+   :type: float
+
+
+   
+   Luminance value for the display.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Luminous flux expressed as luminance (cd/m^2).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: contrast_ratio
+   :type: Optional[int]
+
+
+   
+   Contrast ratio for the display.
+
+   The underlying protobuf field is optional. When unset it behaves as None
+   from the Python API perspective (the proto scalar default is 0).
+   None means Infinite contrast ratio, while any integer value represents a
+   finite contrast ratio.
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:int`]
+           Contrast ratio if set, otherwise 0 (unset behavior preserved by proto).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list
+
+
+   
+   Axis system for the display.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`
+           12-element axis system vector describing
+           origin and axes (Ox,Oy,Oz,Xx,Xy,Xz,Yx,Yy,Yz,Zx,Zy,Zz).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: intensity
+   :type: ansys.speos.core.intensity.Intensity
+
+
+   
+   Intensity settings for the display source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity object tied to the scene for this display.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_pre_defined_color_space()
+
+   
+   Set display color space to a predefined color space.
+
+   This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource.PredefinedColorSpace`
+           Helper object for choosing a predefined color space.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_userdefined_color_space()
+
+   
+   Set user-defined RGB color space for the display.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource.UserDefinedColorSpace`
+           Helper providing access to red/green/blue spectrum selection and white point.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceDisplay`
+           This SourceDisplay instance (committed).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceDisplay`
+           This SourceDisplay instance (reset).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete display source from server (local data kept).
+
+   Deletes any locally-managed spectra created for a user-defined color space
+   and deletes the feature from the server. Does not cascade-delete
+   the intensity.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceDisplay`
+           This SourceDisplay instance (deleted on server).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

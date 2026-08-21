@@ -1,0 +1,98 @@
+
+
+
+
+
+
+:class:`ColorimetricParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ColorimetricParameters
+
+   
+   Colorimetric settings of the Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ColorimetricParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelength_range`
+            - Wavelength range of the Sensor.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ColorimetricParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: wavelength_range
+   :type:  WavelengthsRangeParameters
+
+   
+   Wavelength range of the Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
