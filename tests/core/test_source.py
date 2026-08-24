@@ -2160,9 +2160,12 @@ def test_load_thermic_source(speos: Speos):
     assert source2.intensity.type.n == 3
     assert source2.intensity.type.total_angle == 180
     assert isinstance(source2.emittance_type, SourceThermic.TemperatureField)
+    assert source2.emittance_type.sop.sop_mirror is not None
+    assert source2.emittance_type.sop.sop_mirror.reflectance == 45
     assert source2.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
+    assert source2.emittance_type.axis_plane == [0, 0, 0, 1, 0, 0, 0, 1, 0]
 
 
 @pytest.mark.supported_speos_versions(min=261)
