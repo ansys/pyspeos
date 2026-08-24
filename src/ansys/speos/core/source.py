@@ -2754,10 +2754,10 @@ class SourceThermic(BaseSource):
             )
         elif not isinstance(self._exitance_type, SourceThermic.EmissiveFaces):
             # if the _exitance_type is not EmissiveFaces then we create a new type.
-            self._source_template.thermic.emissives_faces.SetInParent()
             self._exitance_type = SourceThermic.EmissiveFaces(
                 emissive_faces=self._source_template.thermic.emissives_faces,
                 emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
+                default_parameters=EmissiveFacesParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -2814,46 +2814,6 @@ class SourceThermic(BaseSource):
     @property
     def emittance_type(self) -> Union[SourceThermic.EmissiveFaces, SourceThermic.TemperatureField]:
         """Return emittance type of thermic source."""
-        if self._source_template.thermic.HasField("emissives_faces"):
-            if self._exitance_type is None:
-                # Happens in case of project created via load of speos file
-                self._exitance_type = SourceThermic.EmissiveFaces(
-                    emissive_faces=self._source_template.thermic.emissives_faces,
-                    emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
-                    default_parameters=None,
-                    stable_ctr=True,
-                )
-            elif (
-                self._exitance_type._emissive_faces
-                is not self._source_template.thermic.emissives_faces
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._exitance_type._emissive_faces = self._source_template.thermic.emissives_faces
-                self._exitance_type._emissive_faces_props = (
-                    self._source_instance.thermic_properties.emissive_faces_properties
-                )
-        elif self._source_template.thermic.HasField("temperature_field"):
-            if self._exitance_type is None:
-                # Happens in case of project created via load of speos file
-                self._exitance_type = SourceThermic.TemperatureField(
-                    name=self._name,
-                    project=self._project,
-                    temperature_field=self._source_template.thermic.temperature_field,
-                    temperature_field_props=self._source_instance.thermic_properties.temperature_field_properties,
-                    default_parameters=None,
-                    stable_ctr=True,
-                )
-            elif (
-                self._exitance_type._temperature_field
-                is not self._source_template.thermic.temperature_field
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._exitance_type._temperature_field = (
-                    self._source_template.thermic.temperature_field
-                )
-                self._exitance_type._temperature_field_props = (
-                    self._source_instance.thermic_properties.temperature_field_properties
-                )
         return self._exitance_type
 
     def commit(self) -> SourceThermic:

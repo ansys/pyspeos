@@ -2164,6 +2164,30 @@ def test_load_thermic_source(speos: Speos):
     )
 
 
+@pytest.mark.supported_speos_versions(min=261)
+def test_thermic_exitance_oneof_switches_cleanly(speos: Speos):
+    """Test switching thermic emittance mode."""
+    p = Project(speos=speos)
+
+    source: SourceThermic = p.create_source(name="Thermic.Switch", feature_type=SourceThermic)
+    source.set_emissive_faces()
+    assert source._source_template.thermic.HasField("emissives_faces")
+    assert source._source_instance.thermic_properties.HasField("emissive_faces_properties")
+    assert isinstance(source.emittance_type, SourceThermic.EmissiveFaces)
+
+    source.set_temperature_field()
+    assert source._source_template.thermic.HasField("temperature_field")
+    assert source._source_instance.thermic_properties.HasField("temperature_field_properties")
+    assert isinstance(source.emittance_type, SourceThermic.TemperatureField)
+
+    source.set_emissive_faces()
+    assert source._source_template.thermic.HasField("emissives_faces")
+    assert source._source_instance.thermic_properties.HasField("emissive_faces_properties")
+    assert isinstance(source.emittance_type, SourceThermic.EmissiveFaces)
+
+    source.delete()
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
