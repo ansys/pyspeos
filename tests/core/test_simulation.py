@@ -566,7 +566,7 @@ def test_create_interactive(speos: Speos):
 def test_create_virtual_bsdf_bench_unsupported(speos: Speos):
     """Test creation of Virtual BSDF Bench Simulation on unsupported Speos versions."""
     p = Project(speos=speos)
-    with pytest.raises(NotImplementedError, match="needs a Speos Version of 25 R1 SP1 or higher."):
+    with pytest.raises(NotImplementedError, match="needs a Speos Version of 25 R2 SP1 or higher."):
         p.create_simulation("virtual_bsdf_bench_1", feature_type=SimulationVirtualBSDF)
 
 
