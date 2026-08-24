@@ -755,6 +755,15 @@ class Project:
                     default_parameters=parameters,
                 )
             case "SimulationVirtualBSDF":
+                # Here we are using the fact that VBB simu appeared in same release as
+                # texture feature.
+                # Because at that time it was not possible to check the version of the server.
+                if not self.client.scenes()._is_texture_available:
+                    raise NotImplementedError(
+                        "SimulationVirtualBSDF is not supported in the current server version.\
+                            It needs a Speos Version of 25 R2 SP1 or higher."
+                    )
+
                 if parameters is None:
                     parameters = VirtualBSDFSimulationParameters()
                 elif not isinstance(parameters, VirtualBSDFSimulationParameters):

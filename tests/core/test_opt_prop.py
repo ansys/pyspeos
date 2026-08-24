@@ -1843,10 +1843,11 @@ def test_helper_properties_on_textured_material(speos: Speos):
     assert op.sop_mirror is None
     assert op.sop_library is None
 
-    # Not functional yet - to be fixed.
-    # op.set_surface_mirror()
-    # assert op.sop_mirror is not None
-    # assert op.texture is None # None because we just set a SOP on the material, not on a layer
+    # Back to a non-textured material, the SOP helpers are available again.
+    op.set_surface_mirror().reflectance = 75
+    assert op.sop_mirror is not None
+    assert op.sop_mirror.reflectance == 75
+    assert op.texture is None  # None because we just set a SOP on the material, not on a layer
 
 
 def test_sop_helper_properties(speos: Speos):
