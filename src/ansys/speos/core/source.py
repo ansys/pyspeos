@@ -2816,6 +2816,24 @@ class SourceThermic(BaseSource):
         """Return emittance type of thermic source."""
         return self._exitance_type
 
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity settings for the thermic source.
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity object tied to the thermic source.
+        """
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.display_properties.intensity_properties
+        ):
+            self._intensity._intensity_properties = (
+                self._source_instance.display_properties.intensity_properties
+            )
+        return self._intensity
+
     def commit(self) -> SourceThermic:
         """Save feature: send the local data to the speos server database.
 

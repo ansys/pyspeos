@@ -2148,8 +2148,9 @@ def test_load_thermic_source(speos: Speos):
     p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceThermicTests.speos")
 
     source1 = p.find(name="Thermic.1", name_regex=True, feature_type=SourceThermic)[0]
-    assert source1._intensity.set_cos().n == 1
-    assert source1._intensity.set_cos().total_angle == 180
+    assert isinstance(source1.intensity.type, Intensity.Cos)
+    assert source1.intensity.type.n == 1
+    assert source1.intensity.type.total_angle == 180
     assert source1.emittance_type.temperature == 2000.0
     assert (
         source1.set_emissive_faces().geometries[0].geo_path
@@ -2157,8 +2158,9 @@ def test_load_thermic_source(speos: Speos):
     )
 
     source2 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
-    assert source2._intensity.set_cos().n == 3
-    assert source2._intensity.set_cos().total_angle == 180
+    assert isinstance(source2.intensity.type, Intensity.Cos)
+    assert source2.intensity.type.n == 3
+    assert source2.intensity.type.total_angle == 180
     assert source2.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
