@@ -2698,6 +2698,10 @@ class SourceThermic(BaseSource):
         self, default_parameters: Optional[ThermicSourceParameters] = None
     ) -> None:
         if default_parameters is None:
+            if self._source_instance.thermic_properties.HasField("emissive_faces_properties"):
+                self.set_emissive_faces()
+            elif self._source_instance.thermic_properties.HasField("temperature_field_properties"):
+                self.set_temperature_field()
             return
 
         # Emittance

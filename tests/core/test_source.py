@@ -2151,16 +2151,15 @@ def test_load_thermic_source(speos: Speos):
     assert isinstance(source1.intensity.type, Intensity.Cos)
     assert source1.intensity.type.n == 1
     assert source1.intensity.type.total_angle == 180
+    assert isinstance(source1.emittance_type, SourceThermic.EmissiveFaces)
     assert source1.emittance_type.temperature == 2000.0
-    assert (
-        source1.set_emissive_faces().geometries[0].geo_path
-        == "Surface:3875380806/face.1:2856391864"
-    )
+    assert source1.emittance_type.geometries[0].geo_path == "Surface:3875380806/face.1:2856391864"
 
     source2 = p.find(name="Thermic.2", name_regex=True, feature_type=SourceThermic)[0]
     assert isinstance(source2.intensity.type, Intensity.Cos)
     assert source2.intensity.type.n == 3
     assert source2.intensity.type.total_angle == 180
+    assert isinstance(source2.emittance_type, SourceThermic.TemperatureField)
     assert source2.emittance_type.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
