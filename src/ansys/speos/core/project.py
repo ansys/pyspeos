@@ -737,7 +737,7 @@ class Project:
                 if not self.client.scenes()._is_texture_available:
                     raise NotImplementedError(
                         "SimulationVirtualBSDF is not supported in the current server version.\
-                            It needs a Speos Version of 25 R1 SP1 or higher."
+                            It needs a Speos Version of 25 R2 SP1 or higher."
                     )
 
                 if parameters is None:
