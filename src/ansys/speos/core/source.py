@@ -61,6 +61,7 @@ from ansys.speos.core.generic.parameters import (
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
+    SopLibraryParameters,
     SopMirrorParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
@@ -2547,56 +2548,48 @@ class SourceThermic(BaseSource):
             self._project = project
             self._temperature_field = temperature_field
             self._temperature_field_props = temperature_field_props
-            if self._temperature_field.sop_guid != "":
-                self._sop = BaseSop(
-                    name=name,
-                    stable_ctr=True,
-                )
-                self._sop._fill_sop_template(self._project.client, self._temperature_field.sop_guid)
-                # self._sop_template = self._project.client[temperature_field.sop_guid].get()
-                # self._sop = BaseSop(
-                #     sop_template=self._sop_template,
-                #     mat_inst=None,
-                #     stable_ctr=True,
-                # )
-                self._sop._sync_sop_properties()
-            else:
-                self._sop = BaseSop(
-                    name=name,
-                    sop_parameters=SopMirrorParameters(),
-                    stable_ctr=True,
-                )
-                # self._sop_template = ProtoSOPTemplate(
-                #     name=name + ".SOP", description="", metadata={}
-                # )
-                # self._sop = BaseSop(
-                #     sop_template=self._sop_template,
-                #     mat_inst=None,
-                #     sop_parameters=SopMirrorParameters(),
-                #     stable_ctr=True,
-                # )
-                self._sop.set_surface_mirror().reflectance = 0
+            self._source_name = name
+
+            self._sop = BaseSop(
+                name=self._source_name,
+                sop_parameters=TemperatureFieldParameters().sop,
+                stable_ctr=True,
+            )
+
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(
             self, default_parameters: Optional[TemperatureFieldParameters] = None
         ) -> None:
             if default_parameters is None:
+                # If no default parameters are provided, and sop_guid is present,
+                # we fill the sop template with the existing sop_guid
+                if self._temperature_field.sop_guid != "":
+                    self._sop = BaseSop(
+                        name=self._source_name, sop_parameters=None, stable_ctr=True
+                    )
+                    self._sop._fill_sop_template(
+                        self._project.client, self._temperature_field.sop_guid
+                    )
                 return
 
             self.temperature_field_uri = default_parameters.temperature_field_uri
             self.axis_plane = default_parameters.axis_plane
 
-            # SOP
-            match type(default_parameters.sop).__name__:
-                case "SopMirrorParameters":
-                    self._sop.set_surface_mirror().reflectance = default_parameters.sop.reflectance
-                case "SopLibraryParameters":
-                    self._sop.set_surface_library().file_uri = default_parameters.sop.file_uri
-                case _:
-                    raise ValueError(
-                        "Unsupported SOP type: {}".format(type(default_parameters.sop).__name__)
-                    )
+            # Check if the sop type given in Parameters is supported
+            if not isinstance(default_parameters.sop, SopMirrorParameters) and not isinstance(
+                default_parameters.sop, SopLibraryParameters
+            ):
+                raise ValueError(
+                    "Unsupported SOP type: {}".format(type(default_parameters.sop).__name__)
+                )
+
+            # Default SOP
+            self._sop = BaseSop(
+                name=self._source_name,
+                sop_parameters=default_parameters.sop,
+                stable_ctr=True,
+            )
 
         @property
         def temperature_field_uri(self) -> str:
@@ -2851,26 +2844,11 @@ class SourceThermic(BaseSource):
         self._source_template.thermic.intensity_guid = self._intensity.intensity_template_link.key
 
         # sop (only for temperature field)
-        if self._source_template.thermic.HasField("temperature_field"):
-            # commit sop
-            if self.set_temperature_field()._sop.sop_template_link is None:
-                if self.set_temperature_field()._sop._sop_template is not None:
-                    # Fill sop_guid(s) field according to the server capability regarding textures
-                    self.set_temperature_field()._sop.sop_template_link = (
-                        self._speos_client.sop_templates().create(
-                            message=self.set_temperature_field()._sop._sop_template
-                        )
-                    )
-                    self._source_template.thermic.temperature_field.sop_guid = (
-                        self.set_temperature_field()._sop.sop_template_link.key
-                    )
-            elif (
-                self.set_temperature_field()._sop.sop_template_link.get()
-                != self.set_temperature_field()._sop._sop_template
-            ):
-                self.set_temperature_field()._sop.sop_template_link.set(
-                    data=self.set_temperature_field()._sop._sop_template
-                )  # Only update if sop template has changed
+        if isinstance(self._exitance_type, SourceThermic.TemperatureField):
+            self._exitance_type._sop._commit_sop_template(self._speos_client)
+            self._exitance_type._temperature_field.sop_guid = (
+                self._exitance_type._sop.sop_template_link.key
+            )
 
         # source base
         super().commit()
@@ -2885,8 +2863,9 @@ class SourceThermic(BaseSource):
             Thermic source feature.
         """
         self._intensity.reset()
-        if self._source_template.thermic.HasField("temperature_field"):
-            self.set_temperature_field().sop._reset_sop_template()
+
+        if isinstance(self._exitance_type, SourceThermic.TemperatureField):
+            self._exitance_type._sop._reset_sop_template()
 
         super().reset()
         return self
