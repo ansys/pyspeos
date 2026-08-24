@@ -209,9 +209,9 @@ class SceneStub(CrudStub):
         self._is_texture_available = self._check_if_texture_available(channel=channel)
 
     def _check_if_texture_available(self, channel) -> bool:
-        # The texture feature is available in SPEOS 2025 R1 SP1 and later.
+        # The texture feature is available in SPEOS 2025 R2 SP1 and later.
         # The version checker is only available from 2026 R1, so we check first the version
-        if server_version_checker.is_version_supported(2025, 1, 1):
+        if server_version_checker.is_version_supported(2025, 2, 1):
             return True
 
         # If not available, check the presence of the sop_guid field in the scene material instance.
