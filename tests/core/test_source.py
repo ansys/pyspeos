@@ -1952,7 +1952,10 @@ def test_create_thermic_source(speos: Speos):
     op1.commit()
 
     source1 = p.create_source(name="Thermic.1", feature_type=SourceThermic)
-    source1.set_emissive_faces().geometries = [(GeoRef.from_native_link("BodyB"), False)]
+    source1.set_emissive_faces().geometries = [
+        (GeoRef.from_native_link("BodyB/FaceB1"), False),
+        (face_2, True),
+    ]
     source1.commit()
 
     assert source1.source_template_link is not None
@@ -1968,8 +1971,10 @@ def test_create_thermic_source(speos: Speos):
     assert source1._source_instance.HasField("thermic_properties")
     thermic_properties = source1._source_instance.thermic_properties
     assert thermic_properties.HasField("emissive_faces_properties")
-    assert thermic_properties.emissive_faces_properties.geo_paths[0].geo_path == "BodyB"
+    assert thermic_properties.emissive_faces_properties.geo_paths[0].geo_path == "BodyB/FaceB1"
     assert thermic_properties.emissive_faces_properties.geo_paths[0].reverse_normal is False
+    assert thermic_properties.emissive_faces_properties.geo_paths[1].geo_path == "BodyB/FaceB2"
+    assert thermic_properties.emissive_faces_properties.geo_paths[1].reverse_normal is True
 
     # change temperature
     source1.emittance_type.temperature = 5000
@@ -2708,20 +2713,38 @@ def test_thermic_modify_after_reset(speos: Speos):
     source = SourceThermic(
         project=p, name="Thermic.1", default_parameters=ThermicSourceParameters()
     )
-    source.set_temperature_field().temperature_field_uri = (
-        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
-    )
+    cos = source.intensity.set_cos()
+    cos.n = 2
+    cos.total_angle = 170
+    tf = source.set_temperature_field()
+    tf.temperature_field_uri = Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    tf.sop.set_surface_mirror().reflectance = 25
+    tf.axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     source.commit()
 
     # Ask for reset
     source.reset()
 
     # Modify after a reset
-    # Template
+    # Modify and check intermediate class for intensity
+    assert source._intensity._intensity_template.cos.N == 2
+    source.intensity.set_cos().n = 3
+    assert source._intensity._intensity_template.cos.N == 3
+
+    # Modify and check intermediate class for exitance: temperature field and sop
     assert source._source_template.thermic.temperature_field.temperature_field_uri == str(
         Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
     )
-    assert source._intensity.intensity_template_link.get().cos.N == 1
+    tf_after_reset = source.set_temperature_field()
+    tf_after_reset.temperature_field_uri = Path(test_path) / "FakePath" / "File.OPTTemperatureField"
+    assert source._source_template.thermic.temperature_field.temperature_field_uri == str(
+        Path(test_path) / "FakePath" / "File.OPTTemperatureField"
+    )
+    assert source._exitance_type._sop._sop_template.mirror.reflectance == 25
+    tf_after_reset.sop.set_surface_mirror().reflectance = 50
+    assert source._exitance_type._sop._sop_template.mirror.reflectance == 50
+
+    # Modify and check instance properties
     assert source._source_instance.thermic_properties.temperature_field_properties.axis_plane == [
         0,
         0,
@@ -2733,7 +2756,7 @@ def test_thermic_modify_after_reset(speos: Speos):
         1,
         0,
     ]
-    source.set_temperature_field().axis_plane = [50, 50, 50, 1, 0, 0, 0, 0, -1]
+    tf_after_reset.axis_plane = [50, 50, 50, 1, 0, 0, 0, 0, -1]
     assert source._source_instance.thermic_properties.temperature_field_properties.axis_plane == [
         50,
         50,
@@ -2745,82 +2768,52 @@ def test_thermic_modify_after_reset(speos: Speos):
         0,
         -1,
     ]
-    source.delete()
 
-    # --- emissive faces: reset then set_emissive_faces ref-mismatch branch ---
-    source_ef = SourceThermic(
-        project=p, name="Thermic.EF.Reset", default_parameters=ThermicSourceParameters()
-    )
-    source_ef.set_emissive_faces().temperature = 3000.0
-    assert source_ef._source_template.thermic.emissives_faces.temperature == 3000.0
-    source_ef.reset()
-    # reset() skips sop.reset() for emissive-faces sources (no temperature_field branch)
-    assert source_ef._source_template.thermic.emissives_faces.temperature == 3000.0
-    # set_emissive_faces() detects ref mismatch and updates internal refs
-    source_ef.set_emissive_faces().temperature = 4500.0
-    assert source_ef._source_template.thermic.emissives_faces.temperature == 4500.0
+    # test now intermediate class for exitance: emissive faces
+    # first commit with emissive faces
 
-    # --- emittance_type property ref-mismatch for emissive faces after reset ---
-    ef_type = source_ef.emittance_type
-    assert isinstance(ef_type, SourceThermic.EmissiveFaces)
-    source_ef.reset()
-    ef_type_after = source_ef.emittance_type  # must update stale refs
-    assert isinstance(ef_type_after, SourceThermic.EmissiveFaces)
-    assert ef_type_after._emissive_faces is source_ef._source_template.thermic.emissives_faces
-    source_ef.delete()
-
-    # --- emittance_type property ref-mismatch for temperature field after reset ---
-    source_tf = SourceThermic(
-        project=p, name="Thermic.TF.Type", default_parameters=ThermicSourceParameters()
-    )
-    source_tf.set_temperature_field().temperature_field_uri = (
-        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
-    )
-    tf_type = source_tf.emittance_type
-    assert isinstance(tf_type, SourceThermic.TemperatureField)
-    source_tf.reset()
-    tf_type_after = source_tf.emittance_type  # must update stale refs
-    assert isinstance(tf_type_after, SourceThermic.TemperatureField)
-    assert tf_type_after._temperature_field is source_tf._source_template.thermic.temperature_field
-    source_tf.delete()
-
+    # Need to create a body and face for emissive faces
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
     face_1 = body_b.create_face(name="FaceB1")
     face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     face_1.facets = [0, 1, 2]
     face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
-    face_1.commit()
+    face_2 = body_b.create_face(name="FaceB2")
+    face_2.vertices = [10, 10, 10, 11, 10, 10, 10, 11, 10]
+    face_2.facets = [0, 1, 2]
+    face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     op1 = p.create_optical_property(name="Material.1")
-    op1.commit()
     op1.set_volume_none()
     op1.set_surface_mirror().reflectance = 50
-    op1.commit()
-    op1.geometries = [GeoRef.from_native_link("BodyB/FaceB1")]
+    op1.geometries = [body_b]
     op1.commit()
 
-    source2 = p.create_source(name="Thermic.2", feature_type=SourceThermic)
-    source2.set_temperature_field().temperature_field_uri = (
-        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
-    )
-    source2.set_temperature_field().sop.set_surface_mirror().reflectance = 50
-    source2.commit()
-    source2.set_temperature_field().sop.set_surface_mirror().reflectance = 80
-    source2.reset()
-    assert source2.set_temperature_field().sop.set_surface_mirror().reflectance == 50
-    guid_tmp = source2._source_template.thermic.temperature_field.sop_guid
-    source2.set_temperature_field().sop.set_surface_library().file_uri = (
-        Path(test_path) / "R_test.anisotropicbsdf"
-    )
-    source2.commit()
-    assert source2._source_template.thermic.temperature_field.sop_guid == guid_tmp
-    assert (
-        p.client[source2._source_template.thermic.temperature_field.sop_guid]
-        .get()
-        .HasField("library")
-    )
+    ef = source.set_emissive_faces()
+    ef.temperature = 3000.0
+    ef.geometries = [(face_1, False)]
+    source.commit()
+
+    # Ask for reset
+    source.reset()
+
+    # Modify after a reset
+    # Modify and check intermediate class for exitance: emissive faces
+    # template
+    ef_after_reset = source.set_emissive_faces()
+    assert source._source_template.thermic.emissives_faces.temperature == 3000.0
+    ef_after_reset.temperature = 4500.0
+    assert source._source_template.thermic.emissives_faces.temperature == 4500.0
+    # instance
+    gp0 = source._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0]
+    assert gp0.geo_path == "BodyB/FaceB1"
+    assert not gp0.reverse_normal
+    ef_after_reset.geometries = [(face_2, True)]
+    gp0 = source._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0]
+    assert gp0.geo_path == "BodyB/FaceB2"
+    assert gp0.reverse_normal
 
 
 def test_delete_source(speos: Speos):
