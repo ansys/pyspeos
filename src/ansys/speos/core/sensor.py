@@ -84,10 +84,7 @@ from ansys.speos.core.generic.visualization_methods import _VisualData, local2ab
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
-from ansys.speos.core.kernel.sensor_template_v2 import (
-    ProtoSensorTemplateV2,
-    SensorTemplateLinkV2,
-)
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -129,9 +126,6 @@ class BaseSensor:
     used instead. The version is resolved automatically at instantiation time.
     """
 
-    _SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)
-    """Minimum Speos server version (major, minor, service pack) supporting sensor template v2."""
-
     _supports_template_v2 = False
     """Whether the concrete sensor feature is able to handle a sensor template v2."""
 
@@ -146,7 +140,7 @@ class BaseSensor:
         """
         if not cls._supports_template_v2:
             return False
-        return server_version_checker.is_version_supported(*cls._SENSOR_TEMPLATE_V2_MIN_VERSION)
+        return server_version_checker.is_version_supported(2027, 1, 0)
 
     def __init__(
         self,
@@ -162,7 +156,7 @@ class BaseSensor:
         self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
-        self._sensor_template_version = 2 if self._use_sensor_template_v2() else 1
+
         if metadata is None:
             metadata = {}
 
@@ -177,14 +171,7 @@ class BaseSensor:
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
             self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
-            # The version of an existing template is deduced from the link retrieved from the
-            # database: a project loaded from a speos file may still hold v1 templates even
-            # when the server would support v2.
-            if self.sensor_template_link is not None:
-                self._sensor_template_version = (
-                    2 if isinstance(self.sensor_template_link, SensorTemplateLinkV2) else 1
-                )
-            self._sensor_template = self._new_sensor_template(name, description, metadata)
+
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
@@ -209,21 +196,9 @@ class BaseSensor:
         ansys.speos.core.kernel.sensor_template_v2.ProtoSensorTemplateV2]
             Empty sensor template protobuf message.
         """
-        if self._sensor_template_version == 2:
+        if self._use_sensor_template_v2():
             return ProtoSensorTemplateV2(name=name, description=description, metadata=metadata)
         return ProtoSensorTemplate(name=name, description=description, metadata=metadata)
-
-    @property
-    def sensor_template_version(self) -> int:
-        """Protobuf version used by the sensor template of this feature.
-
-        Returns
-        -------
-        int
-            ``1`` if ``ansys.api.speos.sensor.v1`` is used, ``2`` if
-            ``ansys.api.speos.sensor.v2`` is used.
-        """
-        return self._sensor_template_version
 
     @property
     def lxp_path_number(self) -> Union[None, int]:
@@ -359,6 +334,7 @@ class BaseSensor:
         ----------
         wavelengths_range : Union[\
         ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange, \
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D.TypeColorimetric, \
         ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.WavelengthsRange]
             Wavelengths range protobuf object to modify.
         default_parameters : \
@@ -380,7 +356,11 @@ class BaseSensor:
 
         def __init__(
             self,
-            wavelengths_range: Union[common_pb2.WavelengthsRange, sensor_pb2.TypeColorimetric],
+            wavelengths_range: Union[
+                common_pb2.WavelengthsRange,
+                sensor_pb2.SensorTemplate.Irradiance3D.TypeColorimetric,
+                sensor_v2_pb2.SensorTemplate.WavelengthsRange,
+            ],
             default_parameters: Optional[WavelengthsRangeParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -439,14 +419,14 @@ class BaseSensor:
             float
                 Upper Bound of the wavelength range.
             """
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if "w_end" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_end
             else:
                 return self._wavelengths_range.wavelength_end
 
         @end.setter
         def end(self, value: float):
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if "w_end" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_end = value
             else:
                 self._wavelengths_range.wavelength_end = value
@@ -466,12 +446,12 @@ class BaseSensor:
             Union[None, int]:
                 Number of Samples used to split the wavelength range.
             """
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if "w_sampling" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value):
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if "w_sampling" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
                 self._wavelengths_range.w_sampling = value
 
     class Dimensions:
@@ -1200,7 +1180,7 @@ class BaseSensor:
 
         # Save or Update the sensor template (depending on if it was already saved before)
         if self.sensor_template_link is None:
-            if self._sensor_template_version == 2:
+            if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
                 self.sensor_template_link = self._project.client.sensor_templates_v2().create(
                     message=self._sensor_template
                 )
@@ -2693,7 +2673,7 @@ class SensorIrradiance(BaseSensor):
         ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Irradiance]
             Protobuf sub-message holding the irradiance sensor template definition.
         """
-        if self._sensor_template_version == 2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             return self._sensor_template.irradiance
         return self._sensor_template.irradiance_sensor_template
 
@@ -2710,7 +2690,7 @@ class SensorIrradiance(BaseSensor):
         str
             Name of the protobuf field for the sensor template version in use.
         """
-        if self._sensor_template_version == 2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             return "mode_" + mode
         return "sensor_type_" + mode
 
@@ -2753,7 +2733,7 @@ class SensorIrradiance(BaseSensor):
             One of ``"planar"``, ``"radial"``, ``"hemispherical"``, ``"cylindrical"``,
             ``"semi_cylindrical"``.
         """
-        if self._sensor_template_version == 2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             self._irradiance_template.integration_type = getattr(
                 sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
                 "INTEGRATION_TYPE_" + integration_type.upper(),
@@ -2775,7 +2755,7 @@ class SensorIrradiance(BaseSensor):
         bool
             ``True`` if the integration type is the one currently set.
         """
-        if self._sensor_template_version == 2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             return self._irradiance_template.integration_type == getattr(
                 sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
                 "INTEGRATION_TYPE_" + integration_type.upper(),

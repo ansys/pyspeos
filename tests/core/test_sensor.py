@@ -102,7 +102,7 @@ def irradiance_template(sensor_feature, local: bool = False):
     template = (
         sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
     )
-    if sensor_feature.sensor_template_version == 2:
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
         return template.irradiance
     return template.irradiance_sensor_template
 
@@ -125,14 +125,14 @@ def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
     template = (
         sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
     )
-    if sensor_feature.sensor_template_version == 2:
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
         return template.HasField("irradiance")
     return template.HasField("irradiance_sensor_template")
 
 
 def _sensor_mode_field(sensor_feature, mode: str) -> str:
     """Get the protobuf field name of a sensor mode for the template version in use."""
-    if sensor_feature.sensor_template_version == 2:
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
         return "mode_" + mode
     return "sensor_type_" + mode
 
@@ -200,7 +200,7 @@ def has_integration_type(sensor_feature, integration_type: str, local: bool = Fa
         ``True`` if the integration type is the one currently set.
     """
     template = irradiance_template(sensor_feature, local)
-    if sensor_feature.sensor_template_version == 2:
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance):
         return template.integration_type == getattr(
             sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
             "INTEGRATION_TYPE_" + integration_type.upper(),

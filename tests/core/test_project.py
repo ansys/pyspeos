@@ -411,7 +411,7 @@ def test_from_file(speos: Speos):
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
-    if feat_ssrs[0].sensor_template_version == 2:
+    if isinstance(ssr_link, speos.client.SensorTemplateLinkV2):
         assert ssr_data.HasField("irradiance")
         irradiance_data = ssr_data.irradiance
         colorimetric_data = irradiance_data.mode_colorimetric
