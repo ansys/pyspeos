@@ -36,12 +36,15 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
     DirectSimulationParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
+    OptimizedPropagationAbsoluteParameters,
+    OptimizedPropagationRelativeParameters,
     TextureNormalizationTypes,
     VirtualBSDFSimulationParameters,
 )
@@ -1576,6 +1579,104 @@ class SimulationInverse(BaseSimulation):
 
         pass
 
+    class OptimizedPropagationRelative:
+        """Class to set the optimized propagation relative stop condition."""
+
+        def __init__(
+            self,
+            propagation_relative: (
+                ProtoJob.InverseMCSimulationProperties.OptimizedPropagationRelative
+            ),
+            default_parameters: Optional[OptimizedPropagationRelativeParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "OptimizedPropagationRelative class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._optimized_propagation_relative = propagation_relative
+            if default_parameters:
+                self.min_pass_number = default_parameters.min_pass_number
+                self.relative_value = default_parameters.stop_condition_relative_value
+
+        @property
+        def min_pass_number(self) -> int:
+            """Minimum number of passes to stop the simulation.
+
+            Returns
+            -------
+            int
+                Minimum number of passes.
+            """
+            return self._optimized_propagation_relative.min_pass_number
+
+        @min_pass_number.setter
+        def min_pass_number(self, value: int) -> None:
+            self._optimized_propagation_relative.min_pass_number = value
+
+        @property
+        def relative_value(self) -> int:
+            """Absolute value to stop the simulation.
+
+            Returns
+            -------
+            int
+                Absolute value.
+            """
+            return self._optimized_propagation_relative.stop_condition_relative_value
+
+        @relative_value.setter
+        def relative_value(self, value: int) -> None:
+            self._optimized_propagation_relative.stop_condition_relative_value = value
+
+    class OptimizedPropagationAbsolute:
+        """Class to set the optimized propagation absolute stop condition."""
+
+        def __init__(
+            self,
+            propagation_absolute: (
+                ProtoJob.InverseMCSimulationProperties.OptimizedPropagationAbsolute
+            ),
+            default_parameters: Optional[OptimizedPropagationAbsoluteParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "OptimizedPropagationRelative class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._optimized_propagation_absolute = propagation_absolute
+            if default_parameters:
+                self.min_pass_number = default_parameters.min_pass_number
+                self.absolute_value = default_parameters.stop_condition_absolute_value
+
+        @property
+        def min_pass_number(self) -> int:
+            """Minimum number of passes to stop the simulation.
+
+            Returns
+            -------
+            int
+                Minimum number of passes.
+            """
+            return self._optimized_propagation_absolute.min_pass_number
+
+        @min_pass_number.setter
+        def min_pass_number(self, value: int) -> None:
+            self._optimized_propagation_absolute.min_pass_number = value
+
+        @property
+        def absolute_value(self) -> int:
+            """Absolute value to stop the simulation.
+
+            Returns
+            -------
+            int
+                Absolute value.
+            """
+            return self._optimized_propagation_absolute.stop_condition_absolute_value
+
+        @absolute_value.setter
+        def absolute_value(self, value: int) -> None:
+            self._optimized_propagation_absolute.stop_condition_absolute_value = value
+
     @min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -1607,7 +1708,28 @@ class SimulationInverse(BaseSimulation):
             if self.timeline:
                 self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
-            self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
+            if isinstance(
+                default_parameters.stop_condition_passes_number,
+                OptimizedPropagationRelativeParameters,
+            ):
+                self.set_optimized_propagation_relative().min_pass_number = (
+                    default_parameters.stop_condition_passes_number.min_pass_number
+                )
+                self.set_optimized_propagation_relative().relative_value = (
+                    default_parameters.stop_condition_passes_number.stop_condition_relative_value
+                )
+            elif isinstance(
+                default_parameters.stop_condition_passes_number,
+                OptimizedPropagationAbsoluteParameters,
+            ):
+                self.set_optimized_propagation_absolute().min_pass_number = (
+                    default_parameters.stop_condition_passes_number.min_pass_number
+                )
+                self.set_optimized_propagation_absolute().absolute_value = (
+                    default_parameters.stop_condition_passes_number.stop_condition_absolute_value
+                )
+            elif isinstance(default_parameters.stop_condition_passes_number, int):
+                self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
             match default_parameters.colorimetric_standard:
                 case ColorimetricStandardTypes.cie_1931:
@@ -1862,6 +1984,46 @@ class SimulationInverse(BaseSimulation):
             prop_none.ClearField("stop_condition_passes_number")
         else:
             prop_none.stop_condition_passes_number = value
+
+    @general_methods.min_speos_version(26, 1, 3)
+    def set_optimized_propagation_relative(self) -> OptimizedPropagationRelative:
+        """Set the optimized propagation relative stop condition.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationRelative
+            Optimized propagation relative stop condition.
+        """
+        props = self._job.inverse_mc_simulation_properties
+        return SimulationInverse.OptimizedPropagationRelative(
+            propagation_relative=props.optimized_propagation_relative,
+            default_parameters=(
+                None
+                if props.HasField("optimized_propagation_relative")
+                else OptimizedPropagationRelativeParameters()
+            ),
+            stable_ctr=True,
+        )
+
+    @general_methods.min_speos_version(26, 1, 3)
+    def set_optimized_propagation_absolute(self) -> OptimizedPropagationAbsolute:
+        """Set the optimized propagation absolute stop condition.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationAbsolute
+            Optimized propagation absolute stop condition.
+        """
+        props = self._job.inverse_mc_simulation_properties
+        return SimulationInverse.OptimizedPropagationAbsolute(
+            propagation_absolute=props.optimized_propagation_absolute,
+            default_parameters=(
+                None
+                if props.HasField("optimized_propagation_absolute")
+                else OptimizedPropagationAbsoluteParameters()
+            ),
+            stable_ctr=True,
+        )
 
     @property
     def stop_condition_duration(self) -> Optional[int]:

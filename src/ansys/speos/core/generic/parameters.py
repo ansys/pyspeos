@@ -1263,6 +1263,26 @@ class DirectSimulationParameters:
 
 
 @dataclass
+class OptimizedPropagationRelativeParameters:
+    """Optimized Propagation Relative Parameters."""
+
+    min_pass_number: int = 300
+    """Minimum number of passes before stopping the simulation."""
+    stop_condition_relative_value: int = 10
+    """Relative value threshold for stopping the simulation."""
+
+
+@dataclass
+class OptimizedPropagationAbsoluteParameters:
+    """Optimized Propagation Relative Parameters."""
+
+    min_pass_number: int = 300
+    """Minimum number of passes before stopping the simulation."""
+    stop_condition_absolute_value: int = 10
+    """Absolute value threshold for stopping the simulation."""
+
+
+@dataclass
 class InverseSimulationParameters:
     """Inverse Simulation Parameters."""
 
@@ -1274,7 +1294,9 @@ class InverseSimulationParameters:
     """whether timeline is enabled"""
     start_time: Optional[float] = 0.0
     """Timeline start time in seconds. Set to ``None`` to disable the simulation timeline."""
-    stop_condition_passes_number: int = 5
+    stop_condition_passes_number: Union[
+        int, OptimizedPropagationRelativeParameters, OptimizedPropagationAbsoluteParameters
+    ] = 5
     """Maximum number of inverse passes before stopping."""
     stop_condition_duration: Optional[int] = None
     """Optional simulation stop duration in seconds."""
