@@ -38,7 +38,12 @@ import pytest
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.file_transfer import FileTransfer
 from ansys.speos.core.generic.general_methods import normalize_vector
-from ansys.speos.core.generic.parameters import TextureNormalizationTypes
+from ansys.speos.core.generic.parameters import (
+    InverseSimulationParameters,
+    OptimizedPropagationAbsoluteParameters,
+    OptimizedPropagationRelativeParameters,
+    TextureNormalizationTypes,
+)
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
@@ -440,6 +445,78 @@ def test_create_inverse(speos: Speos):
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_inverse_simulation_optimized_propagation_settings(speos: Speos):
+    """Test the optimized propagation settings for Inverse Simulation."""
+    p = Project(speos=speos)
+
+    # Default value
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
+    sim1.set_optimized_propagation_relative()
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative is not None
+    assert not sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
+
+    default_relative_parameters = OptimizedPropagationRelativeParameters()
+    assert (
+        sim1.set_optimized_propagation_relative().min_pass_number
+        == default_relative_parameters.min_pass_number
+    )
+    assert (
+        sim1.set_optimized_propagation_relative().relative_value
+        == default_relative_parameters.stop_condition_relative_value
+    )
+    assert (
+        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.min_pass_number
+        == default_relative_parameters.min_pass_number
+    )
+    assert (
+        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.stop_condition_relative_value
+        == default_relative_parameters.stop_condition_relative_value
+    )
+
+    sim1.set_optimized_propagation_absolute()
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute is not None
+    default_relative_parameters = OptimizedPropagationAbsoluteParameters()
+    assert (
+        sim1.set_optimized_propagation_absolute().min_pass_number
+        == default_relative_parameters.min_pass_number
+    )
+    assert (
+        sim1.set_optimized_propagation_absolute().absolute_value
+        == default_relative_parameters.stop_condition_absolute_value
+    )
+
+    assert (
+        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.min_pass_number
+        == default_relative_parameters.min_pass_number
+    )
+    assert (
+        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.stop_condition_absolute_value
+        == default_relative_parameters.stop_condition_absolute_value
+    )
+    sim1.delete()
+
+    default_inverse_parameters = InverseSimulationParameters()
+    default_inverse_parameters.stop_condition_passes_number = (
+        OptimizedPropagationRelativeParameters()
+    )
+    sim2 = p.create_simulation(
+        name="Inverse.2", feature_type=SimulationInverse, parameters=default_inverse_parameters
+    )
+    assert sim2._job.inverse_mc_simulation_properties.HasField("optimized_propagation_relative")
+    sim2.delete()
+
+    default_inverse_parameters.stop_condition_passes_number = (
+        OptimizedPropagationAbsoluteParameters()
+    )
+    sim3 = p.create_simulation(
+        name="Inverse.3", feature_type=SimulationInverse, parameters=default_inverse_parameters
+    )
+    assert sim3._job.inverse_mc_simulation_properties.HasField("optimized_propagation_absolute")
+    sim3.delete()
 
 
 @pytest.mark.supported_speos_versions(min=251)
