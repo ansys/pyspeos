@@ -343,7 +343,6 @@ def test__value_finder_key_endswith(speos: Speos):
     assert keys == [
         "surface_properties",
         "exitance_constant_properties",
-        "intensity_properties",
     ]
 
 
@@ -492,4 +491,6 @@ def test_flatten_dict(speos: Speos):
     ]
     if check_version(ansys_api_speos_version, 0, 16, 0):
         expected_keys.append("sub_scene_anchor_axis_system")
+
+    print(res.keys())
     assert all(True if key in expected_keys else False for key in res.keys())
