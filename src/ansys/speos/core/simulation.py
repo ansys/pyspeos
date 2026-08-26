@@ -36,7 +36,6 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
-from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
@@ -978,7 +977,11 @@ class BaseSimulation:
             job_props = self._job.inverse_mc_simulation_properties
             if not (
                 job_props.HasField("stop_condition_duration")
-                or job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+                or (
+                    job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+                    or job_props.optimized_propagation_relative.min_pass_number != 0
+                    or job_props.optimized_propagation_absolute.min_pass_number != 0
+                )
             ):
                 stop_condition_error = True
 
@@ -996,7 +999,10 @@ class BaseSimulation:
             elif self._job.HasField("inverse_mc_simulation_properties"):
                 default_sim_paras = InverseSimulationParameters()
                 self.stop_condition_duration = default_sim_paras.stop_condition_duration
-                self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
+                default_passes_number = default_sim_paras.stop_condition_passes_number
+                if not isinstance(default_passes_number, int):
+                    default_passes_number = 5
+                self.stop_condition_passes_number = default_passes_number
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
@@ -1572,6 +1578,19 @@ class SimulationInverse(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
         If defined the values in the inverse simulation instance will be overwritten by the
         values of the data class.
+
+    Notes
+    -----
+    Three exclusive optimized propagation modes are available, see
+    :attr:`optimized_propagation`:
+
+    - ``"none"``: the same number of passes is used for each pixel, see
+      :attr:`stop_condition_passes_number`.
+    - ``"relative"``: see :meth:`set_optimized_propagation_relative`.
+    - ``"absolute"``: see :meth:`set_optimized_propagation_absolute`.
+
+    The relative and absolute optimized propagation modes require Speos 2026 R1 SP3 or higher
+    and are only compatible with radiance sensors.
     """
 
     class SourceSampling:
@@ -1580,7 +1599,31 @@ class SimulationInverse(BaseSimulation):
         pass
 
     class OptimizedPropagationRelative:
-        """Class to set the optimized propagation relative stop condition."""
+        """Optimized propagation using a relative pixel standard deviation stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+        adequate in areas where pixels need more rays, thus giving a balanced image.
+
+        Parameters
+        ----------
+        propagation_relative : \
+ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationRelative
+            Protobuf message filled by this class.
+        default_parameters : \
+ansys.speos.core.generic.parameters.OptimizedPropagationRelativeParameters, optional
+            If defined, the protobuf message is initialized with the values of the data class.
+            By default, ``None``, means that the message is left untouched.
+        stable_ctr : bool
+            Internal safety flag. It must be set to ``True`` by the parent class.
+            By default, ``False``.
+
+        Notes
+        -----
+        Do not instantiate this class directly. Use
+        :meth:`SimulationInverse.set_optimized_propagation_relative` instead.
+        The optimized propagation algorithm is only compatible with radiance sensors.
+        """
 
         def __init__(
             self,
@@ -1594,13 +1637,13 @@ class SimulationInverse(BaseSimulation):
                 msg = "OptimizedPropagationRelative class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._optimized_propagation_relative = propagation_relative
-            if default_parameters:
+            if default_parameters is not None:
                 self.min_pass_number = default_parameters.min_pass_number
                 self.relative_value = default_parameters.stop_condition_relative_value
 
         @property
         def min_pass_number(self) -> int:
-            """Minimum number of passes to stop the simulation.
+            """Minimum number of passes computed without pass optimization.
 
             Returns
             -------
@@ -1615,12 +1658,12 @@ class SimulationInverse(BaseSimulation):
 
         @property
         def relative_value(self) -> int:
-            """Absolute value to stop the simulation.
+            """Relative pixel standard deviation threshold, in percent.
 
             Returns
             -------
             int
-                Absolute value.
+                Relative threshold, expressed in percent, between 0 and 100.
             """
             return self._optimized_propagation_relative.stop_condition_relative_value
 
@@ -1629,7 +1672,31 @@ class SimulationInverse(BaseSimulation):
             self._optimized_propagation_relative.stop_condition_relative_value = value
 
     class OptimizedPropagationAbsolute:
-        """Class to set the optimized propagation absolute stop condition."""
+        """Optimized propagation using an absolute pixel standard deviation stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+        adequate in areas where pixels need more rays, thus giving a balanced image.
+
+        Parameters
+        ----------
+        propagation_absolute : \
+ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationAbsolute
+            Protobuf message filled by this class.
+        default_parameters : \
+ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, optional
+            If defined, the protobuf message is initialized with the values of the data class.
+            By default, ``None``, means that the message is left untouched.
+        stable_ctr : bool
+            Internal safety flag. It must be set to ``True`` by the parent class.
+            By default, ``False``.
+
+        Notes
+        -----
+        Do not instantiate this class directly. Use
+        :meth:`SimulationInverse.set_optimized_propagation_absolute` instead.
+        The optimized propagation algorithm is only compatible with radiance sensors.
+        """
 
         def __init__(
             self,
@@ -1640,16 +1707,16 @@ class SimulationInverse(BaseSimulation):
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
-                msg = "OptimizedPropagationRelative class instantiated outside of class scope"
+                msg = "OptimizedPropagationAbsolute class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._optimized_propagation_absolute = propagation_absolute
-            if default_parameters:
+            if default_parameters is not None:
                 self.min_pass_number = default_parameters.min_pass_number
                 self.absolute_value = default_parameters.stop_condition_absolute_value
 
         @property
         def min_pass_number(self) -> int:
-            """Minimum number of passes to stop the simulation.
+            """Minimum number of passes computed without pass optimization.
 
             Returns
             -------
@@ -1664,12 +1731,12 @@ class SimulationInverse(BaseSimulation):
 
         @property
         def absolute_value(self) -> int:
-            """Absolute value to stop the simulation.
+            """Absolute photometric value of the pixel standard deviation threshold.
 
             Returns
             -------
             int
-                Absolute value.
+                Absolute photometric threshold.
             """
             return self._optimized_propagation_absolute.stop_condition_absolute_value
 
@@ -1708,28 +1775,23 @@ class SimulationInverse(BaseSimulation):
             if self.timeline:
                 self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
-            if isinstance(
-                default_parameters.stop_condition_passes_number,
-                OptimizedPropagationRelativeParameters,
-            ):
-                self.set_optimized_propagation_relative().min_pass_number = (
-                    default_parameters.stop_condition_passes_number.min_pass_number
-                )
-                self.set_optimized_propagation_relative().relative_value = (
-                    default_parameters.stop_condition_passes_number.stop_condition_relative_value
-                )
-            elif isinstance(
-                default_parameters.stop_condition_passes_number,
-                OptimizedPropagationAbsoluteParameters,
-            ):
-                self.set_optimized_propagation_absolute().min_pass_number = (
-                    default_parameters.stop_condition_passes_number.min_pass_number
-                )
-                self.set_optimized_propagation_absolute().absolute_value = (
-                    default_parameters.stop_condition_passes_number.stop_condition_absolute_value
-                )
-            elif isinstance(default_parameters.stop_condition_passes_number, int):
-                self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
+            passes_number = default_parameters.stop_condition_passes_number
+            match passes_number:
+                case OptimizedPropagationRelativeParameters():
+                    relative = self.set_optimized_propagation_relative()
+                    relative.min_pass_number = passes_number.min_pass_number
+                    relative.relative_value = passes_number.stop_condition_relative_value
+                case OptimizedPropagationAbsoluteParameters():
+                    absolute = self.set_optimized_propagation_absolute()
+                    absolute.min_pass_number = passes_number.min_pass_number
+                    absolute.absolute_value = passes_number.stop_condition_absolute_value
+                case int() | None:
+                    self.stop_condition_passes_number = passes_number
+                case _:
+                    raise ValueError(
+                        f"Unsupported stop_condition_passes_number type"
+                        f": {type(passes_number).__name__}"
+                    )
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
             match default_parameters.colorimetric_standard:
                 case ColorimetricStandardTypes.cie_1931:
@@ -1980,19 +2042,31 @@ class SimulationInverse(BaseSimulation):
     @stop_condition_passes_number.setter
     def stop_condition_passes_number(self, value: Union[None, int]) -> None:
         prop_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
+        prop_none.SetInParent()
         if value is None:
             prop_none.ClearField("stop_condition_passes_number")
         else:
             prop_none.stop_condition_passes_number = value
 
-    @general_methods.min_speos_version(26, 1, 3)
+    @min_speos_version(26, 1, 3)
     def set_optimized_propagation_relative(self) -> OptimizedPropagationRelative:
         """Set the optimized propagation relative stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs.
 
         Returns
         -------
         ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationRelative
             Optimized propagation relative stop condition.
+
+        Notes
+        -----
+        Selecting this mode discards any other optimized propagation mode previously set,
+        including :attr:`stop_condition_passes_number`.
+        Default values are applied only the first time this mode is selected, subsequent calls
+        return the stop condition with its current values.
+        The optimized propagation algorithm is only compatible with radiance sensors.
         """
         props = self._job.inverse_mc_simulation_properties
         return SimulationInverse.OptimizedPropagationRelative(
@@ -2005,14 +2079,25 @@ class SimulationInverse(BaseSimulation):
             stable_ctr=True,
         )
 
-    @general_methods.min_speos_version(26, 1, 3)
+    @min_speos_version(26, 1, 3)
     def set_optimized_propagation_absolute(self) -> OptimizedPropagationAbsolute:
         """Set the optimized propagation absolute stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs.
 
         Returns
         -------
         ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationAbsolute
             Optimized propagation absolute stop condition.
+
+        Notes
+        -----
+        Selecting this mode discards any other optimized propagation mode previously set,
+        including :attr:`stop_condition_passes_number`.
+        Default values are applied only the first time this mode is selected, subsequent calls
+        return the stop condition with its current values.
+        The optimized propagation algorithm is only compatible with radiance sensors.
         """
         props = self._job.inverse_mc_simulation_properties
         return SimulationInverse.OptimizedPropagationAbsolute(

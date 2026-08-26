@@ -184,6 +184,40 @@ simulation3.source_paths = [source1]
 simulation3.commit()
 print(simulation3)
 
+# #### Optimized propagation
+#
+# By default the inverse simulation sends the same number of passes for each pixel of the image.
+# The number of passes is driven by the ``stop_condition_passes_number`` property.
+
+print(simulation3.stop_condition_passes_number)
+simulation3.stop_condition_passes_number = 10
+print(simulation3.stop_condition_passes_number)
+
+# Starting with Speos 2026 R1 SP3, the optimized propagation algorithm adapts the number of passes
+# per pixel to send the optimal number of rays according to the signal each pixel needs.
+# It is only compatible with radiance sensors.
+#
+# The relative mode stops a pixel once its standard deviation drops below a given percentage.
+
+relative = simulation3.set_optimized_propagation_relative()
+relative.min_pass_number = 200
+relative.relative_value = 5
+print(relative)
+
+# The absolute mode stops a pixel once its standard deviation drops below an absolute
+# photometric value.
+
+absolute = simulation3.set_optimized_propagation_absolute()
+absolute.min_pass_number = 200
+absolute.absolute_value = 3
+print(absolute)
+
+# Switch back to a fixed number of passes by setting the stop condition on the passes number.
+
+simulation3.stop_condition_passes_number = 5
+simulation3.commit()
+print(simulation3)
+
 # ### Interactive simulation
 
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)

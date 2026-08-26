@@ -444,68 +444,6 @@ def test_create_inverse(speos: Speos):
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
-    # test optimized propagation settings
-    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
-    sim1.set_optimized_propagation_relative()
-    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative is not None
-    assert not sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
-
-    default_relative_parameters = OptimizedPropagationRelativeParameters()
-    assert (
-        sim1.set_optimized_propagation_relative().min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1.set_optimized_propagation_relative().relative_value
-        == default_relative_parameters.stop_condition_relative_value
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.stop_condition_relative_value
-        == default_relative_parameters.stop_condition_relative_value
-    )
-
-    sim1.set_optimized_propagation_absolute()
-    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute is not None
-    default_relative_parameters = OptimizedPropagationAbsoluteParameters()
-    assert (
-        sim1.set_optimized_propagation_absolute().min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1.set_optimized_propagation_absolute().absolute_value
-        == default_relative_parameters.stop_condition_absolute_value
-    )
-
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.stop_condition_absolute_value
-        == default_relative_parameters.stop_condition_absolute_value
-    )
-
-    default_inverse_parameters = InverseSimulationParameters()
-    default_inverse_parameters.stop_condition_passes_number = (
-        OptimizedPropagationRelativeParameters()
-    )
-    sim2 = p.create_simulation(
-        name="Inverse.2", feature_type=SimulationInverse, parameters=default_inverse_parameters
-    )
-    assert sim2._job.inverse_mc_simulation_properties.HasField("optimized_propagation_relative")
-
-    default_inverse_parameters.stop_condition_passes_number = (
-        OptimizedPropagationAbsoluteParameters()
-    )
-    sim3 = p.create_simulation(
-        name="Inverse.3", feature_type=SimulationInverse, parameters=default_inverse_parameters
-    )
-    assert sim3._job.inverse_mc_simulation_properties.HasField("optimized_propagation_absolute")
-
     sim1.delete()
 
 
@@ -513,72 +451,101 @@ def test_create_inverse(speos: Speos):
 def test_inverse_simulation_optimized_propagation_settings(speos: Speos):
     """Test the optimized propagation settings for Inverse Simulation."""
     p = Project(speos=speos)
-
-    # Default value
-    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
-    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
-    sim1.set_optimized_propagation_relative()
-    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative is not None
-    assert not sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
-
     default_relative_parameters = OptimizedPropagationRelativeParameters()
+    default_absolute_parameters = OptimizedPropagationAbsoluteParameters()
+
+    # Default value: no optimized propagation
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    properties = sim1._job.inverse_mc_simulation_properties
+    assert properties.HasField("optimized_propagation_none")
+    assert sim1.stop_condition_passes_number == 5
+
+    # Switch to relative optimized propagation
+    relative = sim1.set_optimized_propagation_relative()
+    assert properties.HasField("optimized_propagation_relative")
+    assert not properties.HasField("optimized_propagation_none")
+    # stop_condition_passes_number is no longer relevant
+    assert sim1.stop_condition_passes_number == 0
+
+    assert relative.min_pass_number == default_relative_parameters.min_pass_number
+    assert relative.relative_value == default_relative_parameters.stop_condition_relative_value
     assert (
-        sim1.set_optimized_propagation_relative().min_pass_number
+        properties.optimized_propagation_relative.min_pass_number
         == default_relative_parameters.min_pass_number
     )
     assert (
-        sim1.set_optimized_propagation_relative().relative_value
-        == default_relative_parameters.stop_condition_relative_value
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_relative.stop_condition_relative_value
+        properties.optimized_propagation_relative.stop_condition_relative_value
         == default_relative_parameters.stop_condition_relative_value
     )
 
-    sim1.set_optimized_propagation_absolute()
-    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute is not None
-    default_relative_parameters = OptimizedPropagationAbsoluteParameters()
+    # Values are kept when the setter is called again
+    relative.min_pass_number = 42
+    relative.relative_value = 7
+    assert sim1.set_optimized_propagation_relative().min_pass_number == 42
+    assert sim1.set_optimized_propagation_relative().relative_value == 7
+
+    # Switch to absolute optimized propagation
+    absolute = sim1.set_optimized_propagation_absolute()
+    assert properties.HasField("optimized_propagation_absolute")
+    assert not properties.HasField("optimized_propagation_relative")
+
+    assert absolute.min_pass_number == default_absolute_parameters.min_pass_number
+    assert absolute.absolute_value == default_absolute_parameters.stop_condition_absolute_value
     assert (
-        sim1.set_optimized_propagation_absolute().min_pass_number
-        == default_relative_parameters.min_pass_number
+        properties.optimized_propagation_absolute.min_pass_number
+        == default_absolute_parameters.min_pass_number
     )
     assert (
-        sim1.set_optimized_propagation_absolute().absolute_value
-        == default_relative_parameters.stop_condition_absolute_value
+        properties.optimized_propagation_absolute.stop_condition_absolute_value
+        == default_absolute_parameters.stop_condition_absolute_value
     )
 
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.min_pass_number
-        == default_relative_parameters.min_pass_number
-    )
-    assert (
-        sim1._job.inverse_mc_simulation_properties.optimized_propagation_absolute.stop_condition_absolute_value
-        == default_relative_parameters.stop_condition_absolute_value
-    )
+    absolute.min_pass_number = 24
+    absolute.absolute_value = 3
+    assert sim1.set_optimized_propagation_absolute().min_pass_number == 24
+    assert sim1.set_optimized_propagation_absolute().absolute_value == 3
+
+    # Setting the passes number switches back to no optimized propagation
+    sim1.stop_condition_passes_number = 12
+    assert properties.HasField("optimized_propagation_none")
+    assert not properties.HasField("optimized_propagation_absolute")
+    assert sim1.stop_condition_passes_number == 12
+
+    sim1.stop_condition_passes_number = 2
+    assert properties.HasField("optimized_propagation_none")
+    assert properties.optimized_propagation_none.HasField("stop_condition_passes_number") is True
+
     sim1.delete()
 
+    # Creation with parameter data classes
     default_inverse_parameters = InverseSimulationParameters()
     default_inverse_parameters.stop_condition_passes_number = (
-        OptimizedPropagationRelativeParameters()
+        OptimizedPropagationRelativeParameters(min_pass_number=150, stop_condition_relative_value=5)
     )
     sim2 = p.create_simulation(
         name="Inverse.2", feature_type=SimulationInverse, parameters=default_inverse_parameters
     )
     assert sim2._job.inverse_mc_simulation_properties.HasField("optimized_propagation_relative")
+    assert sim2.set_optimized_propagation_relative().min_pass_number == 150
+    assert sim2.set_optimized_propagation_relative().relative_value == 5
     sim2.delete()
 
     default_inverse_parameters.stop_condition_passes_number = (
-        OptimizedPropagationAbsoluteParameters()
+        OptimizedPropagationAbsoluteParameters(min_pass_number=250, stop_condition_absolute_value=8)
     )
     sim3 = p.create_simulation(
         name="Inverse.3", feature_type=SimulationInverse, parameters=default_inverse_parameters
     )
     assert sim3._job.inverse_mc_simulation_properties.HasField("optimized_propagation_absolute")
+    assert sim3.set_optimized_propagation_absolute().min_pass_number == 250
+    assert sim3.set_optimized_propagation_absolute().absolute_value == 8
     sim3.delete()
+
+    # Inner classes cannot be instantiated outside of the parent class scope
+    with pytest.raises(RuntimeError):
+        SimulationInverse.OptimizedPropagationRelative(propagation_relative=None)
+    with pytest.raises(RuntimeError):
+        SimulationInverse.OptimizedPropagationAbsolute(propagation_absolute=None)
 
 
 @pytest.mark.supported_speos_versions(min=251)

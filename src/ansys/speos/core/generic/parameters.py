@@ -1264,22 +1264,32 @@ class DirectSimulationParameters:
 
 @dataclass
 class OptimizedPropagationRelativeParameters:
-    """Optimized Propagation Relative Parameters."""
+    """Optimized Propagation Relative Parameters.
+
+    Notes
+    -----
+    Requires Speos 2026 R1 SP3 or higher and is only compatible with radiance sensors.
+    """
 
     min_pass_number: int = 300
-    """Minimum number of passes before stopping the simulation."""
+    """Minimum number of passes computed without pass optimization."""
     stop_condition_relative_value: int = 10
-    """Relative value threshold for stopping the simulation."""
+    """Relative pixel standard deviation threshold, in percent (from 0 to 100)."""
 
 
 @dataclass
 class OptimizedPropagationAbsoluteParameters:
-    """Optimized Propagation Relative Parameters."""
+    """Optimized Propagation Absolute Parameters.
+
+    Notes
+    -----
+    Requires Speos 2026 R1 SP3 or higher and is only compatible with radiance sensors.
+    """
 
     min_pass_number: int = 300
-    """Minimum number of passes before stopping the simulation."""
+    """Minimum number of passes computed without pass optimization."""
     stop_condition_absolute_value: int = 10
-    """Absolute value threshold for stopping the simulation."""
+    """Absolute photometric value of the pixel standard deviation threshold."""
 
 
 @dataclass
@@ -1297,7 +1307,12 @@ class InverseSimulationParameters:
     stop_condition_passes_number: Union[
         int, OptimizedPropagationRelativeParameters, OptimizedPropagationAbsoluteParameters
     ] = 5
-    """Maximum number of inverse passes before stopping."""
+    """Stop condition on the number of inverse passes.
+    An ``int`` disables the pass optimization, while
+    :class:`OptimizedPropagationRelativeParameters` or
+    :class:`OptimizedPropagationAbsoluteParameters` enable the corresponding optimized
+    propagation mode.
+    """
     stop_condition_duration: Optional[int] = None
     """Optional simulation stop duration in seconds."""
     automatic_save_frequency: int = 1800
