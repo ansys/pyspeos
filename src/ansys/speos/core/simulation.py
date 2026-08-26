@@ -1581,14 +1581,7 @@ class SimulationInverse(BaseSimulation):
 
     Notes
     -----
-    Three exclusive optimized propagation modes are available, see
-    :attr:`optimized_propagation`:
-
-    - ``"none"``: the same number of passes is used for each pixel, see
-      :attr:`stop_condition_passes_number`.
-    - ``"relative"``: see :meth:`set_optimized_propagation_relative`.
-    - ``"absolute"``: see :meth:`set_optimized_propagation_absolute`.
-
+    Three exclusive optimized propagation modes are available.
     The relative and absolute optimized propagation modes require Speos 2026 R1 SP3 or higher
     and are only compatible with radiance sensors.
     """
@@ -1785,7 +1778,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
                     absolute = self.set_optimized_propagation_absolute()
                     absolute.min_pass_number = passes_number.min_pass_number
                     absolute.absolute_value = passes_number.stop_condition_absolute_value
-                case int() | None:
+                case int():
                     self.stop_condition_passes_number = passes_number
                 case _:
                     raise ValueError(
