@@ -52,6 +52,7 @@ from ansys.speos.core.generic.parameters import (
     ColorSpaceType,
     ConstantExitanceParameters,
     DisplayParameters,
+    EmissiveFacesParameters,
     FluxFromFileParameters,
     IntensityFluxParameters,
     IntensityOrientationType,
@@ -60,10 +61,14 @@ from ansys.speos.core.generic.parameters import (
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
+    SopLibraryParameters,
+    SopMirrorParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
     SpectrumType,
     SurfaceSourceParameters,
+    TemperatureFieldParameters,
+    ThermicSourceParameters,
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
     VariableExitanceParameters,
@@ -76,6 +81,7 @@ from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.opt_prop import BaseSop
 from ansys.speos.core.spectrum import Spectrum
 
 
@@ -1024,6 +1030,8 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceLuminaire from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.LuminaireSourceParameters] = None
         If defined the values in the SourceLuminaire instance will be overwritten
@@ -1265,6 +1273,8 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceRayFile from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
         If defined the values in the SourceRayFile instance will
@@ -1623,14 +1633,18 @@ class SourceSurface(BaseSource):
 
     Parameters
     ----------
-    speos_client : ansys.speos.core.kernel.client.SpeosClient
-        The Speos instance client.
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
     name : str
         Name of the source feature.
-    surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
-        Surface source to complete.
-    surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
-        Surface source properties to complete.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance: Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance] = None
+        if provided, creating the SourceSurface from source instance information.
     default_parameters : Optional[\
     ansys.speos.core.generic.parameters.SurfaceSourceParameters] = None
         If defined the values in the SourceSurface instance will be overwritten by the
@@ -1818,7 +1832,7 @@ class SourceSurface(BaseSource):
             if default_parameters is None:
                 return
             self._exitance_variable.SetInParent()
-            self.axis_plane = default_parameters.axis_system
+            self.axis_plane = default_parameters.axis_plane
             self.xmp_file_uri = default_parameters.xmp_file_uri
 
         @property
@@ -1941,7 +1955,7 @@ class SourceSurface(BaseSource):
                     default_parameters.exitance_type.xmp_file_uri
                 )
                 self.set_exitance_variable().axis_plane = (
-                    default_parameters.exitance_type.axis_system
+                    default_parameters.exitance_type.axis_plane
                 )
             case "ConstantExitanceParameters":
                 self.set_exitance_constant().geometries = (
@@ -2353,6 +2367,519 @@ class SourceSurface(BaseSource):
         # self._intensity.delete()
 
         # spectrum & source
+        super().delete()
+        return self
+
+
+class SourceThermic(BaseSource):
+    """ThermicSource.
+
+    By default, an emissive faces type with lambertian intensity thermic source is created.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.ThermicSourceParameters] = None
+        If defined the values in the SourceThermic instance will be overwritten by the
+        values of the data class.
+    """
+
+    class EmissiveFaces:
+        """Type of thermic source exitance : emissive faces.
+
+        Parameters
+        ----------
+        emissive_faces :\
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.EmissiveFaces
+            Emissive faces to complete.
+        emissive_faces_props :\
+            ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.EmissiveFacesProperties
+            Emissive faces properties to complete.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.EmissiveFacesParameters] = None
+            Uses default EmissiveFacesParameters parameters.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_emissive_faces method
+        available in SourceThermic class.
+        """
+
+        def __init__(
+            self,
+            emissive_faces: source_pb2.SourceTemplate.Thermic.EmissiveFaces,
+            emissive_faces_props: (
+                ProtoScene.SourceInstance.ThermicProperties.EmissiveFacesProperties
+            ),
+            default_parameters: Optional[EmissiveFacesParameters] = None,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "EmissiveFaces class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._emissive_faces = emissive_faces
+            self._emissive_faces_props = emissive_faces_props
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[EmissiveFacesParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                return
+
+            self.geometries = default_parameters.emissive_faces
+            self.temperature = default_parameters.temperature
+
+        @property
+        def temperature(self) -> float:
+            """Property of temperature value in K of the thermic source object.
+
+            Parameters
+            ----------
+            float
+                temperature value in K of the thermic source object.
+
+            Returns
+            -------
+            float
+                temperature value in K of the thermic source object.
+
+            """
+            return self._emissive_faces.temperature
+
+        @temperature.setter
+        def temperature(self, value: float) -> None:
+            self._emissive_faces.temperature = float(value)
+            return
+
+        @property
+        def geometries(self) -> List[tuple[GeoRef, bool]]:
+            """Property of geometries linked to the thermic source.
+
+            Parameters
+            ----------
+            geometries: List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for reversing normal direction.
+
+            Returns
+            -------
+            List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for reversing normal direction.
+
+            """
+            return self._emissive_faces_props.geo_paths
+
+        @geometries.setter
+        def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
+            geo_paths = []
+            for gr, reverse_normal in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                elif isinstance(gr, (face.Face, body.Body)):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                else:
+                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
+                    raise TypeError(msg)
+            self._emissive_faces_props.ClearField("geo_paths")
+            self._emissive_faces_props.geo_paths.extend(geo_paths)
+
+    class TemperatureField:
+        """Type of thermic source exitance : temperature field.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        project : ansys.speos.core.project.Project
+            Project that will own the feature.
+        temperature_field :\
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.TemperatureField
+            Temperature field to complete.
+        temperature_field_props :\
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.TemperatureFieldProperties
+            Temperature field properties to complete.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.TemperatureFieldParameters
+        ] = None
+            Uses default TemperatureFieldParameters values.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_temperature_field method available in
+        SourceThermic class.
+        """
+
+        def __init__(
+            self,
+            name: str,
+            project: project.Project,
+            temperature_field: source_pb2.SourceTemplate.Thermic.TemperatureField,
+            temperature_field_props: (
+                ProtoScene.SourceInstance.ThermicProperties.TemperatureFieldProperties
+            ),
+            default_parameters: Optional[TemperatureFieldParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "TemperatureField class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._project = project
+            self._temperature_field = temperature_field
+            self._temperature_field_props = temperature_field_props
+            self._source_name = name
+
+            self._sop = BaseSop(
+                name=self._source_name,
+                sop_parameters=TemperatureFieldParameters().sop,
+                stable_ctr=True,
+            )
+
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(
+            self, default_parameters: Optional[TemperatureFieldParameters] = None
+        ) -> None:
+            if default_parameters is None:
+                # If no default parameters are provided, and sop_guid is present,
+                # we fill the sop template with the existing sop_guid
+                if self._temperature_field.sop_guid != "":
+                    self._sop = BaseSop(
+                        name=self._source_name, sop_parameters=None, stable_ctr=True
+                    )
+                    self._sop._fill_sop_template(
+                        self._project.client, self._temperature_field.sop_guid
+                    )
+                return
+
+            self.temperature_field_uri = default_parameters.temperature_field_uri
+            self.axis_plane = default_parameters.axis_plane
+
+            # Check if the sop type given in Parameters is supported
+            if not isinstance(default_parameters.sop, SopMirrorParameters) and not isinstance(
+                default_parameters.sop, SopLibraryParameters
+            ):
+                raise ValueError(
+                    "Unsupported SOP type: {}".format(type(default_parameters.sop).__name__)
+                )
+
+            # Default SOP
+            self._sop = BaseSop(
+                name=self._source_name,
+                sop_parameters=default_parameters.sop,
+                stable_ctr=True,
+            )
+
+        @property
+        def temperature_field_uri(self) -> str:
+            """Property of temperature field file uri.
+
+            Parameters
+            ----------
+            temperature_field_file_uri: Union[str, Path]
+                temperature field file uri.
+
+            Returns
+            -------
+            str
+                temperature field file uri.
+
+            """
+            return self._temperature_field.temperature_field_uri
+
+        @temperature_field_uri.setter
+        def temperature_field_uri(self, temperature_field_uri: Union[str, Path]) -> None:
+            self._temperature_field.temperature_field_uri = str(temperature_field_uri)
+
+        @property
+        def sop(self) -> BaseSop:
+            """Surface optical property of the thermic source.
+
+            Returns
+            -------
+            ansys.speos.core.opt_prop.OptProp
+                Surface optical property for the temperature field.
+
+            """
+            return self._sop
+
+        @property
+        def axis_plane(self) -> List[float]:
+            """Get axis plane.
+
+            Returns
+            -------
+            List[float]
+                Position of the temperature field [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+            """
+            return self._temperature_field_props.axis_plane
+
+        @axis_plane.setter
+        def axis_plane(self, axis_plane: List[float]) -> None:
+            """Set axis plane.
+
+            Parameters
+            ----------
+            axis_plane: List[float]
+                Position of the temperature field [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+            Returns
+            -------
+            None
+
+            """
+            self._temperature_field_props.axis_plane[:] = axis_plane
+            return
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[ThermicSourceParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            key=self._source_template.thermic.intensity_guid,
+        )
+
+        self._exitance_type = None
+
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[ThermicSourceParameters] = None
+    ) -> None:
+        if default_parameters is None:
+            if self._source_instance.thermic_properties.HasField("emissive_faces_properties"):
+                self.set_emissive_faces()
+            elif self._source_instance.thermic_properties.HasField("temperature_field_properties"):
+                self.set_temperature_field()
+            return
+
+        # Emittance
+        match type(default_parameters.emittance_type).__name__:
+            case "EmissiveFacesParameters":
+                ef = self.set_emissive_faces()
+                ef._fill_parameters(default_parameters.emittance_type)
+            case "TemperatureFieldParameters":
+                tf = self.set_temperature_field()
+                tf._fill_parameters(default_parameters.emittance_type)
+            case _:
+                raise ValueError(
+                    "Unsupported emittance type: {}".format(
+                        type(default_parameters.emittance_type).__name__
+                    )
+                )
+
+        # Intensity
+        match type(default_parameters.intensity_type).__name__:
+            case "IntensityLambertianParameters":
+                self._intensity.set_cos().n = 1
+                self._intensity.set_cos().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            case "IntensityCosParameters":
+                self._intensity.set_cos().n = default_parameters.intensity_type.n
+                self._intensity.set_cos().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            case _:
+                raise ValueError(
+                    "Unsupported intensity type: {}".format(
+                        type(default_parameters.intensity_type).__name__
+                    )
+                )
+
+    def set_emissive_faces(self) -> SourceThermic.EmissiveFaces:
+        """Set the exitance of the thermic source to "emissive faces".
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic.EmissiveFaces
+            EmissiveFaces of surface source.
+        """
+        if self._exitance_type is None and self._source_template.thermic.HasField(
+            "emissives_faces"
+        ):
+            # Happens in case of project created via load of speos file
+            self._exitance_type = SourceThermic.EmissiveFaces(
+                emissive_faces=self._source_template.thermic.emissives_faces,
+                emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._exitance_type, SourceThermic.EmissiveFaces):
+            # if the _exitance_type is not EmissiveFaces then we create a new type.
+            self._exitance_type = SourceThermic.EmissiveFaces(
+                emissive_faces=self._source_template.thermic.emissives_faces,
+                emissive_faces_props=self._source_instance.thermic_properties.emissive_faces_properties,
+                default_parameters=EmissiveFacesParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._exitance_type._emissive_faces is not self._source_template.thermic.emissives_faces
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._emissive_faces = self._source_template.thermic.emissives_faces
+            self._exitance_type._emissive_faces_props = (
+                self._source_instance.thermic_properties.emissive_faces_properties
+            )
+        return self._exitance_type
+
+    def set_temperature_field(self) -> SourceThermic.TemperatureField:
+        """Set the exitance of the thermic source to "temperature field".
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic.TemperatureField
+            TemperatureField of surface source.
+        """
+        if self._exitance_type is None and self._source_template.thermic.HasField(
+            "temperature_field"
+        ):
+            # Happens in case of project created via load of speos file
+            self._exitance_type = SourceThermic.TemperatureField(
+                name=self._name,
+                project=self._project,
+                temperature_field=self._source_template.thermic.temperature_field,
+                temperature_field_props=self._source_instance.thermic_properties.temperature_field_properties,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._exitance_type, SourceThermic.TemperatureField):
+            # if the _exitance_type is not TemperatureField then we create a new type.
+            self._exitance_type = SourceThermic.TemperatureField(
+                name=self._name,
+                project=self._project,
+                temperature_field=self._source_template.thermic.temperature_field,
+                temperature_field_props=self._source_instance.thermic_properties.temperature_field_properties,
+                default_parameters=TemperatureFieldParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._exitance_type._temperature_field
+            is not self._source_template.thermic.temperature_field
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._temperature_field = self._source_template.thermic.temperature_field
+            self._exitance_type._temperature_field_props = (
+                self._source_instance.thermic_properties.temperature_field_properties
+            )
+        return self._exitance_type
+
+    @property
+    def emittance_type(self) -> Union[SourceThermic.EmissiveFaces, SourceThermic.TemperatureField]:
+        """Return emittance type of thermic source."""
+        return self._exitance_type
+
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity settings for the thermic source.
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity object tied to the thermic source.
+        """
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.display_properties.intensity_properties
+        ):
+            self._intensity._intensity_properties = (
+                self._source_instance.display_properties.intensity_properties
+            )
+        return self._intensity
+
+    def commit(self) -> SourceThermic:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source feature.
+        """
+        # intensity
+        self._intensity.commit()
+        self._source_template.thermic.intensity_guid = self._intensity.intensity_template_link.key
+
+        # sop (only for temperature field)
+        if isinstance(self._exitance_type, SourceThermic.TemperatureField):
+            self._exitance_type._sop._commit_sop_template(self._speos_client)
+            self._exitance_type._temperature_field.sop_guid = (
+                self._exitance_type._sop.sop_template_link.key
+            )
+
+        # source base
+        super().commit()
+        return self
+
+    def reset(self) -> SourceThermic:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source feature.
+        """
+        self._intensity.reset()
+
+        if isinstance(self._exitance_type, SourceThermic.TemperatureField):
+            self._exitance_type._sop._reset_sop_template()
+
+        super().reset()
+        return self
+
+    def delete(self) -> SourceThermic:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic Source feature.
+        """
         super().delete()
         return self
 
