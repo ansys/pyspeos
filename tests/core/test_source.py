@@ -2146,6 +2146,19 @@ def test_create_thermic_source(speos: Speos):
     )
     source_sop_lib.delete()
 
+    # Create + commit a SourceThermic and verify delete
+    source_thermic = SourceThermic(
+        project=p, name="Thermic.Del", default_parameters=ThermicSourceParameters()
+    )
+    source_thermic.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    source_thermic.commit()
+    assert source_thermic.source_template_link is not None
+    source_thermic.delete()
+    assert source_thermic.source_template_link is None
+    assert source_thermic._unique_id is None
+
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_thermic_source(speos: Speos):
@@ -2841,19 +2854,6 @@ def test_delete_source(speos: Speos):
 
     assert len(p.scene_link.get().sources) == 0
     assert source1._source_instance.HasField("rayfile_properties")  # local
-
-    # Create + commit a SourceThermic and verify delete
-    source_thermic = SourceThermic(
-        project=p, name="Thermic.Del", default_parameters=ThermicSourceParameters()
-    )
-    source_thermic.set_temperature_field().temperature_field_uri = (
-        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
-    )
-    source_thermic.commit()
-    assert source_thermic.source_template_link is not None
-    source_thermic.delete()
-    assert source_thermic.source_template_link is None
-    assert source_thermic._unique_id is None
 
 
 def test_print_source(speos: Speos):
