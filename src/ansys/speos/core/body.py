@@ -223,6 +223,10 @@ class Body:
             for g, link in zip(never_committed, face_nc_links):
                 g.face_link = link
 
+                # And reference in the body
+                if link.key not in self._body.face_guids:
+                    self._body.face_guids.append(link.key)
+
         # Update by batch all faces that were already committed before.
         if len(already_committed) > 0:
             self._speos_client.faces().update_batch(
