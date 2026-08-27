@@ -1302,6 +1302,35 @@ class Project:
 
         return self
 
+    def commit(self) -> Project:
+        """Commit project: write scene data.
+
+        Commit all features contained in the project.
+
+        Returns
+        -------
+        ansys.speos.core.project.Project
+            Project feature.
+        """
+        # Retrieve scene data (only once)
+        scene_data = self.scene_link.get()
+
+        update_scene = False
+
+        # Loop on every feature
+        for feature in self._features:
+            feature._prepare_commit()
+
+            # Update scene data with the instance, and check if the scene needs to be updated
+            if feature._update_scene_data(scene_data):
+                update_scene = True
+
+        if update_scene:
+            # Update on server if needed (only once for all features)
+            self.scene_link.set(data=scene_data)
+
+        return self
+
     def _to_dict(self) -> dict:
         # Replace all guids by content of objects in the dict
         output_dict = proto_message_utils._replace_guids(
