@@ -1319,6 +1319,7 @@ class Project:
 
         # Loop on every feature
         for feature in self._features:
+            # Update feature template, create _unique_id if needed.
             feature._prepare_commit()
 
             # Update scene data with the instance, and check if the scene needs to be updated
