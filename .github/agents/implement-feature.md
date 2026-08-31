@@ -26,6 +26,7 @@ class SourceSphereParameters:
     flux_value : float, optional
         Total luminous flux in lm. Default is ``683.0``.
     """
+
     flux_value: float = 683.0
 ```
 
