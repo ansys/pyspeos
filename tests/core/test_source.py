@@ -2146,6 +2146,19 @@ def test_create_thermic_source(speos: Speos):
     )
     source_sop_lib.delete()
 
+    # Create + commit a SourceThermic and verify delete
+    source_thermic = SourceThermic(
+        project=p, name="Thermic.Del", default_parameters=ThermicSourceParameters()
+    )
+    source_thermic.set_temperature_field().temperature_field_uri = (
+        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
+    )
+    source_thermic.commit()
+    assert source_thermic.source_template_link is not None
+    source_thermic.delete()
+    assert source_thermic.source_template_link is None
+    assert source_thermic._unique_id is None
+
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_load_thermic_source(speos: Speos):
@@ -2173,7 +2186,7 @@ def test_load_thermic_source(speos: Speos):
     assert source2.emittance_type.axis_plane == [0, 0, 0, 1, 0, 0, 0, 1, 0]
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=252)
 def test_thermic_exitance_oneof_switches_cleanly(speos: Speos):
     """Test switching thermic emittance mode."""
     p = Project(speos=speos)
@@ -2195,6 +2208,23 @@ def test_thermic_exitance_oneof_switches_cleanly(speos: Speos):
     assert isinstance(source.emittance_type, SourceThermic.EmissiveFaces)
 
     source.delete()
+
+    # THERMIC SOURCE
+    source4 = SourceThermic(
+        project=p, name="Thermic.1", default_parameters=ThermicSourceParameters()
+    )
+    source4.set_temperature_field().temperature_field_uri = str(
+        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
+    )
+    source4.commit()
+    intensity_guid = source4.source_template_link.get().thermic.intensity_guid
+
+    # Modify field type
+    source4._intensity.set_cos().n = 5
+    source4.commit()
+    assert source4.source_template_link.get().thermic.intensity_guid == intensity_guid
+
+    source4.delete()
 
 
 def test_keep_same_internal_feature(speos: Speos):
@@ -2264,25 +2294,9 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.commit()
     assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
 
-    # THERMIC SOURCE
-    source4 = SourceThermic(
-        project=p, name="Thermic.1", default_parameters=ThermicSourceParameters()
-    )
-    source4.set_temperature_field().temperature_field_uri = str(
-        Path(test_path) / "Source.speos" / "Square.OPTTemperatureField"
-    )
-    source4.commit()
-    intensity_guid = source4.source_template_link.get().thermic.intensity_guid
-
-    # Modify field type
-    source4._intensity.set_cos().n = 5
-    source4.commit()
-    assert source4.source_template_link.get().thermic.intensity_guid == intensity_guid
-
     source1.delete()
     source2.delete()
     source3.delete()
-    source4.delete()
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -2841,19 +2855,6 @@ def test_delete_source(speos: Speos):
 
     assert len(p.scene_link.get().sources) == 0
     assert source1._source_instance.HasField("rayfile_properties")  # local
-
-    # Create + commit a SourceThermic and verify delete
-    source_thermic = SourceThermic(
-        project=p, name="Thermic.Del", default_parameters=ThermicSourceParameters()
-    )
-    source_thermic.set_temperature_field().temperature_field_uri = (
-        Path(test_path) / "TemperatureField_Tank.OPTTemperatureField"
-    )
-    source_thermic.commit()
-    assert source_thermic.source_template_link is not None
-    source_thermic.delete()
-    assert source_thermic.source_template_link is None
-    assert source_thermic._unique_id is None
 
 
 def test_print_source(speos: Speos):
