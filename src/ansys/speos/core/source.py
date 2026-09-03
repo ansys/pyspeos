@@ -853,56 +853,6 @@ class BaseSource:
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
-    def _commit(self) -> BaseSource:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.source.BaseSource
-            Source feature.
-        """
-        # The _unique_id will help to find correct item in the scene.sources:
-        # the list of SourceInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._source_instance.metadata["UniqueId"] = self._unique_id
-
-        # Save or Update the source template (depending on if it was already saved before)
-        if self.source_template_link is None:
-            self.source_template_link = self._project.client.source_templates().create(
-                message=self._source_template
-            )
-            self._source_instance.source_guid = self.source_template_link.key
-        elif self.source_template_link.get() != self._source_template:
-            self.source_template_link.set(
-                data=self._source_template
-            )  # Only update if template has changed
-
-        # Update the scene with the source instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
-
-            # Look if an element corresponds to the _unique_id
-            src_inst = next(
-                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if src_inst is not None:
-                if src_inst != self._source_instance:
-                    src_inst.CopyFrom(self._source_instance)  # if yes, just replace
-                else:
-                    update_scene = False
-            else:
-                scene_data.sources.append(
-                    self._source_instance
-                )  # if no, just add it to the list of sources
-
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
-
-        return self
-
     def _reset(self) -> BaseSource:
         """Reset feature: override local data by the one from the speos server database.
 
@@ -969,6 +919,53 @@ class BaseSource:
         self.source_template_link = self._project.client[src_inst.source_guid]
         self._reset()
 
+    def _commit_template(self) -> None:
+        # Handle first spectrum
+        if hasattr(self, "_spectrum"):
+            self._spectrum._commit()
+
+        # Save or Update the source template (depending on if it was already saved before)
+        if self.source_template_link is None:
+            self.source_template_link = self._project.client.source_templates().create(
+                message=self._source_template
+            )
+            self._source_instance.source_guid = self.source_template_link.key
+        elif self.source_template_link.get() != self._source_template:
+            self.source_template_link.set(
+                data=self._source_template
+            )  # Only update if template has changed
+
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        src_inst = next(
+            (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
+        if src_inst is not None:
+            if src_inst != self._source_instance:
+                src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+            else:
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.sources.append(
+                self._source_instance
+            )  # if no, just add it to the list of sources
+
+        return True  # Mention that the scene needs to be updated
+
+    def _prepare_commit(self) -> None:
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
+
+        # The _unique_id will help to find correct item in the scene.sources:
+        # the list of SourceInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._source_instance.metadata["UniqueId"] = self._unique_id
+
+        # Handle template
+        self._commit_template()
+
     def commit(self) -> BaseSource:
         """Save feature: send the local data to the speos server database.
 
@@ -977,11 +974,21 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        if hasattr(self, "_spectrum"):
-            self._spectrum._commit()
-        self._commit()
-        if general_methods._GRAPHICS_AVAILABLE:
-            self._visual_data.updated = False
+        # Prepare _unique_id and commit template if needed
+        self._prepare_commit()
+
+        # Handle instance
+        if self._project.scene_link:
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
+
         return self
 
     def reset(self) -> BaseSource:
