@@ -2353,20 +2353,7 @@ class OptProp(BaseVop, BaseSop):
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
-    def commit(self) -> "OptProp":
-        """Commit the material instance and templates to the server scene.
-
-        Returns
-        -------
-        OptProp
-            Returns self after committing.
-        """
-        # The _unique_id will help to find correct item in the scene.materials:
-        # the list of MaterialInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._material_instance.metadata["UniqueId"] = self._unique_id
-
+    def _commit_template(self) -> None:
         # Save or Update the vop template (depending on if it was already saved before)
         self._commit_vop_template(self._project.client)
         if self.vop_template_link is not None:
@@ -2398,28 +2385,57 @@ class OptProp(BaseVop, BaseSop):
                 else:
                     self._material_instance.sop_guids.append(self.sop_template_link.key)
 
-        # Update the scene with the material instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        mat_inst = next(
+            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
 
-            # Look if an element corresponds to the _unique_id
-            mat_inst = next(
-                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if mat_inst is not None:
-                if mat_inst != self._material_instance:
-                    mat_inst.CopyFrom(self._material_instance)  # if yes, just replace
-                else:
-                    update_scene = False
+        if mat_inst is not None:
+            if mat_inst != self._material_instance:
+                mat_inst.CopyFrom(self._material_instance)  # if yes and change, just replace
             else:
-                scene_data.materials.append(
-                    self._material_instance
-                )  # if no, just add it to the list of material instances
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.materials.append(
+                self._material_instance
+            )  # if no, just add it to the list of material instances
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+        return True
+
+    def _prepare_commit(self) -> None:
+        # The _unique_id will help to find correct item in the scene.materials:
+        # the list of MaterialInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._material_instance.metadata["UniqueId"] = self._unique_id
+
+        # Handle templates
+        self._commit_template()
+
+    def commit(self) -> "OptProp":
+        """Commit the material instance and templates to the server scene.
+
+        Returns
+        -------
+        OptProp
+            Returns self after committing.
+        """
+        # Prepare _unique_id and commit templates if needed
+        self._prepare_commit()
+
+        # Handle instance
+        if self._project.scene_link:
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         return self
 

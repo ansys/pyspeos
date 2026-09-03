@@ -544,6 +544,41 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
             name=name, description=description, metadata=metadata, parameters=parameters
         )
 
+    def _update_scene_data(self, parent_scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        scene_inst = next(
+            (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
+
+        if scene_inst is not None:
+            if scene_inst != self._scene_instance:
+                scene_inst.CopyFrom(self._scene_instance)  # if yes and change, just replace
+            else:
+                return False  # if yes but no change, no need to update the scene
+        else:
+            parent_scene_data.scenes.append(
+                self._scene_instance
+            )  # if no, just add it to the list of scene instances
+
+        return True
+
+    def _prepare_commit(self) -> None:
+        if general_methods._GRAPHICS_AVAILABLE:
+            for item in self._visual_data:
+                item.updated = False
+
+        # The _unique_id will help to find the correct item in the scene.scenes:
+        # the list of SceneInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._scene_instance.metadata["UniqueId"] = self._unique_id
+
+        # Commit features contained in the lightbox if needed
+        self.project.commit()
+
+        self._scene_instance.scene_guid = self.project.scene_link.key
+
     def commit(self) -> LightBox:
         """Save the local feature data to the Speos server database.
 
@@ -552,42 +587,21 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
-        if general_methods._GRAPHICS_AVAILABLE:
-            for item in self._visual_data:
-                item.updated = False
-
-        for feature in self.project._features:
-            feature.commit()
-        self._scene_instance.scene_guid = self.project.scene_link.key
-
-        # The _unique_id will help to find the correct item in the scene.scenes:
-        # the list of SceneInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._scene_instance.metadata["UniqueId"] = self._unique_id
+        # Prepare _unique_id and commit features contained in the lightbox if needed
+        self._prepare_commit()
 
         # Update the parent scene with the lightbox instance
         if self._parent_project.scene_link:
-            update_parent_scene = True
-            parent_scene_data = self._parent_project.scene_link.get()  # retrieve scene data
+            # Retrieve parent scene data
+            parent_scene_data = self._parent_project.scene_link.get()
 
-            # Look if an element corresponds to the _unique_id
-            scene_inst = next(
-                (x for x in parent_scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if scene_inst is not None:
-                if scene_inst != self._scene_instance:
-                    scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
-                else:
-                    update_parent_scene = False
-            else:
-                parent_scene_data.scenes.append(
-                    self._scene_instance
-                )  # if no, just add it to the list of lightbox instances
+            # Update the parent scene data with the instance,
+            # and check if the it needs to be updated
+            update_parent_scene = self._update_scene_data(parent_scene_data)
 
-            if update_parent_scene:  # Update scene only if instance has changed
-                self._parent_project.scene_link.set(data=parent_scene_data)  # update scene data
+            if update_parent_scene:
+                # Update if needed
+                self._parent_project.scene_link.set(data=parent_scene_data)
 
         return self
 
