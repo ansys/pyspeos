@@ -1263,6 +1263,36 @@ class DirectSimulationParameters:
 
 
 @dataclass
+class OptimizedPropagationRelativeParameters:
+    """Optimized Propagation Relative Parameters.
+
+    Notes
+    -----
+    Requires Speos 2026 R1 SP3 or higher and is only compatible with radiance sensors.
+    """
+
+    min_pass_number: int = 300
+    """Minimum number of passes computed without pass optimization."""
+    stop_condition_relative_value: int = 10
+    """Relative pixel standard deviation threshold, in percent (from 0 to 100)."""
+
+
+@dataclass
+class OptimizedPropagationAbsoluteParameters:
+    """Optimized Propagation Absolute Parameters.
+
+    Notes
+    -----
+    Requires Speos 2026 R1 SP3 or higher and is only compatible with radiance sensors.
+    """
+
+    min_pass_number: int = 300
+    """Minimum number of passes computed without pass optimization."""
+    stop_condition_absolute_value: int = 10
+    """Absolute photometric value of the pixel standard deviation threshold."""
+
+
+@dataclass
 class InverseSimulationParameters:
     """Inverse Simulation Parameters."""
 
@@ -1274,8 +1304,15 @@ class InverseSimulationParameters:
     """whether timeline is enabled"""
     start_time: Optional[float] = 0.0
     """Timeline start time in seconds. Set to ``None`` to disable the simulation timeline."""
-    stop_condition_passes_number: int = 5
-    """Maximum number of inverse passes before stopping."""
+    stop_condition_passes_number: Union[
+        int, OptimizedPropagationRelativeParameters, OptimizedPropagationAbsoluteParameters
+    ] = 5
+    """Stop condition on the number of inverse passes.
+    An ``int`` disables the pass optimization, while
+    :class:`OptimizedPropagationRelativeParameters` or
+    :class:`OptimizedPropagationAbsoluteParameters` enable the corresponding optimized
+    propagation mode.
+    """
     stop_condition_duration: Optional[int] = None
     """Optional simulation stop duration in seconds."""
     automatic_save_frequency: int = 1800
