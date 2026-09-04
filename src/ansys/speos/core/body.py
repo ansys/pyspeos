@@ -196,6 +196,32 @@ class Body:
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
+    def _commit_faces_legacy(self) -> None:
+        """Commit the faces of this body on Speos servers older than 2025 R2 SP0.
+
+        Notes
+        -----
+        On those servers, updating an existing face appends the new mesh data to the
+        existing one instead of replacing it. To guarantee that the face content is
+        correctly replaced, a modified face is deleted then created again, and the
+        body face references are updated accordingly.
+        """
+        for g in self._geom_features:
+            if g.face_link is None or g.face_link.get() == g._face:
+                g.commit()
+                continue
+
+            previous_key = g.face_link.key
+            g.face_link.delete()
+            g.face_link = self._speos_client.faces().create(message=g._face)
+
+            face_guids = list(self._body.face_guids)
+            if previous_key in face_guids:
+                face_guids[face_guids.index(previous_key)] = g.face_link.key
+                self._body.face_guids[:] = face_guids
+            elif g.face_link.key not in face_guids:
+                self._body.face_guids.append(g.face_link.key)
+
     def commit(self) -> Body:
         """Save feature: send the local data to the speos server database.
 
@@ -209,8 +235,7 @@ class Body:
 
         # Commit faces contained in this body
         if not server_version_checker.is_version_supported(2025, 2, 0):
-            for g in self._geom_features:
-                g.commit()
+            self._commit_faces_legacy()
         else:
             # optimize commit performance
             already_committed = []
