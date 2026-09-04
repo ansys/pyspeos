@@ -1085,14 +1085,40 @@ class BaseSensor:
 
         return out_str
 
-    def commit(self) -> BaseSensor:
-        """Save feature: send the local data to the speos server database.
+    def _commit_template(self) -> None:
+        # Save or Update the sensor template (depending on if it was already committed before)
+        if self.sensor_template_link is None:
+            # Save if never committed before (ie no link)
+            self.sensor_template_link = self._project.client.sensor_templates().create(
+                message=self._sensor_template
+            )
+            self._sensor_instance.sensor_guid = self.sensor_template_link.key
+        elif self.sensor_template_link.get() != self._sensor_template:
+            # Update if already committed AND if the template has changed
+            self.sensor_template_link.set(
+                data=self._sensor_template
+            )  # Only update if the template has changed
 
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor
-            Sensor feature.
-        """
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        ssr_inst = next(
+            (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
+
+        if ssr_inst is not None:
+            if ssr_inst != self._sensor_instance:
+                ssr_inst.CopyFrom(self._sensor_instance)  # if yes and change, just replace
+            else:
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.sensors.append(
+                self._sensor_instance
+            )  # if no, just add it to the list of sensor instances
+
+        return True  # Mention that the scene needs to be updated
+
+    def _prepare_commit(self) -> None:
         if general_methods._GRAPHICS_AVAILABLE:
             self._visual_data.updated = False
 
@@ -1102,39 +1128,31 @@ class BaseSensor:
             self._unique_id = str(uuid.uuid4())
             self._sensor_instance.metadata["UniqueId"] = self._unique_id
 
-        # Save or Update the sensor template (depending on if it was already saved before)
-        if self.sensor_template_link is None:
-            self.sensor_template_link = self._project.client.sensor_templates().create(
-                message=self._sensor_template
-            )
-            self._sensor_instance.sensor_guid = self.sensor_template_link.key
-        elif self.sensor_template_link.get() != self._sensor_template:
-            self.sensor_template_link.set(
-                data=self._sensor_template
-            )  # Only update if the template has changed
+        # Handle template
+        self._commit_template()
 
-        # Update the scene with the sensor instance
+    def commit(self) -> BaseSensor:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor
+            Sensor feature.
+        """
+        # Prepare _unique_id and commit template if needed
+        self._prepare_commit()
+
+        # Handle instance
         if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
 
-            # Look if an element corresponds to the _unique_id
-            ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if ssr_inst is not None:
-                if ssr_inst != self._sensor_instance:
-                    ssr_inst.CopyFrom(self._sensor_instance)  # if yes, just replace
-                else:
-                    update_scene = False
-            else:
-                scene_data.sensors.append(
-                    self._sensor_instance
-                )  # if no, just add it to the list of sensor instances
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         return self
 

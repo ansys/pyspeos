@@ -118,6 +118,7 @@ File: `src/ansys/speos/core/generic/parameters.py`
 ```python
 from dataclasses import dataclass, field
 
+
 @dataclass
 class SourceLuminaireParameters:
     """Parameters for :class:`SourceLuminaire`.
@@ -129,6 +130,7 @@ class SourceLuminaireParameters:
     flux_value : float, optional
         Flux magnitude in the unit implied by *flux_type*.
     """
+
     flux_type: str = "LuminousFlux"
     flux_value: float = 683.0
 ```
