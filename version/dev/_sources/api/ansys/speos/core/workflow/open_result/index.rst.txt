@@ -1,0 +1,181 @@
+
+
+
+
+
+
+The ``open_result.py`` module
+=============================
+
+.. py:module:: ansys.speos.core.workflow.open_result
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: open_result
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~open_result_image`
+            - Retrieve an image from a specific simulation result.
+
+
+          * - :py:obj:`~open_result_in_viewer`
+            - Open a specific simulation result in the suitable viewer.
+
+
+          * - :py:obj:`~export_xmp_to_image`
+            - Export an XMP result into a PNG file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Open one of the possible results generated out of the simulation.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: open_result_image(simulation_feature, result_name)
+
+   
+   Retrieve an image from a specific simulation result.
+
+
+   :Parameters:
+
+       **simulation_feature** : :obj:`ansys.speos.core.simulation.Simulation`
+           The simulation feature.
+
+       **result_name** : :class:`python:str`
+           The result name to open as an image.
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           The path of the image file.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: open_result_in_viewer(simulation_feature, result_name)
+
+   
+   Open a specific simulation result in the suitable viewer.
+
+
+   :Parameters:
+
+       **simulation_feature** : :obj:`ansys.speos.core.simulation.Simulation`
+           The simulation feature.
+
+       **result_name** : :class:`python:str`
+           The result name to open in a viewer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: export_xmp_to_image(simulation_feature, result_name)
+
+   
+   Export an XMP result into a PNG file.
+
+
+   :Parameters:
+
+       **simulation_feature** : :obj:`ansys.speos.core.simulation.Simulation`
+           The simulation feature.
+
+       **result_name** : :class:`python:str`
+           The result name to export as an image.
+
+
+
+   :Returns:
+
+       :obj:`ansys.api.speos.job.v2.job_pb2.Result`
+           The exported image file.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

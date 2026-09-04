@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`NormalMapTypes`
+=======================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.NormalMapTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Normal Map Types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: NormalMapTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~from_normal_map`
+            - 
+          * - :py:attr:`~from_image`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import NormalMapTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: from_normal_map
+   :value: 'from_normal_map'
+
+
+.. py:attribute:: from_image
+   :value: 'from_image'
+
+
+
+
+
+

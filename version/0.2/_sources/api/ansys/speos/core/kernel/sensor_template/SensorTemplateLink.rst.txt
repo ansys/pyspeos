@@ -1,0 +1,213 @@
+
+
+
+
+
+
+:class:`SensorTemplateLink`
+===========================
+
+.. py:class:: ansys.speos.core.kernel.sensor_template.SensorTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for sensor template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.sensor_template.SensorTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the sensor template in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> ssr_t_db = speos.client.sensor_templates()
+   >>> ssr_t_message = ProtoSensorTemplate(name="Irradiance")
+   >>> ssr_t_message.irradiance_sensor_template.sensor_type_photometric.SetInParent()
+   >>> ssr_t_message.irradiance_sensor_template.illuminance_type_planar.SetInParent()
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.x_start = -50
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.x_end = 50
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.x_sampling = 100
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.y_start = -50
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.y_end = 50
+   >>> ssr_t_message.irradiance_sensor_template.dimensions.y_sampling = 100
+   >>> ssr_t_link = ssr_t_db.create(message=ssr_t_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SensorTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the sensor template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.sensor_template import SensorTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the sensor template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`sensor_template.SensorTemplate`
+           Sensor template datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`sensor_template.SensorTemplate`
+           New sensor template datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

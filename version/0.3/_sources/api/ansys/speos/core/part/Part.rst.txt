@@ -1,0 +1,386 @@
+
+
+
+
+
+
+:class:`Part`
+=============
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/part/Part.SubPart
+
+.. py:class:: ansys.speos.core.part.Part(project, name, description = '', metadata = None)
+
+   
+   Feature : Part.
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+   :Attributes:
+
+       **part_link** : :obj:`ansys.speos.core.kernel.part.PartLink`
+           Link object for the part in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Part
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_body`
+            - Create a body in this element.
+          * - :py:attr:`~create_sub_part`
+            - Create a sub part in this element.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+          * - :py:attr:`~find`
+            - Find feature(s).
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~part_link`
+            - Link object for the part in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the part.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.part import Part
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: part_link
+   :value: None
+
+
+   
+   Link object for the part in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_body(name, description = '', metadata = None)
+
+   
+   Create a body in this element.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Mapping`\[:class:`python:str`, :class:`python:str`]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.body.Body`
+           Body feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_sub_part(name, description = '')
+
+   
+   Create a sub part in this element.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part.SubPart`
+           SubPart feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the part.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part`
+           Part feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part`
+           Part feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part`
+           Part feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: find(name, name_regex = False, feature_type = None)
+
+   
+   Find feature(s).
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+           Possibility to look also for bodies, faces, subpart.
+           Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+
+       **name_regex** : :ref:`bool <python:bltin-boolean-values>`
+           Allows to use regex for name parameter.
+           By default, ``False``, means that regex is not used for name parameter.
+
+       **feature_type** : :obj:`type`
+           Type of the wanted feature (example: ansys.speos.core.body.Body,            ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart).
+           By default, ``None``, means that all features will be considered.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`Union`\[:obj:`ansys.speos.core.body.Body`, :obj:`ansys.speos.core.face.Face`,        :obj:`ansys.speos.core.part.Part.SubPart`]]
+           Found features.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.part.Part.SubPart
+
+
+
+

@@ -1,0 +1,159 @@
+
+
+
+
+
+
+:class:`EmissiveFaces`
+======================
+
+
+.. py:class:: ansys.speos.core.source.SourceThermic.EmissiveFaces(emissive_faces, emissive_faces_props, default_parameters = None, stable_ctr = False)
+
+   
+   Type of thermic source exitance : emissive faces.
+
+
+   :Parameters:
+
+       **emissive_faces** :            :obj:`ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.EmissiveFaces`
+           Emissive faces to complete.
+
+       **emissive_faces_props** :            :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.EmissiveFacesProperties`
+           Emissive faces properties to complete.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.EmissiveFacesParameters`] = :data:`python:None`
+           Uses default EmissiveFacesParameters parameters.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_emissive_faces method
+   available in SourceThermic class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: EmissiveFaces
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~temperature`
+            - Property of temperature value in K of the thermic source object.
+          * - :py:attr:`~geometries`
+            - Property of geometries linked to the thermic source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceThermic import EmissiveFaces
+
+Property detail
+---------------
+
+.. py:property:: temperature
+   :type: float
+
+
+   
+   Property of temperature value in K of the thermic source object.
+
+
+   :Parameters:
+
+       **float**
+           temperature value in K of the thermic source object.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           temperature value in K of the thermic source object.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: geometries
+   :type: List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+
+
+   
+   Property of geometries linked to the thermic source.
+
+
+   :Parameters:
+
+       **geometries: List[tuple[GeoRef, bool]]**
+           list of tuple which contains geometry ref and bool for reversing normal direction.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:tuple`\[:obj:`GeoRef`, :ref:`bool <python:bltin-boolean-values>`]]
+           list of tuple which contains geometry ref and bool for reversing normal direction.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

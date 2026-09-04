@@ -1,0 +1,145 @@
+
+
+
+
+
+
+The ``proto_message_utils.py`` module
+=====================================
+
+.. py:module:: ansys.speos.core.kernel.proto_message_utils
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: proto_message_utils
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~protobuf_message_to_str`
+            - Convert a protobuf message to formatted json string.
+
+
+          * - :py:obj:`~protobuf_message_to_dict`
+            - Convert protobuf message to a formatted json dict.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module with utility elements for protobuf messages from Speos RPC server.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: protobuf_message_to_str(message, with_full_name = True)
+
+   
+   Convert a protobuf message to formatted json string.
+
+
+   :Parameters:
+
+       **message** : :obj:`google.protobuf.message.Message`
+           Protobuf message.
+
+       **with_full_name** : :ref:`bool <python:bltin-boolean-values>`
+           Prepend the returned string with protobuf message full name.
+           By default, ``True``.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           protobuf message formatted to be logged/printed.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: protobuf_message_to_dict(message)
+
+   
+   Convert protobuf message to a formatted json dict.
+
+
+   :Parameters:
+
+       **message** : :obj:`google.protobuf.message.Message`
+           Protobuf message.
+
+
+
+   :Returns:
+
+       :class:`python:dict`
+           protobuf message formatted as dict.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

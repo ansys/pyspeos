@@ -1,0 +1,1613 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to modify scene elements &#8212; ansys-speos-core 0.3.0 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/ansys_sphinx_theme.css?v=0909a4fa" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=f129cdf0"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/kernel/modify-scene';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.3';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Contribute" href="../../contributing.html" />
+    <link rel="prev" title="How to use scene and job" href="scene-job.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.3.0" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/examples/kernel/modify-scene.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.3.0 documentation - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.3.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Workflow examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../workflow/open-result.html">How to open result (windows os)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/combine-speos.html">Moving car example by using speos files combination</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../core/project.html">How to create a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/opt-prop.html">How to create an optical property</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/source.html">How to create a source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/sensor.html">How to create a sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/part.html">How to create a part</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/simulation.html">How to create a simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/lpf-preview.html">How to preview a light expert result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/prism-example.html">Prism example</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Kernel examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="object-link.html">How to use an ObjectLink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene-job.html">How to use scene and job</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to modify scene elements</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../../examples.html" class="nav-link">Examples</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to modify scene elements</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-5 sd-row-cols-xs-5 sd-row-cols-sm-5 sd-row-cols-md-5 sd-row-cols-lg-5 docutils">
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.3/examples/kernel/modify-scene.py"><span>Download as Python script <span class="fab fa-python"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.3/examples/kernel/modify-scene.ipynb"><span> Download as Jupyter notebook <span class="fas fa-book"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.3/_static/assets/download/assets.zip"><span> Download example’s assets <span class="fa fa-file"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+</div>
+</div>
+</div></blockquote>
+<hr class="docutils" />
+<section id="How-to-modify-scene-elements">
+<h1>How to modify scene elements<a class="headerlink" href="#How-to-modify-scene-elements" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to modify a scene. For example how to modify an existing sensor, how to add a new sensor. The logic is the same to modify sources, simulations, materials.</p>
+<section id="Template-vs-Instance">
+<h2>Template vs Instance<a class="headerlink" href="#Template-vs-Instance" title="Link to this heading">#</a></h2>
+<p>When applicable, the speos objects are separated in two different notions: template and instance. The template represents the feature with its inherent characteristics. The instance represents the completion of a template by adding properties such as spatial position, link to geometry, etc.</p>
+<section id="Template">
+<h3>Template<a class="headerlink" href="#Template" title="Link to this heading">#</a></h3>
+<p>The template objects are handled by a manager. It was explained how to interact with them in the kernel-object-link example (“How to use an ObjectLink”). The interesting thing about the template notion is that the same template can be used several times with different properties.</p>
+</section>
+<section id="Instance">
+<h3>Instance<a class="headerlink" href="#Instance" title="Link to this heading">#</a></h3>
+<p>The template objects are instantiated in the Scene object, with properties needed to place them at the wanted position, or attached to the wanted geometry. The Scene object will gather all features that you need to run a job (compute a simulation).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.api.speos.sensor.v1</span><span class="w"> </span><span class="kn">import</span> <span class="n">camera_sensor_pb2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Speos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.kernel.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProtoScene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.kernel.sensor_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProtoSensorTemplate</span>
+
+<span class="c1"># If using docker container</span>
+<span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span>
+<span class="c1"># If using local server</span>
+<span class="c1"># assets_data_path = Path().resolve().parent.parent / &quot;tests&quot; / &quot;assets&quot;</span>
+<span class="c1"># If using a different path</span>
+<span class="c1"># assets_data_path = Path(&quot;path/to/downloaded/example/assets&quot;)</span>
+</pre></div>
+</div>
+</div>
+<p>Create connection with speos rpc server</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">speos</span> <span class="o">=</span> <span class="n">Speos</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">50098</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Create an empty scene and load speos file to fill it.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_scene</span> <span class="o">=</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">scenes</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+
+<span class="n">speos_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;Inverse_SeveralSensors.speos&quot;</span> <span class="o">/</span> <span class="s2">&quot;Inverse_SeveralSensors.speos&quot;</span><span class="p">)</span>
+<span class="n">my_scene</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">file_uri</span><span class="o">=</span><span class="n">speos_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Print-data-models">
+<h2>Print data models<a class="headerlink" href="#Print-data-models" title="Link to this heading">#</a></h2>
+<section id="Whole-scene">
+<h3>Whole scene<a class="headerlink" href="#Whole-scene" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">my_scene</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.scene.v2.Scene
+{
+    &#34;name&#34;: &#34;Inverse_SeveralSensors&#34;,
+    &#34;description&#34;: &#34;From /app/assets/Inverse_SeveralSensors.speos/Inverse_SeveralSensors.speos&#34;,
+    &#34;part_guid&#34;: &#34;85dda74e-8a11-4807-b851-8bc939161655&#34;,
+    &#34;sources&#34;: [
+        {
+            &#34;name&#34;: &#34;Surface.1:1&#34;,
+            &#34;source_guid&#34;: &#34;4ec12319-979e-459e-9249-e669ccbfb475&#34;,
+            &#34;surface_properties&#34;: {
+                &#34;exitance_constant_properties&#34;: {
+                    &#34;geo_paths&#34;: [
+                        {
+                            &#34;geo_path&#34;: &#34;Corps:2408912477/face.1:3892963602&#34;,
+                            &#34;reverse_normal&#34;: false
+                        }
+                    ]
+                }
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Surface.2:1&#34;,
+            &#34;source_guid&#34;: &#34;a92f6bea-5c9e-4e3e-93cd-d65a3f180b39&#34;,
+            &#34;surface_properties&#34;: {
+                &#34;exitance_constant_properties&#34;: {
+                    &#34;geo_paths&#34;: [
+                        {
+                            &#34;geo_path&#34;: &#34;Corps:1976534910/face.1:889032133&#34;,
+                            &#34;reverse_normal&#34;: false
+                        }
+                    ]
+                }
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        }
+    ],
+    &#34;sensors&#34;: [
+        {
+            &#34;name&#34;: &#34;Camera.1:21&#34;,
+            &#34;sensor_guid&#34;: &#34;13a2505c-2818-4331-be50-6f929eb00902&#34;,
+            &#34;result_file_name&#34;: &#34;Inverse.1.Camera.1&#34;,
+            &#34;camera_properties&#34;: {
+                &#34;axis_system&#34;: [
+                    17.0,
+                    10.050000000000002,
+                    14.499999999999998,
+                    -0.0,
+                    -0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                &#34;layer_type_source&#34;: {},
+                &#34;trajectory_file_uri&#34;: &#34;&#34;
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Irradiance.1:28&#34;,
+            &#34;sensor_guid&#34;: &#34;a9dce6a8-cfb3-4c5c-aedf-53dc1baba08e&#34;,
+            &#34;result_file_name&#34;: &#34;Inverse.1.Irradiance.1&#34;,
+            &#34;irradiance_properties&#34;: {
+                &#34;axis_system&#34;: [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    1.0,
+                    -0.0,
+                    -1.0,
+                    0.0,
+                    0.0
+                ],
+                &#34;layer_type_sequence&#34;: {
+                    &#34;maximum_nb_of_sequence&#34;: 10,
+                    &#34;define_sequence_per&#34;: &#34;Faces&#34;
+                },
+                &#34;ray_file_type&#34;: &#34;RayFileNone&#34;,
+                &#34;integration_direction&#34;: []
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        }
+    ],
+    &#34;simulations&#34;: [
+        {
+            &#34;name&#34;: &#34;Inverse.1&#34;,
+            &#34;simulation_guid&#34;: &#34;0a6dd2f5-f81a-433f-94e1-97e8f9545809&#34;,
+            &#34;sensor_paths&#34;: [
+                &#34;Camera.1:21&#34;,
+                &#34;Irradiance.1:28&#34;
+            ],
+            &#34;source_paths&#34;: [
+                &#34;Surface.1:1&#34;,
+                &#34;Surface.2:1&#34;
+            ],
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        }
+    ],
+    &#34;materials&#34;: [
+        {
+            &#34;name&#34;: &#34;Material.1&#34;,
+            &#34;vop_guid&#34;: &#34;6e0d2822-24d5-4c46-adc5-a791078f69dd&#34;,
+            &#34;sop_guids&#34;: [
+                &#34;0f8e2ef4-6d8d-4610-bf6d-f7aa9bc80807&#34;
+            ],
+            &#34;geometries&#34;: {
+                &#34;geo_paths&#34;: [
+                    &#34;Corps:2408912477&#34;,
+                    &#34;Corps:1976534910&#34;
+                ]
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Material.2&#34;,
+            &#34;vop_guid&#34;: &#34;b0343b92-6365-4453-b880-73e071a09504&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {},
+            &#34;sop_guids&#34;: []
+        }
+    ],
+    &#34;metadata&#34;: {},
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Sensors-(instance-+-template)-in-this-scene">
+<h3>Sensors (instance + template) in this scene<a class="headerlink" href="#Sensors-(instance-+-template)-in-this-scene" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">sensor_i</span> <span class="ow">in</span> <span class="n">my_scene</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sensors</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sensor_i</span><span class="p">)</span>  <span class="c1"># Print instance data model</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="n">sensor_i</span><span class="o">.</span><span class="n">sensor_guid</span><span class="p">])</span>  <span class="c1"># Print template data model</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.scene.v2.Scene.SensorInstance
+{
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;sensor_guid&#34;: &#34;13a2505c-2818-4331-be50-6f929eb00902&#34;,
+    &#34;result_file_name&#34;: &#34;Inverse.1.Camera.1&#34;,
+    &#34;camera_properties&#34;: {
+        &#34;axis_system&#34;: [
+            17.0,
+            10.050000000000002,
+            14.499999999999998,
+            -0.0,
+            -0.0,
+            -1.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+        ],
+        &#34;layer_type_source&#34;: {},
+        &#34;trajectory_file_uri&#34;: &#34;&#34;
+    },
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+ansys.api.speos.sensor.v1.SensorTemplate
+{
+    &#34;camera_sensor_template&#34;: {
+        &#34;sensor_mode_photometric&#34;: {
+            &#34;transmittance_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraTransmittance_7906-9f99-c97d-838a..spectrum&#34;,
+            &#34;gamma_correction&#34;: 2.2,
+            &#34;color_mode_color&#34;: {
+                &#34;red_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityRed_adf4-0b27-cefc-fa35..spectrum&#34;,
+                &#34;green_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityGreen_7c86-e7df-6de8-cb15..spectrum&#34;,
+                &#34;blue_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityBlue_8072-c4fe-d903-ca3f..spectrum&#34;,
+                &#34;balance_mode_none&#34;: {}
+            },
+            &#34;wavelengths_range&#34;: {
+                &#34;w_start&#34;: 400.0,
+                &#34;w_end&#34;: 700.0,
+                &#34;w_sampling&#34;: 13
+            },
+            &#34;acquisition_integration&#34;: 0.0,
+            &#34;acquisition_lag_time&#34;: 0.0,
+            &#34;png_bits&#34;: &#34;PNG_08&#34;
+        },
+        &#34;focal_length&#34;: 4.0,
+        &#34;imager_distance&#34;: 10.0,
+        &#34;f_number&#34;: 30.0,
+        &#34;distorsion_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraDistortion.OPTDistortion&#34;,
+        &#34;horz_pixel&#34;: 640,
+        &#34;vert_pixel&#34;: 480,
+        &#34;width&#34;: 5.0,
+        &#34;height&#34;: 5.0,
+        &#34;distortion_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraDistortion.OPTDistortion&#34;
+    },
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+
+
+ansys.api.speos.scene.v2.Scene.SensorInstance
+{
+    &#34;name&#34;: &#34;Irradiance.1:28&#34;,
+    &#34;sensor_guid&#34;: &#34;a9dce6a8-cfb3-4c5c-aedf-53dc1baba08e&#34;,
+    &#34;result_file_name&#34;: &#34;Inverse.1.Irradiance.1&#34;,
+    &#34;irradiance_properties&#34;: {
+        &#34;axis_system&#34;: [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            -0.0,
+            -1.0,
+            0.0,
+            0.0
+        ],
+        &#34;layer_type_sequence&#34;: {
+            &#34;maximum_nb_of_sequence&#34;: 10,
+            &#34;define_sequence_per&#34;: &#34;Faces&#34;
+        },
+        &#34;ray_file_type&#34;: &#34;RayFileNone&#34;,
+        &#34;integration_direction&#34;: []
+    },
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+ansys.api.speos.sensor.v1.SensorTemplate
+{
+    &#34;irradiance_sensor_template&#34;: {
+        &#34;sensor_type_colorimetric&#34;: {
+            &#34;wavelengths_range&#34;: {
+                &#34;w_start&#34;: 400.0,
+                &#34;w_end&#34;: 700.0,
+                &#34;w_sampling&#34;: 13
+            }
+        },
+        &#34;illuminance_type_planar&#34;: {},
+        &#34;dimensions&#34;: {
+            &#34;x_start&#34;: -50.0,
+            &#34;x_end&#34;: 50.0,
+            &#34;x_sampling&#34;: 100,
+            &#34;y_start&#34;: -50.0,
+            &#34;y_end&#34;: 50.0,
+            &#34;y_sampling&#34;: 100
+        }
+    },
+    &#34;name&#34;: &#34;Irradiance.1:28&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+
+
+</pre></div></div>
+</div>
+</section>
+<section id="Camera-sensors-in-this-scene">
+<h3>Camera sensors in this scene<a class="headerlink" href="#Camera-sensors-in-this-scene" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">sensor_i</span> <span class="ow">in</span> <span class="n">my_scene</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sensors</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">sensor_i</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s2">&quot;camera_properties&quot;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">sensor_i</span><span class="p">)</span>  <span class="c1"># Print instance data model</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="n">sensor_i</span><span class="o">.</span><span class="n">sensor_guid</span><span class="p">])</span>  <span class="c1"># Print template data model</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.scene.v2.Scene.SensorInstance
+{
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;sensor_guid&#34;: &#34;13a2505c-2818-4331-be50-6f929eb00902&#34;,
+    &#34;result_file_name&#34;: &#34;Inverse.1.Camera.1&#34;,
+    &#34;camera_properties&#34;: {
+        &#34;axis_system&#34;: [
+            17.0,
+            10.050000000000002,
+            14.499999999999998,
+            -0.0,
+            -0.0,
+            -1.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+        ],
+        &#34;layer_type_source&#34;: {},
+        &#34;trajectory_file_uri&#34;: &#34;&#34;
+    },
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+ansys.api.speos.sensor.v1.SensorTemplate
+{
+    &#34;camera_sensor_template&#34;: {
+        &#34;sensor_mode_photometric&#34;: {
+            &#34;transmittance_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraTransmittance_7906-9f99-c97d-838a..spectrum&#34;,
+            &#34;gamma_correction&#34;: 2.2,
+            &#34;color_mode_color&#34;: {
+                &#34;red_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityRed_adf4-0b27-cefc-fa35..spectrum&#34;,
+                &#34;green_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityGreen_7c86-e7df-6de8-cb15..spectrum&#34;,
+                &#34;blue_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityBlue_8072-c4fe-d903-ca3f..spectrum&#34;,
+                &#34;balance_mode_none&#34;: {}
+            },
+            &#34;wavelengths_range&#34;: {
+                &#34;w_start&#34;: 400.0,
+                &#34;w_end&#34;: 700.0,
+                &#34;w_sampling&#34;: 13
+            },
+            &#34;acquisition_integration&#34;: 0.0,
+            &#34;acquisition_lag_time&#34;: 0.0,
+            &#34;png_bits&#34;: &#34;PNG_08&#34;
+        },
+        &#34;focal_length&#34;: 4.0,
+        &#34;imager_distance&#34;: 10.0,
+        &#34;f_number&#34;: 30.0,
+        &#34;distorsion_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraDistortion.OPTDistortion&#34;,
+        &#34;horz_pixel&#34;: 640,
+        &#34;vert_pixel&#34;: 480,
+        &#34;width&#34;: 5.0,
+        &#34;height&#34;: 5.0,
+        &#34;distortion_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraDistortion.OPTDistortion&#34;
+    },
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+
+
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Modify-existing-data">
+<h2>Modify existing data<a class="headerlink" href="#Modify-existing-data" title="Link to this heading">#</a></h2>
+<section id="Modify-a-camera-instance">
+<h3>Modify a camera instance<a class="headerlink" href="#Modify-a-camera-instance" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_scene_data</span> <span class="o">=</span> <span class="n">my_scene</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>  <span class="c1"># get() = retrieve datamodel corresponding to my_scene</span>
+<span class="n">camera_i_0</span> <span class="o">=</span> <span class="n">my_scene_data</span><span class="o">.</span><span class="n">sensors</span><span class="p">[</span>
+    <span class="mi">0</span>
+<span class="p">]</span>  <span class="c1"># retrieve the specific part of the message corresponding to the first sensor</span>
+<span class="k">assert</span> <span class="n">camera_i_0</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s2">&quot;camera_properties&quot;</span><span class="p">)</span>  <span class="c1"># verify that it is a camera</span>
+
+<span class="c1"># Modification on protobuf message : axis system + layer type</span>
+<span class="n">camera_i_0</span><span class="o">.</span><span class="n">camera_properties</span><span class="o">.</span><span class="n">ClearField</span><span class="p">(</span><span class="s2">&quot;axis_system&quot;</span><span class="p">)</span>
+<span class="n">camera_i_0</span><span class="o">.</span><span class="n">camera_properties</span><span class="o">.</span><span class="n">axis_system</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+    <span class="p">[</span><span class="mf">17.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+<span class="p">)</span>  <span class="c1"># Origin + Xvector + Yvector + Zvector</span>
+<span class="n">camera_i_0</span><span class="o">.</span><span class="n">camera_properties</span><span class="o">.</span><span class="n">layer_type_none</span><span class="o">.</span><span class="n">SetInParent</span><span class="p">()</span>
+
+<span class="c1"># Until now, we only modified the data locally. We need to push the changes to the server:</span>
+<span class="n">my_scene</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">my_scene_data</span><span class="p">)</span>  <span class="c1"># set = Update using modified datamodel</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">my_scene</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sensors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Do another get() to check new value on database</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.scene.v2.Scene.SensorInstance
+{
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;sensor_guid&#34;: &#34;13a2505c-2818-4331-be50-6f929eb00902&#34;,
+    &#34;result_file_name&#34;: &#34;Inverse.1.Camera.1&#34;,
+    &#34;camera_properties&#34;: {
+        &#34;axis_system&#34;: [
+            17.0,
+            10.0,
+            15.0,
+            0.0,
+            0.0,
+            -1.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+        ],
+        &#34;layer_type_none&#34;: {},
+        &#34;trajectory_file_uri&#34;: &#34;&#34;
+    },
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Modify-a-camera-template">
+<h3>Modify a camera template<a class="headerlink" href="#Modify-a-camera-template" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_distortion_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraDistortion_150deg.OPTDistortion&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid</span>
+<span class="n">camera_t_0</span> <span class="o">=</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="n">camera_i_0</span><span class="o">.</span><span class="n">sensor_guid</span><span class="p">]</span>
+
+<span class="c1"># get() = retrieve datamodel corresponding to camera_t_0 from database</span>
+<span class="n">camera_t_0_data</span> <span class="o">=</span> <span class="n">camera_t_0</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="c1"># Modification on protobuf message : distortion_file_uri + focal_length</span>
+<span class="k">assert</span> <span class="n">camera_t_0_data</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s2">&quot;camera_sensor_template&quot;</span><span class="p">)</span>
+<span class="n">camera_t_0_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">distortion_file_uri</span> <span class="o">=</span> <span class="n">new_distortion_file</span>
+<span class="n">camera_t_0_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">focal_length</span> <span class="o">=</span> <span class="mf">4.5</span>
+
+<span class="c1"># set = Update using modified datamodel (push modified data to the server)</span>
+<span class="n">camera_t_0</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">camera_t_0_data</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">camera_t_0</span><span class="p">)</span>  <span class="c1"># Print ObjectLink to see its datamodel in database</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.sensor.v1.SensorTemplate
+{
+    &#34;camera_sensor_template&#34;: {
+        &#34;sensor_mode_photometric&#34;: {
+            &#34;transmittance_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraTransmittance_7906-9f99-c97d-838a..spectrum&#34;,
+            &#34;gamma_correction&#34;: 2.2,
+            &#34;color_mode_color&#34;: {
+                &#34;red_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityRed_adf4-0b27-cefc-fa35..spectrum&#34;,
+                &#34;green_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityGreen_7c86-e7df-6de8-cb15..spectrum&#34;,
+                &#34;blue_spectrum_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraSensitivityBlue_8072-c4fe-d903-ca3f..spectrum&#34;,
+                &#34;balance_mode_none&#34;: {}
+            },
+            &#34;wavelengths_range&#34;: {
+                &#34;w_start&#34;: 400.0,
+                &#34;w_end&#34;: 700.0,
+                &#34;w_sampling&#34;: 13
+            },
+            &#34;acquisition_integration&#34;: 0.0,
+            &#34;acquisition_lag_time&#34;: 0.0,
+            &#34;png_bits&#34;: &#34;PNG_08&#34;
+        },
+        &#34;focal_length&#34;: 4.5,
+        &#34;imager_distance&#34;: 10.0,
+        &#34;f_number&#34;: 30.0,
+        &#34;distorsion_file_uri&#34;: &#34;/app/assets/Inverse_SeveralSensors.speos/CameraDistortion.OPTDistortion&#34;,
+        &#34;horz_pixel&#34;: 640,
+        &#34;vert_pixel&#34;: 480,
+        &#34;width&#34;: 5.0,
+        &#34;height&#34;: 5.0,
+        &#34;distortion_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraDistortion_150deg.OPTDistortion&#34;
+    },
+    &#34;name&#34;: &#34;Camera.1:21&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Add-new-data-(like-a-new-sensor)">
+<h2>Add new data (like a new sensor)<a class="headerlink" href="#Add-new-data-(like-a-new-sensor)" title="Link to this heading">#</a></h2>
+<section id="Create-a-camera-template">
+<h3>Create a camera template<a class="headerlink" href="#Create-a-camera-template" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sensor_t_db</span> <span class="o">=</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">sensor_templates</span><span class="p">()</span>  <span class="c1"># Retrieve access to sensor templates db</span>
+
+<span class="c1"># Create protobuf message SensorTemplate</span>
+<span class="n">sensor_t_data</span> <span class="o">=</span> <span class="n">ProtoSensorTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;CameraFromScratch&quot;</span><span class="p">)</span>
+<span class="n">photometric</span> <span class="o">=</span> <span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">sensor_mode_photometric</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">acquisition_integration</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">acquisition_lag_time</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">transmittance_file_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraTransmittance.spectrum&quot;</span>
+<span class="p">)</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">gamma_correction</span> <span class="o">=</span> <span class="mf">2.2</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">png_bits</span> <span class="o">=</span> <span class="n">camera_sensor_pb2</span><span class="o">.</span><span class="n">EnumSensorCameraPNGBits</span><span class="o">.</span><span class="n">PNG_16</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">color_mode_color</span><span class="o">.</span><span class="n">red_spectrum_file_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraSensitivityRed.spectrum&quot;</span>
+<span class="p">)</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">color_mode_color</span><span class="o">.</span><span class="n">green_spectrum_file_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraSensitivityGreen.spectrum&quot;</span>
+<span class="p">)</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">color_mode_color</span><span class="o">.</span><span class="n">blue_spectrum_file_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraSensitivityBlue.spectrum&quot;</span>
+<span class="p">)</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">color_mode_color</span><span class="o">.</span><span class="n">balance_mode_none</span><span class="o">.</span><span class="n">SetInParent</span><span class="p">()</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">wavelengths_range</span><span class="o">.</span><span class="n">w_start</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">wavelengths_range</span><span class="o">.</span><span class="n">w_end</span> <span class="o">=</span> <span class="mi">700</span>
+<span class="n">photometric</span><span class="o">.</span><span class="n">wavelengths_range</span><span class="o">.</span><span class="n">w_sampling</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">focal_length</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">imager_distance</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">f_number</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">distortion_file_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+    <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;CameraInputFiles&quot;</span> <span class="o">/</span> <span class="s2">&quot;CameraDistortion_130deg.OPTDistortion&quot;</span>
+<span class="p">)</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">horz_pixel</span> <span class="o">=</span> <span class="mi">640</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">vert_pixel</span> <span class="o">=</span> <span class="mi">480</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">sensor_t_data</span><span class="o">.</span><span class="n">camera_sensor_template</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1"># Store it in db and retrieve SensorTemplateLink</span>
+<span class="n">sensor_t_new</span> <span class="o">=</span> <span class="n">sensor_t_db</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sensor_t_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sensor_t_new</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.sensor.v1.SensorTemplate
+{
+    &#34;camera_sensor_template&#34;: {
+        &#34;sensor_mode_photometric&#34;: {
+            &#34;acquisition_integration&#34;: 0.01,
+            &#34;transmittance_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraTransmittance.spectrum&#34;,
+            &#34;gamma_correction&#34;: 2.2,
+            &#34;png_bits&#34;: &#34;PNG_16&#34;,
+            &#34;color_mode_color&#34;: {
+                &#34;red_spectrum_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraSensitivityRed.spectrum&#34;,
+                &#34;green_spectrum_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraSensitivityGreen.spectrum&#34;,
+                &#34;blue_spectrum_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraSensitivityBlue.spectrum&#34;,
+                &#34;balance_mode_none&#34;: {}
+            },
+            &#34;wavelengths_range&#34;: {
+                &#34;w_start&#34;: 400.0,
+                &#34;w_end&#34;: 700.0,
+                &#34;w_sampling&#34;: 13
+            },
+            &#34;acquisition_lag_time&#34;: 0.0
+        },
+        &#34;focal_length&#34;: 5.0,
+        &#34;imager_distance&#34;: 10.0,
+        &#34;f_number&#34;: 20.0,
+        &#34;horz_pixel&#34;: 640,
+        &#34;vert_pixel&#34;: 480,
+        &#34;width&#34;: 5.0,
+        &#34;height&#34;: 5.0,
+        &#34;distortion_file_uri&#34;: &#34;/app/assets/CameraInputFiles/CameraDistortion_130deg.OPTDistortion&#34;,
+        &#34;distorsion_file_uri&#34;: &#34;&#34;
+    },
+    &#34;name&#34;: &#34;CameraFromScratch&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {}
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-camera-instance">
+<h3>Create a camera instance<a class="headerlink" href="#Create-a-camera-instance" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_i_2</span> <span class="o">=</span> <span class="n">ProtoScene</span><span class="o">.</span><span class="n">SensorInstance</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">sensor_t_new</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.1&quot;</span><span class="p">)</span>
+<span class="c1"># An instance has to reference a template - here we use the SensorTemplateLink&#39;s key that we got</span>
+<span class="n">camera_i_2</span><span class="o">.</span><span class="n">sensor_guid</span> <span class="o">=</span> <span class="n">sensor_t_new</span><span class="o">.</span><span class="n">key</span>
+<span class="c1"># just above.</span>
+<span class="n">camera_i_2</span><span class="o">.</span><span class="n">camera_properties</span><span class="o">.</span><span class="n">axis_system</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+    <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">)</span>  <span class="c1"># Choose axis system</span>
+<span class="n">camera_i_2</span><span class="o">.</span><span class="n">camera_properties</span><span class="o">.</span><span class="n">layer_type_source</span><span class="o">.</span><span class="n">SetInParent</span><span class="p">()</span>  <span class="c1"># choose separation by source</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Add-this-instance-in-our-scene">
+<h3>Add this instance in our scene<a class="headerlink" href="#Add-this-instance-in-our-scene" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_scene_data</span> <span class="o">=</span> <span class="n">my_scene</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>  <span class="c1"># Retrieve scene datamodel</span>
+
+<span class="c1"># Modify scene datamodel to add our camera instance</span>
+<span class="n">my_scene_data</span><span class="o">.</span><span class="n">sensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">camera_i_2</span><span class="p">)</span>
+
+<span class="c1"># We can also reference it in the first simulation, so that it will be taken into account by this</span>
+<span class="c1"># simulation</span>
+<span class="n">my_scene_data</span><span class="o">.</span><span class="n">simulations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sensor_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">camera_i_2</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># We reference by name</span>
+
+<span class="c1"># Update value in db</span>
+<span class="n">my_scene</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">my_scene_data</span><span class="p">)</span>
+
+<span class="c1"># Check scene data after update</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">my_scene</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ansys.api.speos.scene.v2.Scene
+{
+    &#34;name&#34;: &#34;Inverse_SeveralSensors&#34;,
+    &#34;description&#34;: &#34;From /app/assets/Inverse_SeveralSensors.speos/Inverse_SeveralSensors.speos&#34;,
+    &#34;part_guid&#34;: &#34;85dda74e-8a11-4807-b851-8bc939161655&#34;,
+    &#34;sources&#34;: [
+        {
+            &#34;name&#34;: &#34;Surface.1:1&#34;,
+            &#34;source_guid&#34;: &#34;4ec12319-979e-459e-9249-e669ccbfb475&#34;,
+            &#34;surface_properties&#34;: {
+                &#34;exitance_constant_properties&#34;: {
+                    &#34;geo_paths&#34;: [
+                        {
+                            &#34;geo_path&#34;: &#34;Corps:2408912477/face.1:3892963602&#34;,
+                            &#34;reverse_normal&#34;: false
+                        }
+                    ]
+                }
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Surface.2:1&#34;,
+            &#34;source_guid&#34;: &#34;a92f6bea-5c9e-4e3e-93cd-d65a3f180b39&#34;,
+            &#34;surface_properties&#34;: {
+                &#34;exitance_constant_properties&#34;: {
+                    &#34;geo_paths&#34;: [
+                        {
+                            &#34;geo_path&#34;: &#34;Corps:1976534910/face.1:889032133&#34;,
+                            &#34;reverse_normal&#34;: false
+                        }
+                    ]
+                }
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        }
+    ],
+    &#34;sensors&#34;: [
+        {
+            &#34;name&#34;: &#34;Camera.1:21&#34;,
+            &#34;sensor_guid&#34;: &#34;13a2505c-2818-4331-be50-6f929eb00902&#34;,
+            &#34;result_file_name&#34;: &#34;Inverse.1.Camera.1&#34;,
+            &#34;camera_properties&#34;: {
+                &#34;axis_system&#34;: [
+                    17.0,
+                    10.0,
+                    15.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                &#34;layer_type_none&#34;: {},
+                &#34;trajectory_file_uri&#34;: &#34;&#34;
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Irradiance.1:28&#34;,
+            &#34;sensor_guid&#34;: &#34;a9dce6a8-cfb3-4c5c-aedf-53dc1baba08e&#34;,
+            &#34;result_file_name&#34;: &#34;Inverse.1.Irradiance.1&#34;,
+            &#34;irradiance_properties&#34;: {
+                &#34;axis_system&#34;: [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    1.0,
+                    -0.0,
+                    -1.0,
+                    0.0,
+                    0.0
+                ],
+                &#34;layer_type_sequence&#34;: {
+                    &#34;maximum_nb_of_sequence&#34;: 10,
+                    &#34;define_sequence_per&#34;: &#34;Faces&#34;
+                },
+                &#34;ray_file_type&#34;: &#34;RayFileNone&#34;,
+                &#34;integration_direction&#34;: []
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;CameraFromScratch.1&#34;,
+            &#34;sensor_guid&#34;: &#34;e50bdc95-0ae0-43d8-aa2f-b5b4761ebff5&#34;,
+            &#34;camera_properties&#34;: {
+                &#34;axis_system&#34;: [
+                    50.0,
+                    50.0,
+                    50.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                &#34;layer_type_source&#34;: {},
+                &#34;trajectory_file_uri&#34;: &#34;&#34;
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {},
+            &#34;result_file_name&#34;: &#34;&#34;
+        }
+    ],
+    &#34;simulations&#34;: [
+        {
+            &#34;name&#34;: &#34;Inverse.1&#34;,
+            &#34;simulation_guid&#34;: &#34;0a6dd2f5-f81a-433f-94e1-97e8f9545809&#34;,
+            &#34;sensor_paths&#34;: [
+                &#34;Camera.1:21&#34;,
+                &#34;Irradiance.1:28&#34;,
+                &#34;CameraFromScratch.1&#34;
+            ],
+            &#34;source_paths&#34;: [
+                &#34;Surface.1:1&#34;,
+                &#34;Surface.2:1&#34;
+            ],
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        }
+    ],
+    &#34;materials&#34;: [
+        {
+            &#34;name&#34;: &#34;Material.1&#34;,
+            &#34;vop_guid&#34;: &#34;6e0d2822-24d5-4c46-adc5-a791078f69dd&#34;,
+            &#34;sop_guids&#34;: [
+                &#34;0f8e2ef4-6d8d-4610-bf6d-f7aa9bc80807&#34;
+            ],
+            &#34;geometries&#34;: {
+                &#34;geo_paths&#34;: [
+                    &#34;Corps:2408912477&#34;,
+                    &#34;Corps:1976534910&#34;
+                ]
+            },
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {}
+        },
+        {
+            &#34;name&#34;: &#34;Material.2&#34;,
+            &#34;vop_guid&#34;: &#34;b0343b92-6365-4453-b880-73e071a09504&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;metadata&#34;: {},
+            &#34;sop_guids&#34;: []
+        }
+    ],
+    &#34;metadata&#34;: {},
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+<p>When loading a speos file into a scene, this creates many objects (source templates, sensor templates, vop template, sop templates). Then at the end of the example, we just clean all databases</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">scenes</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">simulation_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">sensor_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">source_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">intensity_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">spectrums</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">vop_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">sop_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">parts</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">bodies</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+<span class="p">):</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Template-vs-Instance">Template vs Instance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Template">Template</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Instance">Instance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Print-data-models">Print data models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Whole-scene">Whole scene</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Sensors-(instance-+-template)-in-this-scene">Sensors (instance + template) in this scene</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Camera-sensors-in-this-scene">Camera sensors in this scene</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Modify-existing-data">Modify existing data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Modify-a-camera-instance">Modify a camera instance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Modify-a-camera-template">Modify a camera template</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Add-new-data-(like-a-new-sensor)">Add new data (like a new sensor)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-camera-template">Create a camera template</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-camera-instance">Create a camera instance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Add-this-instance-in-our-scene">Add this instance in our scene</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/examples/kernel/modify-scene.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2025 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.3.3. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

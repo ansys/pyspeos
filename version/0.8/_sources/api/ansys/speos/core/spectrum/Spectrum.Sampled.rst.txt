@@ -1,0 +1,158 @@
+
+
+
+
+
+
+:class:`Sampled`
+================
+
+
+.. py:class:: ansys.speos.core.spectrum.Spectrum.Sampled(sampled, default_parameters = None, stable_ctr = False)
+
+   
+   Sampled type of spectrum.
+
+   By default, Sampled temperature is set to be 2856.
+
+   :Parameters:
+
+       **sampled** : :obj:`ansys.api.speos.spectrum.v1.spectrum_pb2.Sampled`
+           Sampled protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.SpectrumSampledParameters`] = :data:`python:None`
+           If defined the values in the Sampled instance will be
+           overwritten by the values of the data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_sampled method available in
+   Spectrum classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Sampled
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Wavelength property values of the spectrum.
+          * - :py:attr:`~values`
+            - Property values of the spectrum sampled wavelengths.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.spectrum.Spectrum import Sampled
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Wavelength property values of the spectrum.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`List`\[:class:`python:float`]
+           Wavelength values of the spectrum.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Wavelength values of the spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: values
+   :type: List[float]
+
+
+   
+   Property values of the spectrum sampled wavelengths.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           List of values, expected from 0. to 100. in %.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           List of values, expected from 0. to 100. in %.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
