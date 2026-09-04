@@ -30,6 +30,7 @@ from typing import List, Mapping, Optional, Union
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.body import ProtoBody
@@ -207,32 +208,37 @@ class Body:
             self._visual_data.updated = False
 
         # Commit faces contained in this body
-        already_committed = []
-        never_committed = []
-        for g in self._geom_features:
-            if g.face_link is None:
-                never_committed.append(g)
-            else:
-                already_committed.append(g)
+        if server_version_checker.is_version_supported(2025, 2, 0):
+            for g in self._geom_features:
+                g.commit()
+        else:
+            # optimize commit performance
+            already_committed = []
+            never_committed = []
+            for g in self._geom_features:
+                if g.face_link is None:
+                    never_committed.append(g)
+                else:
+                    already_committed.append(g)
 
-        # Create by batch all faces that were never committed before
-        if len(never_committed) > 0:
-            face_nc_links = self._speos_client.faces().create_batch(
-                message_list=[g._face for g in never_committed]
-            )
-            for g, link in zip(never_committed, face_nc_links):
-                g.face_link = link
+            # Create by batch all faces that were never committed before
+            if len(never_committed) > 0:
+                face_nc_links = self._speos_client.faces().create_batch(
+                    message_list=[g._face for g in never_committed]
+                )
+                for g, link in zip(never_committed, face_nc_links):
+                    g.face_link = link
 
-                # And reference in the body
-                if link.key not in self._body.face_guids:
-                    self._body.face_guids.append(link.key)
+                    # And reference in the body
+                    if link.key not in self._body.face_guids:
+                        self._body.face_guids.append(link.key)
 
-        # Update by batch all faces that were already committed before.
-        if len(already_committed) > 0:
-            self._speos_client.faces().update_batch(
-                refs=[g.face_link for g in already_committed],
-                data=[g._face for g in already_committed],
-            )
+            # Update by batch all faces that were already committed before.
+            if len(already_committed) > 0:
+                self._speos_client.faces().update_batch(
+                    refs=[g.face_link for g in already_committed],
+                    data=[g._face for g in already_committed],
+                )
 
         # Save or Update the body (depending on if it was already saved before)
         if self.body_link is None:
