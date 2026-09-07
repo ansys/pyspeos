@@ -76,7 +76,7 @@ doc = [
     "trame-client<3.13.3",
 ]
 quality = [
-  "prek==0.4.4",
+  "prek==0.5.0",
   "ruff==0.16.0",
   "ty==0.0.49",
 ]
