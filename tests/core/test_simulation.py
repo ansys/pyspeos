@@ -447,7 +447,7 @@ def test_create_inverse(speos: Speos):
     sim1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.supported_speos_versions(min=251)
 def test_inverse_simulation_optimized_propagation_settings(speos: Speos):
     """Test the optimized propagation settings for Inverse Simulation."""
     p = Project(speos=speos)

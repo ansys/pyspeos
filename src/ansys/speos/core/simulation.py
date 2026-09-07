@@ -999,10 +999,7 @@ class BaseSimulation:
             elif self._job.HasField("inverse_mc_simulation_properties"):
                 default_sim_paras = InverseSimulationParameters()
                 self.stop_condition_duration = default_sim_paras.stop_condition_duration
-                default_passes_number = default_sim_paras.stop_condition_passes_number
-                if not isinstance(default_passes_number, int):
-                    default_passes_number = 5
-                self.stop_condition_passes_number = default_passes_number
+                self.stop_condition_passes_number = default_sim_paras.stop_condition_passes_number
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
@@ -1600,7 +1597,7 @@ class SimulationInverse(BaseSimulation):
     Notes
     -----
     Three exclusive optimized propagation modes are available.
-    The relative and absolute optimized propagation modes require Speos 2026 R1 SP3 or higher
+    The relative and absolute optimized propagation modes require Speos 2025 R1 SP1 or higher
     and are only compatible with radiance sensors.
     """
 
@@ -2059,7 +2056,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         else:
             prop_none.stop_condition_passes_number = value
 
-    @min_speos_version(26, 1, 3)
+    @min_speos_version(25, 1, 1)
     def set_optimized_propagation_relative(self) -> OptimizedPropagationRelative:
         """Set the optimized propagation relative stop condition.
 
@@ -2090,7 +2087,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
             stable_ctr=True,
         )
 
-    @min_speos_version(26, 1, 3)
+    @min_speos_version(25, 1, 1)
     def set_optimized_propagation_absolute(self) -> OptimizedPropagationAbsolute:
         """Set the optimized propagation absolute stop condition.
 

@@ -195,7 +195,6 @@ print(simulation3.stop_condition_passes_number)
 
 # Starting with Speos 2026 R1 SP3, the optimized propagation algorithm adapts the number of passes
 # per pixel to send the optimal number of rays according to the signal each pixel needs.
-# It is only compatible with radiance sensors.
 #
 # The relative mode stops a pixel once its standard deviation drops below a given percentage.
 
