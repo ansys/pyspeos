@@ -52,6 +52,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from tests.conftest import test_path
 from tests.helper import clean_all_dbs
@@ -353,6 +354,34 @@ def test_delete(speos: Speos):
     # Delete project
     p.delete()
     assert len(p._features) == 0
+
+
+def test_commit(speos: Speos):
+    """Test committing all project features in one operation."""
+    p = Project(speos=speos)
+
+    source = p.create_source(name="Project.Commit.Source", feature_type=SourceLuminaire)
+    source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    sensor = p.create_sensor(name="Project.Commit.Sensor", feature_type=SensorIrradiance)
+
+    # Commit several features at once
+    p.commit()
+
+    scene_data = p.scene_link.get()
+    assert [source_instance.name for source_instance in scene_data.sources] == [source._name]
+    assert [sensor_instance.name for sensor_instance in scene_data.sensors] == [sensor._name]
+    sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
+    assert sensor_data.HasField("irradiance_sensor_template")
+    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
+
+    # Modify a feature and commit again -
+    # this time no scene update is needed (only template change)
+    sensor.set_type_colorimetric()
+    p.commit()
+
+    sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
+    assert sensor_data.HasField("irradiance_sensor_template")
+    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
 
 
 def test_from_file(speos: Speos):
@@ -702,6 +731,13 @@ def test_creation_errors(speos: Speos):
         p.create_source(
             name="ambient_light",
             feature_type=SourceAmbientEnvironment,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="ThermicSourceParameters"):
+        p.create_source(
+            name="thermic_source",
+            feature_type=SourceThermic,
             parameters=IrradianceSensorParameters(),
         )
 

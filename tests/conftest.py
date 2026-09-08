@@ -32,6 +32,7 @@ import logging
 import logging as deflogging  # Default logging
 import os
 from pathlib import Path
+import re
 
 import pytest
 
@@ -206,6 +207,21 @@ def pytest_addoption(parser):
     )
 
 
+def _feature_version(version: str) -> int:
+    """Convert a Speos image tag or feature-version identifier to an integer."""
+    if version.isdecimal():
+        return int(version)
+
+    match = re.fullmatch(r"(20\d{2})\.(\d+)(?:\.[\w.-]+)?", version)
+    if match:
+        return int(f"{match.group(1)[-2:]}{match.group(2)}")
+
+    raise pytest.UsageError(
+        "--supported-features must be a feature version such as '271' or a Speos "
+        "image tag such as '2027.1.0.42487-beta'."
+    )
+
+
 def pytest_collection_modifyitems(config, items):
     """
     Add 'all_speos_versions' marker to unmarked test.
@@ -222,9 +238,10 @@ def pytest_runtest_setup(item):
     minimal_absolute = 0
     maximal_absolute = 999
 
-    requested_version = item.config.getoption("--supported-features")
-    if requested_version is None:
+    requested_version_tag = item.config.getoption("--supported-features")
+    if requested_version_tag is None:
         return
+    requested_version = _feature_version(requested_version_tag)
 
     supported_versions = item.get_closest_marker("supported_speos_versions")
     if supported_versions:

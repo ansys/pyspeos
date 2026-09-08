@@ -1126,20 +1126,7 @@ class BaseSimulation:
 
         return out_str
 
-    def commit(self) -> BaseSimulation:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.BaseSimulation
-            Simulation feature.
-        """
-        # The _unique_id will help to find correct item in the scene.simulations:
-        # the list of SimulationInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._simulation_instance.metadata["UniqueId"] = self._unique_id
-
+    def _commit_template(self) -> None:
         # Save or Update the simulation template (depending on if it was already saved before)
         if self.simulation_template_link is None:
             self.simulation_template_link = self._project.client.simulation_templates().create(
@@ -1151,28 +1138,59 @@ class BaseSimulation:
                 data=self._simulation_template
             )  # Only update if template has changed
 
-        # Update the scene with the simulation instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        simulation_inst = next(
+            (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
 
-            # Look if an element corresponds to the _unique_id
-            simulation_inst = next(
-                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if simulation_inst is not None:  # if yes, just replace
-                if simulation_inst != self._simulation_instance:
-                    simulation_inst.CopyFrom(self._simulation_instance)
-                else:
-                    update_scene = False
+        if simulation_inst is not None:
+            if simulation_inst != self._simulation_instance:
+                simulation_inst.CopyFrom(
+                    self._simulation_instance
+                )  # if yes and change, just replace
             else:
-                scene_data.simulations.insert(
-                    len(scene_data.simulations), self._simulation_instance
-                )  # if no, just add it to the list of simulations
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.simulations.insert(
+                len(scene_data.simulations), self._simulation_instance
+            )  # if no, just add it to the list of simulation instances
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+        return True  # Mention that the scene needs to be updated
+
+    def _prepare_commit(self) -> None:
+        # The _unique_id will help to find correct item in the scene.simulations:
+        # the list of SimulationInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._simulation_instance.metadata["UniqueId"] = self._unique_id
+
+        # Handle template
+        self._commit_template()
+
+    def commit(self) -> BaseSimulation:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+        """
+        # Prepare _unique_id and commit template if needed
+        self._prepare_commit()
+
+        # Handle instance
+        if self._project.scene_link:
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         # Job will be committed when performing compute method
         return self

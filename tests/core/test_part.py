@@ -129,6 +129,40 @@ def test_create_face(speos: Speos):
     assert len(body1.body_link.get().face_guids) == 0
 
 
+def test_body_commit_batches_new_and_existing_faces(speos: Speos):
+    """Test that body commit creates new faces and updates existing faces in batches."""
+    project = Project(speos=speos)
+    root_part = project.create_root_part().commit()
+
+    # Create a body
+    body = root_part.create_body(name="Body.1")
+
+    # Create a face and commit it
+    existing_face = body.create_face(name="Face.1")
+    existing_face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    existing_face.facets = [0, 1, 2]
+    existing_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    existing_face.commit()
+
+    # Modify the existing face
+    existing_face.vertices = [1, 1, 1, 2, 1, 1, 1, 2, 1]
+
+    # Create a face, don't commit it
+    new_face = body.create_face(name="Face.2")
+    new_face.vertices = [0, 0, 1, 1, 0, 1, 0, 1, 1]
+    new_face.facets = [0, 1, 2]
+    new_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    # Commit the body, which should update the existing face and add the new face
+    body.commit()
+
+    assert existing_face.face_link.get().vertices == [1, 1, 1, 2, 1, 1, 1, 2, 1]
+    assert new_face.face_link is not None
+    assert new_face.face_link.get().vertices == [0, 0, 1, 1, 0, 1, 0, 1, 1]
+
+    root_part.delete()
+
+
 def test_create_subpart(speos: Speos):
     """Test create sub part in root part."""
     # Create an empty project with a root part
