@@ -1773,6 +1773,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
             simulation_instance=simulation_instance,
         )
         self._template_class = "inverse_mc_simulation_template"
+        self._optimized = None
 
         if default_parameters is not None:
             self.ambient_material_file_uri = default_parameters.ambient_material_uri
@@ -2029,7 +2030,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = str(uri)
 
     @property
-    def stop_condition_passes_number(self) -> int:
+    def stop_condition_passes_number(self) -> Optional[int]:
         """To stop the simulation after a certain number of passes.
 
         Set None as value to have no condition about passes.
@@ -2045,12 +2046,15 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         int
         """
         props = self._job.inverse_mc_simulation_properties
-        return props.optimized_propagation_none.stop_condition_passes_number
+        if props.HasField("optimized_propagation_none"):
+            return props.optimized_propagation_none.stop_condition_passes_number
+        return None
 
     @stop_condition_passes_number.setter
     def stop_condition_passes_number(self, value: Union[None, int]) -> None:
         prop_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
         prop_none.SetInParent()
+        self._optimized = None
         if value is None:
             prop_none.ClearField("stop_condition_passes_number")
         else:
@@ -2077,15 +2081,24 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         The optimized propagation algorithm is only compatible with radiance sensors.
         """
         props = self._job.inverse_mc_simulation_properties
-        return SimulationInverse.OptimizedPropagationRelative(
-            propagation_relative=props.optimized_propagation_relative,
-            default_parameters=(
-                None
-                if props.HasField("optimized_propagation_relative")
-                else OptimizedPropagationRelativeParameters()
-            ),
-            stable_ctr=True,
-        )
+        if self._optimized is None and props.HasField("optimized_propagation_relative"):
+            self._optimized = SimulationInverse.OptimizedPropagationRelative(
+                propagation_relative=props.optimized_propagation_relative,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._optimized, SimulationInverse.OptimizedPropagationRelative):
+            self._optimized = SimulationInverse.OptimizedPropagationRelative(
+                propagation_relative=props.optimized_propagation_relative,
+                default_parameters=OptimizedPropagationRelativeParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._optimized._optimized_propagation_relative
+            is not props.optimized_propagation_relative
+        ):
+            self._optimized._optimized_propagation_relative = props.optimized_propagation_relative
+        return self._optimized
 
     @min_speos_version(25, 1, 1)
     def set_optimized_propagation_absolute(self) -> OptimizedPropagationAbsolute:
