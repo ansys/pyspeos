@@ -1630,7 +1630,6 @@ ansys.speos.core.generic.parameters.OptimizedPropagationRelativeParameters, opti
         -----
         Do not instantiate this class directly. Use
         :meth:`SimulationInverse.set_optimized_propagation_relative` instead.
-        The optimized propagation algorithm is only compatible with radiance sensors.
         """
 
         def __init__(
@@ -1703,7 +1702,6 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         -----
         Do not instantiate this class directly. Use
         :meth:`SimulationInverse.set_optimized_propagation_absolute` instead.
-        The optimized propagation algorithm is only compatible with radiance sensors.
         """
 
         def __init__(
