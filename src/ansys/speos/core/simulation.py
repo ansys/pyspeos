@@ -2078,7 +2078,8 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         including :attr:`stop_condition_passes_number`.
         Default values are applied only the first time this mode is selected, subsequent calls
         return the stop condition with its current values.
-        The optimized propagation algorithm is only compatible with radiance sensors.
+        Starting from 271, the job information used by optimized propagation is kept in the
+        job template.
         """
         props = self._job.inverse_mc_simulation_properties
         if self._optimized is None and props.HasField("optimized_propagation_relative"):
@@ -2118,18 +2119,28 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         including :attr:`stop_condition_passes_number`.
         Default values are applied only the first time this mode is selected, subsequent calls
         return the stop condition with its current values.
-        The optimized propagation algorithm is only compatible with radiance sensors.
+        Starting from 271, the job information used by optimized propagation is kept in the
+        job template.
         """
         props = self._job.inverse_mc_simulation_properties
-        return SimulationInverse.OptimizedPropagationAbsolute(
-            propagation_absolute=props.optimized_propagation_absolute,
-            default_parameters=(
-                None
-                if props.HasField("optimized_propagation_absolute")
-                else OptimizedPropagationAbsoluteParameters()
-            ),
-            stable_ctr=True,
-        )
+        if self._optimized is None and props.HasField("optimized_propagation_absolute"):
+            self._optimized = SimulationInverse.OptimizedPropagationAbsolute(
+                propagation_absolute=props.optimized_propagation_absolute,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._optimized, SimulationInverse.OptimizedPropagationAbsolute):
+            self._optimized = SimulationInverse.OptimizedPropagationAbsolute(
+                propagation_absolute=props.optimized_propagation_absolute,
+                default_parameters=OptimizedPropagationAbsoluteParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._optimized._optimized_propagation_absolute
+            is not props.optimized_propagation_absolute
+        ):
+            self._optimized._optimized_propagation_absolute = props.optimized_propagation_absolute
+        return self._optimized
 
     @property
     def stop_condition_duration(self) -> Optional[int]:
