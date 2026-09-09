@@ -37,15 +37,34 @@ __version__ = importlib_metadata.version("ansys-speos-core")
 from ansys.speos.core.body import Body
 import ansys.speos.core.bsdf as bsdf
 from ansys.speos.core.face import Face
+from ansys.speos.core.generic.file_format import SpeosFileFormat
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.logger import LOG, Logger
 from ansys.speos.core.lxp import LightPathFinder, RayPath
-from ansys.speos.core.opt_prop import OptProp
+from ansys.speos.core.opt_prop import (
+    CoatedSurfaceFile,
+    CoatedSurfaceSample,
+    MaterialConstringence,
+    MaterialDispersionCurve,
+    MaterialFile,
+    MaterialKettlerHelmholtz,
+    MaterialSellmeier,
+    OptProp,
+    ScatteringSurfaceFile,
+    ScatteringSurfaceSample,
+    SimpleScatteringSurfaceFile,
+    VolumeScatteringDoubleHenyeyGreenstein,
+    VolumeScatteringGegenbauer,
+    VolumeScatteringHenyeyGreenstein,
+    VolumeScatteringUserDefined,
+)
 from ansys.speos.core.part import Part
 from ansys.speos.core.project import Project
 import ansys.speos.core.sensor as sensor
 import ansys.speos.core.simulation as simulation
 import ansys.speos.core.source as source
-from ansys.speos.core.spectrum import Spectrum
+from ansys.speos.core.source import Ray, RayFile
+from ansys.speos.core.spectrum import Spectrum, SpectrumFile
 from ansys.speos.core.speos import Speos
+from ansys.speos.core.texture_3d import Texture3DMappingFile, TexturePattern

@@ -1,0 +1,23 @@
+OPTIS - Material file v13.0
+Example file to understand Speos scattering file structure
+Isotropic
+Dispersion_Curve
+3
+486 2
+532 1.5
+643 1.2
+3
+400 0.1
+550 0.2
+700 0.01
+1
+1
+1
+OPTIS - Volumic Scattering file v1.0
+1
+3
+486 0.016813
+532 7.3952e-17
+643 0.017344
+1
+0.9
