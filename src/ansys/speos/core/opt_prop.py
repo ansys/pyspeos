@@ -31,17 +31,31 @@ The public classes are:
 - `BaseVop` for inheritance of VOP helpers,
 - `TextureLayer` for a single texture layer,
 - `OptProp` to represent a full material instance (SOP + VOP + geometries).
+
+It also exposes the models of the optical property files that Speos takes as inputs.
+Those are read and written locally and do not need a Speos server:
+- `SimpleScatteringSurfaceFile` for `*.simplescattering` files,
+- `ScatteringSurfaceFile` for `*.scattering` files,
+- `CoatedSurfaceFile` for `*.coated` files,
+- `MaterialFile` for `*.material` files.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field, fields
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import ClassVar, List, Mapping, Optional, Sequence, Union
 import uuid
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.file_format import (
+    LineReader,
+    SpeosTextFileFormat,
+    check_percentage,
+    format_number,
+)
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameters,
@@ -2532,3 +2546,1229 @@ class OptProp(BaseVop, BaseSop):
         else:  # Specific case for ambient material
             self._clear_sop_template()
         self.reset()
+
+
+_PERCENT = {"unit": "percent"}
+"""Field metadata of a value expressed as a percentage of the incident light."""
+
+_DEGREES = {"unit": "degrees"}
+"""Field metadata of a value expressed as an angle in degrees."""
+
+_ABSORPTION = {"curve": "absorption"}
+"""Field metadata of the two parallel columns of an absorption curve."""
+
+_DIFFUSION = {"curve": "diffusion"}
+"""Field metadata of the two parallel columns of a diffusion curve."""
+
+_PHASE_COLUMN = {"column": "phase function"}
+"""Field metadata of a parameter column of a scattering phase function."""
+
+_VOLUMIC_HEADER = "OPTIS - Volumic Scattering file v1"
+"""Header opening the volume scattering block of a ``*.material`` file."""
+
+
+def _tagged_names(model, tag: Mapping[str, str]) -> List[str]:
+    """Return the names of the dataclass fields carrying exactly the given metadata.
+
+    ``model`` is either a dataclass or an instance of one, and the names come back in
+    declaration order, which every format here also uses as its file order.
+    """
+    return [entry.name for entry in fields(model) if entry.metadata == tag]
+
+
+def _tagged(model, tag: Mapping[str, str]) -> dict:
+    """Return the values of the dataclass fields carrying exactly the given metadata."""
+    return {name: getattr(model, name) for name in _tagged_names(model, tag)}
+
+
+def _wavelength_line(wavelengths: Sequence[float], values_per_wavelength: int) -> str:
+    """Build the wavelength header row of a tabulated surface property file.
+
+    Each wavelength labels a group of ``values_per_wavelength`` data columns, so it is
+    followed by that many empty cells minus one. Speos closes every row with a tabulation.
+    """
+    cells: List[str] = []
+    for wavelength in wavelengths:
+        cells.append(format_number(wavelength))
+        cells.extend([""] * (values_per_wavelength - 1))
+    return "\t" + "\t".join(cells) + "\t"
+
+
+def _data_line(values: Sequence[float], incidence: Optional[float] = None) -> str:
+    """Build a data row of a tabulated surface property file.
+
+    The first row of an incidence block starts with the angle of incidence, the following
+    ones start with an empty cell. Speos closes every row with a tabulation.
+    """
+    head = format_number(incidence) if incidence is not None else ""
+    return "\t".join([head, *(format_number(value) for value in values)]) + "\t"
+
+
+def _read_grid(
+    reader: LineReader, incidence_count: int, row_count: int, value_count: int
+) -> List[List[List[float]]]:
+    """Read ``incidence_count`` blocks of ``row_count`` rows holding ``value_count`` values.
+
+    Returns the angles of incidence interleaved with the rows: each block is returned as
+    ``[[incidence], row_1, ..., row_n]``.
+    """
+    blocks = []
+    for _ in range(incidence_count):
+        first = reader.next_floats(count=value_count + 1)
+        rows = [first[1:]]
+        rows.extend(reader.next_floats(count=value_count) for _ in range(row_count - 1))
+        blocks.append([[first[0]], *rows])
+    return blocks
+
+
+@dataclass
+class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
+    """Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
+
+    The incident light is split into an absorbed part and, on each active side of the
+    surface, a Lambertian, a Gaussian and a specular part. The specular part is the
+    complement to 100 percent of the Lambertian and Gaussian ones.
+
+    Parameters
+    ----------
+    mode : str, optional
+        Sides of the surface that scatter the light: ``"Reflection"``,
+        ``"Transmission"`` or ``"Both"``. By default, ``"Reflection"``.
+    absorption : float, optional
+        Absorbed part of the incident light, in percent. By default, ``0.0``.
+    lambertian : float, optional
+        Lambertian part in percent. In ``"Both"`` mode this is the reflection side.
+        By default, ``0.0``.
+    gaussian : float, optional
+        Gaussian part in percent. In ``"Both"`` mode this is the reflection side.
+        By default, ``0.0``.
+    gaussian_fwhm : float, optional
+        Full width at half maximum of the Gaussian lobe, in degrees. In ``"Both"`` mode
+        this is the reflection side. By default, ``0.0``.
+    lambertian_transmission : float, optional
+        Lambertian part of the transmission side, in percent. ``"Both"`` mode only.
+        By default, ``0.0``.
+    gaussian_transmission : float, optional
+        Gaussian part of the transmission side, in percent. ``"Both"`` mode only.
+        By default, ``0.0``.
+    gaussian_fwhm_transmission : float, optional
+        Full width at half maximum of the transmission Gaussian lobe, in degrees.
+        ``"Both"`` mode only. By default, ``0.0``.
+    reflection : Optional[float], optional
+        Reflected part in percent, the transmitted part being its complement to 100.
+        ``"Both"`` mode only. By default, ``None``, which makes the split follow the
+        Fresnel laws.
+    description : str, optional
+        Free text written on the second line of the file. By default,
+        ``"Scattering surface"``.
+
+    Examples
+    --------
+    >>> from ansys.speos.core import SimpleScatteringSurfaceFile
+    >>> diffuser = SimpleScatteringSurfaceFile(mode="Reflection", lambertian=100.0)
+    >>> diffuser.save("white_diffuser.simplescattering")
+    """
+
+    mode: str = "Reflection"
+    absorption: float = 0.0
+    lambertian: float = 0.0
+    gaussian: float = 0.0
+    gaussian_fwhm: float = 0.0
+    lambertian_transmission: float = 0.0
+    gaussian_transmission: float = 0.0
+    gaussian_fwhm_transmission: float = 0.0
+    reflection: Optional[float] = None
+    description: str = "Scattering surface"
+
+    EXTENSION = ".simplescattering"
+    HEADER = "OPTIS - Simple scattering surface file v2.0"
+    HEADER_PREFIX = "OPTIS - Simple scattering surface file"
+
+    MODES: ClassVar[tuple] = ("Reflection", "Transmission", "Both")
+    """Accepted values of :attr:`mode`."""
+
+    @property
+    def fresnel(self) -> bool:
+        """Whether the reflection and transmission split follows the Fresnel laws.
+
+        Returns
+        -------
+        bool
+            ``True`` when :attr:`reflection` is ``None``.
+        """
+        return self.reflection is None
+
+    def validate(self) -> None:
+        """Check the surface against the constraints of the ``*.simplescattering`` format.
+
+        Raises
+        ------
+        ValueError
+            If :attr:`mode` is unknown, a percentage is outside the 0 to 100 range, or the
+            Lambertian and Gaussian parts of a side sum to more than 100 percent.
+        """
+        if self.mode not in self.MODES:
+            raise ValueError(f"mode must be one of {self.MODES}, got {self.mode!r}.")
+        check_percentage("absorption", self.absorption)
+        self._check_side("", self.lambertian, self.gaussian)
+        if self.mode != "Both":
+            return
+        self._check_side("_transmission", self.lambertian_transmission, self.gaussian_transmission)
+        if self.reflection is not None:
+            check_percentage("reflection", self.reflection)
+
+    @staticmethod
+    def _check_side(suffix: str, lambertian: float, gaussian: float) -> None:
+        check_percentage(f"lambertian{suffix}", lambertian)
+        check_percentage(f"gaussian{suffix}", gaussian)
+        if lambertian + gaussian > 100.0:
+            raise ValueError(
+                f"lambertian{suffix} and gaussian{suffix} must not sum to more than 100, "
+                f"got {lambertian + gaussian}."
+            )
+
+    def _to_lines(self) -> List[str]:
+        lines = [self.description, self.mode]
+        if self.mode != "Both":
+            lines.append(
+                " ".join(
+                    format_number(value)
+                    for value in (
+                        self.absorption,
+                        self.lambertian,
+                        self.gaussian,
+                        self.gaussian_fwhm,
+                    )
+                )
+            )
+            return lines
+
+        lines.append("")
+        lines.append(
+            " ".join(
+                format_number(value)
+                for value in (
+                    self.absorption,
+                    self.lambertian,
+                    self.lambertian_transmission,
+                    self.gaussian,
+                    self.gaussian_transmission,
+                )
+            )
+        )
+        lines.append(
+            f"{format_number(self.gaussian_fwhm)} {format_number(self.gaussian_fwhm_transmission)}"
+        )
+        lines.append("1" if self.fresnel else "0")
+        if not self.fresnel:
+            lines.append(format_number(self.reflection))
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> SimpleScatteringSurfaceFile:
+        description = reader.next_line()
+        mode = reader.next_data_line()
+        if mode not in cls.MODES:
+            raise reader.error(f"expected one of {cls.MODES}, got {mode!r}.")
+
+        if mode != "Both":
+            absorption, lambertian, gaussian, fwhm = reader.next_floats(count=4)
+            return cls(
+                mode=mode,
+                absorption=absorption,
+                lambertian=lambertian,
+                gaussian=gaussian,
+                gaussian_fwhm=fwhm,
+                description=description,
+            )
+
+        absorption, lamb_r, lamb_t, gauss_r, gauss_t = reader.next_floats(count=5)
+        fwhm_r, fwhm_t = reader.next_floats(count=2)
+        reflection = None if reader.next_int() else reader.next_floats(count=1)[0]
+        return cls(
+            mode=mode,
+            absorption=absorption,
+            lambertian=lamb_r,
+            gaussian=gauss_r,
+            gaussian_fwhm=fwhm_r,
+            lambertian_transmission=lamb_t,
+            gaussian_transmission=gauss_t,
+            gaussian_fwhm_transmission=fwhm_t,
+            reflection=reflection,
+            description=description,
+        )
+
+
+@dataclass
+class ScatteringSurfaceSample:
+    """Scattering contributions of a surface at one angle of incidence and one wavelength.
+
+    Every contribution is a percentage of the incident light. What is left once the six
+    contributions are summed is absorbed, see :attr:`absorption`.
+
+    Parameters
+    ----------
+    specular_reflection : float, optional
+        Specularly reflected part, in percent. By default, ``0.0``.
+    specular_transmission : float, optional
+        Specularly transmitted part, in percent. By default, ``0.0``.
+    lambertian_reflection : float, optional
+        Lambertian reflected part, in percent. By default, ``0.0``.
+    lambertian_transmission : float, optional
+        Lambertian transmitted part, in percent. By default, ``0.0``.
+    gaussian_reflection : float, optional
+        Gaussian reflected part, in percent. By default, ``0.0``.
+    gaussian_transmission : float, optional
+        Gaussian transmitted part, in percent. By default, ``0.0``.
+    gaussian_fwhm_incidence_reflection : float, optional
+        Full width at half maximum of the reflected Gaussian lobe in the incidence plane,
+        in degrees. By default, ``0.0``.
+    gaussian_fwhm_incidence_transmission : float, optional
+        Full width at half maximum of the transmitted Gaussian lobe in the incidence
+        plane, in degrees. By default, ``0.0``.
+    gaussian_fwhm_perpendicular_reflection : float, optional
+        Full width at half maximum of the reflected Gaussian lobe in the perpendicular
+        plane, in degrees. By default, ``0.0``.
+    gaussian_fwhm_perpendicular_transmission : float, optional
+        Full width at half maximum of the transmitted Gaussian lobe in the perpendicular
+        plane, in degrees. By default, ``0.0``.
+    """
+
+    specular_reflection: float = field(default=0.0, metadata=_PERCENT)
+    specular_transmission: float = field(default=0.0, metadata=_PERCENT)
+    lambertian_reflection: float = field(default=0.0, metadata=_PERCENT)
+    lambertian_transmission: float = field(default=0.0, metadata=_PERCENT)
+    gaussian_reflection: float = field(default=0.0, metadata=_PERCENT)
+    gaussian_transmission: float = field(default=0.0, metadata=_PERCENT)
+    gaussian_fwhm_incidence_reflection: float = field(default=0.0, metadata=_DEGREES)
+    gaussian_fwhm_incidence_transmission: float = field(default=0.0, metadata=_DEGREES)
+    gaussian_fwhm_perpendicular_reflection: float = field(default=0.0, metadata=_DEGREES)
+    gaussian_fwhm_perpendicular_transmission: float = field(default=0.0, metadata=_DEGREES)
+
+    @property
+    def absorption(self) -> float:
+        """Absorbed part of the incident light, in percent.
+
+        Returns
+        -------
+        float
+            Complement to 100 of the six reflection and transmission contributions.
+        """
+        return 100.0 - sum(_tagged(self, _PERCENT).values())
+
+    def validate(self) -> None:
+        """Check the contributions of the sample.
+
+        Raises
+        ------
+        ValueError
+            If a contribution is outside the 0 to 100 range, a full width at half maximum
+            is outside the 0 to 90 degrees range, or :attr:`absorption` is negative.
+        """
+        for name, value in _tagged(self, _PERCENT).items():
+            check_percentage(name, value)
+        for name, angle in _tagged(self, _DEGREES).items():
+            if not 0.0 <= angle <= 90.0:
+                raise ValueError(f"{name} must be between 0 and 90 degrees, got {angle}.")
+        if self.absorption < 0.0:
+            raise ValueError(
+                "The reflection and transmission contributions must not sum to more than "
+                f"100, got an absorption of {self.absorption}."
+            )
+
+
+@dataclass
+class ScatteringSurfaceFile(SpeosTextFileFormat):
+    """Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
+
+    The file holds one :class:`ScatteringSurfaceSample` per angle of incidence and per
+    wavelength, stored in ``samples[incidence_index][wavelength_index]``.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths of the samples, in nm, sorted in increasing order. At least two
+        wavelengths are required. By default, ``[]``.
+    incident_angles : List[float], optional
+        Angles of incidence of the samples, in degrees, sorted in increasing order.
+        ``0`` and ``90`` are required. By default, ``[]``.
+    samples : List[List[ScatteringSurfaceSample]], optional
+        Contributions, one row per angle of incidence and one column per wavelength.
+        By default, ``[]``.
+    description : str, optional
+        Free text written on the second line of the file. By default,
+        ``"Scattering surface"``.
+
+    Examples
+    --------
+    >>> from ansys.speos.core import ScatteringSurfaceFile, ScatteringSurfaceSample
+    >>> grey = ScatteringSurfaceSample(lambertian_reflection=50.0)
+    >>> surface = ScatteringSurfaceFile(
+    ...     wavelengths=[400.0, 700.0],
+    ...     incident_angles=[0.0, 90.0],
+    ...     samples=[[grey, grey], [grey, grey]],
+    ... )
+    >>> surface.save("grey.scattering")
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    incident_angles: List[float] = field(default_factory=list)
+    samples: List[List[ScatteringSurfaceSample]] = field(default_factory=list)
+    description: str = "Scattering surface"
+
+    EXTENSION = ".scattering"
+    HEADER = "OPTIS - Scattering surface file v1.0"
+    HEADER_PREFIX = "OPTIS - Scattering surface file"
+
+    def validate(self) -> None:
+        """Check the surface against the constraints of the ``*.scattering`` format.
+
+        Raises
+        ------
+        ValueError
+            If fewer than two wavelengths are given, the angles of incidence do not span
+            0 to 90 degrees, the sample grid does not match the wavelengths and angles, or
+            a sample holds invalid contributions.
+        """
+        if len(self.wavelengths) < 2:
+            raise ValueError("At least two wavelengths are required.")
+        if sorted(self.wavelengths) != list(self.wavelengths):
+            raise ValueError("wavelengths must be sorted in increasing order.")
+        if sorted(self.incident_angles) != list(self.incident_angles):
+            raise ValueError("incident_angles must be sorted in increasing order.")
+        if 0.0 not in self.incident_angles or 90.0 not in self.incident_angles:
+            raise ValueError("incident_angles must hold both 0 and 90 degrees.")
+        if any(not 0.0 <= angle <= 90.0 for angle in self.incident_angles):
+            raise ValueError("incident_angles must be between 0 and 90 degrees.")
+        if len(self.samples) != len(self.incident_angles):
+            raise ValueError(
+                f"samples must hold one row per angle of incidence, expected "
+                f"{len(self.incident_angles)} rows, got {len(self.samples)}."
+            )
+        for angle, row in zip(self.incident_angles, self.samples):
+            if len(row) != len(self.wavelengths):
+                raise ValueError(
+                    f"At {angle} degrees, samples must hold one entry per wavelength, "
+                    f"expected {len(self.wavelengths)}, got {len(row)}."
+                )
+            for sample in row:
+                sample.validate()
+
+    def _to_lines(self) -> List[str]:
+        lines = [
+            self.description,
+            f"{len(self.incident_angles)} {len(self.wavelengths)}",
+            _wavelength_line(self.wavelengths, values_per_wavelength=2),
+        ]
+        # The sample fields are declared in file order, reflection then transmission.
+        names = [entry.name for entry in fields(ScatteringSurfaceSample)]
+        rows = list(zip(names[::2], names[1::2]))
+        for angle, row in zip(self.incident_angles, self.samples):
+            for index, (reflection, transmission) in enumerate(rows):
+                values = [
+                    value
+                    for sample in row
+                    for value in (getattr(sample, reflection), getattr(sample, transmission))
+                ]
+                lines.append(_data_line(values, incidence=angle if index == 0 else None))
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> ScatteringSurfaceFile:
+        description = reader.next_line()
+        angle_count, wavelength_count = (int(value) for value in reader.next_floats(count=2))
+        wavelengths = reader.next_floats(count=wavelength_count)
+        blocks = _read_grid(reader, angle_count, row_count=5, value_count=2 * wavelength_count)
+
+        incident_angles, samples = [], []
+        for block in blocks:
+            incident_angles.append(block[0][0])
+            specular, lambertian, gaussian, fwhm_incidence, fwhm_perpendicular = block[1:]
+            row = []
+            for index in range(wavelength_count):
+                low, high = 2 * index, 2 * index + 2
+                row.append(
+                    ScatteringSurfaceSample(
+                        *specular[low:high],
+                        *lambertian[low:high],
+                        *gaussian[low:high],
+                        *fwhm_incidence[low:high],
+                        *fwhm_perpendicular[low:high],
+                    )
+                )
+            samples.append(row)
+        return cls(
+            wavelengths=wavelengths,
+            incident_angles=incident_angles,
+            samples=samples,
+            description=description,
+        )
+
+
+@dataclass
+class CoatedSurfaceSample:
+    """Coating response at one angle of incidence and one wavelength.
+
+    Parameters
+    ----------
+    reflection_p : float, optional
+        Reflected part of the P polarization, in percent. By default, ``0.0``.
+    transmission_p : float, optional
+        Transmitted part of the P polarization, in percent. By default, ``0.0``.
+    reflection_s : float, optional
+        Reflected part of the S polarization, in percent. By default, ``0.0``.
+    transmission_s : float, optional
+        Transmitted part of the S polarization, in percent. By default, ``0.0``.
+    """
+
+    reflection_p: float = field(default=0.0, metadata=_PERCENT)
+    transmission_p: float = field(default=0.0, metadata=_PERCENT)
+    reflection_s: float = field(default=0.0, metadata=_PERCENT)
+    transmission_s: float = field(default=0.0, metadata=_PERCENT)
+
+    @property
+    def absorption_p(self) -> float:
+        """Absorbed part of the P polarization, in percent.
+
+        Returns
+        -------
+        float
+            Complement to 100 of the P reflection and transmission.
+        """
+        return 100.0 - self.reflection_p - self.transmission_p
+
+    @property
+    def absorption_s(self) -> float:
+        """Absorbed part of the S polarization, in percent.
+
+        Returns
+        -------
+        float
+            Complement to 100 of the S reflection and transmission.
+        """
+        return 100.0 - self.reflection_s - self.transmission_s
+
+    def validate(self) -> None:
+        """Check the coating response of the sample.
+
+        Raises
+        ------
+        ValueError
+            If a value is outside the 0 to 100 range.
+
+        Notes
+        -----
+        A negative :attr:`absorption_p` or :attr:`absorption_s` is not rejected: the
+        coating samples published by Ansys do overrun 100 percent on a polarization, and
+        the Coated Surface Editor only flags it.
+        """
+        for name, value in _tagged(self, _PERCENT).items():
+            check_percentage(name, value)
+
+
+@dataclass
+class CoatedSurfaceFile(SpeosTextFileFormat):
+    """Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
+
+    The file holds one :class:`CoatedSurfaceSample` per angle of incidence and per
+    wavelength, stored in ``samples[incidence_index][wavelength_index]``.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths of the samples, in nm, sorted in increasing order. By default, ``[]``.
+    incident_angles : List[float], optional
+        Angles of incidence of the samples, in degrees, sorted in increasing order.
+        By default, ``[]``.
+    samples : List[List[CoatedSurfaceSample]], optional
+        Coating responses, one row per angle of incidence and one column per wavelength.
+        By default, ``[]``.
+    description : str, optional
+        Free text written on the second line of the file. By default, ``"Coated surface"``.
+
+    Notes
+    -----
+    A Speos coating is only valid for the rays crossing the interface in one direction.
+
+    Examples
+    --------
+    >>> from ansys.speos.core import CoatedSurfaceFile, CoatedSurfaceSample
+    >>> sample = CoatedSurfaceSample(31.9, 68.1, 31.9, 68.1)
+    >>> CoatedSurfaceFile(
+    ...     wavelengths=[480.0, 780.0],
+    ...     incident_angles=[0.0, 90.0],
+    ...     samples=[[sample, sample], [sample, sample]],
+    ... ).save("mirror.coated")
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    incident_angles: List[float] = field(default_factory=list)
+    samples: List[List[CoatedSurfaceSample]] = field(default_factory=list)
+    description: str = "Coated surface"
+
+    EXTENSION = ".coated"
+    HEADER = "OPTIS - Coated surface file v1.0"
+    HEADER_PREFIX = "OPTIS - Coated surface file"
+
+    def validate(self) -> None:
+        """Check the coating against the constraints of the ``*.coated`` format.
+
+        Raises
+        ------
+        ValueError
+            If no wavelength or angle of incidence is given, they are not sorted, the
+            sample grid does not match them, or a sample holds invalid values.
+        """
+        if not self.wavelengths:
+            raise ValueError("At least one wavelength is required.")
+        if not self.incident_angles:
+            raise ValueError("At least one angle of incidence is required.")
+        if sorted(self.wavelengths) != list(self.wavelengths):
+            raise ValueError("wavelengths must be sorted in increasing order.")
+        if sorted(self.incident_angles) != list(self.incident_angles):
+            raise ValueError("incident_angles must be sorted in increasing order.")
+        if any(not 0.0 <= angle <= 90.0 for angle in self.incident_angles):
+            raise ValueError("incident_angles must be between 0 and 90 degrees.")
+        if len(self.samples) != len(self.incident_angles):
+            raise ValueError(
+                f"samples must hold one row per angle of incidence, expected "
+                f"{len(self.incident_angles)} rows, got {len(self.samples)}."
+            )
+        for angle, row in zip(self.incident_angles, self.samples):
+            if len(row) != len(self.wavelengths):
+                raise ValueError(
+                    f"At {angle} degrees, samples must hold one entry per wavelength, "
+                    f"expected {len(self.wavelengths)}, got {len(row)}."
+                )
+            for sample in row:
+                sample.validate()
+
+    def _to_lines(self) -> List[str]:
+        lines = [
+            self.description,
+            f"{len(self.incident_angles)} {len(self.wavelengths)}",
+            _wavelength_line(self.wavelengths, values_per_wavelength=2),
+        ]
+        for angle, row in zip(self.incident_angles, self.samples):
+            polarization_p = [
+                value for sample in row for value in (sample.reflection_p, sample.transmission_p)
+            ]
+            polarization_s = [
+                value for sample in row for value in (sample.reflection_s, sample.transmission_s)
+            ]
+            lines.append(_data_line(polarization_p, incidence=angle))
+            lines.append(_data_line(polarization_s))
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> CoatedSurfaceFile:
+        description = reader.next_line()
+        angle_count, wavelength_count = (int(value) for value in reader.next_floats(count=2))
+        wavelengths = reader.next_floats(count=wavelength_count)
+        blocks = _read_grid(reader, angle_count, row_count=2, value_count=2 * wavelength_count)
+
+        incident_angles, samples = [], []
+        for block in blocks:
+            incident_angles.append(block[0][0])
+            polarization_p, polarization_s = block[1:]
+            samples.append(
+                [
+                    CoatedSurfaceSample(
+                        *polarization_p[2 * index : 2 * index + 2],
+                        *polarization_s[2 * index : 2 * index + 2],
+                    )
+                    for index in range(wavelength_count)
+                ]
+            )
+        return cls(
+            wavelengths=wavelengths,
+            incident_angles=incident_angles,
+            samples=samples,
+            description=description,
+        )
+
+
+@dataclass
+class MaterialConstringence:
+    """Dispersion of a volume material given by its index and its Abbe number.
+
+    Parameters
+    ----------
+    constringence : float, optional
+        Abbe number, measured with the refractive index at the 587.5618 nm helium line.
+        By default, ``57.2``.
+    index : float, optional
+        Refractive index at 587.6 nm. By default, ``1.49``.
+    """
+
+    constringence: float = 57.2
+    index: float = 1.49
+
+    KEYWORD: ClassVar[str] = "Constringence"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        return [self.KEYWORD, format_number(self.constringence), format_number(self.index)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialConstringence:
+        return cls(
+            constringence=reader.next_floats(count=1)[0], index=reader.next_floats(count=1)[0]
+        )
+
+
+@dataclass
+class MaterialDispersionCurve:
+    """Dispersion of a volume material given by an explicit index curve.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths of the curve, in nm. By default, ``[]``.
+    indices : List[float], optional
+        Refractive index at each wavelength. By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    indices: List[float] = field(default_factory=list)
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        if len(self.wavelengths) != len(self.indices) or not self.wavelengths:
+            raise ValueError("wavelengths and indices must be non empty and of equal length.")
+        lines = [self.KEYWORD, str(len(self.wavelengths))]
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(index)}"
+            for wavelength, index in zip(self.wavelengths, self.indices)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialDispersionCurve:
+        wavelengths, indices = [], []
+        for _ in range(reader.next_int()):
+            wavelength, index = reader.next_floats(count=2)
+            wavelengths.append(wavelength)
+            indices.append(index)
+        return cls(wavelengths=wavelengths, indices=indices)
+
+
+@dataclass
+class MaterialSellmeier:
+    """Dispersion of a volume material given by the Sellmeier coefficients.
+
+    Parameters
+    ----------
+    b1, b2, b3 : float, optional
+        Numerator coefficients of the Sellmeier equation. By default, ``0.0``.
+    c1, c2, c3 : float, optional
+        Denominator coefficients of the Sellmeier equation. By default, ``0.0``.
+    """
+
+    b1: float = 0.0
+    c1: float = 0.0
+    b2: float = 0.0
+    c2: float = 0.0
+    b3: float = 0.0
+    c3: float = 0.0
+
+    KEYWORD: ClassVar[str] = "SellMeier"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        coefficients = (self.b1, self.c1, self.b2, self.c2, self.b3, self.c3)
+        return [self.KEYWORD, *(format_number(value) for value in coefficients)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialSellmeier:
+        return cls(*(reader.next_floats(count=1)[0] for _ in range(6)))
+
+
+@dataclass
+class MaterialKettlerHelmholtz:
+    """Dispersion of a glass given by the Kettler-Helmholtz coefficients.
+
+    Parameters
+    ----------
+    a0, a1, a2, a3, a4, a5 : float, optional
+        Coefficients of the Kettler-Helmholtz equation. By default, ``0.0``.
+    """
+
+    a0: float = 0.0
+    a1: float = 0.0
+    a2: float = 0.0
+    a3: float = 0.0
+    a4: float = 0.0
+    a5: float = 0.0
+
+    KEYWORD: ClassVar[str] = "Kettler-Helmotz"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        coefficients = (self.a0, self.a1, self.a2, self.a3, self.a4, self.a5)
+        return [self.KEYWORD, *(format_number(value) for value in coefficients)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialKettlerHelmholtz:
+        return cls(*(reader.next_floats(count=1)[0] for _ in range(6)))
+
+
+MaterialDispersion = Union[
+    MaterialConstringence,
+    MaterialDispersionCurve,
+    MaterialSellmeier,
+    MaterialKettlerHelmholtz,
+]
+"""Dispersion models accepted by :class:`MaterialFile`."""
+
+
+@dataclass
+class VolumeScatteringUserDefined:
+    """Scattering phase function given as a scattering efficiency per angle.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+        function does not depend on the wavelength, in which case each row of ``values``
+        holds a single entry. By default, ``[]``.
+    angles : List[float], optional
+        Scattering angles theta, in degrees. By default, ``[]``.
+    values : List[List[float]], optional
+        Relative scattering intensity, one row per angle and one column per wavelength.
+        By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    angles: List[float] = field(default_factory=list)
+    values: List[List[float]] = field(default_factory=list)
+
+    MODEL: ClassVar[int] = 0
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no angle is given, or the value grid does not match the angles and the
+            wavelengths.
+        """
+        if not self.angles:
+            raise ValueError("A user defined phase function needs angles.")
+        if len(self.wavelengths) == 1:
+            raise ValueError(
+                "The format does not store a wavelength for a phase function holding a "
+                "single value per angle, leave wavelengths empty."
+            )
+        if len(self.values) != len(self.angles):
+            raise ValueError(
+                f"values must hold one row per angle, expected {len(self.angles)} rows, "
+                f"got {len(self.values)}."
+            )
+        expected = len(self.wavelengths) or 1
+        for angle, row in zip(self.angles, self.values):
+            if len(row) != expected:
+                raise ValueError(
+                    f"At {angle} degrees, values must hold one entry per wavelength, "
+                    f"expected {expected}, got {len(row)}."
+                )
+
+    def _to_lines(self) -> List[str]:
+        lines = [str(len(self.wavelengths) or 1), str(len(self.angles))]
+        if self.wavelengths:
+            lines.append(" ".join(format_number(wavelength) for wavelength in self.wavelengths))
+        lines.extend(
+            " ".join(format_number(value) for value in (angle, *row))
+            for angle, row in zip(self.angles, self.values)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringUserDefined:
+        wavelength_count = reader.next_int()
+        angle_count = reader.next_int()
+        wavelengths = reader.next_floats(count=wavelength_count) if wavelength_count > 1 else []
+        angles, values = [], []
+        for _ in range(angle_count):
+            row = reader.next_floats(count=(wavelength_count or 1) + 1)
+            angles.append(row[0])
+            values.append(row[1:])
+        return cls(wavelengths=wavelengths, angles=angles, values=values)
+
+
+@dataclass
+class VolumeScatteringHenyeyGreenstein:
+    """Henyey-Greenstein scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+        that the phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies : List[float], optional
+        Anisotropy factor g at each wavelength, between -1 and 1. By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    anisotropies: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+
+    MODEL: ClassVar[int] = 1
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no anisotropy factor is given, the lists do not match, or an anisotropy
+            factor is outside the -1 to 1 range.
+        """
+        _check_phase_function(self)
+        for anisotropy in self.anisotropies:
+            if not -1.0 <= anisotropy <= 1.0:
+                raise ValueError(f"anisotropies must be between -1 and 1, got {anisotropy}.")
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringHenyeyGreenstein:
+        return _read_phase_function(cls, reader)
+
+
+@dataclass
+class VolumeScatteringDoubleHenyeyGreenstein:
+    """Double Henyey-Greenstein scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths the factors are given at, in nm. A single wavelength means that the
+        phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies_1 : List[float], optional
+        First anisotropy factor at each wavelength. By default, ``[]``.
+    anisotropies_2 : List[float], optional
+        Second anisotropy factor at each wavelength. By default, ``[]``.
+    ratios : List[float], optional
+        Weight between the first and the second anisotropy factor, at each wavelength.
+        By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    anisotropies_1: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+    anisotropies_2: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+    ratios: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+
+    MODEL: ClassVar[int] = 5
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no factor is given or the lists do not match.
+        """
+        _check_phase_function(self)
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringDoubleHenyeyGreenstein:
+        return _read_phase_function(cls, reader)
+
+
+@dataclass
+class VolumeScatteringGegenbauer:
+    """Gegenbauer scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths the factors are given at, in nm. A single wavelength means that the
+        phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies : List[float], optional
+        Anisotropy factor at each wavelength. By default, ``[]``.
+    alphas : List[float], optional
+        Alpha coefficient at each wavelength. By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    anisotropies: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+    alphas: List[float] = field(default_factory=list, metadata=_PHASE_COLUMN)
+
+    MODEL: ClassVar[int] = 6
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = "OPTIS - Volumic Scattering file v3"
+    """Header of the scattering block, which the Gegenbauer model bumps to ``v3``."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no factor is given or the lists do not match.
+        """
+        _check_phase_function(self)
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringGegenbauer:
+        return _read_phase_function(cls, reader)
+
+
+VolumeScattering = Union[
+    VolumeScatteringUserDefined,
+    VolumeScatteringHenyeyGreenstein,
+    VolumeScatteringDoubleHenyeyGreenstein,
+    VolumeScatteringGegenbauer,
+]
+"""Scattering phase functions accepted by :class:`MaterialFile`."""
+
+
+def _check_columns(columns: Mapping[str, List[float]]) -> None:
+    """Check that named columns are non empty and hold the same number of values."""
+    lengths = {name: len(values) for name, values in columns.items()}
+    if len(set(lengths.values())) != 1:
+        raise ValueError(f"All the columns must have the same length, got {lengths}.")
+    if not next(iter(lengths.values())):
+        raise ValueError(f"The columns {list(columns)} must not be empty.")
+
+
+def _check_phase_function(model) -> None:
+    """Check the columns of a phase function against its optional wavelength list.
+
+    Speos does not store the wavelength when the phase function holds a single set of
+    parameters, so ``wavelengths`` must be left empty in that case.
+    """
+    columns = _tagged(model, _PHASE_COLUMN)
+    _check_columns(columns)
+    count = len(next(iter(columns.values())))
+    if not model.wavelengths:
+        if count != 1:
+            raise ValueError(
+                "wavelengths is required as soon as the phase function holds more than one "
+                f"set of parameters, got {count} sets."
+            )
+        return
+    if count == 1:
+        raise ValueError(
+            "The format does not store a wavelength for a phase function holding a single "
+            "set of parameters, leave wavelengths empty."
+        )
+    if len(model.wavelengths) != count:
+        raise ValueError(
+            f"wavelengths must hold one entry per set of parameters, expected {count}, "
+            f"got {len(model.wavelengths)}."
+        )
+
+
+def _phase_function_lines(model) -> List[str]:
+    """Write a phase function as a count followed by one line per wavelength."""
+    columns = list(_tagged(model, _PHASE_COLUMN).values())
+    lines = [str(len(columns[0]))]
+    if not model.wavelengths:
+        lines.append(" ".join(format_number(column[0]) for column in columns))
+        return lines
+    lines.extend(
+        " ".join(format_number(value) for value in (wavelength, *values))
+        for wavelength, *values in zip(model.wavelengths, *columns)
+    )
+    return lines
+
+
+def _read_phase_function(model_class, reader: LineReader):
+    """Read a phase function written as a count followed by one line per wavelength."""
+    names = _tagged_names(model_class, _PHASE_COLUMN)
+    count = reader.next_int()
+    if count == 1:
+        values = reader.next_floats(count=len(names))
+        return model_class(**{name: [value] for name, value in zip(names, values)})
+
+    wavelengths: List[float] = []
+    columns: dict = {name: [] for name in names}
+    for _ in range(count):
+        wavelength, *values = reader.next_floats(count=len(names) + 1)
+        wavelengths.append(wavelength)
+        for name, value in zip(names, values):
+            columns[name].append(value)
+    return model_class(wavelengths=wavelengths, **columns)
+
+
+@dataclass
+class MaterialFile(SpeosTextFileFormat):
+    """Speos ``*.material`` file, holding the volume optical properties of a body.
+
+    The file always describes how the refractive index and the absorption vary with the
+    wavelength. Setting :attr:`scattering` adds a volume scattering block, which turns the
+    file into the scattering flavor of the format.
+
+    Parameters
+    ----------
+    description : str, optional
+        Free text written on the second line of the file. By default, ``""``.
+    material_type : str, optional
+        Type of material, for example ``"Isotropic"``, ``"Birefringent"``,
+        ``"Fluorescent"`` or ``"Metallic"``. By default, ``"Isotropic"``.
+    dispersion : MaterialDispersion, optional
+        How the refractive index varies with the wavelength. By default, a
+        :class:`MaterialConstringence` model.
+    absorption_wavelengths : List[float], optional
+        Wavelengths of the absorption curve, in nm. By default, ``[]``.
+    absorption_values : List[float], optional
+        Absorption coefficient at each wavelength, in mm-1. By default, ``[]``.
+    measured_concentration : float, optional
+        Concentration the absorption curve was measured at. By default, ``1.0``.
+    user_concentration : float, optional
+        Concentration the absorption curve is scaled to. By default, ``1.0``.
+    scattering_wavelengths : List[float], optional
+        Wavelengths of the diffusion curve, in nm. By default, ``[]``.
+    scattering_values : List[float], optional
+        Diffusion coefficient at each wavelength, in mm-1. By default, ``[]``.
+    scattering : Optional[VolumeScattering], optional
+        Scattering phase function. By default, ``None``, which writes a non-scattering
+        material.
+
+    Examples
+    --------
+    >>> from ansys.speos.core import MaterialFile, MaterialConstringence
+    >>> MaterialFile(
+    ...     description="PMMA",
+    ...     dispersion=MaterialConstringence(constringence=57.2, index=1.49),
+    ...     absorption_wavelengths=[486.0, 643.0],
+    ...     absorption_values=[0.0001, 0.0005],
+    ... ).save("pmma.material")
+    """
+
+    description: str = ""
+    material_type: str = "Isotropic"
+    dispersion: MaterialDispersion = field(default_factory=MaterialConstringence)
+    absorption_wavelengths: List[float] = field(default_factory=list, metadata=_ABSORPTION)
+    absorption_values: List[float] = field(default_factory=list, metadata=_ABSORPTION)
+    measured_concentration: float = 1.0
+    user_concentration: float = 1.0
+    scattering_wavelengths: List[float] = field(default_factory=list, metadata=_DIFFUSION)
+    scattering_values: List[float] = field(default_factory=list, metadata=_DIFFUSION)
+    scattering: Optional[VolumeScattering] = None
+
+    EXTENSION = ".material"
+    HEADER = "OPTIS - Material file v13"
+    HEADER_PREFIX = "OPTIS - Material file"
+
+    DISPERSIONS: ClassVar[tuple] = (
+        MaterialConstringence,
+        MaterialDispersionCurve,
+        MaterialSellmeier,
+        MaterialKettlerHelmholtz,
+    )
+    """Dispersion models the file can hold."""
+
+    SCATTERINGS: ClassVar[tuple] = (
+        VolumeScatteringUserDefined,
+        VolumeScatteringHenyeyGreenstein,
+        VolumeScatteringDoubleHenyeyGreenstein,
+        VolumeScatteringGegenbauer,
+    )
+    """Scattering phase functions the file can hold."""
+
+    def validate(self) -> None:
+        """Check the material against the constraints of the ``*.material`` format.
+
+        Raises
+        ------
+        ValueError
+            If the absorption curve is empty or inconsistent, or if a scattering phase
+            function is set without a matching diffusion curve.
+        """
+        _check_columns(_tagged(self, _ABSORPTION))
+        if self.scattering is None:
+            return
+        _check_columns(_tagged(self, _DIFFUSION))
+        self.scattering.validate()
+
+    def _to_lines(self) -> List[str]:
+        lines = [self.description, self.material_type]
+        lines.extend(self.dispersion._to_lines())
+        lines.append(str(len(self.absorption_wavelengths)))
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(value)}"
+            for wavelength, value in zip(self.absorption_wavelengths, self.absorption_values)
+        )
+        lines.append(format_number(self.measured_concentration))
+        lines.append(format_number(self.user_concentration))
+        lines.append("1" if self.scattering is not None else "0")
+
+        if self.scattering is None:
+            return lines
+
+        lines.append(self.scattering.VOLUMIC_HEADER)
+        lines.append(str(self.scattering.MODEL))
+        lines.append(str(len(self.scattering_wavelengths)))
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(value)}"
+            for wavelength, value in zip(self.scattering_wavelengths, self.scattering_values)
+        )
+        lines.extend(self.scattering._to_lines())
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialFile:
+        description = reader.next_line()
+        material_type = reader.next_data_line()
+
+        keyword = reader.next_data_line()
+        models = {model.KEYWORD.lower(): model for model in cls.DISPERSIONS}
+        if keyword.lower() not in models:
+            raise reader.error(f"unknown index variation mode {keyword!r}.")
+        dispersion = models[keyword.lower()]._from_lines(reader)
+
+        absorption_wavelengths, absorption_values = [], []
+        for _ in range(reader.next_int()):
+            wavelength, value = reader.next_floats(count=2)
+            absorption_wavelengths.append(wavelength)
+            absorption_values.append(value)
+
+        material = cls(
+            description=description,
+            material_type=material_type,
+            dispersion=dispersion,
+            absorption_wavelengths=absorption_wavelengths,
+            absorption_values=absorption_values,
+            measured_concentration=reader.next_floats(count=1)[0],
+            user_concentration=reader.next_floats(count=1)[0],
+        )
+        if not reader.next_int():
+            return material
+
+        reader.next_data_line()  # Header opening the volume scattering block.
+        model_id = reader.next_int()
+        for _ in range(reader.next_int()):
+            wavelength, value = reader.next_floats(count=2)
+            material.scattering_wavelengths.append(wavelength)
+            material.scattering_values.append(value)
+
+        models = {model.MODEL: model for model in cls.SCATTERINGS}
+        if model_id not in models:
+            raise reader.error(f"unsupported scattering phase function {model_id}.")
+        material.scattering = models[model_id]._from_lines(reader)
+        return material

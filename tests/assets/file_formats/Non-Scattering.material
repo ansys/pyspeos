@@ -1,0 +1,15 @@
+OPTIS - Material file v13.0
+Example file to understand Speos non-scattering file structure
+Isotropic
+Dispersion_Curve
+3
+486 2
+532 1.5
+643 1.2
+3
+400 0.1
+550 0.2
+700 0.01
+1
+1
+0
