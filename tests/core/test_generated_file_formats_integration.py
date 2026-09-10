@@ -155,6 +155,38 @@ def generated_assets_dir():
         shutil.rmtree(write_dir, ignore_errors=True)
 
 
+_CUBE_VERTICES = [
+    (0.0, 0.0, 0.0),
+    (1.0, 0.0, 0.0),
+    (1.0, 1.0, 0.0),
+    (0.0, 1.0, 0.0),
+    (0.0, 0.0, 1.0),
+    (1.0, 0.0, 1.0),
+    (1.0, 1.0, 1.0),
+    (0.0, 1.0, 1.0),
+]
+_CUBE_FACES = [
+    ("Bottom", (0, 3, 2, 1), (0.0, 0.0, -1.0)),
+    ("Top", (4, 5, 6, 7), (0.0, 0.0, 1.0)),
+    ("Front", (0, 1, 5, 4), (0.0, -1.0, 0.0)),
+    ("Back", (2, 3, 7, 6), (0.0, 1.0, 0.0)),
+    ("Left", (3, 0, 4, 7), (-1.0, 0.0, 0.0)),
+    ("Right", (1, 2, 6, 5), (1.0, 0.0, 0.0)),
+]
+"""Quads (outward-facing, CCW) closing a unit cube, so the body bounds a real volume."""
+
+
+def _create_cube_body(root_part, name: str):
+    """Create a closed unit cube body, needed for a volume optical property to apply."""
+    body = root_part.create_body(name=name)
+    for face_name, quad, normal in _CUBE_FACES:
+        face = body.create_face(name=face_name)
+        face.vertices = [coordinate for index in quad for coordinate in _CUBE_VERTICES[index]]
+        face.facets = [0, 1, 2, 0, 2, 3]
+        face.normals = list(normal) * 4
+    return body
+
+
 @pytest.mark.parametrize(
     ("volume_name", "surface_name"), _TEST_CASES, ids=[f"{v}-{s}" for v, s in _TEST_CASES]
 )
@@ -190,10 +222,7 @@ def test_generated_files_are_usable_in_a_full_simulation(
 
     p = Project(speos=speos)
     root_part = p.create_root_part()
-    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
-    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    face.facets = [0, 1, 2]
-    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    _create_cube_body(root_part, name="Body.1")
     root_part.commit()
 
     # Volume optical property, from a generated *.material file.
@@ -203,7 +232,7 @@ def test_generated_files_are_usable_in_a_full_simulation(
     # Surface optical property, from a generated surface property file.
     opt_prop.set_surface_library()
     opt_prop.sop_library.file_uri = surface_path
-    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
+    opt_prop.geometries = [GeoRef.from_native_link("Body.1")]
     opt_prop.commit()
 
     sensor = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -225,6 +254,7 @@ def test_generated_files_are_usable_in_a_full_simulation(
     simulation.sensor_paths = [sensor]
     simulation.source_paths = [luminaire, ray_source]
     simulation.commit()
+    simulation.compute_CPU()
 
     assert simulation.simulation_template_link is not None
     assert simulation.simulation_template_link.get().HasField("direct_mc_simulation_template")

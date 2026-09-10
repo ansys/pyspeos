@@ -20,15 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Common building blocks for the Speos input file formats handled by PySpeos.
+"""Common building blocks shared by the modules of :mod:`ansys.speos.core.input_files`.
 
-The classes in this module back every ``*File`` dataclass of PySpeos (for example
-:class:`ansys.speos.core.spectrum.SpectrumFile` or
-:class:`ansys.speos.core.opt_prop.MaterialFile`). They describe files that Speos reads as
-inputs, so they are parsed and written locally and never require a connection to a Speos
-gRPC server.
+The classes and helpers here back every ``*File`` dataclass of the package (for example
+:class:`ansys.speos.core.input_files.material.MaterialFile` or
+:class:`ansys.speos.core.input_files.spectrum_file.SpectrumFile`). They describe files
+that Speos reads as inputs, so they are parsed and written locally and never require a
+connection to a Speos gRPC server.
 
-All of them expose the same three entry points:
+Every format class exposes the same three entry points:
 
 * :meth:`SpeosFileFormat.load` - build a model from an existing file.
 * :meth:`SpeosFileFormat.save` - write the model to a file.
@@ -38,9 +38,10 @@ All of them expose the same three entry points:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import fields
 import math
 from pathlib import Path
-from typing import ClassVar, List, Sequence, Union
+from typing import ClassVar, List, Mapping, Optional, Sequence, Union
 
 NEWLINE = "\r\n"
 """Line separator used by the Speos text input files."""
@@ -238,7 +239,7 @@ class SpeosFileFormat(ABC):
 
         Returns
         -------
-        ansys.speos.core.generic.file_format.SpeosFileFormat
+        ansys.speos.core.input_files._base.SpeosFileFormat
             Model holding the file content.
 
         Raises
@@ -337,3 +338,64 @@ class SpeosTextFileFormat(SpeosFileFormat, ABC):
     def _tabulated(values: Sequence[float]) -> str:
         """Join values with a tabulation, after a leading tabulation."""
         return "\t" + "\t".join(format_number(value) for value in values)
+
+
+_PERCENT = {"unit": "percent"}
+"""Field metadata of a value expressed as a percentage of the incident light."""
+
+_DEGREES = {"unit": "degrees"}
+"""Field metadata of a value expressed as an angle in degrees."""
+
+
+def _tagged_names(model, tag: Mapping[str, str]) -> List[str]:
+    """Return the names of the dataclass fields carrying exactly the given metadata.
+
+    ``model`` is either a dataclass or an instance of one, and the names come back in
+    declaration order, which every format here also uses as its file order.
+    """
+    return [entry.name for entry in fields(model) if entry.metadata == tag]
+
+
+def _tagged(model, tag: Mapping[str, str]) -> dict:
+    """Return the values of the dataclass fields carrying exactly the given metadata."""
+    return {name: getattr(model, name) for name in _tagged_names(model, tag)}
+
+
+def _wavelength_line(wavelengths: Sequence[float], values_per_wavelength: int) -> str:
+    """Build the wavelength header row of a tabulated surface property file.
+
+    Each wavelength labels a group of ``values_per_wavelength`` data columns, so it is
+    followed by that many empty cells minus one. Speos closes every row with a tabulation.
+    """
+    cells: List[str] = []
+    for wavelength in wavelengths:
+        cells.append(format_number(wavelength))
+        cells.extend([""] * (values_per_wavelength - 1))
+    return "\t" + "\t".join(cells) + "\t"
+
+
+def _data_line(values: Sequence[float], incidence: Optional[float] = None) -> str:
+    """Build a data row of a tabulated surface property file.
+
+    The first row of an incidence block starts with the angle of incidence, the following
+    ones start with an empty cell. Speos closes every row with a tabulation.
+    """
+    head = format_number(incidence) if incidence is not None else ""
+    return "\t".join([head, *(format_number(value) for value in values)]) + "\t"
+
+
+def _read_grid(
+    reader: LineReader, incidence_count: int, row_count: int, value_count: int
+) -> List[List[List[float]]]:
+    """Read ``incidence_count`` blocks of ``row_count`` rows holding ``value_count`` values.
+
+    Returns the angles of incidence interleaved with the rows: each block is returned as
+    ``[[incidence], row_1, ..., row_n]``.
+    """
+    blocks = []
+    for _ in range(incidence_count):
+        first = reader.next_floats(count=value_count + 1)
+        rows = [first[1:]]
+        rows.extend(reader.next_floats(count=value_count) for _ in range(row_count - 1))
+        blocks.append([[first[0]], *rows])
+    return blocks

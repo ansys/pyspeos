@@ -31,7 +31,7 @@ from ansys.speos.core import (
     ScatteringSurfaceSample,
     SimpleScatteringSurfaceFile,
 )
-from tests.file_formats import ASSETS_DIR, read_lines
+from tests.input_files import ASSETS_DIR, read_lines
 
 
 @pytest.fixture

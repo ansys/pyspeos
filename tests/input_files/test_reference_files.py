@@ -23,7 +23,7 @@
 """Check the file formats against the reference files published by Ansys.
 
 Round-trip tests cannot catch a mistake made symmetrically in the reader and in the
-writer. The files in ``tests/assets/file_formats`` were produced by Speos and attached to
+writer. The files in ``tests/assets/input_files`` were produced by Speos and attached to
 the Ansys Optics knowledge base articles describing each format, so they pin the layout
 independently from our own implementation:
 
@@ -55,9 +55,9 @@ from ansys.speos.core import (
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
-from tests.file_formats import ASSETS_DIR, read_lines
+from tests.input_files import ASSETS_DIR, read_lines
 
-REFERENCE_DIR = ASSETS_DIR / "file_formats"
+REFERENCE_DIR = ASSETS_DIR / "input_files"
 """Directory holding the reference files attached to the knowledge base articles."""
 
 SHARED_DISPERSION = MaterialDispersionCurve(

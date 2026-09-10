@@ -27,7 +27,7 @@ import math
 import pytest
 
 from ansys.speos.core import Ray, RayFile
-from tests.file_formats import ASSETS_DIR, read_lines
+from tests.input_files import ASSETS_DIR, read_lines
 
 SPEOS_RAY_FILE = ASSETS_DIR / "Rays.ray"
 """Binary ray file produced by Speos, holding 45462 rays."""

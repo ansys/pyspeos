@@ -4,4 +4,4 @@
 
 # Speos input file format fixtures always use CRLF, on every platform, so keep their bytes
 # exactly as committed instead of letting git normalize line endings on checkout.
-tests/assets/file_formats/** -text
+tests/assets/input_files/** -text

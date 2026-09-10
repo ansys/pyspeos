@@ -34,7 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import ClassVar, List, Tuple
 
-from ansys.speos.core.generic.file_format import LineReader, SpeosTextFileFormat, format_number
+from ansys.speos.core.input_files._base import LineReader, SpeosTextFileFormat, format_number
 
 
 @dataclass
@@ -80,7 +80,10 @@ class Texture3DMappingFile(SpeosTextFileFormat):
 
     Examples
     --------
-    >>> from ansys.speos.core import Texture3DMappingFile, TexturePattern
+    >>> from ansys.speos.core.input_files.texture_3d import (
+    ...     Texture3DMappingFile,
+    ...     TexturePattern,
+    ... )
     >>> patterns = [TexturePattern(position=(x * 0.5, 0.0, 0.0)) for x in range(10)]
     >>> Texture3DMappingFile(patterns=patterns).save("prisms.OPT3DMapping")
     """
