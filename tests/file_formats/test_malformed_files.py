@@ -222,6 +222,7 @@ def test_constringence_reads_bad_numeric_tokens_with_a_precise_location(tmp_path
     with pytest.raises(ValueError, match=r"expected numbers, got 'N/A'"):
         MaterialFile.load(path)
     # Sanity check that the un-mutated model still parses, to isolate the mutation itself.
-    assert MaterialConstringence(57.2, 1.49) == MaterialFile.load(
-        write(tmp_path, "good_index.material", VALID_MATERIAL)
-    ).dispersion
+    assert (
+        MaterialConstringence(57.2, 1.49)
+        == MaterialFile.load(write(tmp_path, "good_index.material", VALID_MATERIAL)).dispersion
+    )
