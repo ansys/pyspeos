@@ -73,6 +73,10 @@ from ansys.speos.core.kernel.sensor_template import (
     SensorTemplateLink,
     SensorTemplateStub,
 )
+from ansys.speos.core.kernel.sensor_template_v2 import (
+    SensorTemplateLinkV2,
+    SensorTemplateStubV2,
+)
 from ansys.speos.core.kernel.simulation_template import (
     SimulationTemplateLink,
     SimulationTemplateStub,
@@ -245,6 +249,7 @@ class SpeosClient:
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
+        self._sensorTemplateDBV2 = None
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
@@ -349,6 +354,14 @@ class SpeosClient:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
         return self._sensorTemplateDB
 
+    def sensor_templates_v2(self) -> SensorTemplateStubV2:
+        """Get sensor template v2 database access."""
+        self.__closed_error()
+        # connect to database
+        if self._sensorTemplateDBV2 is None:
+            self._sensorTemplateDBV2 = SensorTemplateStubV2(self._channel)
+        return self._sensorTemplateDBV2
+
     def simulation_templates(self) -> SimulationTemplateStub:
         """Get simulation template database access."""
         self.__closed_error()
@@ -395,6 +408,7 @@ class SpeosClient:
         IntensityTemplateLink,
         SourceTemplateLink,
         SensorTemplateLink,
+        SensorTemplateLinkV2,
         SimulationTemplateLink,
         SceneLink,
         JobLink,
@@ -418,6 +432,7 @@ ansys.speos.core.kernel.spectrum.SpectrumLink, \
 ansys.speos.core.kernel.intensity_template.IntensityTemplateLink, \
 ansys.speos.core.kernel.source_template.SourceTemplateLink, \
 ansys.speos.core.kernel.sensor_template.SensorTemplateLink, \
+ansys.speos.core.kernel.sensor_template_v2.SensorTemplateLinkV2, \
 ansys.speos.core.kernel.simulation_template.SimulationTemplateLink, \
 ansys.speos.core.kernel.scene.SceneLink, \
 ansys.speos.core.kernel.job.JobLink, \
@@ -443,6 +458,10 @@ None]
         for src in self.source_templates().list():
             if src.key == key:
                 return src
+        if server_version_checker.is_version_supported(2027, 1, 0):
+            for ssr_v2 in self.sensor_templates_v2().list():
+                if ssr_v2.key == key:
+                    return ssr_v2
         for ssr in self.sensor_templates().list():
             if ssr.key == key:
                 return ssr
@@ -475,6 +494,7 @@ None]
         List[IntensityTemplateLink],
         List[SourceTemplateLink],
         List[SensorTemplateLink],
+        List[SensorTemplateLinkV2],
         List[SimulationTemplateLink],
         List[SceneLink],
         List[JobLink],
@@ -499,6 +519,7 @@ List[ansys.speos.core.kernel.spectrum.SpectrumLink], \
 List[ansys.speos.core.kernel.intensity_template.IntensityTemplateLink], \
 List[ansys.speos.core.kernel.source_template.SourceTemplateLink], \
 List[ansys.speos.core.kernel.sensor_template.SensorTemplateLink], \
+List[ansys.speos.core.kernel.sensor_template.SensorTemplateLinkV2], \
 List[ansys.speos.core.kernel.simulation_template.SimulationTemplateLink], \
 List[ansys.speos.core.kernel.scene.SceneLink], \
 List[ansys.speos.core.kernel.job.JobLink], \
@@ -522,6 +543,8 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return [x for x in self.source_templates().list() if x.key in keys]
         elif item_type == SensorTemplateLink:
             return [x for x in self.sensor_templates().list() if x.key in keys]
+        elif item_type == SensorTemplateLinkV2:
+            return [x for x in self.sensor_templates_v2().list() if x.key in keys]
         elif item_type == SimulationTemplateLink:
             return [x for x in self.simulation_templates().list() if x.key in keys]
         elif item_type == SceneLink:
@@ -588,6 +611,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
+        self._sensorTemplateDBV2 = None
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None

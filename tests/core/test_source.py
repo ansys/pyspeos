@@ -645,6 +645,26 @@ def test_create_rayfile_source(speos: Speos):
     """Test creation of ray file."""
     p = Project(speos=speos)
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
+    face_2 = body_b.create_face(name="FaceB2")
+    face_2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    face_2.facets = [0, 1, 2]
+    face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_2.commit()
+    body_c = root_part.create_body(name="BodyC")
+    face_3 = body_c.create_face(name="FaceC1")
+    face_3.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_3.facets = [0, 1, 2]
+    face_3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_3.commit()
+    root_part.commit()
+
     # Default value : not committed because not valid by default due to ray_file_uri needed
     default_parameter = RayFileSourceParameters()
     source1 = SourceRayFile(
@@ -728,7 +748,7 @@ def test_create_rayfile_source(speos: Speos):
     # exit_geometries
     source1.set_exit_geometries().geometries = [
         GeoRef.from_native_link("BodyB"),
-        GeoRef.from_native_link("BodyC"),
+        body_c,
     ]
     source1.commit()
     assert len(source1.set_exit_geometries().geometries) == 2
