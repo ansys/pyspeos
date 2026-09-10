@@ -20,17 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Reusable setup, evaluation, reporting, and plotting helpers for SOP metrics."""
-
-from types import SimpleNamespace
+"""Reusable setup and evaluation helpers for SOP metrics."""
 
 from ansys.api.speos.experimental.sop.v1 import sop_pb2 as exp_messages
-import matplotlib.pyplot as plt
-import numpy as np
 
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.speos import Speos
+
+_SWEEP_DEFINITIONS = (
+    ("theta_in", 0.0, 90.0),
+    ("theta_out", 0.0, 90.0),
+    ("phi_in", 0.0, 360.0),
+    ("phi_out", 0.0, 90.0),
+    ("wavelength", 350.0, 700.0),
+)
 
 
 def create_templates(speos: Speos, bsdf_file_path: str):
@@ -50,24 +54,16 @@ def create_templates(speos: Speos, bsdf_file_path: str):
 
 
 def make_impact_definition(
-    theta_in: float, phi_in: float, wavelength: float
+    theta_in: float, theta_out: float, phi_in: float, phi_out: float, wavelength: float
 ) -> exp_messages.ImpactDefinition:
     """Build an impact definition for directional or slice evaluation."""
-    return exp_messages.ImpactDefinition(theta_in=theta_in, phi_in=phi_in, wavelength=wavelength)
-
-
-def make_impact_def(
-    theta_in: float, phi_in: float, wavelength: float
-) -> exp_messages.ImpactDefinition:
-    """Build an impact definition using the legacy example helper name."""
-    return make_impact_definition(theta_in, phi_in, wavelength)
-
-
-def make_metrics_config(metric_name: str, metric_config) -> exp_messages.MetricsConfig:
-    """Wrap a metric-specific protobuf configuration in ``MetricsConfig``."""
-    config = exp_messages.MetricsConfig()
-    getattr(config, metric_name).CopyFrom(metric_config)
-    return config
+    return exp_messages.ImpactDefinition(
+        theta_in=theta_in,
+        theta_out=theta_out,
+        phi_in=phi_in,
+        phi_out=phi_out,
+        wavelength=wavelength,
+    )
 
 
 def make_global_rta_config(wavelengths: list[float]) -> exp_messages.GlobalRTAConfig:
@@ -112,71 +108,61 @@ def make_bsdf_slices_config(
     return config
 
 
-def _evaluate_metric(bsdf_sop_link, vop_before_link, vop_after_link, name, config=None):
+def _make_bsdf_slice_configs(
+    fixed_values: exp_messages.ImpactDefinition,
+) -> list[exp_messages.BSDFSlicesConfig.SliceConfig]:
+    """Build the standard five BSDF slices for one fixed impact definition."""
+    return [
+        make_bsdf_slice_config(fixed_values, variable, start, end, 10)
+        for variable, start, end in _SWEEP_DEFINITIONS
+    ]
+
+
+def evaluate_metric(bsdf_sop_link, vop_before_link, vop_after_link, configs=None):
+    """Evaluate configured SOP metrics or the server default metrics.
+
+    Parameters
+    ----------
+    bsdf_sop_link : object
+        Link to the BSDF SOP template.
+    vop_before_link : object
+        Link to the VOP template before the SOP.
+    vop_after_link : object
+        Link to the VOP template after the SOP.
+    configs : list, optional
+        Metric-specific protobuf configurations created by the ``make_*_config``
+        helpers. The corresponding ``MetricsConfig`` field is selected from
+        each configuration's protobuf descriptor.
+
+    Returns
+    -------
+    object
+        The complete metrics evaluation response.
+    """
     request = {
         "vop_before_guid": vop_before_link.key,
         "vop_after_guid": vop_after_link.key,
     }
-    if config is not None:
-        request["config"] = make_metrics_config(name, config)
-    return bsdf_sop_link.evaluate_metrics(**request)
-
-
-def evaluate_global_rta(bsdf_sop_link, vop_before_link, vop_after_link, config):
-    """Evaluate Global RTA and return its protobuf response."""
-    return _evaluate_metric(
-        bsdf_sop_link, vop_before_link, vop_after_link, "global_rta", config
-    ).global_rta
-
-
-def evaluate_directional_rta(bsdf_sop_link, vop_before_link, vop_after_link, config):
-    """Evaluate Directional RTA and return its protobuf response."""
-    return _evaluate_metric(
-        bsdf_sop_link, vop_before_link, vop_after_link, "directional_rta", config
-    ).directional_rta
-
-
-def evaluate_bsdf_slices(bsdf_sop_link, vop_before_link, vop_after_link, config):
-    """Evaluate BSDF slices and return their protobuf response."""
-    return _evaluate_metric(
-        bsdf_sop_link, vop_before_link, vop_after_link, "bsdf_slices", config
-    ).bsdf_slices
-
-
-def evaluate_all_metrics(bsdf_sop_link, vop_before_link, vop_after_link):
-    """Evaluate representative Global RTA, Directional RTA, and BSDF slices."""
-    impact = make_impact_definition(0.0, 0.0, 550.0)
-    directional = make_directional_rta_config(
-        [make_impact_definition(theta, 0.0, 550.0) for theta in range(0, 91, 15)]
-    )
-    slices = make_bsdf_slices_config(
-        [
-            make_bsdf_slice_config(impact, variable, start, end, 10)
-            for variable, start, end in (
-                ("theta_in", 0.0, 90.0),
-                ("theta_out", 0.0, 90.0),
-                ("phi_out", 0.0, 90.0),
-                ("wavelength", 350.0, 700.0),
+    if configs:
+        metrics_config = exp_messages.MetricsConfig()
+        config_fields = metrics_config.DESCRIPTOR.fields_by_name.values()
+        for metric_config in configs:
+            config_field = next(
+                (
+                    field
+                    for field in config_fields
+                    if field.message_type
+                    and field.message_type.full_name == metric_config.DESCRIPTOR.full_name
+                ),
+                None,
             )
-        ]
-    )
-    return SimpleNamespace(
-        global_rta=evaluate_global_rta(
-            bsdf_sop_link,
-            vop_before_link,
-            vop_after_link,
-            make_global_rta_config([380, 550, 700]),
-        ),
-        directional_rta=evaluate_directional_rta(
-            bsdf_sop_link, vop_before_link, vop_after_link, directional
-        ),
-        bsdf_slices=evaluate_bsdf_slices(bsdf_sop_link, vop_before_link, vop_after_link, slices),
-    )
-
-
-def evaluate_default_metrics(bsdf_sop_link, vop_before_link, vop_after_link):
-    """Evaluate metrics with server defaults and return the complete response."""
-    return _evaluate_metric(bsdf_sop_link, vop_before_link, vop_after_link, "default")
+            if config_field is None:
+                raise TypeError(
+                    f"Unsupported SOP metric configuration: {metric_config.DESCRIPTOR.full_name}"
+                )
+            getattr(metrics_config, config_field.name).CopyFrom(metric_config)
+        request["config"] = metrics_config
+    return bsdf_sop_link.evaluate_metrics(**request)
 
 
 def display_metrics_statistics(
@@ -205,167 +191,10 @@ def display_metrics_statistics(
         print(f"\n[BSDF SLICES] Total slices: {len(result_bsdf_slices.slices)}")
         for index, slice_result in enumerate(result_bsdf_slices.slices, start=1):
             print(
-                f"Slice {index}: {slice_result.swept_variable}, samples={len(slice_result.samples)}"
+                f"  Slice {index}: {slice_result.swept_variable}, "
+                f"samples={len(slice_result.samples)}"
             )
     print("\n" + "=" * 70)
-
-
-def configure_plotting_theme() -> None:
-    """Apply the plotting theme used by the visualization example."""
-    plt.style.use("seaborn-v0_8-whitegrid")
-    plt.rcParams.update(
-        {
-            "figure.facecolor": "#f6f3ee",
-            "axes.facecolor": "#ffffff",
-            "axes.edgecolor": "#d4cec5",
-            "axes.spines.top": False,
-            "axes.spines.right": False,
-            "grid.alpha": 0.75,
-            "legend.frameon": False,
-            "savefig.bbox": "tight",
-        }
-    )
-
-
-def _metric_values(result):
-    """Return the three RTA value arrays from a result."""
-    return {
-        "Reflectance": [sample.reflectance for sample in result.samples],
-        "Transmittance": [sample.transmittance for sample in result.samples],
-        "Absorbance": [sample.absorbance for sample in result.samples],
-    }
-
-
-def plot_global_rta_results(result_global_rta, title="Global RTA Results", figsize=(12, 6)):
-    """Plot Global RTA components as stacked bars and individual curves."""
-    if not result_global_rta.samples:
-        return None
-    wavelengths = [sample.wavelength for sample in result_global_rta.samples]
-    values = _metric_values(result_global_rta)
-    fig, (bar_axis, line_axis) = plt.subplots(1, 2, figsize=figsize)
-    x = np.arange(len(wavelengths))
-    bottom = np.zeros(len(wavelengths))
-    for (label, data), color in zip(values.items(), ("#1f77b4", "#ff7f0e", "#d62728")):
-        bar_axis.bar(x, data, 0.6, bottom=bottom, label=label, color=color)
-        line_axis.plot(wavelengths, data, "o-", label=label, linewidth=2, markersize=7)
-        bottom += np.array(data)
-    bar_axis.set_xticks(x, [f"{int(wavelength)} nm" for wavelength in wavelengths])
-    bar_axis.set_title("RTA Components (Stacked)")
-    line_axis.set_title("RTA Components (Individual)")
-    for axis in (bar_axis, line_axis):
-        axis.set_xlabel("Wavelength (nm)")
-        axis.set_ylabel("Value")
-        axis.set_ylim(0, 1)
-        axis.grid(True, alpha=0.3)
-        axis.legend()
-    fig.suptitle(title)
-    fig.tight_layout()
-    return fig
-
-
-def plot_directional_rta_results(
-    result_directional_rta, title="Directional RTA Results", figsize=None
-):
-    """Plot Directional RTA values grouped by incident azimuth."""
-    if not result_directional_rta.samples:
-        return None
-    groups = {}
-    for sample in result_directional_rta.samples:
-        phi = sample.inputs.phi_in
-        groups.setdefault(
-            phi, {"theta": [], "reflectance": [], "transmittance": [], "absorbance": []}
-        )
-        groups[phi]["theta"].append(sample.inputs.theta_in)
-        for metric in ("reflectance", "transmittance", "absorbance"):
-            groups[phi][metric].append(getattr(sample, metric))
-    fig, axes = plt.subplots(
-        len(groups), 3, figsize=figsize or (15, 4 * len(groups)), squeeze=False
-    )
-    for row, (phi, data) in enumerate(sorted(groups.items())):
-        order = np.argsort(data["theta"])
-        for column, (metric, color) in enumerate(
-            zip(("reflectance", "transmittance", "absorbance"), ("#1f77b4", "#ff7f0e", "#d62728"))
-        ):
-            axis = axes[row, column]
-            theta = np.array(data["theta"])[order]
-            values = np.array(data[metric])[order]
-            axis.plot(theta, values, "o-", color=color, label=metric.title())
-            axis.fill_between(theta, values, alpha=0.2, color=color)
-            axis.set_title(f"{metric.title()} (phi_in = {phi:.1f} deg)")
-            axis.set_xlabel("Incident angle theta_in (degrees)")
-            axis.set_ylabel("Value")
-            axis.set_ylim(0, 1)
-            axis.grid(True, alpha=0.3)
-            axis.legend()
-    fig.suptitle(title)
-    fig.tight_layout()
-    return fig
-
-
-def plot_bsdf_slices(result_bsdf_slices, title="BSDF Slices Results", figsize=None):
-    """Plot one curve for each BSDF slice."""
-    if not result_bsdf_slices.slices:
-        return None
-    count = len(result_bsdf_slices.slices)
-    columns = min(2, count)
-    rows = (count + columns - 1) // columns
-    fig, axes = plt.subplots(
-        rows, columns, figsize=figsize or (8 * columns, 5 * rows), squeeze=False
-    )
-    axes = axes.flatten()
-    colors = plt.cm.viridis(np.linspace(0, 1, count))
-    for index, slice_result in enumerate(result_bsdf_slices.slices):
-        axis = axes[index]
-        x = [sample.swept_variable_value for sample in slice_result.samples]
-        y = [sample.bsdf_value for sample in slice_result.samples]
-        axis.plot(x, y, "o-", color=colors[index], label=f"Slice {index + 1}")
-        axis.fill_between(x, y, alpha=0.2, color=colors[index])
-        axis.set_title(f"Slice {index + 1}: {slice_result.swept_variable}")
-        axis.set_xlabel("Swept value")
-        axis.set_ylabel("BSDF value")
-        axis.grid(True, alpha=0.3)
-        axis.legend()
-    for axis in axes[count:]:
-        axis.set_visible(False)
-    fig.suptitle(title)
-    fig.tight_layout()
-    return fig
-
-
-def plot_metrics_summary(
-    result_global_rta=None,
-    result_directional_rta=None,
-    result_bsdf_slices=None,
-    title="SOP Metrics Evaluation Summary",
-    figsize=(16, 10),
-):
-    """Plot a compact overview of the available SOP metric results."""
-    fig, axis = plt.subplots(figsize=figsize)
-    axis.set_axis_off()
-    lines = [title]
-    if result_global_rta:
-        lines.append(f"Global RTA samples: {len(result_global_rta.samples)}")
-    if result_directional_rta:
-        lines.append(f"Directional RTA samples: {len(result_directional_rta.samples)}")
-    if result_bsdf_slices:
-        lines.append(f"BSDF slices: {len(result_bsdf_slices.slices)}")
-    axis.text(0.05, 0.9, "\n".join(lines), va="top", fontsize=14)
-    fig.tight_layout()
-    return fig
-
-
-def plot_results(result_all) -> None:
-    """Render individual metric charts and the combined summary chart."""
-    for figure in (
-        plot_global_rta_results(result_all.global_rta),
-        plot_directional_rta_results(result_all.directional_rta),
-        plot_bsdf_slices(result_all.bsdf_slices),
-        plot_metrics_summary(
-            result_all.global_rta, result_all.directional_rta, result_all.bsdf_slices
-        ),
-    ):
-        if figure is not None:
-            figure.show()
 
 
 def cleanup(speos: Speos, links, databases) -> None:
