@@ -34,7 +34,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
-from ansys.speos.core.kernel.sensor_template_v2 import SensorTemplateLinkV2
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2, SensorTemplateLinkV2
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
@@ -372,8 +372,12 @@ def test_commit(speos: Speos):
     assert [source_instance.name for source_instance in scene_data.sources] == [source._name]
     assert [sensor_instance.name for sensor_instance in scene_data.sensors] == [sensor._name]
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_photometric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
 
     # Modify a feature and commit again -
     # this time no scene update is needed (only template change)
@@ -381,8 +385,12 @@ def test_commit(speos: Speos):
     p.commit()
 
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_colorimetric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
 
 
 def test_from_file(speos: Speos):
