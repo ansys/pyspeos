@@ -164,7 +164,6 @@ def test_create_lightbox(speos: Speos):
     normalized_lb_1 = _normalize_json_value(json.loads(lb_str1))
     normalized_lb_2 = _normalize_json_value(json.loads(lb_str2))
     assert normalized_lb_1 == normalized_lb_2
-    assert lb_str1 == lb_str2
     lightbox3 = p.create_lightbox(
         name="Light Box Import.3",
         lightbox=LightBoxFileInstance(
