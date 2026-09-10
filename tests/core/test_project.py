@@ -395,8 +395,16 @@ def test_from_file(speos: Speos):
     )
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 4
-    assert len(p.optical_properties) == 4
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert len(p.scene_link.get().materials) == 3
+        assert len(p.optical_properties) == 3
+    else:
+        assert len(p.scene_link.get().materials) == 4
+        assert len(p.optical_properties) == 4
+        # Check that ambient mat has no sop
+        feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
+        assert len(feat_op_ambients) == 1
+        assert feat_op_ambients[0].sop_template_link is None
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.sensors) == 1
     assert len(p.scene_link.get().sources) == 2
@@ -424,11 +432,6 @@ def test_from_file(speos: Speos):
     else:
         assert speos.client[mat2.sop_guids[0]].get().HasField("mirror")
         assert speos.client[mat2.sop_guids[0]].get().mirror.reflectance == 60
-
-    # Check that ambient mat has no sop
-    feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
-    assert len(feat_op_ambients) == 1
-    assert feat_op_ambients[0].sop_template_link is None
 
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
