@@ -69,6 +69,9 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel import ProtoSensorTemplate
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
@@ -1712,7 +1715,7 @@ def test_load_irradiance_sensor(speos: Speos):
         path=str(Path(test_path) / "Irradiance.1.speos" / "Irradiance.1.speos"),
     )
     sensors = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
-    defaults = RadianceSensorParameters()
+    defaults = IrradianceSensorParameters()
     assert len(sensors) == 5
     sensor_default = sensors[0]
     sensor_color = sensors[2]
@@ -1724,6 +1727,12 @@ def test_load_irradiance_sensor(speos: Speos):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
+    if server_version_checker.is_version_supported(2017, 0, 0):
+        # currently load forces version v1 can be changed when all sensors are migrated
+        # assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
+        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
     assert isinstance(sensor_spectral.spectral, BaseSensor.Spectral)
     assert sensor_color.type == "Colorimetric"
@@ -4137,3 +4146,26 @@ def test_observer_sensor_load(speos: Speos):
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
     assert loaded_sensor.layer is None
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_sensor_creation_with_v2_template(speos: Speos):
+    """Test to verify that template v2 is created with new framework."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="irradiance_v2", feature_type=SensorIrradiance)
+    assert isinstance(sensor, SensorIrradiance)
+    template = sensor._sensor_template
+    assert isinstance(template, ProtoSensorTemplateV2)
+    assert template.HasField("irradiance")
+
+
+@pytest.mark.supported_speos_versions(min=261)
+def test_sensor_creation_with_v1_template(speos: Speos, monkeypatch):
+    """Test to verify that template v1 is created with new framework."""
+    monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="irradiance_v2", feature_type=SensorIrradiance)
+    assert isinstance(sensor, SensorIrradiance)
+    template = sensor._sensor_template
+    assert isinstance(template, ProtoSensorTemplate)
+    assert template.HasField("irradiance_sensor_template")
