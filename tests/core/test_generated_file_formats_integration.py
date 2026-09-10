@@ -20,20 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Check that a running Speos server accepts the input files PySpeos writes locally.
-
-:mod:`ansys.speos.core.generic.file_format` always writes ``*.material``, ``*.coated``,
-``*.scattering``, ``*.simplescattering`` and ``*.spectrum`` files with Windows line endings
-(``\\r\\n``), because most Speos applications only run on Windows. This module builds a full
-simulation whose optical property and sources reference files generated that way (plus a
-binary ``*.ray`` file, unaffected by line endings but generated locally too), and commits it
-to the Speos server used by the test suite, to confirm the server reads them correctly
-regardless of the platform it runs on. The volume and surface optical property files are
-parametrized over every dispersion, scattering and surface model PySpeos can write.
-
-3D Texture mapping files (``*.OPT3DMapping``) are not covered here: PySpeos has no feature
-yet to attach one to a project.
-"""
+"""Check that a running Speos server accepts the input files PySpeos writes locally."""
 
 import itertools
 from pathlib import Path
