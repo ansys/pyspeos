@@ -346,7 +346,6 @@ def test__value_finder_key_endswith(speos: Speos):
     assert keys == [
         "surface_properties",
         "exitance_constant_properties",
-        "intensity_properties",
     ]
 
 

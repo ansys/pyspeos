@@ -1161,24 +1161,8 @@ class BaseSensor:
 
         return out_str
 
-    def commit(self) -> BaseSensor:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor
-            Sensor feature.
-        """
-        if general_methods._GRAPHICS_AVAILABLE:
-            self._visual_data.updated = False
-
-        # The _unique_id will help to find the correct item in the scene.sensors:
-        # the list of SensorInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._sensor_instance.metadata["UniqueId"] = self._unique_id
-
-        # Save or Update the sensor template (depending on if it was already saved before)
+    def _commit_template(self) -> None:
+        # Save or Update the sensor template (depending on if it was already committed before)
         if self.sensor_template_link is None:
             if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
                 self.sensor_template_link = self._project.client.sensor_templates_v2().create(
@@ -1190,32 +1174,65 @@ class BaseSensor:
                 )
             self._sensor_instance.sensor_guid = self.sensor_template_link.key
         elif self.sensor_template_link.get() != self._sensor_template:
+            # Update if already committed AND if the template has changed
             self.sensor_template_link.set(
                 data=self._sensor_template
             )  # Only update if the template has changed
 
-        # Update the scene with the sensor instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        ssr_inst = next(
+            (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
 
-            # Look if an element corresponds to the _unique_id
-            ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if ssr_inst is not None:
-                if ssr_inst != self._sensor_instance:
-                    ssr_inst.CopyFrom(self._sensor_instance)  # if yes, just replace
-                else:
-                    update_scene = False
+        if ssr_inst is not None:
+            if ssr_inst != self._sensor_instance:
+                ssr_inst.CopyFrom(self._sensor_instance)  # if yes and change, just replace
             else:
-                scene_data.sensors.append(
-                    self._sensor_instance
-                )  # if no, just add it to the list of sensor instances
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.sensors.append(
+                self._sensor_instance
+            )  # if no, just add it to the list of sensor instances
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+        return True  # Mention that the scene needs to be updated
+
+    def _prepare_commit(self) -> None:
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
+
+        # The _unique_id will help to find the correct item in the scene.sensors:
+        # the list of SensorInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._sensor_instance.metadata["UniqueId"] = self._unique_id
+
+        # Handle template
+        self._commit_template()
+
+    def commit(self) -> BaseSensor:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor
+            Sensor feature.
+        """
+        # Prepare _unique_id and commit template if needed
+        self._prepare_commit()
+
+        # Handle instance
+        if self._project.scene_link:
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         return self
 
