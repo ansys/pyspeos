@@ -37,6 +37,8 @@ yet to attach one to a project.
 
 import itertools
 from pathlib import Path
+import shutil
+import uuid
 
 import pytest
 
@@ -66,7 +68,7 @@ from ansys.speos.core import (
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceLuminaire, SourceRayFile
-from tests.conftest import test_path
+from tests.conftest import local_test_path, test_path
 
 _ABSORPTION_WAVELENGTHS = [400.0, 550.0, 700.0]
 _ABSORPTION_VALUES = [0.1, 0.2, 0.01]
@@ -147,32 +149,57 @@ SURFACE_MATERIALS = {
 _TEST_CASES = list(zip(VOLUME_MATERIALS, itertools.cycle(SURFACE_MATERIALS)))
 
 
+@pytest.fixture
+def generated_assets_dir():
+    """Yield a directory under ``tests/assets`` to write generated files into.
+
+    ``tmp_path`` lives on the pytest host and, unlike ``tests/assets``, is not mounted into
+    the Speos server container used in CI (see ``tests/local_config.json`` and the
+    ``docker run -v tests/assets:/app/assets`` CI setup), so the server cannot read files
+    written there. Yields a ``(write_dir, server_dir)`` pair: write generated files to
+    ``write_dir`` and reference them, as file URIs, through ``server_dir``.
+    """
+    relative = Path("generated") / str(uuid.uuid4())
+    write_dir = Path(local_test_path) / relative
+    write_dir.mkdir(parents=True)
+    try:
+        yield write_dir, Path(test_path) / relative
+    finally:
+        shutil.rmtree(write_dir, ignore_errors=True)
+
+
 @pytest.mark.parametrize(
     ("volume_name", "surface_name"), _TEST_CASES, ids=[f"{v}-{s}" for v, s in _TEST_CASES]
 )
 def test_generated_files_are_usable_in_a_full_simulation(
-    speos: Speos, tmp_path: Path, surface_name: str, volume_name: str
+    speos: Speos, generated_assets_dir, surface_name: str, volume_name: str
 ):
     """A whole simulation combining every generated file type must commit successfully."""
-    material_path = VOLUME_MATERIALS[volume_name].save(tmp_path / "integration.material")
-    surface_path = SURFACE_MATERIALS[surface_name].save(
-        tmp_path / ("integration" + SURFACE_MATERIALS[surface_name].EXTENSION)
-    )
+    write_dir, server_dir = generated_assets_dir
 
-    spectrum_path = SpectrumFile(
+    VOLUME_MATERIALS[volume_name].save(write_dir / "integration.material")
+    material_path = server_dir / "integration.material"
+
+    surface_file_name = "integration" + SURFACE_MATERIALS[surface_name].EXTENSION
+    SURFACE_MATERIALS[surface_name].save(write_dir / surface_file_name)
+    surface_path = server_dir / surface_file_name
+
+    SpectrumFile(
         description="Integration test spectrum",
         wavelengths=[400.0, 550.0, 700.0],
         values=[10.0, 100.0, 50.0],
-    ).save(tmp_path / "integration.spectrum")
+    ).save(write_dir / "integration.spectrum")
+    spectrum_path = server_dir / "integration.spectrum"
 
-    ray_path = RayFile(
+    RayFile(
         rays=[
             Ray(position=(0.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0), wavelength=633.0),
             Ray(position=(1.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0), wavelength=633.0),
         ],
         radiant_flux=1.0,
         luminous_flux=112.0,
-    ).save(tmp_path / "integration.ray")
+    ).save(write_dir / "integration.ray")
+    ray_path = server_dir / "integration.ray"
 
     p = Project(speos=speos)
     root_part = p.create_root_part()
