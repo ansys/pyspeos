@@ -25,7 +25,7 @@
 import pytest
 
 from ansys.speos.core import Texture3DMappingFile, TexturePattern
-from tests.file_formats import read_lines
+from tests.input_files import read_lines
 
 
 @pytest.fixture

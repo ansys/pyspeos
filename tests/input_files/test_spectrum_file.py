@@ -25,7 +25,7 @@
 import pytest
 
 from ansys.speos.core import Spectrum, SpectrumFile
-from tests.file_formats import ASSETS_DIR, read_lines
+from tests.input_files import ASSETS_DIR, read_lines
 
 
 def test_write_matches_the_documented_layout(tmp_path):

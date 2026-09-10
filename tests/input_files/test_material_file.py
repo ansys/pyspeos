@@ -35,7 +35,7 @@ from ansys.speos.core import (
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
-from tests.file_formats import read_lines
+from tests.input_files import read_lines
 
 
 @pytest.fixture
