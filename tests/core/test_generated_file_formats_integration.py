@@ -239,6 +239,6 @@ def test_generated_files_are_usable_in_a_full_simulation(
     spectrum_guid = luminaire.source_template_link.get().luminaire.spectrum_guid
     assert spectrum_guid
     created_spectrum = Spectrum(speos_client=speos.client, name="", key=spectrum_guid)
-    assert created_spectrum._to_dict()["library"]["file_uri"].endswith("integration.spectrum")
+    assert created_spectrum.set_library().file_uri.endswith("integration.spectrum")
 
     assert ray_source.source_template_link.get().rayfile.ray_file_uri.endswith("integration.ray")
