@@ -34,6 +34,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2, SensorTemplateLinkV2
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
@@ -371,8 +372,12 @@ def test_commit(speos: Speos):
     assert [source_instance.name for source_instance in scene_data.sources] == [source._name]
     assert [sensor_instance.name for sensor_instance in scene_data.sensors] == [sensor._name]
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_photometric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
 
     # Modify a feature and commit again -
     # this time no scene update is needed (only template change)
@@ -380,8 +385,12 @@ def test_commit(speos: Speos):
     p.commit()
 
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_colorimetric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
 
 
 def test_from_file(speos: Speos):
@@ -443,16 +452,19 @@ def test_from_file(speos: Speos):
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
-    assert ssr_data.HasField("irradiance_sensor_template")
-    assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
-    assert (
-        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
-    )
-    assert (
-        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == 25
-    )
-    assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
+    if isinstance(ssr_link, SensorTemplateLinkV2):
+        assert ssr_data.HasField("irradiance")
+        irradiance_data = ssr_data.irradiance
+        colorimetric_data = irradiance_data.mode_colorimetric
+        assert irradiance_data.HasField("mode_colorimetric")
+    else:
+        assert ssr_data.HasField("irradiance_sensor_template")
+        irradiance_data = ssr_data.irradiance_sensor_template
+        colorimetric_data = irradiance_data.sensor_type_colorimetric
+        assert irradiance_data.HasField("sensor_type_colorimetric")
+    assert colorimetric_data.wavelengths_range.w_end == 800
+    assert colorimetric_data.wavelengths_range.w_sampling == 25
+    assert irradiance_data.dimensions.x_sampling == 500
 
 
 def test_from_file_threads_limited(speos: Speos):
