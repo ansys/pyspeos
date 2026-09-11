@@ -1,0 +1,129 @@
+
+
+
+
+
+
+:class:`RaysNumberPerSource`
+============================
+
+.. py:class:: ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource(source_path, rays_nb)
+
+   
+   Structure to describe the number of rays requested for a specific source.
+
+
+   :Parameters:
+
+       **source_path** : :class:`python:str`
+           Source selected via its path ("SourceName").
+
+       **rays_nb** : :class:`python:int`, :obj:`optional`
+           Number of rays to be emitted by the source.
+           If None is given, 100 rays will be sent.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: RaysNumberPerSource
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~source_path`
+            - Source path.
+          * - :py:attr:`~rays_nb`
+            - Number of rays to be emitted by the source. If None, it means 100 rays.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationInteractive import RaysNumberPerSource
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: source_path
+
+   
+   Source path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: rays_nb
+
+   
+   Number of rays to be emitted by the source. If None, it means 100 rays.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

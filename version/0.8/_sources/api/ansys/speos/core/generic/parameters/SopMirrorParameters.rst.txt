@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`SopMirrorParameters`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SopMirrorParameters
+
+   
+   SOP Mirror Parameters Dataclass.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SopMirrorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflectance`
+            - Rreflectance of a perfect mirror.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SopMirrorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: reflectance
+   :value: 100
+
+
+   
+   Rreflectance of a perfect mirror.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

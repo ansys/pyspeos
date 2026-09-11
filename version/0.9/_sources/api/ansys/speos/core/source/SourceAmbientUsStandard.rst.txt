@@ -1,0 +1,289 @@
+
+
+
+
+
+
+:class:`SourceAmbientUsStandard`
+================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientUsStandard(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   U.S. Standard atmosphere ambient source.
+
+   By default, [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction,
+   and sun type is set to automatic.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.AmbientUsStandardParameters`] = :data:`python:None`
+           If defined the values in the SourceAmbientUsStandard instance
+            will be overwritten by the values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientUsStandard
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sun_automatic`
+            - Set U.S. Standard sun type as automatic.
+          * - :py:attr:`~set_sun_manual`
+            - Set U.S. Standard sun type as manual.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction of the U.S. Standard ambient source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Reverse zenith direction flag of the U.S. Standard ambient source.
+          * - :py:attr:`~north_direction`
+            - North direction of the U.S. Standard ambient source.
+          * - :py:attr:`~reverse_north_direction`
+            - Reverse north direction flag of the U.S. Standard ambient source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientUsStandard
+
+Property detail
+---------------
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Zenith direction of the U.S. Standard ambient source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Direction defining the zenith.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Reverse zenith direction flag of the U.S. Standard ambient source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: north_direction
+   :type: List[float]
+
+
+   
+   North direction of the U.S. Standard ambient source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Direction defining north.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_north_direction
+   :type: bool
+
+
+   
+   Reverse north direction flag of the U.S. Standard ambient source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse north direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sun_automatic()
+
+   
+   Set U.S. Standard sun type as automatic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.AutomaticSun`
+           Sun automatic type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sun_manual()
+
+   
+   Set U.S. Standard sun type as manual.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.Manual`
+           Sun manual type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

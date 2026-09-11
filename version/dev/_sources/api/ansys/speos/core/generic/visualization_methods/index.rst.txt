@@ -1,0 +1,112 @@
+
+
+
+
+
+
+The ``visualization_methods.py`` module
+=======================================
+
+.. py:module:: ansys.speos.core.generic.visualization_methods
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: visualization_methods
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~local2absolute`
+            - Convert local coordinate to global coordinate.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the ``VisualData`` class.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: local2absolute(local_vertice, coordinates)
+
+   
+   Convert local coordinate to global coordinate.
+
+
+   :Parameters:
+
+       **coordinates: list**
+           local coordinate in shape [1, 9],
+           coordinates[3:6] as x-axis,
+           coordinates[3:6] as y-axis,
+           coordinates[3:6] as z-axis.
+
+       **local_vertice: np.ndarray**
+           numpy array includes x, y, z info.
+
+
+
+   :Returns:
+
+       :obj:`np.ndarray <numpy.ndarray>`
+           numpy array includes x, y, z info
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

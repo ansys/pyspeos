@@ -1,0 +1,178 @@
+
+
+
+
+
+
+:class:`LayerTypeSequence`
+==========================
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.LayerTypeSequence(layer_type_sequence, default_values = True, stable_ctr = False)
+
+   
+   Type of layer : Sequence.
+   Includes in the result one layer per sequence.
+   By default, the sequence is defined per geometries, with a maximum number of 10 sequences.
+
+
+   :Parameters:
+
+       **layer_type_sequence** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence`
+           LayerTypeSequence protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_layer_type_sequence method available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypeSequence
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_maximum_nb_of_sequence`
+            - Set the maximum number of sequences.
+          * - :py:attr:`~set_define_sequence_per_geometries`
+            - Define sequence per geometries.
+          * - :py:attr:`~set_define_sequence_per_faces`
+            - Define sequence per faces.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import LayerTypeSequence
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_maximum_nb_of_sequence(value = 10)
+
+   
+   Set the maximum number of sequences.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Maximum number of sequences.
+           By default, ``10``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_define_sequence_per_geometries()
+
+   
+   Define sequence per geometries.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_define_sequence_per_faces()
+
+   
+   Define sequence per faces.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

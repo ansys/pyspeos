@@ -1,0 +1,104 @@
+
+
+
+
+
+
+:class:`Flux`
+=============
+
+
+.. py:class:: ansys.speos.core.source.SourceSurface.Flux(flux, default_parameters = None, stable_ctr = False)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   Different types of flux including luminous flux of intensity.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Flux
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_luminous_intensity`
+            - Set flux type luminous intensity.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceSurface import Flux
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_luminous_intensity()
+
+   
+   Set flux type luminous intensity.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource.Flux`
+           Flux object
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``spectrum.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.spectrum
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: spectrum
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.spectrum.Spectrum`
+            - Speos feature : Spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Spectrum</api/ansys/speos/core/spectrum/Spectrum>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Spectrum.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

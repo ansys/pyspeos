@@ -1,0 +1,329 @@
+
+
+
+
+
+
+:class:`SourceThermic`
+======================
+
+.. toctree::
+   :hidden:
+
+    EmissiveFaces</api/ansys/speos/core/source/SourceThermic.EmissiveFaces>
+    TemperatureField</api/ansys/speos/core/source/SourceThermic.TemperatureField>
+
+
+.. py:class:: ansys.speos.core.source.SourceThermic(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   ThermicSource.
+
+   By default, an emissive faces type with lambertian intensity thermic source is created.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.ThermicSourceParameters`] = :data:`python:None`
+           If defined the values in the SourceThermic instance will be overwritten by the
+           values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceThermic
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_emissive_faces`
+            - Set the exitance of the thermic source to "emissive faces".
+          * - :py:attr:`~set_temperature_field`
+            - Set the exitance of the thermic source to "temperature field".
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~emittance_type`
+            - Return emittance type of thermic source.
+          * - :py:attr:`~intensity`
+            - Intensity settings for the thermic source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceThermic
+
+Property detail
+---------------
+
+.. py:property:: emittance_type
+   :type: Union[SourceThermic, SourceThermic]
+
+
+   
+   Return emittance type of thermic source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: intensity
+   :type: ansys.speos.core.intensity.Intensity
+
+
+   
+   Intensity settings for the thermic source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity object tied to the thermic source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_emissive_faces()
+
+   
+   Set the exitance of the thermic source to "emissive faces".
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceThermic.EmissiveFaces`
+           EmissiveFaces of surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_temperature_field()
+
+   
+   Set the exitance of the thermic source to "temperature field".
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceThermic.TemperatureField`
+           TemperatureField of surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceThermic`
+           Thermic source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceThermic`
+           Thermic source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceThermic`
+           Thermic Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.source.SourceThermic.EmissiveFaces
+    ansys.speos.core.source.SourceThermic.TemperatureField
+
+
+
+

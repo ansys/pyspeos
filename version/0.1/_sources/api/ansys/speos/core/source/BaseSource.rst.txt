@@ -1,0 +1,285 @@
+
+
+
+
+
+
+:class:`BaseSource`
+===================
+
+.. py:class:: ansys.speos.core.source.BaseSource(project, name, description = '', metadata = None, source_instance = None)
+
+   
+   Super Class for all sources
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which source shall be created.
+
+       **name** : :class:`python:str`
+           Name of the source.
+
+       **description** : :class:`python:str`
+           Description of the source.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **source_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance`, :obj:`optional`
+           Source instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a Super class, **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: BaseSource
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the project - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~source_template_link`
+            - Link object for the source template in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the source.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import BaseSource
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: source_template_link
+   :value: None
+
+
+   
+   Link object for the source template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the project - read only.
+
+
+   :Parameters:
+
+       **key: str**
+           ..
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+   The local data are still available
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

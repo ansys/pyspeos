@@ -1,0 +1,103 @@
+
+
+
+
+
+
+:class:`VopLibrary`
+===================
+
+
+.. py:class:: ansys.speos.core.opt_prop.BaseVop.VopLibrary(parent, stable_ctr=False)
+
+   
+   Helper class for library VOP parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VopLibrary
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~material_file_uri`
+            - Volume material file URI when VOP is a library entry.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.BaseVop import VopLibrary
+
+Property detail
+---------------
+
+.. py:property:: material_file_uri
+   :type: str
+
+
+   
+   Volume material file URI when VOP is a library entry.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           File path or URI of the volume material file (``*.material``).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

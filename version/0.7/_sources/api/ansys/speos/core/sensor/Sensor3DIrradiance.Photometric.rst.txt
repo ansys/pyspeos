@@ -1,0 +1,141 @@
+
+
+
+
+
+
+:class:`Photometric`
+====================
+
+
+.. py:class:: ansys.speos.core.sensor.Sensor3DIrradiance.Photometric(sensor_type_photometric, default_values = True, stable_ctr = True)
+
+   
+   Class computing the luminous intensity (in cd).
+
+   Generate an extended map for Virtual Photometric Lab.
+
+   :Parameters:
+
+       **illuminance_type** : :obj:`ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric`
+           SensorTypeColorimetric protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_type_colorimetric method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Photometric
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_integration_planar`
+            - Set integration planar.
+          * - :py:attr:`~set_integration_radial`
+            - Set integration radial.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.Sensor3DIrradiance import Photometric
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_integration_planar()
+
+   
+   Set integration planar.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Sensor3DIrradiance.Measures`
+           measured defines transmission, reflection, absorption
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_integration_radial()
+
+   
+   Set integration radial.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

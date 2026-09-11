@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`VopLibraryParameters`
+=============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.VopLibraryParameters
+
+   
+   VOP Parameters Dataclass.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VopLibraryParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~material_file_uri`
+            - Path to the VOP library file when ``vop_type`` is ``library``.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import VopLibraryParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: material_file_uri
+   :type:  Optional[Union[str, pathlib.Path]]
+   :value: None
+
+
+   
+   Path to the VOP library file when ``vop_type`` is ``library``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

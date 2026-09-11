@@ -1,0 +1,137 @@
+
+
+
+
+
+
+:class:`PolarIntensityDimensionsParameters`
+===========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.PolarIntensityDimensionsParameters
+
+   
+   Dimensions (sampling) for a polar intensity sensor.
+
+
+   :Parameters:
+
+       **horizontal_sampling** : :class:`python:int`, :obj:`optional`
+           Number of horizontal samples of the intensity file (IESNA or EULUMDAT).
+           By default, ``720``.
+
+       **vertical_sampling** : :class:`python:int`, :obj:`optional`
+           Number of vertical samples of the intensity file (IESNA or EULUMDAT).
+           By default, ``361``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PolarIntensityDimensionsParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~horizontal_sampling`
+            - Number of horizontal samples.
+          * - :py:attr:`~vertical_sampling`
+            - Number of vertical samples.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import PolarIntensityDimensionsParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: horizontal_sampling
+   :type:  int
+   :value: 720
+
+
+   
+   Number of horizontal samples.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: vertical_sampling
+   :type:  int
+   :value: 361
+
+
+   
+   Number of vertical samples.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

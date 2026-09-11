@@ -1,0 +1,259 @@
+
+
+
+
+
+
+:class:`AngularRangeParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AngularRangeParameters
+
+   
+   Parameters for angular range configuration of Observer sensor locations.
+
+
+   :Parameters:
+
+       **x_start** : :class:`python:float`, :obj:`optional`
+           Horizontal start angle in degrees. By default, ``-45``.
+
+       **x_end** : :class:`python:float`, :obj:`optional`
+           Horizontal end angle in degrees. By default, ``45``.
+
+       **x_sampling** : :class:`python:int`, :obj:`optional`
+           Horizontal angle sampling. By default, ``5``.
+
+       **y_start** : :class:`python:float`, :obj:`optional`
+           Vertical start angle in degrees. By default, ``-30``.
+
+       **y_end** : :class:`python:float`, :obj:`optional`
+           Vertical end angle in degrees. By default, ``30``.
+
+       **y_sampling** : :class:`python:int`, :obj:`optional`
+           Vertical angle sampling. By default, ``3``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AngularRangeParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_start`
+            - Horizontal start angle in degrees.
+          * - :py:attr:`~x_end`
+            - Horizontal end angle in degrees.
+          * - :py:attr:`~x_sampling`
+            - Horizontal angle sampling.
+          * - :py:attr:`~y_start`
+            - Vertical start angle in degrees.
+          * - :py:attr:`~y_end`
+            - Vertical end angle in degrees.
+          * - :py:attr:`~y_sampling`
+            - Vertical angle sampling.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AngularRangeParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: x_start
+   :type:  float
+   :value: -45.0
+
+
+   
+   Horizontal start angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_end
+   :type:  float
+   :value: 45.0
+
+
+   
+   Horizontal end angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_sampling
+   :type:  int
+   :value: 5
+
+
+   
+   Horizontal angle sampling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_start
+   :type:  float
+   :value: -30.0
+
+
+   
+   Vertical start angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_end
+   :type:  float
+   :value: 30.0
+
+
+   
+   Vertical end angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_sampling
+   :type:  int
+   :value: 3
+
+
+   
+   Vertical angle sampling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,654 @@
+
+
+
+
+
+
+:class:`SpeosClient`
+====================
+
+
+.. py:class:: ansys.speos.core.kernel.client.SpeosClient(version = DEFAULT_VERSION, channel = None, remote_instance = None, timeout = 60, logging_level = logging.INFO, logging_file = None, speos_install_path = None)
+
+   
+   Wraps a speos gRPC connection.
+
+
+   :Parameters:
+
+       **channel** : :obj:`grpc.Channel`, :obj:`optional`
+           gRPC channel for server communication.
+           By default, ``None``.
+
+       **remote_instance** : :obj:`ansys.platform.instancemanagement.Instance`
+           The corresponding remote instance when the Speos Service
+           is launched through PyPIM. This instance will be deleted when calling
+           :func:`SpeosClient.close <ansys.speos.core.kernel.client.SpeosClient.close >`.
+
+       **timeout** : :obj:`Real`, :obj:`optional`
+           Timeout in seconds to achieve the connection.
+           By default, 60 seconds.
+
+       **logging_level** : :class:`python:int`, :obj:`optional`
+           The logging level to be applied to the client.
+           By default, ``INFO``.
+
+       **logging_file** : :obj:`Optional`\[:class:`python:str`, :obj:`Path`]
+           The file to output the log, if requested. By default, ``None``.
+
+       **speos_install_path** : :obj:`Optional`\[:class:`python:str`, :obj:`Path`]
+           location of Speos rpc executable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+.. py:currentmodule:: SpeosClient
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~target`
+            - Get the target of the channel.
+          * - :py:attr:`~faces`
+            - Get face database access.
+          * - :py:attr:`~bodies`
+            - Get body database access.
+          * - :py:attr:`~parts`
+            - Get part database access.
+          * - :py:attr:`~sop_templates`
+            - Get sop template database access.
+          * - :py:attr:`~vop_templates`
+            - Get vop template database access.
+          * - :py:attr:`~spectrums`
+            - Get spectrum database access.
+          * - :py:attr:`~intensity_templates`
+            - Get intensity template database access.
+          * - :py:attr:`~source_templates`
+            - Get source template database access.
+          * - :py:attr:`~sensor_templates`
+            - Get sensor template database access.
+          * - :py:attr:`~simulation_templates`
+            - Get simulation template database access.
+          * - :py:attr:`~scenes`
+            - Get scene database access.
+          * - :py:attr:`~jobs`
+            - Get job database access.
+          * - :py:attr:`~get_items`
+            - Get items from keys.
+          * - :py:attr:`~close`
+            - Close the channel.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~channel`
+            - The gRPC channel of this client.
+          * - :py:attr:`~log`
+            - The specific instance logger.
+          * - :py:attr:`~healthy`
+            - Return if the client channel if healthy.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__getitem__`
+            - Get item from key.
+          * - :py:attr:`~__repr__`
+            - Represent the client as a string.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.client import SpeosClient
+
+Property detail
+---------------
+
+.. py:property:: channel
+   :type: grpc.Channel
+
+
+   
+   The gRPC channel of this client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: log
+   :type: ansys.speos.core.logger.PySpeosCustomAdapter
+
+
+   
+   The specific instance logger.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: healthy
+   :type: bool
+
+
+   
+   Return if the client channel if healthy.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: target()
+
+   
+   Get the target of the channel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: faces()
+
+   
+   Get face database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: bodies()
+
+   
+   Get body database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: parts()
+
+   
+   Get part database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: sop_templates()
+
+   
+   Get sop template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: vop_templates()
+
+   
+   Get vop template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: spectrums()
+
+   
+   Get spectrum database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: intensity_templates()
+
+   
+   Get intensity template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: source_templates()
+
+   
+   Get source template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: sensor_templates()
+
+   
+   Get sensor template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: simulation_templates()
+
+   
+   Get simulation template database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: scenes()
+
+   
+   Get scene database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: jobs()
+
+   
+   Get job database access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __getitem__(key)
+
+   
+   Get item from key.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Key of the item (also named guid).
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.kernel.sop_template.SOPTemplateLink`, :obj:`ansys.speos.core.kernel.vop_template.VOPTemplateLink`, :obj:`ansys.speos.core.kernel.spectrum.SpectrumLink`, :obj:`ansys.speos.core.kernel.intensity_template.IntensityTemplateLink`, :obj:`ansys.speos.core.kernel.source_template.SourceTemplateLink`, :obj:`ansys.speos.core.kernel.sensor_template.SensorTemplateLink`, :obj:`ansys.speos.core.kernel.simulation_template.SimulationTemplateLink`, :obj:`ansys.speos.core.kernel.scene.SceneLink`, :obj:`ansys.speos.core.kernel.job.JobLink`, :obj:`ansys.speos.core.kernel.part.PartLink`, :obj:`ansys.speos.core.kernel.body.BodyLink`, :obj:`ansys.speos.core.kernel.face.FaceLink`, :data:`python:None`]
+           Link object corresponding to the key - None if no objects corresponds to the key.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get_items(keys, item_type)
+
+   
+   Get items from keys.
+
+
+   :Parameters:
+
+       **keys** : :obj:`List`\[:class:`python:str`]
+           Keys of the items (also named guids).
+
+       **item_type** : :obj:`type`
+           Type of items expected
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`List`\[:obj:`ansys.speos.core.kernel.sop_template.SOPTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.vop_template.VOPTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.spectrum.SpectrumLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.intensity_template.IntensityTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.source_template.SourceTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.sensor_template.SensorTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.simulation_template.SimulationTemplateLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.scene.SceneLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.job.JobLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.part.PartLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.body.BodyLink`], :obj:`List`\[:obj:`ansys.speos.core.kernel.face.FaceLink`]]
+           List of Link objects corresponding to the keys - Empty if no objects corresponds to the
+           keys.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __repr__()
+
+   
+   Represent the client as a string.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: close()
+
+   
+   Close the channel.
+
+   .. warning::
+
+       Do not execute this function with untrusted environment variables.
+       See the :ref:`security guide<ref_security_consideration>` for details.
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           Information if the server instance was terminated.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   If an instance of the Speos Service was started using
+   PyPIM, this instance will be deleted.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

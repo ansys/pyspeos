@@ -1,0 +1,1163 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>&lt;no title&gt; &#8212; ansys-speos-core 0.6.3 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=300e4a82" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=300e4a82" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="_static/documentation_options.js?v=fd19c00e"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'conf';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.6';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.6.3" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/conf.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.6.3 documentation - Home"/>
+    <img src="_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.6.3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.6.3 documentation home">
+    Home
+</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.6.3 documentation home">
+    Home
+</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">&lt;no title&gt;</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-5 sd-row-cols-xs-5 sd-row-cols-sm-5 sd-row-cols-md-5 sd-row-cols-lg-5 docutils">
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/conf.py"><span>Download as Python script <span class="fab fa-python"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/conf.ipynb"><span> Download as Jupyter notebook <span class="fas fa-book"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/_static/assets/download/assets.zip"><span> Download example’s assets <span class="fa fa-file"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+</div>
+</div>
+</div></blockquote>
+<hr class="docutils" />
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Sphinx documentation configuration file.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;Sphinx documentation configuration file.&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ansys_sphinx_theme</span><span class="w"> </span><span class="kn">import</span> <span class="n">ansys_favicon</span><span class="p">,</span> <span class="n">get_version_match</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sphinx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.builders.latex</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaTeXBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.util.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">status_iterator</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LaTeXBuilder</span><span class="o">.</span><span class="n">supported_image_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;image/svg+xml&quot;</span><span class="p">]</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;DOCUMENTATION_BUILDING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYANSYS_VISUALIZER_HTML_BACKEND&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Project information</span>
+<span class="n">project</span> <span class="o">=</span> <span class="s2">&quot;ansys-speos-core&quot;</span>
+<span class="n">copyright</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(c) </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2"> ANSYS, Inc. All rights reserved&quot;</span>
+<span class="n">author</span> <span class="o">=</span> <span class="s2">&quot;Ansys Inc.&quot;</span>
+<span class="n">release</span> <span class="o">=</span> <span class="n">version</span> <span class="o">=</span> <span class="n">__version__</span>
+<span class="n">cname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DOCUMENTATION_CNAME&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;speos.docs.pyansys.com&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># use the default pyansys logo</span>
+<span class="n">html_theme</span> <span class="o">=</span> <span class="s2">&quot;ansys_sphinx_theme&quot;</span>
+<span class="n">html_favicon</span> <span class="o">=</span> <span class="n">ansys_favicon</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify the location of the github repo</span>
+<span class="n">html_context</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;github_user&quot;</span><span class="p">:</span> <span class="s2">&quot;ansys&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;github_repo&quot;</span><span class="p">:</span> <span class="s2">&quot;pyspeos&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;github_version&quot;</span><span class="p">:</span> <span class="s2">&quot;main&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doc_path&quot;</span><span class="p">:</span> <span class="s2">&quot;doc/source&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pyansys_tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Optics&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># specify the location of your github repo</span>
+<span class="n">html_theme_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;logo&quot;</span><span class="p">:</span> <span class="s2">&quot;pyansys&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;github_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/ansys/pyspeos&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;show_prev_next&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;switcher&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;json_url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">cname</span><span class="si">}</span><span class="s2">/versions.json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version_match&quot;</span><span class="p">:</span> <span class="n">get_version_match</span><span class="p">(</span><span class="n">__version__</span><span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;check_switcher&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;ansys_sphinx_theme_autoapi&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">project</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">BUILD_CHEATSHEET</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BUILD_CHEATSHEET&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+<span class="k">if</span> <span class="n">BUILD_CHEATSHEET</span><span class="p">:</span>
+    <span class="n">html_theme_options</span><span class="p">[</span><span class="s2">&quot;cheatsheet&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;cheat_sheet/cheat_sheet_script.qmd&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;PySpeos cheat sheet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sphinx extensions</span>
+<span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;numpydoc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinx.ext.intersphinx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinx_copybutton&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinx.ext.autodoc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinx_design&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinx_jinja&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ansys_sphinx_theme.extension.autoapi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nbsphinx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;myst_parser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphinxcontrib.mermaid&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Intersphinx mapping</span>
+<span class="n">intersphinx_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;https://docs.python.org/3/&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;grpc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;https://grpc.github.io/grpc/python/&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;pypim&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;https://pypim.docs.pyansys.com/version/stable&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="c1"># kept here as an example</span>
+    <span class="c1"># &quot;scipy&quot;: (&quot;https://docs.scipy.org/doc/scipy/reference&quot;, None),</span>
+    <span class="c1"># &quot;numpy&quot;: (&quot;https://numpy.org/devdocs&quot;, None),</span>
+    <span class="c1"># &quot;matplotlib&quot;: (&quot;https://matplotlib.org/stable&quot;, None),</span>
+    <span class="c1"># &quot;pandas&quot;: (&quot;https://pandas.pydata.org/pandas-docs/stable&quot;, None),</span>
+    <span class="c1"># &quot;pyvista&quot;: (&quot;https://docs.pyvista.org/&quot;, None),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">numpydoc_show_class_members</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">numpydoc_xref_param_type</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">numpydoc_validate</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">numpydoc_validation_checks</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;GL06&quot;</span><span class="p">,</span>  <span class="c1"># Found unknown section</span>
+    <span class="s2">&quot;GL07&quot;</span><span class="p">,</span>  <span class="c1"># Sections are in the wrong order.</span>
+    <span class="c1"># &quot;GL08&quot;,  # The object does not have a docstring</span>
+    <span class="s2">&quot;GL09&quot;</span><span class="p">,</span>  <span class="c1"># Deprecation warning should precede extended summary</span>
+    <span class="s2">&quot;GL10&quot;</span><span class="p">,</span>  <span class="c1"># reST directives {directives} must be followed by two colons</span>
+    <span class="s2">&quot;SS01&quot;</span><span class="p">,</span>  <span class="c1"># No summary found</span>
+    <span class="s2">&quot;SS02&quot;</span><span class="p">,</span>  <span class="c1"># Summary does not start with a capital letter</span>
+    <span class="c1"># &quot;SS03&quot;, # Summary does not end with a period</span>
+    <span class="s2">&quot;SS04&quot;</span><span class="p">,</span>  <span class="c1"># Summary contains heading whitespaces</span>
+    <span class="c1"># &quot;SS05&quot;, # Summary must start with infinitive verb, not third person</span>
+    <span class="s2">&quot;RT02&quot;</span><span class="p">,</span>  <span class="c1"># The first line of the Returns section should contain only the</span>
+    <span class="c1"># type, unless multiple values are being returned&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># static path</span>
+<span class="n">html_static_path</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_static&quot;</span><span class="p">]</span>
+<span class="n">html_css_files</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;custom.css&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add any paths that contain templates here, relative to this directory.</span>
+<span class="n">templates_path</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_templates&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The suffix(es) of source filenames.</span>
+<span class="n">source_suffix</span> <span class="o">=</span> <span class="s2">&quot;.rst&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The master toctree document.</span>
+<span class="n">master_doc</span> <span class="o">=</span> <span class="s2">&quot;index&quot;</span>
+<span class="n">suppress_warnings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;autoapi&quot;</span><span class="p">]</span>
+<span class="n">autodoc_typehints</span> <span class="o">=</span> <span class="s2">&quot;description&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># -- Declare the Jinja context -----------------------------------------------</span>
+<span class="n">BUILD_EXAMPLES</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BUILD_EXAMPLES&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span> <span class="k">else</span> <span class="kc">False</span>
+<span class="k">if</span> <span class="n">BUILD_EXAMPLES</span><span class="p">:</span>
+    <span class="n">extensions</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;myst_parser&quot;</span><span class="p">,</span> <span class="s2">&quot;nbsphinx&quot;</span><span class="p">])</span>
+    <span class="n">nbsphinx_execute</span> <span class="o">=</span> <span class="s2">&quot;always&quot;</span>
+    <span class="n">nbsphinx_custom_formats</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;.mystnb&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;jupytext.reads&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fmt&quot;</span><span class="p">:</span> <span class="s2">&quot;mystnb&quot;</span><span class="p">}],</span>
+        <span class="s2">&quot;.py&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;jupytext.reads&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fmt&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}],</span>
+    <span class="p">}</span>
+    <span class="n">nbsphinx_thumbnails</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;examples/core/bsdf&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/bsdf.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/opt-prop&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/property_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/source&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/source_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/sensor_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/part&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/part_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/simulation&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/simulation_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/project&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/how_to_create_a_project.PNG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/lpf-preview&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/script_lpf_preview.PNG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/core/prism-example&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/prism_example_using_script_layer.PNG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/kernel/object-link&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/pySpeos_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/kernel/scene-job&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/pySpeos_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/kernel/modify-scene&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/pySpeos_520x520.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/workflow/open-result&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/workflow_open_result.png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/workflow/combine-speos&quot;</span><span class="p">:</span> <span class="s2">&quot;_static/thumbnails/workflow_moving_car.PNG&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">nbsphinx_prompt_width</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">nbsphinx_prolog</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2">    .. grid:: 5</span>
+
+<span class="s2">        .. grid-item::</span>
+
+<span class="s2">        .. grid-item::</span>
+<span class="s2">            :child-align: center</span>
+
+<span class="s2">            .. button-link:: </span><span class="si">{cname_pref}</span><span class="s2">/</span><span class="si">{python_file_loc}</span>
+<span class="s2">                :color: primary</span>
+<span class="s2">                :shadow:</span>
+
+<span class="s2">                Download as Python script :fab:`python`</span>
+
+<span class="s2">        .. grid-item::</span>
+<span class="s2">            :child-align: center</span>
+
+<span class="s2">            .. button-link:: </span><span class="si">{cname_pref}</span><span class="s2">/</span><span class="si">{ipynb_file_loc}</span>
+<span class="s2">               :color: primary</span>
+<span class="s2">               :shadow:</span>
+
+<span class="s2">                Download as Jupyter notebook :fas:`book`</span>
+
+<span class="s2">        .. grid-item::</span>
+<span class="s2">            :child-align: center</span>
+
+<span class="s2">            .. button-link:: </span><span class="si">{cname_pref}</span><span class="s2">/</span><span class="si">{assets_loc}</span>
+<span class="s2">               :color: primary</span>
+<span class="s2">               :shadow:</span>
+
+<span class="s2">                Download example&#39;s assets :fa:`file`</span>
+
+<span class="s2">        .. grid-item::</span>
+
+<span class="s2">----</span>
+
+<span class="s2">    &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">cname_pref</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">cname</span><span class="si">}</span><span class="s2">/version/</span><span class="si">{</span><span class="n">get_version_match</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">python_file_loc</span><span class="o">=</span><span class="s2">&quot;{{ env.docname }}.py&quot;</span><span class="p">,</span>
+        <span class="n">ipynb_file_loc</span><span class="o">=</span><span class="s2">&quot;{{ env.docname }}.ipynb&quot;</span><span class="p">,</span>
+        <span class="n">assets_loc</span><span class="o">=</span><span class="s2">&quot;_static/assets/download/assets.zip&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">jinja_contexts</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;linux_containers&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;main_toctree&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;build_examples&quot;</span><span class="p">:</span> <span class="n">BUILD_EXAMPLES</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">copy_examples_to_output_dir</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy the examples directory to the output directory of the documentation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : sphinx.application.Sphinx</span>
+<span class="sd">        Sphinx application instance containing the all the doc build configuration.</span>
+<span class="sd">    exception : Exception</span>
+<span class="sd">        Exception encountered during the building of the documentation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">OUTPUT_EXAMPLES</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+    <span class="n">OUTPUT_IMAGES</span> <span class="o">=</span> <span class="n">OUTPUT_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;img&quot;</span>
+    <span class="n">OUTPUT_CORE</span> <span class="o">=</span> <span class="n">OUTPUT_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;core&quot;</span>
+    <span class="n">OUTPUT_KERNEL</span> <span class="o">=</span> <span class="n">OUTPUT_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;kernel&quot;</span>
+    <span class="n">OUTPUT_WORKFLOW</span> <span class="o">=</span> <span class="n">OUTPUT_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;workflow&quot;</span>
+    <span class="k">for</span> <span class="n">directory</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="n">OUTPUT_EXAMPLES</span><span class="p">,</span>
+        <span class="n">OUTPUT_IMAGES</span><span class="p">,</span>
+        <span class="n">OUTPUT_CORE</span><span class="p">,</span>
+        <span class="n">OUTPUT_KERNEL</span><span class="p">,</span>
+        <span class="n">OUTPUT_WORKFLOW</span><span class="p">,</span>
+    <span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">SOURCE_EXAMPLES</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">srcdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+    <span class="n">EXAMPLES_DIRECTORY</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+
+    <span class="c1"># Copyt the examples</span>
+    <span class="n">examples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">EXAMPLES_DIRECTORY</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;**/*.py&quot;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">status_iterator</span><span class="p">(</span>
+        <span class="n">examples</span><span class="p">,</span>
+        <span class="s2">&quot;Copying example to doc/_build/examples/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">examples</span><span class="p">),</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">stringify_func</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">file</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">destination_file</span> <span class="o">=</span> <span class="n">OUTPUT_EXAMPLES</span> <span class="o">/</span> <span class="n">file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="o">/</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">destination_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">copy_examples_files_to_source_dir</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy the examples directory to the source directory of the documentation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : sphinx.application.Sphinx</span>
+<span class="sd">        Sphinx application instance containing the all the doc build configuration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">SOURCE_EXAMPLES</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">srcdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+    <span class="n">SOURCE_IMAGES</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;img&quot;</span>
+    <span class="n">CORE_EXAMPLES</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;core&quot;</span>
+    <span class="n">KERNEL_EXAMPLES</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;kernel&quot;</span>
+    <span class="n">WORKFLOW_EXAMPLES</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span> <span class="o">/</span> <span class="s2">&quot;workflow&quot;</span>
+    <span class="k">for</span> <span class="n">directory</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="n">SOURCE_EXAMPLES</span><span class="p">,</span>
+        <span class="n">SOURCE_IMAGES</span><span class="p">,</span>
+        <span class="n">CORE_EXAMPLES</span><span class="p">,</span>
+        <span class="n">KERNEL_EXAMPLES</span><span class="p">,</span>
+        <span class="n">WORKFLOW_EXAMPLES</span><span class="p">,</span>
+    <span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">EXAMPLES_DIRECTORY</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+
+    <span class="c1"># Copy the the examples</span>
+    <span class="n">examples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">EXAMPLES_DIRECTORY</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;**/*.py&quot;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">status_iterator</span><span class="p">(</span>
+        <span class="n">examples</span><span class="p">,</span>
+        <span class="s2">&quot;Copying example to doc/source/examples/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">examples</span><span class="p">),</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">stringify_func</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">file</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">destination_file</span> <span class="o">=</span> <span class="n">SOURCE_EXAMPLES</span> <span class="o">/</span> <span class="n">file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="o">/</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">destination_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">copy_assets_to_output_dir</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy the assets directory to the output directory of the documentation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : sphinx.application.Sphinx</span>
+<span class="sd">        Sphinx application instance containing the all the doc build configuration.</span>
+<span class="sd">    exception : Exception</span>
+<span class="sd">        Exception encountered during the building of the documentation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;html&quot;</span><span class="p">:</span>
+        <span class="n">SOURCE_ASSETS</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;_static&quot;</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span> <span class="o">/</span> <span class="s2">&quot;download&quot;</span>
+        <span class="n">ASSETS_DIRECTORY</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;tests&quot;</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting assets to output directory...&quot;</span><span class="p">)</span>
+        <span class="n">zip_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">shutil</span><span class="o">.</span><span class="n">make_archive</span><span class="p">(</span><span class="s2">&quot;assets&quot;</span><span class="p">,</span> <span class="s2">&quot;zip&quot;</span><span class="p">,</span> <span class="n">ASSETS_DIRECTORY</span><span class="p">))</span>
+        <span class="n">zip_path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">zip_path</span><span class="p">,</span> <span class="n">SOURCE_ASSETS</span> <span class="o">/</span> <span class="n">zip_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted assets to </span><span class="si">{</span><span class="n">zip_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skip assets extraction with build </span><span class="si">{</span><span class="n">app</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">remove_examples_from_source_dir</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove the example files from the documentation source directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : sphinx.application.Sphinx</span>
+<span class="sd">        Sphinx application instance containing the all the doc build configuration.</span>
+<span class="sd">    exception : Exception</span>
+<span class="sd">        Exception encountered during the building of the documentation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">EXAMPLES_DIRECTORY</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">srcdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Removing </span><span class="si">{</span><span class="n">EXAMPLES_DIRECTORY</span><span class="si">}</span><span class="s2"> directory...&quot;</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">EXAMPLES_DIRECTORY</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run different hook functions during the documentation build.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : sphinx.application.Sphinx</span>
+<span class="sd">        Sphinx application instance containing the all the doc build configuration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># HACK: rST files are copied to the doc/source directory before the build.</span>
+    <span class="c1"># Sphinx needs all source files to be in the source directory to build.</span>
+    <span class="c1"># However, the examples are desired to be kept in the root directory. Once the</span>
+    <span class="c1"># build has completed, no matter its success, the examples are removed from</span>
+    <span class="c1"># the source directory.</span>
+    <span class="k">if</span> <span class="n">BUILD_EXAMPLES</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;builder-inited&quot;</span><span class="p">,</span> <span class="n">copy_examples_files_to_source_dir</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;build-finished&quot;</span><span class="p">,</span> <span class="n">remove_examples_from_source_dir</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;build-finished&quot;</span><span class="p">,</span> <span class="n">copy_assets_to_output_dir</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;build-finished&quot;</span><span class="p">,</span> <span class="n">copy_examples_to_output_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="_sources/conf.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "_static/search.json";
+const ADVANCE_SEARCH_PATH = "search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2025 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.6.0. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+
+
+
+
+
+
+:class:`Colorimetric`
+=====================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.Colorimetric(sensor_type_colorimetric, default_parameters = None, stable_ctr = False)
+
+   
+   Type of sensor : Colorimetric.
+
+   This kind of sensor will generate color results without any spectral data or layer
+   separation in lx or W//m2.
+   By default, it uses a default wavelengths range.
+
+   :Parameters:
+
+       **sensor_type_colorimetric** : :obj:`ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric`
+           SensorTypeColorimetric protobuf object to modify.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.ColorimetricParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_type_colorimetric method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Colorimetric
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_wavelengths_range`
+            - Set the range of wavelengths.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import Colorimetric
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_wavelengths_range()
+
+   
+   Set the range of wavelengths.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           Wavelengths range.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
