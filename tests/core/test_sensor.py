@@ -4151,6 +4151,8 @@ def test_observer_sensor_load(speos: Speos):
 @pytest.mark.supported_speos_versions(min=271)
 def test_sensor_creation_with_v2_template(speos: Speos):
     """Test to verify that template v2 is created with new framework."""
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Server version not supported")
     p = Project(speos=speos)
     sensor = p.create_sensor(name="irradiance_v2", feature_type=SensorIrradiance)
     assert isinstance(sensor, SensorIrradiance)
