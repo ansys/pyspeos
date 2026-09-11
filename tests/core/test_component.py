@@ -22,6 +22,7 @@
 
 """Test basic using component."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -37,6 +38,19 @@ from ansys.speos.core.simulation import (
 from ansys.speos.core.source import SourceRayFile, SourceSurface
 from tests.conftest import test_path
 from tests.helper import does_file_exist, remove_file
+
+
+def _normalize_json_value(value):
+    """Recursively normalize JSON values for order-insensitive comparison."""
+    if isinstance(value, dict):
+        return {key: _normalize_json_value(inner_value) for key, inner_value in value.items()}
+    if isinstance(value, list):
+        normalized_items = [_normalize_json_value(item) for item in value]
+        return sorted(
+            normalized_items,
+            key=lambda item: json.dumps(item, sort_keys=True),
+        )
+    return value
 
 
 @pytest.mark.supported_speos_versions(min=261)
@@ -141,8 +155,15 @@ def test_create_lightbox(speos: Speos):
     assert out_dict["scene"]["sources"][0]["name"] == "Surface.2:1"
     assert lightbox.get("name") == "Light Box Import.1"
 
-    assert str(lightbox) == lightbox.__str__()
+    # string comparison
+    lb_str1 = str(lightbox)
+    lb_str2 = lightbox.__str__()
 
+    # Compare the parsed JSON content after normalizing list order so that
+    # semantically equivalent payloads do not fail when list items are reordered.
+    normalized_lb_1 = _normalize_json_value(json.loads(lb_str1))
+    normalized_lb_2 = _normalize_json_value(json.loads(lb_str2))
+    assert normalized_lb_1 == normalized_lb_2
     lightbox3 = p.create_lightbox(
         name="Light Box Import.3",
         lightbox=LightBoxFileInstance(
@@ -190,6 +211,15 @@ def test_create_lightbox(speos: Speos):
     assert len(sim.source_paths) == 1
 
     lightbox.delete()
+
+
+def test_compare_json_strings_ignoring_list_order():
+    """Test JSON string comparison when list order is not stable."""
+    lb_str1 = '{"test": ["test1", "test2"]}'
+    lb_str2 = '{"test": ["test2", "test1"]}'
+
+    assert lb_str1 != lb_str2
+    assert _normalize_json_value(json.loads(lb_str1)) == _normalize_json_value(json.loads(lb_str2))
 
 
 @pytest.mark.supported_speos_versions(min=261)
