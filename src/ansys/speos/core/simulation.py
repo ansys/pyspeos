@@ -771,7 +771,7 @@ class BaseSimulation:
             simulation_features = [
                 _
                 for _ in self._project._features
-                if isinstance(_, (SimulationDirect, SimulationInverse))
+                if isinstance(_, (SimulationDirect, SimulationInverse, SimulationVirtualBSDF))
             ]
             if len(simulation_features) > 1:
                 warnings.warn(
