@@ -33,6 +33,7 @@ import pytest
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.generic.constants import (
     ORIGIN,
+    SENSOR_TEMPLATE_VERSIONS,
 )
 from ansys.speos.core.generic.parameters import (
     AngularRangeParameters,
@@ -71,7 +72,6 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel import ProtoSensorTemplate
-from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
@@ -674,9 +674,17 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.parametrize("version", SENSOR_TEMPLATE_VERSIONS)
 @pytest.mark.supported_speos_versions(min=251)
-def test_create_irradiance_sensor(speos: Speos):
+def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
     """Test creation of irradiance sensor."""
+    if "V1" == version:
+        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
+    elif "V2" == version:
+        if not server_version_checker.is_version_supported(2027, 0, 0):
+            pytest.skip("Template version V2 not yet supported")
+    else:
+        pytest.fail("Unsupported version")
     p = Project(speos=speos)
 
     root_part = p.create_root_part()
@@ -1708,8 +1716,16 @@ def test_load_radiance_sensor(speos: Speos):
     )
 
 
-def test_load_irradiance_sensor(speos: Speos):
+@pytest.mark.parametrize("version", SENSOR_TEMPLATE_VERSIONS)
+def test_load_irradiance_sensor(speos: Speos, monkeypatch, version):
     """Test load of radiance sensor."""
+    if "V1" == version:
+        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
+    elif "V2" == version:
+        if not server_version_checker.is_version_supported(2027, 0, 0):
+            pytest.skip("Template version V2 not yet supported")
+    else:
+        pytest.fail("Unsupported version")
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "Irradiance.1.speos" / "Irradiance.1.speos"),
@@ -4146,28 +4162,3 @@ def test_observer_sensor_load(speos: Speos):
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
     assert loaded_sensor.layer is None
-
-
-@pytest.mark.supported_speos_versions(min=271)
-def test_sensor_creation_with_v2_template(speos: Speos):
-    """Test to verify that template v2 is created with new framework."""
-    if not server_version_checker.is_version_supported(2027, 1, 0):
-        pytest.skip("Server version not supported")
-    p = Project(speos=speos)
-    sensor = p.create_sensor(name="irradiance_v2", feature_type=SensorIrradiance)
-    assert isinstance(sensor, SensorIrradiance)
-    template = sensor._sensor_template
-    assert isinstance(template, ProtoSensorTemplateV2)
-    assert template.HasField("irradiance")
-
-
-@pytest.mark.supported_speos_versions(min=261)
-def test_sensor_creation_with_v1_template(speos: Speos, monkeypatch):
-    """Test to verify that template v1 is created with new framework."""
-    monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
-    p = Project(speos=speos)
-    sensor = p.create_sensor(name="irradiance_v2", feature_type=SensorIrradiance)
-    assert isinstance(sensor, SensorIrradiance)
-    template = sensor._sensor_template
-    assert isinstance(template, ProtoSensorTemplate)
-    assert template.HasField("irradiance_sensor_template")
