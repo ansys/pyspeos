@@ -711,13 +711,14 @@ def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
     # Default value
     sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
     assert sensor1.sensor_template_link is not None
     assert has_irradiance_template(sensor1)
     sensor_template = irradiance_template(sensor1)
     if server_version_checker.is_version_supported(2027, 0, 0):
-        assert isinstance(sensor_template, ProtoSensorTemplateV2)
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
-        assert isinstance(sensor_template, ProtoSensorTemplate)
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
     assert has_sensor_mode(sensor1, "photometric")
     assert has_integration_type(sensor1, "planar")
     assert sensor_template.HasField("dimensions")
