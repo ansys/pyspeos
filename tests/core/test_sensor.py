@@ -72,6 +72,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel import ProtoSensorTemplate
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
@@ -713,6 +714,10 @@ def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
     assert sensor1.sensor_template_link is not None
     assert has_irradiance_template(sensor1)
     sensor_template = irradiance_template(sensor1)
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert isinstance(sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor_template, ProtoSensorTemplate)
     assert has_sensor_mode(sensor1, "photometric")
     assert has_integration_type(sensor1, "planar")
     assert sensor_template.HasField("dimensions")
