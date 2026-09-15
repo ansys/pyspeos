@@ -183,7 +183,7 @@ This document contains the release notes for the PySpeos project.
         :header-rows: 0
         :widths: auto
 
-        * - 
+        * -
           - `#1012 <https://github.com/ansys/pyspeos/pull/1012>`_
 
         * - Bump codecov/codecov-action from 6.0.1 to 7.0.0
@@ -295,7 +295,7 @@ This document contains the release notes for the PySpeos project.
         * - Update dependabot configuration
           - `#1037 <https://github.com/ansys/pyspeos/pull/1037>`_
 
-        * - 
+        * -
           - `#1045 <https://github.com/ansys/pyspeos/pull/1045>`_, `#1053 <https://github.com/ansys/pyspeos/pull/1053>`_, `#1060 <https://github.com/ansys/pyspeos/pull/1060>`_, `#1075 <https://github.com/ansys/pyspeos/pull/1075>`_
 
         * - Use 26r1 sp3
