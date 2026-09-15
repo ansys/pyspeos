@@ -203,15 +203,15 @@ wheels = [
 
 [[package]]
 name = "ansys-api-speos"
-version = "0.16.3"
+version = "0.17.dev0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "grpcio" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/31/1bc22b4ac6cb7b2dba69b21fba005c029becc3317bf716731be860450caa/ansys_api_speos-0.16.3.tar.gz", hash = "sha256:ddf735e44de42d03ee67625f8407056f8b97f2219cd61d82ed44777b64e207a9", size = 42810, upload-time = "2026-06-25T12:42:01.594Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d5/17/4c370fc8742c5be05d435bf7daacd86ea5daba5c913bf23f2e71afc8d44d/ansys_api_speos-0.17.dev0.tar.gz", hash = "sha256:7d0d351cca2929014476c47ca54c8bf0a0c21444b557458300eac543a1c6f079", size = 47059, upload-time = "2026-07-30T07:21:29.863Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/0f/d0af06bc195c493e9e99785150881dcc8ca32e5dda42c46d7980d2e6066c/ansys_api_speos-0.16.3-py3-none-any.whl", hash = "sha256:3410103677662a02dc07012f1a2b5c99a2809b9a1b30b614786f1cc75081b00d", size = 315346, upload-time = "2026-06-25T12:42:00.234Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/46/9b4e2dea360706623f967aa65b34eb5066ffd6364d1d1fe0eafb34aac15d/ansys_api_speos-0.17.dev0-py3-none-any.whl", hash = "sha256:212a77ea700acba468091355bc5ae2aaeb05d3fd0f1d7219cfc3d971b054dac9", size = 340277, upload-time = "2026-07-30T07:21:28.209Z" },
 ]
 
 [[package]]
@@ -314,7 +314,7 @@ tests = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ansys-api-speos", specifier = "==0.16.3" },
+    { name = "ansys-api-speos", specifier = "==0.17.dev0" },
     { name = "ansys-platform-instancemanagement", marker = "extra == 'all'" },
     { name = "ansys-tools-common", specifier = ">=0.3.1" },
     { name = "ansys-tools-visualization-interface", marker = "extra == 'all'", specifier = ">=0.8.3" },

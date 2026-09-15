@@ -40,6 +40,10 @@ from ansys.speos.core.kernel.sensor_template import (
     ProtoSensorTemplate,
     SensorTemplateLink,
 )
+from ansys.speos.core.kernel.sensor_template_v2 import (
+    ProtoSensorTemplateV2,
+    SensorTemplateLinkV2,
+)
 from ansys.speos.core.kernel.simulation_template import (
     ProtoSimulationTemplate,
     SimulationTemplateLink,
