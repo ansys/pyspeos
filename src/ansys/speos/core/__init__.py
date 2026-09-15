@@ -38,6 +38,28 @@ from ansys.speos.core.body import Body
 import ansys.speos.core.bsdf as bsdf
 from ansys.speos.core.face import Face
 from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.input_files import (
+    CoatedSurfaceFile,
+    CoatedSurfaceSample,
+    MaterialConstringence,
+    MaterialDispersionCurve,
+    MaterialFile,
+    MaterialKettlerHelmholtz,
+    MaterialSellmeier,
+    Ray,
+    RayFile,
+    ScatteringSurfaceFile,
+    ScatteringSurfaceSample,
+    SimpleScatteringSurfaceFile,
+    SpectrumFile,
+    SpeosFileFormat,
+    Texture3DMappingFile,
+    TexturePattern,
+    VolumeScatteringDoubleHenyeyGreenstein,
+    VolumeScatteringGegenbauer,
+    VolumeScatteringHenyeyGreenstein,
+    VolumeScatteringUserDefined,
+)
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.logger import LOG, Logger
 from ansys.speos.core.lxp import LightPathFinder, RayPath
