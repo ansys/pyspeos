@@ -106,7 +106,7 @@ SENSOR_TEMPLATE_VERSIONS = ["V1", "V2"]
 
 @pytest.fixture(params=SENSOR_TEMPLATE_VERSIONS)
 def sensor_template_version(request, monkeypatch):
-    """Test ficture which forces a test to run with 26R1 version to check sensor template V1."""
+    """Test fixture which forces a test to run with 26R1 version to check sensor template V1."""
     version = request.param
     if "V1" == version:
         monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
