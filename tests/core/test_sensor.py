@@ -213,6 +213,85 @@ def has_integration_type(sensor_feature, integration_type: str, local: bool = Fa
     return template.HasField("illuminance_type_" + integration_type)
 
 
+def irradiance_3d_template(sensor_feature, local: bool = False):
+    """Get the 3D irradiance part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    return template.irradiance_3d
+
+
+def _sensor_3d_mode_field(sensor_feature, mode: str) -> str:
+    """Get the protobuf field name of a 3D irradiance mode for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "mode_" + mode
+    return "type_" + mode
+
+
+def sensor_3d_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of a 3D irradiance template."""
+    return getattr(
+        irradiance_3d_template(sensor_feature, local),
+        _sensor_3d_mode_field(sensor_feature, mode),
+    )
+
+
+def has_sensor_3d_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the 3D irradiance template currently uses the given sensor mode."""
+    return irradiance_3d_template(sensor_feature, local).HasField(
+        _sensor_3d_mode_field(sensor_feature, mode)
+    )
+
+
+def has_sensor_3d_integration_type(
+    sensor_feature, integration_type: str, local: bool = False
+) -> bool:
+    """Tell if the 3D irradiance template currently uses the given integration type."""
+    template = irradiance_3d_template(sensor_feature, local)
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance3D):
+        return template.integration_type == getattr(
+            sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+            "INTEGRATION_TYPE_" + integration_type.upper(),
+        )
+
+    active_mode = (
+        "photometric" if has_sensor_3d_mode(sensor_feature, "photometric", local) else "radiometric"
+    )
+    return sensor_3d_mode(sensor_feature, active_mode, local).HasField(
+        "integration_type_" + integration_type
+    )
+
+
+def sensor_3d_planar_measures(sensor_feature, mode: str, local: bool = False):
+    """Get the protobuf object that stores planar additional measures."""
+    template = irradiance_3d_template(sensor_feature, local)
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance3D):
+        return template
+    return sensor_3d_mode(sensor_feature, mode, local).integration_type_planar
+
+
+def sensor_3d_colorimetric_wavelengths_range(sensor_feature, local: bool = False):
+    """Get the protobuf object that stores 3D colorimetric wavelength bounds."""
+    colorimetric = sensor_3d_mode(sensor_feature, "colorimetric", local)
+    if "wavelengths_range" in colorimetric.DESCRIPTOR.fields_by_name:
+        return colorimetric.wavelengths_range
+    return colorimetric
+
+
+def wavelength_range_start(wavelengths_range) -> float:
+    """Get the start field of a wavelength range object across v1/v2 layouts."""
+    if "w_start" in wavelengths_range.DESCRIPTOR.fields_by_name:
+        return wavelengths_range.w_start
+    return wavelengths_range.wavelength_start
+
+
+def wavelength_range_end(wavelengths_range) -> float:
+    """Get the end field of a wavelength range object across v1/v2 layouts."""
+    if "w_end" in wavelengths_range.DESCRIPTOR.fields_by_name:
+        return wavelengths_range.w_end
+    return wavelengths_range.wavelength_end
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
@@ -1833,7 +1912,7 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_3d_irradiance_sensor(speos: Speos):
+def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of 3d irradiance sensor."""
     p = Project(
         speos=speos,
@@ -1852,16 +1931,22 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # measure reflection, transmission, absorption
     backend_photometric_info = sensor_3d.sensor_template_link.get()
     assert sensor_3d.sensor_template_link is not None
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     assert backend_photometric_info.name == "3d"
     assert backend_photometric_info.HasField("irradiance_3d")
-    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
-    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
-        "integration_type_planar"
-    )
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert photometric_info.integration_type_planar.absorption
+    assert has_sensor_3d_mode(sensor_3d, "photometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "planar")
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert photometric_info.absorption
     assert sensor_3d._sensor_instance.HasField("irradiance_3d_properties")
     assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
         "PrismBody:1130610277"
@@ -1871,22 +1956,18 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # change integration to radial
     sensor_3d.set_type_photometric().set_integration_radial()
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
-    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
-        "integration_type_radial"
-    )
+    assert has_sensor_3d_mode(sensor_3d, "photometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "radial")
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_photometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert not photometric_info.absorption
 
     # when change type into radiometric, default properties:
     # radiometric
@@ -1894,30 +1975,28 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # layer type none
     sensor_3d.set_type_radiometric()
     sensor_3d.commit()
-    backend_radiometric_info = sensor_3d.sensor_template_link.get()
-    assert backend_radiometric_info.irradiance_3d.HasField("type_radiometric")
-    radiometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
-    assert radiometric_info.HasField("integration_type_planar")
-    assert radiometric_info.integration_type_planar.reflection
-    assert radiometric_info.integration_type_planar.transmission
-    assert radiometric_info.integration_type_planar.absorption
+    assert has_sensor_3d_mode(sensor_3d, "radiometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "planar")
+    radiometric_info = sensor_3d_planar_measures(sensor_3d, "radiometric")
+    assert radiometric_info.reflection
+    assert radiometric_info.transmission
+    assert radiometric_info.absorption
 
     # change integration type
     sensor_3d.set_type_radiometric().set_integration_radial()
     sensor_3d.commit()
-    radiometric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_radiometric
-    assert radiometric_info.HasField("integration_type_radial")
+    assert has_sensor_3d_mode(sensor_3d, "radiometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "radial")
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_radiometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_radiometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    radiometric_info = sensor_3d_planar_measures(sensor_3d, "radiometric")
+    assert radiometric_info.reflection
+    assert radiometric_info.transmission
+    assert not radiometric_info.absorption
 
     # when change type into colorimetric, default properties:
     # colorimetric
@@ -1926,27 +2005,26 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # layer type none
     sensor_3d.set_type_colorimetric()
     sensor_3d.commit()
-    assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
-    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
-    assert colorimetric_info.wavelength_start == color_parameters.wavelength_range.start
-    assert colorimetric_info.wavelength_end == color_parameters.wavelength_range.end
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric")
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d)
+    assert wavelength_range_start(colorimetric_info) == color_parameters.wavelength_range.start
+    assert wavelength_range_end(colorimetric_info) == color_parameters.wavelength_range.end
     wavelengths_range = sensor_3d.set_type_colorimetric().set_wavelengths_range()
     wavelengths_range.start = 500
     sensor_3d.commit()
-    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
-    assert sensor_3d.get(key="wavelength_start") == 500
-    assert colorimetric_info.wavelength_start == 500
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d)
+    assert sensor_3d.set_type_colorimetric().set_wavelengths_range().start == 500
+    assert wavelength_range_start(colorimetric_info) == 500
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_photometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert not photometric_info.absorption
 
     # change layer as source
     sensor_3d.set_layer_type_source()
@@ -2458,7 +2536,7 @@ def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_by_parameters(speos: Speos):
+def test_create_by_parameters(speos: Speos, sensor_template_version):
     """Test creating sensor with new parameter class."""
     p = Project(speos=speos)
     wavelength_params = WavelengthsRangeParameters(start=380, end=780, sampling=21)
@@ -3114,7 +3192,9 @@ def test_load_camera_hydrates_nested_modes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
+def test_load_irradiance_3d_hydrates_radial_integration_helpers(
+    speos: Speos, sensor_template_version
+):
     """Ensure 3D irradiance load path keeps radial integration helper state."""
     p = Project(
         speos=speos,
@@ -3256,7 +3336,9 @@ def test_load_camera_hydrates_other_balance_modes(
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
+def test_load_irradiance_3d_hydrates_planar_integration_helpers(
+    speos: Speos, sensor_template_version
+):
     """Ensure 3D irradiance load path keeps planar integration helper state."""
     p = Project(
         speos=speos,
