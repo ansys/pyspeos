@@ -1,0 +1,187 @@
+
+
+
+
+
+
+:class:`NormalMap`
+==================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.NormalMap(parent, default_parameters = None, stable_ctr=False)
+
+   Bases: :py:obj:`BaseTextureMap`
+
+
+   
+   Normal map texture mapping properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: NormalMap
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~repeat_u`
+            - Whether the normal map repeats along the U direction.
+          * - :py:attr:`~repeat_v`
+            - Whether the normal map repeats along the V direction.
+          * - :py:attr:`~normal_map_file_uri`
+            - URI of the normal map source file.
+          * - :py:attr:`~roughness`
+            - Roughness parameter of the normal map.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import NormalMap
+
+Property detail
+---------------
+
+.. py:property:: repeat_u
+   :type: bool
+
+
+   
+   Whether the normal map repeats along the U direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: repeat_v
+   :type: bool
+
+
+   
+   Whether the normal map repeats along the V direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: normal_map_file_uri
+   :type: Optional[str]
+
+
+   
+   URI of the normal map source file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: roughness
+   :type: Optional[float]
+
+
+   
+   Roughness parameter of the normal map.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:float`]
+           Roughness value when a normal map exists, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

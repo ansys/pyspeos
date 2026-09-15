@@ -1,0 +1,390 @@
+
+
+
+
+
+
+:class:`BxdfDatapoint`
+======================
+
+
+.. py:class:: ansys.speos.core.bsdf.BxdfDatapoint(is_brdf, incident_angle, theta_values, phi_values, bxdf, tis = 1, anisotropy = 0, wavelength = 555)
+
+   
+   Class to store a BxDF data point.
+
+
+   :Parameters:
+
+       **is_brdf** : :ref:`bool <python:bltin-boolean-values>`
+           true for transmittive date, False for reflective
+
+       **incident_angle** : :class:`python:float`
+           incident angle in radian
+
+       **theta_values** : :obj:`Collection`\[:class:`python:float`]
+           list of theta values for the bxdf data matrix, in radian
+
+       **phi_values** : :obj:`Collection`\[:class:`python:float`]
+           list of phi values for the bxdf data matrix, in radian
+
+       **bxdf** : :obj:`Collection`\[:class:`python:float`]
+           nested list of bxdf values in 1/sr
+
+       **anisotropy** : :class:`python:float`
+           Anisotropy angle in radian
+
+       **wavelength** : :class:`python:float`
+           Wavelength in nm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: BxdfDatapoint
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Retrieve any information from the BxdfDatapoint object.
+          * - :py:attr:`~set_incident_angle`
+            - Allow to set an incident value in degree.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~is_brdf`
+            - Type of bxdf data point eitehr reflective or transmittive.
+          * - :py:attr:`~incident_angle`
+            - Incident angle of the Datapoint in radian.
+          * - :py:attr:`~anisotropy`
+            - Anisotropy angels of Datapoint.
+          * - :py:attr:`~theta_values`
+            - List of theta values for which values are stored in bxdf data.
+          * - :py:attr:`~phi_values`
+            - List of phi values  for which values are stored in bxdf data.
+          * - :py:attr:`~bxdf`
+            - BxDF data as np matrix in 1/sr.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~tis`
+            - 
+          * - :py:attr:`~wavelength`
+            - 
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Create string representation of a RayPath.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.bsdf import BxdfDatapoint
+
+Property detail
+---------------
+
+.. py:property:: is_brdf
+
+   
+   Type of bxdf data point eitehr reflective or transmittive.
+
+
+
+
+
+   :Returns:
+
+       bool:
+           true if reflective false if transmittive
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: incident_angle
+
+   
+   Incident angle of the Datapoint in radian.
+
+
+
+
+
+   :Returns:
+
+       float:
+           Incidence angle in radian
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: anisotropy
+
+   
+   Anisotropy angels of Datapoint.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: theta_values
+
+   
+   List of theta values for which values are stored in bxdf data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: phi_values
+
+   
+   List of phi values  for which values are stored in bxdf data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: bxdf
+   :type: numpy.array
+
+
+   
+   BxDF data as np matrix in 1/sr.
+
+
+
+
+
+   :Returns:
+
+       np.array:
+           bxdf data in shape theta_values, phi_values
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: tis
+   :value: 1
+
+
+.. py:attribute:: wavelength
+   :value: 555
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key='')
+
+   
+   Retrieve any information from the BxdfDatapoint object.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Name of the property.
+
+
+
+   :Returns:
+
+       :obj:`property`
+           Values/content of the associated property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Create string representation of a RayPath.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_incident_angle(value, is_deg=True)
+
+   
+   Allow to set an incident value in degree.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           value to be set
+
+       **is_deg** : :ref:`bool <python:bltin-boolean-values>`
+           Allows to define if value is radian or degree
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

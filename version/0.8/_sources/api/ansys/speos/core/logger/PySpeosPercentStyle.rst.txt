@@ -1,0 +1,49 @@
+
+
+
+
+
+
+:class:`PySpeosPercentStyle`
+============================
+
+
+.. py:class:: ansys.speos.core.logger.PySpeosPercentStyle(fmt, *, defaults=None)
+
+   Bases: :py:obj:`logging.PercentStyle`
+
+
+   
+   Customized ``PercentStyle`` class for overwriting default format styles.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.logger import PySpeosPercentStyle
+
+
+
+
+

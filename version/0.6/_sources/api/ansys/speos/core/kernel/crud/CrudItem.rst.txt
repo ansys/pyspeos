@@ -1,0 +1,133 @@
+
+
+
+
+
+
+:class:`CrudItem`
+=================
+
+
+.. py:class:: ansys.speos.core.kernel.crud.CrudItem(db, key)
+
+   
+   Item of a database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.crud.CrudStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key (also named guid) of the item in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CrudItem
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~stub`
+            - The database.
+          * - :py:attr:`~key`
+            - The guid in database.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.crud import CrudItem
+
+Property detail
+---------------
+
+.. py:property:: stub
+   :type: CrudStub
+
+
+   
+   The database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: key
+   :type: str
+
+
+   
+   The guid in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

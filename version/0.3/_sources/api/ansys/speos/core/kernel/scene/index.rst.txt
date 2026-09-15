@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``scene.py`` module
+=======================
+
+.. py:module:: ansys.speos.core.kernel.scene
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: scene
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.scene.SceneLink`
+            - Link object for a scene in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.scene.SceneStub`
+            - Database interactions for scenes.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoScene`
+            - Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SceneLink</api/ansys/speos/core/kernel/scene/SceneLink>
+    <span class="nf nf-cod-symbol_class"></span> SceneStub</api/ansys/speos/core/kernel/scene/SceneStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoScene
+
+   
+   Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

@@ -1,0 +1,172 @@
+
+
+
+
+
+
+The ``combine_speos.py`` module
+===============================
+
+.. py:module:: ansys.speos.core.workflow.combine_speos
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: combine_speos
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.workflow.combine_speos.SpeosFileInstance`
+            - Represents a SPEOS file containing geometries and materials.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~insert_speos`
+            - Import geometries and materials from the selected SPEOS files to the existing project.
+
+
+          * - :py:obj:`~combine_speos`
+            - Create a project by combining geometries and materials from the selected SPEOS files.
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SpeosFileInstance</api/ansys/speos/core/workflow/combine_speos/SpeosFileInstance>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Import geometries and materials from several SPEOS files to a project.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: insert_speos(project, speos_to_insert)
+
+   
+   Import geometries and materials from the selected SPEOS files to the existing project.
+
+   Geometries and materials are placed in the root part, and orientated thanks to the
+   SpeosFileInstance object.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which to import geometries and materials from SPEOS files.
+
+       **speos_to_combine** : :obj:`List`\[:obj:`ansys.speos.core.workflow.combine_speos.SpeosFileInstance`]
+           List of SPEOS files, location and orientation of geometries to be imported to the project.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Sources, Sensors and Simulations are not imported to the project.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: combine_speos(speos, speos_to_combine)
+
+   
+   Create a project by combining geometries and materials from the selected SPEOS files.
+
+   Geometries and materials are placed in the root part, and orientated thanks to the SpeosFileInstance object.
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           Speos session (connected to gRPC server).
+
+       **speos_to_combine** : :obj:`List`\[:obj:`ansys.speos.core.workflow.combine_speos.SpeosFileInstance`]
+           List of SPEOS files, location and orientation of geometries to be imported to the project.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.project.Project`
+           Project created by combining the input list of SPEOS files.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Sources, Sensors and Simulations are not imported to the project.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

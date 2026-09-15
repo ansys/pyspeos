@@ -1,0 +1,209 @@
+
+
+
+
+
+
+The ``ansys.speos.core`` library
+================================
+
+.. py:module:: ansys.speos.core
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: core
+.. tab-set::
+
+    .. tab-item:: Subpackages
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel`
+            - This module manages low-level interactions and internal operations of the project.
+
+
+          * - :py:obj:`~ansys.speos.core.workflow`
+            - This module defines processes used in workflows.
+
+
+
+    .. tab-item:: Submodules
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.body`
+            - Provides a way to interact with feature: Body.
+
+
+          * - :py:obj:`~ansys.speos.core.face`
+            - Provides a way to interact with feature: Face.
+
+
+          * - :py:obj:`~ansys.speos.core.geo_ref`
+            - 
+
+
+          * - :py:obj:`~ansys.speos.core.intensity`
+            - Provides a way to interact with Speos feature: Intensity.
+
+
+          * - :py:obj:`~ansys.speos.core.launcher`
+            - 
+
+
+          * - :py:obj:`~ansys.speos.core.logger`
+            - Logging module.
+
+
+          * - :py:obj:`~ansys.speos.core.lxp`
+            - The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files. These files contain a set of simulated rays with all their intersections and properties.
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop`
+            - Provides a way to interact with Speos feature: Optical Property.
+
+
+          * - :py:obj:`~ansys.speos.core.part`
+            - Provides a way to interact with feature: Part.
+
+
+          * - :py:obj:`~ansys.speos.core.project`
+            - Provides a way to gather Speos features.
+
+
+          * - :py:obj:`~ansys.speos.core.proto_message_utils`
+            - 
+
+
+          * - :py:obj:`~ansys.speos.core.sensor`
+            - Provides a way to interact with Speos feature: Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.simulation`
+            - Provides a way to interact with Speos feature: Simulation.
+
+
+          * - :py:obj:`~ansys.speos.core.source`
+            - Provides a way to interact with Speos feature: Source.
+
+
+          * - :py:obj:`~ansys.speos.core.spectrum`
+            - Provides a way to interact with Speos feature: Spectrum.
+
+
+          * - :py:obj:`~ansys.speos.core.speos`
+            - Provides the ``Speos`` class.
+
+
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~__version__`
+            - 
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-md-package"></span> kernel</api/ansys/speos/core/kernel/index>
+    <span class="nf nf-md-package"></span> workflow</api/ansys/speos/core/workflow/index>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-fa-file"></span> body</api/ansys/speos/core/body/index>
+    <span class="nf nf-fa-file"></span> face</api/ansys/speos/core/face/index>
+    <span class="nf nf-fa-file"></span> geo_ref</api/ansys/speos/core/geo_ref/index>
+    <span class="nf nf-fa-file"></span> intensity</api/ansys/speos/core/intensity/index>
+    <span class="nf nf-fa-file"></span> launcher</api/ansys/speos/core/launcher/index>
+    <span class="nf nf-fa-file"></span> logger</api/ansys/speos/core/logger/index>
+    <span class="nf nf-fa-file"></span> lxp</api/ansys/speos/core/lxp/index>
+    <span class="nf nf-fa-file"></span> opt_prop</api/ansys/speos/core/opt_prop/index>
+    <span class="nf nf-fa-file"></span> part</api/ansys/speos/core/part/index>
+    <span class="nf nf-fa-file"></span> project</api/ansys/speos/core/project/index>
+    <span class="nf nf-fa-file"></span> proto_message_utils</api/ansys/speos/core/proto_message_utils/index>
+    <span class="nf nf-fa-file"></span> sensor</api/ansys/speos/core/sensor/index>
+    <span class="nf nf-fa-file"></span> simulation</api/ansys/speos/core/simulation/index>
+    <span class="nf nf-fa-file"></span> source</api/ansys/speos/core/source/index>
+    <span class="nf nf-fa-file"></span> spectrum</api/ansys/speos/core/spectrum/index>
+    <span class="nf nf-fa-file"></span> speos</api/ansys/speos/core/speos/index>
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+
+PySpeos is a Python library that gathers functionalities and tools based on Speos solver remote API.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: __version__
+
+
+

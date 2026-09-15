@@ -1,0 +1,155 @@
+
+
+
+
+
+
+:class:`UVMappingByData`
+========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UVMappingByData
+
+   
+   Store mapping data when using custom mapping.
+
+   Final data is stored on Face object.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UVMappingByData
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~vertices_data_index`
+            - Index of the vertex data used for custom mapping.
+          * - :py:attr:`~repeat_v`
+            - Whether mapping repeats along the V direction.
+          * - :py:attr:`~repeat_u`
+            - Whether mapping repeats along the U direction.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UVMappingByData
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: vertices_data_index
+   :type:  int
+
+   
+   Index of the vertex data used for custom mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: repeat_v
+   :type:  Optional[bool]
+   :value: None
+
+
+   
+   Whether mapping repeats along the V direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: repeat_u
+   :type:  Optional[bool]
+   :value: None
+
+
+   
+   Whether mapping repeats along the U direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,180 @@
+
+
+
+
+
+
+:class:`LuminaireSourceParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LuminaireSourceParameters
+
+   
+   Parameters class for Luminaire Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LuminaireSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~intensity_file_uri`
+            - Path to the intensity file used by the luminaire.
+          * - :py:attr:`~flux_type`
+            - Flux definition for the luminaire source.
+          * - :py:attr:`~spectrum_type`
+            - Spectrum definition for the luminaire source.
+          * - :py:attr:`~axis_system`
+            - Axis system used to position the source.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LuminaireSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: intensity_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the intensity file used by the luminaire.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: flux_type
+   :type:  Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters]
+
+   
+   Flux definition for the luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: spectrum_type
+   :type:  Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType]
+
+   
+   Spectrum definition for the luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Axis system used to position the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

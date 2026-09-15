@@ -1,0 +1,349 @@
+
+
+
+
+
+
+:class:`DisplayParameters`
+==========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.DisplayParameters
+
+   
+   Parameters class for Display Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: DisplayParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~image_file_uri`
+            - to the display image (png, jpeg, bmp, tiff, rgb).
+          * - :py:attr:`~x_start`
+            - Lower bound x axis.
+          * - :py:attr:`~x_end`
+            - Upper bound x axis.
+          * - :py:attr:`~y_start`
+            - Lower bound y axis.
+          * - :py:attr:`~y_end`
+            - Upper bound y axis.
+          * - :py:attr:`~axis_system`
+            - Location and orientation of the display source.
+          * - :py:attr:`~luminance`
+            - Luminance value in cd/m^2.
+          * - :py:attr:`~contrast_ratio`
+            - Contrast ratio of the display (None means not set).
+          * - :py:attr:`~intensity_type`
+            - Intensity parameters for the display (e.g., library intensity).
+          * - :py:attr:`~color_space_type`
+            - Color space type of the display, either ColorSpaceType enum for predefined or
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import DisplayParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: image_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   to the display image (png, jpeg, bmp, tiff, rgb).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_start
+   :type:  float
+   :value: -50.0
+
+
+   
+   Lower bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_end
+   :type:  float
+   :value: 50.0
+
+
+   
+   Upper bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_start
+   :type:  float
+   :value: -50.0
+
+
+   
+   Lower bound y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_end
+   :type:  float
+   :value: 50.0
+
+
+   
+   Upper bound y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Location and orientation of the display source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: luminance
+   :type:  float
+   :value: 50.0
+
+
+   
+   Luminance value in cd/m^2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: contrast_ratio
+   :type:  Optional[int]
+   :value: None
+
+
+   
+   Contrast ratio of the display (None means not set).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: intensity_type
+   :type:  Union[IntensityLambertianParameters, IntensityCosParameters, IntensitySymmetricGaussianParameters, IntensitAsymmetricGaussianParameters, IntensityLibraryParameters]
+
+   
+   Intensity parameters for the display (e.g., library intensity).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: color_space_type
+   :type:  Union[ColorSpaceType, UserDefinedColorSpaceParameters]
+
+   
+   Color space type of the display, either ColorSpaceType enum for predefined or
+   UserDefinedColorSpaceParameters for custom.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

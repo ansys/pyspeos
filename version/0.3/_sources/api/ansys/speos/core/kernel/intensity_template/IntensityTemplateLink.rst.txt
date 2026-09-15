@@ -1,0 +1,238 @@
+
+
+
+
+
+
+:class:`IntensityTemplateLink`
+==============================
+
+.. py:class:: ansys.speos.core.kernel.intensity_template.IntensityTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for intensity template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.intensity_template.IntensityTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the body in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.speos.core.kernel.intensity_template import (
+   ...     ProtoIntensityTemplate,
+   ... )
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> int_t_db = speos.client.intensity_templates()
+   >>> int_t_message = ProtoIntensityTemplate(name="Cos_3_170")
+   >>> int_t_message.cos.N = 3.0
+   >>> int_t_message.cos.total_angle = 170
+   >>> int_t_link = int_t_db.create(message=int_t_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: IntensityTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+          * - :py:attr:`~get_library_type_info`
+            - Retrieve information about intensity template in case of library type.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the intensity_template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the intensity_template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`intensity_template.IntensityTemplate`
+           IntensityTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`intensity_template.IntensityTemplate`
+           New IntensityTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get_library_type_info()
+
+   
+   Retrieve information about intensity template in case of library type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.api.speos.intensity.v1.intensity_pb2.GetLibraryTypeInfo_Response`
+           Information about intensity template, like flux value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
