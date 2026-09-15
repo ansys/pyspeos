@@ -33,7 +33,6 @@ import pytest
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.generic.constants import (
     ORIGIN,
-    SENSOR_TEMPLATE_VERSIONS,
 )
 from ansys.speos.core.generic.parameters import (
     AngularRangeParameters,
@@ -71,8 +70,7 @@ from ansys.speos.core.generic.parameters import (
     WavelengthsRangeParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
-from ansys.speos.core.kernel import ProtoSensorTemplate
-from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
+from ansys.speos.core.kernel import ProtoSensorTemplate, ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
@@ -86,6 +84,7 @@ from ansys.speos.core.sensor import (
 )
 from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
+from tests.helper import SENSOR_TEMPLATE_V2_MIN_VERSION, SENSOR_TEMPLATE_VERSIONS
 
 
 def irradiance_template(sensor_feature, local: bool = False):
@@ -682,7 +681,11 @@ def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
     if "V1" == version:
         monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
     elif "V2" == version:
-        if not server_version_checker.is_version_supported(2027, 0, 0):
+        if not server_version_checker.is_version_supported(
+            SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+            SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+            SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+        ):
             pytest.skip("Template version V2 not yet supported")
     else:
         pytest.fail("Unsupported version")
@@ -715,7 +718,11 @@ def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
     assert sensor1.sensor_template_link is not None
     assert has_irradiance_template(sensor1)
     sensor_template = irradiance_template(sensor1)
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
@@ -1728,7 +1735,11 @@ def test_load_irradiance_sensor(speos: Speos, monkeypatch, version):
     if "V1" == version:
         monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
     elif "V2" == version:
-        if not server_version_checker.is_version_supported(2027, 0, 0):
+        if not server_version_checker.is_version_supported(
+            SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+            SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+            SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+        ):
             pytest.skip("Template version V2 not yet supported")
     else:
         pytest.fail("Unsupported version")
@@ -1749,7 +1760,11 @@ def test_load_irradiance_sensor(speos: Speos, monkeypatch, version):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
-    if server_version_checker.is_version_supported(2017, 0, 0):
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
         # currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)

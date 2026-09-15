@@ -157,3 +157,7 @@ def approx_comparison(value1, value2):
 def approx_arrays(value1, values2):
     """Approximation comparison for arrays."""
     return all(np.isclose(value1, values2, atol=1e-4).flatten())
+
+
+SENSOR_TEMPLATE_VERSIONS = ["V1", "V2"]
+SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)
