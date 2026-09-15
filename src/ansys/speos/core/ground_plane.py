@@ -191,6 +191,17 @@ class GroundPlane:
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # In case the ground is different from what is stored on server -> update
+        if scene_data.ground != self._ground:
+            scene_data.ground.CopyFrom(self._ground)
+            return True
+        return False
+
+    def _prepare_commit(self) -> None:
+        # This boolean allows to keep track if the ground plane is committed
+        self._committed = True
+
     def commit(self) -> GroundPlane:
         """Save feature: send the local data to the speos server database.
 
@@ -199,17 +210,19 @@ class GroundPlane:
         ansys.speos.core.ground_plane.GroundPlane
             Ground plane feature.
         """
-        # This boolean allows to keep track if the ground plane is committed
-        self._committed = True
+        self._prepare_commit()
 
         # Update the scene with the ground plane
         if self._project.scene_link:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
 
-            # In case the ground is different from what is stored on server -> update
-            if scene_data.ground != self._ground:
-                scene_data.ground.CopyFrom(self._ground)
-                self._project.scene_link.set(data=scene_data)  # update scene data
+            # Update the scene data with the ground data, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         return self
 

@@ -31,7 +31,7 @@ from collections.abc import Collection
 from functools import lru_cache, wraps
 import os
 from pathlib import Path
-from typing import List, Optional, Union, cast
+from typing import List, Optional, Tuple, Union, cast
 import warnings
 
 from ansys.tools.common.path import get_available_ansys_installations
@@ -185,7 +185,7 @@ def error_no_install(install_path: Union[Path, str], version: Union[int, str]) -
         Always raised to signal a missing Speos RPC installation.
     """
     raise FileNotFoundError(
-        f"Ansys Speos RPC server installation not found at {install_path}. "
+        f"Ansys Speos RPC server installation not found at {str(install_path)}. "
         f"Please define AWP_ROOT{version} environment variable. "
     )
 
@@ -244,11 +244,11 @@ def retrieve_speos_install_dir(
         installations = get_available_ansys_installations()  # {261: 'C:\\...\\v261', ...}
         ansys_loc = (
             installations.get(int(version))  # dict keys are int
-            or os.environ.get(f"AWP_ROOT{version}")  # fallback: env var
+            or os.environ.get(f"AWP_ROOT{version}", "")  # fallback: env var
         )
+        path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
         if not ansys_loc:
             error_no_install(speos_rpc_path or "<unset>", int(version))
-        path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
 
     # --- verify executable exists -----------------------------------------
     speos_exec = path / ("SpeosRPC_Server.exe" if os.name == "nt" else "SpeosRPC_Server.x")
@@ -258,7 +258,7 @@ def retrieve_speos_install_dir(
     return path
 
 
-def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
+def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> Tuple[int, int, int, int]:
     """Convert a given wavelength of light to an approximate RGB color value.
 
     The wavelength must be given in nanometers in the range from 380 nm to 750 nm.
@@ -271,6 +271,12 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
     gamma : float
         Gamma value.
         By default : ``0.8``
+
+    Returns
+    -------
+    Tuple[int, int, int, int]
+        A tuple representing the RGBA color value, where each component is an integer in the range
+        0-255.
     """
     wavelength = float(wavelength)
     if 380 <= wavelength <= 440:
@@ -306,7 +312,7 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
     r *= 255
     g *= 255
     b *= 255
-    return [int(r), int(g), int(b), 255]
+    return (int(r), int(g), int(b), 255)
 
 
 def min_speos_version(major: int, minor: int, service_pack: int):

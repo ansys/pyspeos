@@ -42,6 +42,8 @@ from ansys.speos.core.generic.parameters import (
     DirectSimulationParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
+    OptimizedPropagationAbsoluteParameters,
+    OptimizedPropagationRelativeParameters,
     TextureNormalizationTypes,
     VirtualBSDFSimulationParameters,
 )
@@ -522,9 +524,6 @@ class BaseSimulation:
                 )
         self._simulation_instance.source_paths[:] = src_paths
 
-    @min_speos_version(
-        MIN_SOURCE_GROUPS_VERSION[0], MIN_SOURCE_GROUPS_VERSION[1], MIN_SOURCE_GROUPS_VERSION[2]
-    )
     def _normalize_source_paths(self, source_paths: List[Union[str, BaseSource]]) -> List[str]:
         """Normalize source path values to their string representation.
 
@@ -772,7 +771,7 @@ class BaseSimulation:
             simulation_features = [
                 _
                 for _ in self._project._features
-                if isinstance(_, (SimulationDirect, SimulationInverse))
+                if isinstance(_, (SimulationDirect, SimulationInverse, SimulationVirtualBSDF))
             ]
             if len(simulation_features) > 1:
                 warnings.warn(
@@ -872,16 +871,14 @@ class BaseSimulation:
             case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
                 return TextureNormalizationTypes.color_from_bsdf
 
-    def set_texture_normalization_unspecified(self) -> BaseSimulation:
-        """Set texture normalization to unspecified."""
+    def set_texture_disabled(self) -> BaseSimulation:
+        """Disable texture handling."""
         template = getattr(self._simulation_template, self._template_class)
-        template.texture.texture_normalization = (
-            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
-        )
+        template.ClearField("texture")
         return self
 
     def set_texture_normalization_none(self) -> BaseSimulation:
-        """Disable texture normalization."""
+        """Use both the image texture and the texture mapping optical properties."""
         template = getattr(self._simulation_template, self._template_class)
         template.texture.texture_normalization = (
             simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
@@ -980,7 +977,11 @@ class BaseSimulation:
             job_props = self._job.inverse_mc_simulation_properties
             if not (
                 job_props.HasField("stop_condition_duration")
-                or job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+                or (
+                    job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
+                    or job_props.optimized_propagation_relative.min_pass_number != 0
+                    or job_props.optimized_propagation_absolute.min_pass_number != 0
+                )
             ):
                 stop_condition_error = True
 
@@ -1131,20 +1132,7 @@ class BaseSimulation:
 
         return out_str
 
-    def commit(self) -> BaseSimulation:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.BaseSimulation
-            Simulation feature.
-        """
-        # The _unique_id will help to find correct item in the scene.simulations:
-        # the list of SimulationInstance
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._simulation_instance.metadata["UniqueId"] = self._unique_id
-
+    def _commit_template(self) -> None:
         # Save or Update the simulation template (depending on if it was already saved before)
         if self.simulation_template_link is None:
             self.simulation_template_link = self._project.client.simulation_templates().create(
@@ -1156,28 +1144,59 @@ class BaseSimulation:
                 data=self._simulation_template
             )  # Only update if template has changed
 
-        # Update the scene with the simulation instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # Look if an element corresponds to the _unique_id
+        simulation_inst = next(
+            (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+            None,
+        )
 
-            # Look if an element corresponds to the _unique_id
-            simulation_inst = next(
-                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
-                None,
-            )
-            if simulation_inst is not None:  # if yes, just replace
-                if simulation_inst != self._simulation_instance:
-                    simulation_inst.CopyFrom(self._simulation_instance)
-                else:
-                    update_scene = False
+        if simulation_inst is not None:
+            if simulation_inst != self._simulation_instance:
+                simulation_inst.CopyFrom(
+                    self._simulation_instance
+                )  # if yes and change, just replace
             else:
-                scene_data.simulations.insert(
-                    len(scene_data.simulations), self._simulation_instance
-                )  # if no, just add it to the list of simulations
+                return False  # if yes but no change, no need to update the scene
+        else:
+            scene_data.simulations.insert(
+                len(scene_data.simulations), self._simulation_instance
+            )  # if no, just add it to the list of simulation instances
 
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
+        return True  # Mention that the scene needs to be updated
+
+    def _prepare_commit(self) -> None:
+        # The _unique_id will help to find correct item in the scene.simulations:
+        # the list of SimulationInstance
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._simulation_instance.metadata["UniqueId"] = self._unique_id
+
+        # Handle template
+        self._commit_template()
+
+    def commit(self) -> BaseSimulation:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation
+            Simulation feature.
+        """
+        # Prepare _unique_id and commit template if needed
+        self._prepare_commit()
+
+        # Handle instance
+        if self._project.scene_link:
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the instance, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
+                self._project.scene_link.set(data=scene_data)
 
         # Job will be committed when performing compute method
         return self
@@ -1574,12 +1593,162 @@ class SimulationInverse(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
         If defined the values in the inverse simulation instance will be overwritten by the
         values of the data class.
+
+    Notes
+    -----
+    Three exclusive optimized propagation modes are available.
+    The relative and absolute optimized propagation modes require Speos 2025 R1 SP1 or higher
+    and are only compatible with radiance sensors.
     """
 
     class SourceSampling:
         """Disabled - Setting source sampling is not available for this simulation type."""
 
         pass
+
+    class OptimizedPropagationRelative:
+        """Optimized propagation using a relative pixel standard deviation stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+        adequate in areas where pixels need more rays, thus giving a balanced image.
+
+        Parameters
+        ----------
+        propagation_relative : \
+ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationRelative
+            Protobuf message filled by this class.
+        default_parameters : \
+ansys.speos.core.generic.parameters.OptimizedPropagationRelativeParameters, optional
+            If defined, the protobuf message is initialized with the values of the data class.
+            By default, ``None``, means that the message is left untouched.
+        stable_ctr : bool
+            Internal safety flag. It must be set to ``True`` by the parent class.
+            By default, ``False``.
+
+        Notes
+        -----
+        Do not instantiate this class directly. Use
+        :meth:`SimulationInverse.set_optimized_propagation_relative` instead.
+        """
+
+        def __init__(
+            self,
+            propagation_relative: (
+                ProtoJob.InverseMCSimulationProperties.OptimizedPropagationRelative
+            ),
+            default_parameters: Optional[OptimizedPropagationRelativeParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "OptimizedPropagationRelative class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._optimized_propagation_relative = propagation_relative
+            if default_parameters is not None:
+                self.min_pass_number = default_parameters.min_pass_number
+                self.relative_value = default_parameters.stop_condition_relative_value
+
+        @property
+        def min_pass_number(self) -> int:
+            """Minimum number of passes computed without pass optimization.
+
+            Returns
+            -------
+            int
+                Minimum number of passes.
+            """
+            return self._optimized_propagation_relative.min_pass_number
+
+        @min_pass_number.setter
+        def min_pass_number(self, value: int) -> None:
+            self._optimized_propagation_relative.min_pass_number = value
+
+        @property
+        def relative_value(self) -> int:
+            """Relative pixel standard deviation threshold, in percent.
+
+            Returns
+            -------
+            int
+                Relative threshold, expressed in percent, between 0 and 100.
+            """
+            return self._optimized_propagation_relative.stop_condition_relative_value
+
+        @relative_value.setter
+        def relative_value(self, value: int) -> None:
+            self._optimized_propagation_relative.stop_condition_relative_value = value
+
+    class OptimizedPropagationAbsolute:
+        """Optimized propagation using an absolute pixel standard deviation stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+        adequate in areas where pixels need more rays, thus giving a balanced image.
+
+        Parameters
+        ----------
+        propagation_absolute : \
+ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationAbsolute
+            Protobuf message filled by this class.
+        default_parameters : \
+ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, optional
+            If defined, the protobuf message is initialized with the values of the data class.
+            By default, ``None``, means that the message is left untouched.
+        stable_ctr : bool
+            Internal safety flag. It must be set to ``True`` by the parent class.
+            By default, ``False``.
+
+        Notes
+        -----
+        Do not instantiate this class directly. Use
+        :meth:`SimulationInverse.set_optimized_propagation_absolute` instead.
+        """
+
+        def __init__(
+            self,
+            propagation_absolute: (
+                ProtoJob.InverseMCSimulationProperties.OptimizedPropagationAbsolute
+            ),
+            default_parameters: Optional[OptimizedPropagationAbsoluteParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "OptimizedPropagationAbsolute class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._optimized_propagation_absolute = propagation_absolute
+            if default_parameters is not None:
+                self.min_pass_number = default_parameters.min_pass_number
+                self.absolute_value = default_parameters.stop_condition_absolute_value
+
+        @property
+        def min_pass_number(self) -> int:
+            """Minimum number of passes computed without pass optimization.
+
+            Returns
+            -------
+            int
+                Minimum number of passes.
+            """
+            return self._optimized_propagation_absolute.min_pass_number
+
+        @min_pass_number.setter
+        def min_pass_number(self, value: int) -> None:
+            self._optimized_propagation_absolute.min_pass_number = value
+
+        @property
+        def absolute_value(self) -> int:
+            """Absolute photometric value of the pixel standard deviation threshold.
+
+            Returns
+            -------
+            int
+                Absolute photometric threshold.
+            """
+            return self._optimized_propagation_absolute.stop_condition_absolute_value
+
+        @absolute_value.setter
+        def absolute_value(self, value: int) -> None:
+            self._optimized_propagation_absolute.stop_condition_absolute_value = value
 
     @min_speos_version(25, 2, 0)
     def __init__(
@@ -1602,6 +1771,7 @@ class SimulationInverse(BaseSimulation):
             simulation_instance=simulation_instance,
         )
         self._template_class = "inverse_mc_simulation_template"
+        self._optimized = None
 
         if default_parameters is not None:
             self.ambient_material_file_uri = default_parameters.ambient_material_uri
@@ -1612,7 +1782,23 @@ class SimulationInverse(BaseSimulation):
             if self.timeline:
                 self.start_time = default_parameters.start_time
             self.stop_condition_duration = default_parameters.stop_condition_duration
-            self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
+            passes_number = default_parameters.stop_condition_passes_number
+            match passes_number:
+                case OptimizedPropagationRelativeParameters():
+                    relative = self.set_optimized_propagation_relative()
+                    relative.min_pass_number = passes_number.min_pass_number
+                    relative.relative_value = passes_number.stop_condition_relative_value
+                case OptimizedPropagationAbsoluteParameters():
+                    absolute = self.set_optimized_propagation_absolute()
+                    absolute.min_pass_number = passes_number.min_pass_number
+                    absolute.absolute_value = passes_number.stop_condition_absolute_value
+                case int():
+                    self.stop_condition_passes_number = passes_number
+                case _:
+                    raise ValueError(
+                        f"Unsupported stop_condition_passes_number type"
+                        f": {type(passes_number).__name__}"
+                    )
             self.automatic_save_frequency = default_parameters.automatic_save_frequency
             match default_parameters.colorimetric_standard:
                 case ColorimetricStandardTypes.cie_1931:
@@ -1842,7 +2028,7 @@ class SimulationInverse(BaseSimulation):
         self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = str(uri)
 
     @property
-    def stop_condition_passes_number(self) -> int:
+    def stop_condition_passes_number(self) -> Optional[int]:
         """To stop the simulation after a certain number of passes.
 
         Set None as value to have no condition about passes.
@@ -1858,15 +2044,101 @@ class SimulationInverse(BaseSimulation):
         int
         """
         props = self._job.inverse_mc_simulation_properties
-        return props.optimized_propagation_none.stop_condition_passes_number
+        if props.HasField("optimized_propagation_none"):
+            return props.optimized_propagation_none.stop_condition_passes_number
+        return None
 
     @stop_condition_passes_number.setter
     def stop_condition_passes_number(self, value: Union[None, int]) -> None:
         prop_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
+        prop_none.SetInParent()
+        self._optimized = None
         if value is None:
             prop_none.ClearField("stop_condition_passes_number")
         else:
             prop_none.stop_condition_passes_number = value
+
+    @min_speos_version(25, 1, 1)
+    def set_optimized_propagation_relative(self) -> OptimizedPropagationRelative:
+        """Set the optimized propagation relative stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationRelative
+            Optimized propagation relative stop condition.
+
+        Notes
+        -----
+        Selecting this mode discards any other optimized propagation mode previously set,
+        including :attr:`stop_condition_passes_number`.
+        Default values are applied only the first time this mode is selected, subsequent calls
+        return the stop condition with its current values.
+        Starting from 271, the job information used by optimized propagation is kept in the
+        job template.
+        """
+        props = self._job.inverse_mc_simulation_properties
+        if self._optimized is None and props.HasField("optimized_propagation_relative"):
+            self._optimized = SimulationInverse.OptimizedPropagationRelative(
+                propagation_relative=props.optimized_propagation_relative,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._optimized, SimulationInverse.OptimizedPropagationRelative):
+            self._optimized = SimulationInverse.OptimizedPropagationRelative(
+                propagation_relative=props.optimized_propagation_relative,
+                default_parameters=OptimizedPropagationRelativeParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._optimized._optimized_propagation_relative
+            is not props.optimized_propagation_relative
+        ):
+            self._optimized._optimized_propagation_relative = props.optimized_propagation_relative
+        return self._optimized
+
+    @min_speos_version(25, 1, 1)
+    def set_optimized_propagation_absolute(self) -> OptimizedPropagationAbsolute:
+        """Set the optimized propagation absolute stop condition.
+
+        The algorithm adapts the number of passes per pixel to send the optimal number of rays
+        according to the signal each pixel needs.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationAbsolute
+            Optimized propagation absolute stop condition.
+
+        Notes
+        -----
+        Selecting this mode discards any other optimized propagation mode previously set,
+        including :attr:`stop_condition_passes_number`.
+        Default values are applied only the first time this mode is selected, subsequent calls
+        return the stop condition with its current values.
+        Starting from 271, the job information used by optimized propagation is kept in the
+        job template.
+        """
+        props = self._job.inverse_mc_simulation_properties
+        if self._optimized is None and props.HasField("optimized_propagation_absolute"):
+            self._optimized = SimulationInverse.OptimizedPropagationAbsolute(
+                propagation_absolute=props.optimized_propagation_absolute,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._optimized, SimulationInverse.OptimizedPropagationAbsolute):
+            self._optimized = SimulationInverse.OptimizedPropagationAbsolute(
+                propagation_absolute=props.optimized_propagation_absolute,
+                default_parameters=OptimizedPropagationAbsoluteParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._optimized._optimized_propagation_absolute
+            is not props.optimized_propagation_absolute
+        ):
+            self._optimized._optimized_propagation_absolute = props.optimized_propagation_absolute
+        return self._optimized
 
     @property
     def stop_condition_duration(self) -> Optional[int]:

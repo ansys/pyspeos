@@ -543,7 +543,8 @@ class Intensity:
             cos_type = cast(Intensity.Cos, self._type)
             if cos_type._cos is not self._intensity_template.cos:
                 cos_type._cos = self._intensity_template.cos
-        self._intensity_properties.Clear()
+        if self._intensity_properties.HasField("properties"):
+            self._intensity_properties.Clear()
         return self._type
 
     def set_gaussian(self) -> Intensity.Gaussian:

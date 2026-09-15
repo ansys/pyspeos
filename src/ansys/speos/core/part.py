@@ -34,6 +34,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.part import ProtoPart
+from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.project as project
 
 
@@ -622,14 +623,14 @@ class Part:
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
-    def commit(self) -> Part:
-        """Save feature: send the local data to the speos server database.
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        if scene_data.part_guid != self.part_link.key:
+            scene_data.part_guid = self.part_link.key
+            return True
+        return False
 
-        Returns
-        -------
-        ansys.speos.core.part.Part
-            Part feature.
-        """
+    def _prepare_commit(self) -> None:
+
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
             self.part_link = self._project.client.parts().create(message=self._part)
@@ -640,11 +641,27 @@ class Part:
         for g in self._geom_features:
             g.commit()
 
+    def commit(self) -> Part:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.part.Part
+            Part feature.
+        """
+        # Commit part and its features if needed
+        self._prepare_commit()
+
         # Update the scene with the part
         if self._project.scene_link:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
-            if scene_data.part_guid != self.part_link.key:
-                scene_data.part_guid = self.part_link.key
+            # Retrieve scene data
+            scene_data = self._project.scene_link.get()
+
+            # Update the scene data with the part_guid, and check if the scene needs to be updated
+            update_scene = self._update_scene_data(scene_data)
+
+            if update_scene:
+                # Update if needed
                 self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
