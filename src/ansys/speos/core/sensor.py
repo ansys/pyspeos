@@ -4133,18 +4133,13 @@ class Sensor3DIrradiance(BaseSensor):
         self._fill_parameters(default_parameters)
 
     @property
-    def _use_v2(self) -> bool:
-        """Tell whether the current sensor template uses protobuf version 2."""
-        return isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
-
-    @property
     def _irradiance_3d_template(self):
         """3D irradiance part of the sensor template, whatever the protobuf version used."""
         return self._sensor_template.irradiance_3d
 
     def _sensor_mode_field(self, mode: str) -> str:
         """Get the template field name corresponding to a 3D irradiance sensor mode."""
-        if self._use_v2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             return "mode_" + mode
         return "type_" + mode
 
@@ -4173,7 +4168,6 @@ class Sensor3DIrradiance(BaseSensor):
                     sensor_type_radiometric=self._get_sensor_mode("radiometric"),
                     irradiance_3d_template=self._irradiance_3d_template,
                     default_parameters=default_parameters,
-                    use_v2=self._use_v2,
                     stable_ctr=True,
                 )
             elif default_parameters.sensor_type == SensorTypes.photometric:
@@ -4182,7 +4176,6 @@ class Sensor3DIrradiance(BaseSensor):
                     sensor_type_photometric=self._get_sensor_mode("photometric"),
                     irradiance_3d_template=self._irradiance_3d_template,
                     default_parameters=default_parameters,
-                    use_v2=self._use_v2,
                     stable_ctr=True,
                 )
             if default_parameters.geometries:
@@ -4248,7 +4241,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_v2_pb2.SensorTemplate.Irradiance3D,
             ],
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
-            use_v2: bool = False,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -4256,19 +4248,25 @@ class Sensor3DIrradiance(BaseSensor):
 
             self._sensor_type_radiometric = sensor_type_radiometric
             self._irradiance_3d_template = irradiance_3d_template
-            self._use_v2 = use_v2
             self._integration_type = None
             self._fill_parameters(default_parameters, stable_ctr)
 
+        def _uses_template_v2(self) -> bool:
+            """Tell whether the wrapped 3D irradiance template uses protobuf version 2."""
+            return isinstance(
+                self._irradiance_3d_template,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            )
+
         def _planar_measures_target(self):
             """Get the protobuf object holding planar measures fields."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 return self._irradiance_3d_template
             return self._sensor_type_radiometric.integration_type_planar
 
         def _set_integration_type(self, integration_type: str) -> None:
             """Set the integration type on the underlying protobuf message."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 self._irradiance_3d_template.integration_type = getattr(
                     sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
                     "INTEGRATION_TYPE_" + integration_type.upper(),
@@ -4281,7 +4279,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         def _has_integration_type(self, integration_type: str) -> bool:
             """Tell if the wrapped protobuf object currently uses the given integration type."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 return self._irradiance_3d_template.integration_type == getattr(
                     sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
                     "INTEGRATION_TYPE_" + integration_type.upper(),
@@ -4298,15 +4296,12 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_pb2.SensorTemplate.Irradiance3D,
                 sensor_v2_pb2.SensorTemplate.Irradiance3D,
             ],
-            use_v2: bool,
         ) -> None:
             """Refresh protobuf bindings after a feature reset."""
             self._sensor_type_radiometric = sensor_type_radiometric
             self._irradiance_3d_template = irradiance_3d_template
-            self._use_v2 = use_v2
             if isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type._illuminance_type = self._planar_measures_target()
-                self._integration_type._use_v2 = use_v2
 
         def _fill_parameters(
             self,
@@ -4328,7 +4323,6 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._planar_measures_target(),
                     default_parameters=None,
-                    use_v2=self._use_v2,
                     stable_ctr=stable_ctr,
                 )
 
@@ -4346,18 +4340,16 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._planar_measures_target(),
                     default_parameters=MeasuresParameters(),
-                    use_v2=self._use_v2,
                     stable_ctr=True,
                 )
             elif self._integration_type._illuminance_type is not self._planar_measures_target():
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._integration_type._illuminance_type = self._planar_measures_target()
-                self._integration_type._use_v2 = self._use_v2
             return self._integration_type
 
         def set_integration_radial(self) -> None:
             """Set integration radial."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 self._irradiance_3d_template.ClearField("reflection")
                 self._irradiance_3d_template.ClearField("transmission")
                 self._irradiance_3d_template.ClearField("absorption")
@@ -4396,7 +4388,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_v2_pb2.SensorTemplate.Irradiance3D,
             ],
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
-            use_v2: bool = False,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -4404,19 +4395,25 @@ class Sensor3DIrradiance(BaseSensor):
 
             self._sensor_type_photometric = sensor_type_photometric
             self._irradiance_3d_template = irradiance_3d_template
-            self._use_v2 = use_v2
             self._integration_type = None
             self._fill_parameters(default_parameters, stable_ctr)
 
+        def _uses_template_v2(self) -> bool:
+            """Tell whether the wrapped 3D irradiance template uses protobuf version 2."""
+            return isinstance(
+                self._irradiance_3d_template,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            )
+
         def _planar_measures_target(self):
             """Get the protobuf object holding planar measures fields."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 return self._irradiance_3d_template
             return self._sensor_type_photometric.integration_type_planar
 
         def _set_integration_type(self, integration_type: str) -> None:
             """Set the integration type on the underlying protobuf message."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 self._irradiance_3d_template.integration_type = getattr(
                     sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
                     "INTEGRATION_TYPE_" + integration_type.upper(),
@@ -4429,7 +4426,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         def _has_integration_type(self, integration_type: str) -> bool:
             """Tell if the wrapped protobuf object currently uses the given integration type."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 return self._irradiance_3d_template.integration_type == getattr(
                     sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
                     "INTEGRATION_TYPE_" + integration_type.upper(),
@@ -4446,15 +4443,12 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_pb2.SensorTemplate.Irradiance3D,
                 sensor_v2_pb2.SensorTemplate.Irradiance3D,
             ],
-            use_v2: bool,
         ) -> None:
             """Refresh protobuf bindings after a feature reset."""
             self._sensor_type_photometric = sensor_type_photometric
             self._irradiance_3d_template = irradiance_3d_template
-            self._use_v2 = use_v2
             if isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type._illuminance_type = self._planar_measures_target()
-                self._integration_type._use_v2 = use_v2
 
         def _fill_parameters(
             self,
@@ -4476,7 +4470,6 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._planar_measures_target(),
                     default_parameters=None,
-                    use_v2=self._use_v2,
                     stable_ctr=stable_ctr,
                 )
 
@@ -4494,18 +4487,16 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._planar_measures_target(),
                     default_parameters=MeasuresParameters(),
-                    use_v2=self._use_v2,
                     stable_ctr=True,
                 )
             elif self._integration_type._illuminance_type is not self._planar_measures_target():
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._integration_type._illuminance_type = self._planar_measures_target()
-                self._integration_type._use_v2 = self._use_v2
             return self._integration_type
 
         def set_integration_radial(self) -> None:
             """Set integration radial."""
-            if self._use_v2:
+            if self._uses_template_v2():
                 self._irradiance_3d_template.ClearField("reflection")
                 self._irradiance_3d_template.ClearField("transmission")
                 self._irradiance_3d_template.ClearField("absorption")
@@ -4542,14 +4533,12 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_v2_pb2.SensorTemplate.Irradiance3D,
             ],
             default_parameters: Optional[MeasuresParameters] = None,
-            use_v2: bool = False,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
                 msg = "Measures class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._illuminance_type = illuminance_type
-            self._use_v2 = use_v2
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(self, default_parameters: Optional[MeasuresParameters] = None) -> None:
@@ -4836,7 +4825,10 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor.
         """
         had_type_photometric = self._has_sensor_mode("photometric")
-        if self._use_v2 and not had_type_photometric:
+        if (
+            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
+            and not had_type_photometric
+        ):
             self._get_sensor_mode("photometric").SetInParent()
         if self._type is None and had_type_photometric:
             # Happens in case of project created via load of speos file
@@ -4844,7 +4836,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
                 default_parameters=None,
-                use_v2=self._use_v2,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Photometric):
@@ -4853,7 +4844,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
                 default_parameters=Irradiance3DSensorParameters(),
-                use_v2=self._use_v2,
                 stable_ctr=True,
             )
         elif self._type._sensor_type_photometric is not self._get_sensor_mode("photometric"):
@@ -4861,7 +4851,6 @@ class Sensor3DIrradiance(BaseSensor):
             self._type._refresh_binding(
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
-                use_v2=self._use_v2,
             )
         return self._type
 
@@ -4876,7 +4865,10 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor
         """
         had_type_radiometric = self._has_sensor_mode("radiometric")
-        if self._use_v2 and not had_type_radiometric:
+        if (
+            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
+            and not had_type_radiometric
+        ):
             self._get_sensor_mode("radiometric").SetInParent()
         if self._type is None and had_type_radiometric:
             # Happens in case of project created via load of speos file
@@ -4884,7 +4876,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
                 default_parameters=None,
-                use_v2=self._use_v2,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Radiometric):
@@ -4893,7 +4884,6 @@ class Sensor3DIrradiance(BaseSensor):
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
                 default_parameters=Irradiance3DSensorParameters(),
-                use_v2=self._use_v2,
                 stable_ctr=True,
             )
         elif self._type._sensor_type_radiometric is not self._get_sensor_mode("radiometric"):
@@ -4901,7 +4891,6 @@ class Sensor3DIrradiance(BaseSensor):
             self._type._refresh_binding(
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
                 irradiance_3d_template=self._irradiance_3d_template,
-                use_v2=self._use_v2,
             )
         return self._type
 
@@ -4917,11 +4906,14 @@ class Sensor3DIrradiance(BaseSensor):
             Colorimetric type.
         """
         had_type_colorimetric = self._has_sensor_mode("colorimetric")
-        if self._use_v2:
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
             self._irradiance_3d_template.ClearField("reflection")
             self._irradiance_3d_template.ClearField("transmission")
             self._irradiance_3d_template.ClearField("absorption")
-        if self._use_v2 and not had_type_colorimetric:
+        if (
+            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
+            and not had_type_colorimetric
+        ):
             self._get_sensor_mode("colorimetric").SetInParent()
         if self._type is None and had_type_colorimetric:
             # Happens in case of project created via load of speos file
