@@ -83,8 +83,10 @@ from ansys.speos.core.sensor import (
     SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import SimulationDirect
-from tests.conftest import test_path
-from tests.helper import SENSOR_TEMPLATE_V2_MIN_VERSION, SENSOR_TEMPLATE_VERSIONS
+from tests.conftest import (
+    SENSOR_TEMPLATE_V2_MIN_VERSION,
+    test_path,
+)
 
 
 def irradiance_template(sensor_feature, local: bool = False):
@@ -674,21 +676,9 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.delete()
 
 
-@pytest.mark.parametrize("version", SENSOR_TEMPLATE_VERSIONS)
 @pytest.mark.supported_speos_versions(min=251)
-def test_create_irradiance_sensor(speos: Speos, monkeypatch, version):
+def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""
-    if "V1" == version:
-        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
-    elif "V2" == version:
-        if not server_version_checker.is_version_supported(
-            SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-            SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-            SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-        ):
-            pytest.skip("Template version V2 not yet supported")
-    else:
-        pytest.fail("Unsupported version")
     p = Project(speos=speos)
 
     root_part = p.create_root_part()
@@ -1729,20 +1719,8 @@ def test_load_radiance_sensor(speos: Speos):
     )
 
 
-@pytest.mark.parametrize("version", SENSOR_TEMPLATE_VERSIONS)
-def test_load_irradiance_sensor(speos: Speos, monkeypatch, version):
+def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test load of radiance sensor."""
-    if "V1" == version:
-        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
-    elif "V2" == version:
-        if not server_version_checker.is_version_supported(
-            SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-            SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-            SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-        ):
-            pytest.skip("Template version V2 not yet supported")
-    else:
-        pytest.fail("Unsupported version")
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "Irradiance.1.speos" / "Irradiance.1.speos"),

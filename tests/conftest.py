@@ -38,6 +38,7 @@ import pytest
 
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
 from ansys.speos.core.speos import Speos
 
@@ -98,6 +99,22 @@ def speos():
     )
 
     yield speos
+
+
+SENSOR_TEMPLATE_VERSIONS = ["V1", "V2"]
+
+
+@pytest.fixture(params=SENSOR_TEMPLATE_VERSIONS)
+def sensor_template_version(request, monkeypatch):
+    """Test ficture which forces a test to run with 26R1 version to check sensor template V1."""
+    version = request.param
+    if "V1" == version:
+        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
+    elif "V2" == version:
+        if not server_version_checker.is_version_supported(2027, 0, 0):
+            pytest.skip("Template version V2 not yet supported")
+    else:
+        pytest.fail(f"Unsupported version: {version}")
 
 
 # set test_path var depending on if we are using the servers in a docker container or not
@@ -258,3 +275,6 @@ def pytest_runtest_setup(item):
                 message += f" Discontinued since version {max_version} and higher."
 
             pytest.skip(message)
+
+
+SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)
