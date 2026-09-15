@@ -1680,7 +1680,7 @@ def test_load_intensity_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_3d_irradiance_sensor(speos: Speos):
+def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test load of 3d irradiance sensor."""
     p = Project(
         speos=speos,
@@ -1688,6 +1688,16 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
+        # currently load forces version v1 can be changed when all sensors are migrated
+        # assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_3d.colorimetric, Sensor3DIrradiance.Colorimetric)
     assert sensor_3d.type == "Colorimetric"
     wl = sensor_3d.colorimetric.set_wavelengths_range()
@@ -1929,6 +1939,7 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     # planar integration
     # layer type none
     # measure reflection, transmission, absorption
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
     backend_photometric_info = sensor_3d.sensor_template_link.get()
     assert sensor_3d.sensor_template_link is not None
     if server_version_checker.is_version_supported(
