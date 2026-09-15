@@ -9,6 +9,130 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.9.2 <https://github.com/ansys/pyspeos/releases/tag/v0.9.2>`_ - September 15, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add thermic source
+          - `#651 <https://github.com/ansys/pyspeos/pull/651>`_
+
+        * - Core - OptProp - Remove redundancy from members
+          - `#1097 <https://github.com/ansys/pyspeos/pull/1097>`_
+
+        * - Add support for optimized propagation in inverse simulations
+          - `#1112 <https://github.com/ansys/pyspeos/pull/1112>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Backwardscompatibility
+          - `#1076 <https://github.com/ansys/pyspeos/pull/1076>`_
+
+        * - Core layer - Simulation feature - Correct docstring and naming for set_texture_xxx methods
+          - `#1077 <https://github.com/ansys/pyspeos/pull/1077>`_
+
+        * - Doc-build
+          - `#1084 <https://github.com/ansys/pyspeos/pull/1084>`_
+
+        * - Core - OptProp - various fixes
+          - `#1104 <https://github.com/ansys/pyspeos/pull/1104>`_, `#1105 <https://github.com/ansys/pyspeos/pull/1105>`_
+
+        * - Jupyterlab version
+          - `#1106 <https://github.com/ansys/pyspeos/pull/1106>`_
+
+        * - Core - optprop - work on _to_dict() method (texture missing)
+          - `#1107 <https://github.com/ansys/pyspeos/pull/1107>`_
+
+        * - Core - optprop - creation of _prepare_xxx_assignment to ease helpers usage
+          - `#1108 <https://github.com/ansys/pyspeos/pull/1108>`_
+
+        * - Core - project - raise error if vbb is not supported by the server
+          - `#1109 <https://github.com/ansys/pyspeos/pull/1109>`_
+
+        * - Nightly thermic test
+          - `#1114 <https://github.com/ansys/pyspeos/pull/1114>`_
+
+        * - Improve performances for commit
+          - `#1115 <https://github.com/ansys/pyspeos/pull/1115>`_
+
+        * - Commit enhancement multi-version support
+          - `#1120 <https://github.com/ansys/pyspeos/pull/1120>`_
+
+        * - Nightly failure lightbox test str comparison
+          - `#1128 <https://github.com/ansys/pyspeos/pull/1128>`_
+
+        * - Exporting virtual bsdf bench before 261 SP1
+          - `#1130 <https://github.com/ansys/pyspeos/pull/1130>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the actions group across 1 directory with 3 updates
+          - `#1078 <https://github.com/ansys/pyspeos/pull/1078>`_
+
+        * - Bump grpcio from 1.82.1 to 1.83.0 in the grpc-deps group
+          - `#1079 <https://github.com/ansys/pyspeos/pull/1079>`_
+
+        * - Bump the dev-dependencies group with 2 updates
+          - `#1080 <https://github.com/ansys/pyspeos/pull/1080>`_
+
+        * - Bump docker/login-action from 4.5.1 to 4.6.0 in the actions group
+          - `#1095 <https://github.com/ansys/pyspeos/pull/1095>`_
+
+        * - Bump ansys-platform-instancemanagement from 1.1.2 to 1.2.0 in the optional-deps group
+          - `#1100 <https://github.com/ansys/pyspeos/pull/1100>`_
+
+        * - Update flit-core requirement from <4,>=3.2 to >=3.2,<5
+          - `#1101 <https://github.com/ansys/pyspeos/pull/1101>`_
+
+        * - Bump the actions group across 1 directory with 14 updates
+          - `#1116 <https://github.com/ansys/pyspeos/pull/1116>`_
+
+        * - Bump aiohttp from 3.14.1 to 3.14.3 in the security-updates group across 1 directory
+          - `#1118 <https://github.com/ansys/pyspeos/pull/1118>`_
+
+        * - Bump prek from 0.4.4 to 0.5.0 in the dev-dependencies group
+          - `#1121 <https://github.com/ansys/pyspeos/pull/1121>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve typing generic
+          - `#911 <https://github.com/ansys/pyspeos/pull/911>`_
+
+        * - Temporarily pin ansys/actions/check-vulnerabilities to main
+          - `#1081 <https://github.com/ansys/pyspeos/pull/1081>`_
+
+        * - Pre-commit autoupdate
+          - `#1082 <https://github.com/ansys/pyspeos/pull/1082>`_, `#1098 <https://github.com/ansys/pyspeos/pull/1098>`_, `#1103 <https://github.com/ansys/pyspeos/pull/1103>`_, `#1117 <https://github.com/ansys/pyspeos/pull/1117>`_, `#1123 <https://github.com/ansys/pyspeos/pull/1123>`_
+
+        * - Update missing or outdated files
+          - `#1094 <https://github.com/ansys/pyspeos/pull/1094>`_
+
+        * - Possibility to use a specific docker image in PR ci/cd
+          - `#1122 <https://github.com/ansys/pyspeos/pull/1122>`_
+
+
 `0.9.1 <https://github.com/ansys/pyspeos/releases/tag/v0.9.1>`_ - July 29, 2026
 ===============================================================================
 
