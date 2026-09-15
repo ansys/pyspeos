@@ -1052,7 +1052,11 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     assert has_radiance_template(sensor1)
     assert sensor1.sensor_template_link.get().name == "Radiance.1"
     template = radiance_template(sensor1)
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
@@ -1657,7 +1661,11 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_photo, SensorRadiance)
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(
+        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
+        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
+    ):
         # @Todo adjust when V2 is supported on load
         #  currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
