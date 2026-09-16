@@ -1083,7 +1083,6 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
-    template = radiance_template(sensor1)
     assert has_radiance_sensor_mode(sensor1, "radiometric")
 
     # sensor_type_colorimetric
@@ -1091,7 +1090,6 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     # default wavelengths range
     sensor1.set_type_colorimetric()
     sensor1.commit()
-    template = radiance_template(sensor1)
     assert has_radiance_sensor_mode(sensor1, "colorimetric")
     colorimetric = radiance_sensor_mode(sensor1, "colorimetric")
     assert colorimetric.HasField("wavelengths_range")
@@ -1104,7 +1102,6 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     # default wavelengths range
     sensor1.set_type_spectral()
     sensor1.commit()
-    template = radiance_template(sensor1)
     assert has_radiance_sensor_mode(sensor1, "spectral")
     spectral = radiance_sensor_mode(sensor1, "spectral")
     assert spectral.HasField("wavelengths_range")
@@ -1126,7 +1123,7 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     # sensor_type_photometric
     sensor1.set_type_photometric()
     sensor1.commit()
-    template = radiance_template(sensor1)
+
     assert has_radiance_sensor_mode(sensor1, "photometric")
 
     # focal
@@ -2492,7 +2489,7 @@ def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_by_parameters(speos: Speos):
+def test_create_by_parameters(speos: Speos, sensor_template_version):
     """Test creating sensor with new parameter class."""
     p = Project(speos=speos)
     wavelength_params = WavelengthsRangeParameters(start=380, end=780, sampling=21)

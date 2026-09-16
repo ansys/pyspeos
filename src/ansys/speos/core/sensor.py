@@ -27,7 +27,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from pathlib import Path
 import tempfile
-from typing import List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -129,6 +129,10 @@ class BaseSensor:
     _supports_template_v2 = False
     """Whether the concrete sensor feature is able to handle a sensor template v2."""
 
+    _sensor_mode_template_field_v1 = None
+    _sensor_mode_template_field_v2 = None
+    """Field names of the sensor-template sub-message holding mode configuration."""
+
     @classmethod
     def _use_sensor_template_v2(cls) -> bool:
         """Tell if a newly created sensor template has to use the v2 protobuf definition.
@@ -199,6 +203,97 @@ class BaseSensor:
         if self._use_sensor_template_v2():
             return ProtoSensorTemplateV2(name=name, description=description, metadata=metadata)
         return ProtoSensorTemplate(name=name, description=description, metadata=metadata)
+
+    def _sensor_template_part(self, field_v1: str, field_v2: str) -> Any:
+        """Get a sensor-template sub-message, whatever the protobuf version used.
+
+        Parameters
+        ----------
+        field_v1 : str
+            Name of the version 1 field.
+        field_v2 : str
+            Name of the version 2 field.
+
+        Returns
+        -------
+        google.protobuf.message.Message
+            Protobuf sub-message for the active sensor template version.
+        """
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            return getattr(self._sensor_template, field_v2)
+        return getattr(self._sensor_template, field_v1)
+
+    @property
+    def _sensor_mode_template(self) -> Any:
+        """Template sub-message storing sensor mode information.
+
+        Returns
+        -------
+        google.protobuf.message.Message
+            Protobuf sub-message holding mode-specific sensor data.
+
+        Raises
+        ------
+        AttributeError
+            If the concrete sensor does not declare mode-template field names.
+        """
+        if (
+            self._sensor_mode_template_field_v1 is None
+            or self._sensor_mode_template_field_v2 is None
+        ):
+            msg = "Sensor mode template fields must be declared on the concrete sensor class."
+            raise AttributeError(msg)
+        return self._sensor_template_part(
+            self._sensor_mode_template_field_v1,
+            self._sensor_mode_template_field_v2,
+        )
+
+    def _sensor_mode_field(self, mode: str) -> str:
+        """Get the template field name corresponding to a sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        str
+            Name of the protobuf field for the sensor template version in use.
+        """
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            return "mode_" + mode
+        return "sensor_type_" + mode
+
+    def _get_sensor_mode(self, mode: str) -> Any:
+        """Get the protobuf sub-message corresponding to a sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        google.protobuf.message.Message
+            Sub-message of the sensor mode template.
+        """
+        return getattr(self._sensor_mode_template, self._sensor_mode_field(mode))
+
+    def _has_sensor_mode(self, mode: str) -> bool:
+        """Tell if the template currently holds the given sensor mode.
+
+        Parameters
+        ----------
+        mode : str
+            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+
+        Returns
+        -------
+        bool
+            ``True`` if the sensor mode is the one currently set.
+        """
+        return self._sensor_mode_template.HasField(self._sensor_mode_field(mode))
 
     @property
     def lxp_path_number(self) -> Union[None, int]:
@@ -2652,6 +2747,8 @@ class SensorIrradiance(BaseSensor):
     """
 
     _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "irradiance_sensor_template"
+    _sensor_mode_template_field_v2 = "irradiance"
 
     def __init__(
         self,
@@ -2690,56 +2787,7 @@ class SensorIrradiance(BaseSensor):
         ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Irradiance]
             Protobuf sub-message holding the irradiance sensor template definition.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return self._sensor_template.irradiance
-        return self._sensor_template.irradiance_sensor_template
-
-    def _sensor_mode_field(self, mode: str) -> str:
-        """Get the template field name corresponding to a sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        str
-            Name of the protobuf field for the sensor template version in use.
-        """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "sensor_type_" + mode
-
-    def _get_sensor_mode(self, mode: str):
-        """Get the protobuf sub-message corresponding to a sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        google.protobuf.message.Message
-            Sub-message of the irradiance sensor template.
-        """
-        return getattr(self._irradiance_template, self._sensor_mode_field(mode))
-
-    def _has_sensor_mode(self, mode: str) -> bool:
-        """Tell if the template currently holds the given sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        bool
-            ``True`` if the sensor mode is the one currently set.
-        """
-        return self._irradiance_template.HasField(self._sensor_mode_field(mode))
+        return self._sensor_mode_template
 
     def _set_integration_type(self, integration_type: str) -> None:
         """Set the integration (illuminance) type on the sensor template.
@@ -3539,6 +3587,8 @@ class SensorRadiance(BaseSensor):
     """
 
     _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "radiance_sensor_template"
+    _sensor_mode_template_field_v2 = "radiance"
 
     def __init__(
         self,
@@ -3579,56 +3629,7 @@ class SensorRadiance(BaseSensor):
         ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Radiance]
             Protobuf sub-message holding the radiance sensor template definition.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return self._sensor_template.radiance
-        return self._sensor_template.radiance_sensor_template
-
-    def _sensor_mode_field(self, mode: str) -> str:
-        """Get the template field name corresponding to a sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        str
-            Name of the protobuf field for the sensor template version in use.
-        """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "sensor_type_" + mode
-
-    def _get_sensor_mode(self, mode: str):
-        """Get the protobuf sub-message corresponding to a sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        google.protobuf.message.Message
-            Sub-message of the radiance sensor template.
-        """
-        return getattr(self._radiance_template, self._sensor_mode_field(mode))
-
-    def _has_sensor_mode(self, mode: str) -> bool:
-        """Tell if the template currently holds the given sensor mode.
-
-        Parameters
-        ----------
-        mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
-
-        Returns
-        -------
-        bool
-            ``True`` if the sensor mode is the one currently set.
-        """
-        return self._radiance_template.HasField(self._sensor_mode_field(mode))
+        return self._sensor_mode_template
 
     def _fill_parameters(
         self, default_parameters: Optional[RadianceSensorParameters] = None
