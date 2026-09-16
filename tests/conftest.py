@@ -50,6 +50,7 @@ try:
 except ImportError:
     pass
 
+SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)
 IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
 IS_WINDOWS = os.name == "nt"
 
@@ -111,7 +112,7 @@ def sensor_template_version(request, monkeypatch):
     if "V1" == version:
         monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
     elif "V2" == version:
-        if not server_version_checker.is_version_supported(2027, 0, 0):
+        if not server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
             pytest.skip("Template version V2 not yet supported")
     else:
         pytest.fail(f"Unsupported version: {version}")
@@ -275,6 +276,3 @@ def pytest_runtest_setup(item):
                 message += f" Discontinued since version {max_version} and higher."
 
             pytest.skip(message)
-
-
-SENSOR_TEMPLATE_V2_MIN_VERSION = (2027, 1, 0)

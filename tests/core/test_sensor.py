@@ -742,11 +742,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     assert sensor1.sensor_template_link is not None
     assert has_irradiance_template(sensor1)
     sensor_template = irradiance_template(sensor1)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
@@ -1052,11 +1048,7 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     assert has_radiance_template(sensor1)
     assert sensor1.sensor_template_link.get().name == "Radiance.1"
     template = radiance_template(sensor1)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
@@ -1086,7 +1078,7 @@ def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     assert has_radiance_sensor_mode(sensor1, "radiometric")
 
     # sensor_type_colorimetric
-    color_parameters = SpectralParameters()
+    color_parameters = ColorimetricParameters()
     # default wavelengths range
     sensor1.set_type_colorimetric()
     sensor1.commit()
@@ -1658,11 +1650,7 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_photo, SensorRadiance)
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # @Todo adjust when V2 is supported on load
         #  currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
@@ -1773,11 +1761,7 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # @Todo adjust when V2 is supported on load
         # currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
@@ -2152,7 +2136,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_radiance_modify_after_reset(speos: Speos):
+def test_radiance_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
     sensor_parameter = RadianceSensorParameters()
