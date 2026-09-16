@@ -64,7 +64,7 @@ try:
     sop_db, vop_db, bsdf_sop_link, vop_before_link, vop_after_link = create_templates(
         speos, bsdf_file_path
     )
-# -
+    # -
 
     # ## Build Metric Configurations
     #
@@ -131,7 +131,7 @@ try:
     # ``plot_results`` creates individual charts for each metric family and a
     # combined dashboard. Slice charts are grouped by sweep variable and label
     # each curve with its fixed input values.
-    
+
     # +
     plot_results(result_all)
     # -
