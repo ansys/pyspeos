@@ -1704,11 +1704,7 @@ def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
@@ -1962,11 +1958,7 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     backend_photometric_info = sensor_3d.sensor_template_link.get()
     assert sensor_3d.sensor_template_link is not None
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
