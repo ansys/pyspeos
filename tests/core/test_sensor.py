@@ -135,6 +135,40 @@ def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
     return template.HasField("irradiance_sensor_template")
 
 
+def radiance_template(sensor_feature, local: bool = False):
+    """Get the radiance part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.radiance
+    return template.radiance_sensor_template
+
+
+def has_radiance_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds a radiance definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("radiance")
+    return template.HasField("radiance_sensor_template")
+
+
+def radiance_sensor_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of a radiance template."""
+    return getattr(
+        radiance_template(sensor_feature, local), _sensor_mode_field(sensor_feature, mode)
+    )
+
+
+def has_radiance_sensor_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the radiance template currently uses the given sensor mode."""
+    return radiance_template(sensor_feature, local).HasField(
+        _sensor_mode_field(sensor_feature, mode)
+    )
+
+
 def _sensor_mode_field(sensor_feature, mode: str) -> str:
     """Get the protobuf field name of a sensor mode for the template version in use."""
     if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
@@ -708,11 +742,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     assert sensor1.sensor_template_link is not None
     assert has_irradiance_template(sensor1)
     sensor_template = irradiance_template(sensor1)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
     else:
         assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
@@ -986,7 +1016,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_create_radiance_sensor(speos: Speos):
+def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
 
@@ -1013,11 +1043,16 @@ def test_create_radiance_sensor(speos: Speos):
     # Default value
     sensor1 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
     sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
+    assert has_radiance_template(sensor1)
     assert sensor1.sensor_template_link.get().name == "Radiance.1"
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_photometric")
+    template = radiance_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    assert has_radiance_sensor_mode(sensor1, "photometric")
     assert template.focal == sensor_parameter.focal_length
     assert sensor1.focal == sensor_parameter.focal_length
     assert template.integration_angle == sensor_parameter.integration_angle
@@ -1040,50 +1075,31 @@ def test_create_radiance_sensor(speos: Speos):
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_radiometric")
+    assert has_radiance_sensor_mode(sensor1, "radiometric")
 
     # sensor_type_colorimetric
-    color_parameters = SpectralParameters()
+    color_parameters = ColorimetricParameters()
     # default wavelengths range
     sensor1.set_type_colorimetric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_colorimetric")
-    assert template.sensor_type_colorimetric.HasField("wavelengths_range")
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_start
-        == color_parameters.wavelength_range.start
-    )
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_end
-        == color_parameters.wavelength_range.end
-    )
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == color_parameters.wavelength_range.sampling
-    )
+    assert has_radiance_sensor_mode(sensor1, "colorimetric")
+    colorimetric = radiance_sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.HasField("wavelengths_range")
+    assert colorimetric.wavelengths_range.w_start == color_parameters.wavelength_range.start
+    assert colorimetric.wavelengths_range.w_end == color_parameters.wavelength_range.end
+    assert colorimetric.wavelengths_range.w_sampling == color_parameters.wavelength_range.sampling
 
     # sensor_type_spectral
     spectral_parameters = SpectralParameters()
     # default wavelengths range
     sensor1.set_type_spectral()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_spectral")
-    assert template.sensor_type_spectral.HasField("wavelengths_range")
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_start
-        == spectral_parameters.wavelength_range.start
-    )
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_end
-        == spectral_parameters.wavelength_range.end
-    )
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_sampling
-        == spectral_parameters.wavelength_range.sampling
-    )
+    assert has_radiance_sensor_mode(sensor1, "spectral")
+    spectral = radiance_sensor_mode(sensor1, "spectral")
+    assert spectral.HasField("wavelengths_range")
+    assert spectral.wavelengths_range.w_start == spectral_parameters.wavelength_range.start
+    assert spectral.wavelengths_range.w_end == spectral_parameters.wavelength_range.end
+    assert spectral.wavelengths_range.w_sampling == spectral_parameters.wavelength_range.sampling
 
     # chosen wavelengths range
     wavelengths_range = sensor1.set_type_spectral().set_wavelengths_range()
@@ -1091,27 +1107,27 @@ def test_create_radiance_sensor(speos: Speos):
     wavelengths_range.end = 800
     wavelengths_range.sampling = 15
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.sensor_type_spectral.wavelengths_range.w_start == 450
-    assert template.sensor_type_spectral.wavelengths_range.w_end == 800
-    assert template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+    spectral = radiance_sensor_mode(sensor1, "spectral")
+    assert spectral.wavelengths_range.w_start == 450
+    assert spectral.wavelengths_range.w_end == 800
+    assert spectral.wavelengths_range.w_sampling == 15
 
     # sensor_type_photometric
     sensor1.set_type_photometric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_photometric")
+
+    assert has_radiance_sensor_mode(sensor1, "photometric")
 
     # focal
     sensor1.focal = 150.5
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.focal == 150.5
 
     # integration_angle
     sensor1.integration_angle = 4.5
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.integration_angle == 4.5
 
     # dimensions
@@ -1122,7 +1138,7 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.dimensions.y_end = 20
     sensor1.dimensions.y_sampling = 120
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.HasField("dimensions")
     assert template.dimensions.x_start == -10.0
     assert template.dimensions.x_end == 10.0
@@ -1617,7 +1633,7 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     assert sensor_3d.layer == LayerTypes.none
 
 
-def test_load_radiance_sensor(speos: Speos):
+def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     """Test load of radiance sensor."""
     p = Project(
         speos=speos,
@@ -1634,6 +1650,13 @@ def test_load_radiance_sensor(speos: Speos):
     assert isinstance(sensor_photo, SensorRadiance)
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        # @Todo adjust when V2 is supported on load
+        #  currently load forces version v1 can be changed when all sensors are migrated
+        # assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     assert sensor_color.type == "Colorimetric"
     assert sensor_photo.type == "Photometric"
     assert sensor_spectral.type == "Spectral"
@@ -1738,11 +1761,8 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
-    if server_version_checker.is_version_supported(
-        SENSOR_TEMPLATE_V2_MIN_VERSION[0],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[1],
-        SENSOR_TEMPLATE_V2_MIN_VERSION[2],
-    ):
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        # @Todo adjust when V2 is supported on load
         # currently load forces version v1 can be changed when all sensors are migrated
         # assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
@@ -2116,7 +2136,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_radiance_modify_after_reset(speos: Speos):
+def test_radiance_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
     sensor_parameter = RadianceSensorParameters()
@@ -2133,59 +2153,54 @@ def test_radiance_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.radiance_sensor_template.focal == sensor_parameter.focal_length
+    template = radiance_template(sensor1, local=True)
+    assert template.focal == sensor_parameter.focal_length
     sensor1.focal = 100
-    assert sensor1._sensor_template.radiance_sensor_template.focal == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.focal == 100
     # Intermediate class for type : colorimetric
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start
         == wl.start
     )
     sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == 500
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 500
     )
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
-        == wl.end
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_end == wl.end
     )
     sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == 500
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 500
     )
     # Intermediate class for dimensions
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.x_start
-        == sensor_parameter.dimensions.x_start
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_start == sensor_parameter.dimensions.x_start
     sensor1.set_dimensions().x_start = -100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_start == -100
     assert sensor1.set_dimensions().x_start == -100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.x_end
-        == sensor_parameter.dimensions.x_end
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_end == sensor_parameter.dimensions.x_end
     sensor1.set_dimensions().x_end = 100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_end == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_end == 100
     assert sensor1.set_dimensions().x_end == 100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.y_start
-        == sensor_parameter.dimensions.y_start
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_start == sensor_parameter.dimensions.y_start
     sensor1.set_dimensions().y_start = -100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_start == -100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_start == -100
     assert sensor1.set_dimensions().y_start == -100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.y_end
-        == sensor_parameter.dimensions.y_end
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_end == sensor_parameter.dimensions.y_end
     sensor1.set_dimensions().y_end = 100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_end == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_end == 100
     assert sensor1.set_dimensions().y_end == 100
 
     ## Props
@@ -2458,7 +2473,7 @@ def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_by_parameters(speos: Speos):
+def test_create_by_parameters(speos: Speos, sensor_template_version):
     """Test creating sensor with new parameter class."""
     p = Project(speos=speos)
     wavelength_params = WavelengthsRangeParameters(start=380, end=780, sampling=21)
