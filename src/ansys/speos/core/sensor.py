@@ -133,6 +133,10 @@ class BaseSensor:
     _sensor_mode_template_field_v2 = None
     """Field names of the sensor-template sub-message holding mode configuration."""
 
+    _sensor_mode_field_prefix_v1 = "sensor_type_"
+    _sensor_mode_field_prefix_v2 = "mode_"
+    """Field-name prefixes used to resolve mode sub-messages for each template version."""
+
     @classmethod
     def _use_sensor_template_v2(cls) -> bool:
         """Tell if a newly created sensor template has to use the v2 protobuf definition.
@@ -262,8 +266,8 @@ class BaseSensor:
             Name of the protobuf field for the sensor template version in use.
         """
         if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "sensor_type_" + mode
+            return self._sensor_mode_field_prefix_v2 + mode
+        return self._sensor_mode_field_prefix_v1 + mode
 
     def _get_sensor_mode(self, mode: str) -> Any:
         """Get the protobuf sub-message corresponding to a sensor mode.
@@ -4153,6 +4157,9 @@ class Sensor3DIrradiance(BaseSensor):
     """
 
     _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "irradiance_3d"
+    _sensor_mode_template_field_v2 = "irradiance_3d"
+    _sensor_mode_field_prefix_v1 = "type_"
 
     def __init__(
         self,
@@ -4185,20 +4192,6 @@ class Sensor3DIrradiance(BaseSensor):
     def _irradiance_3d_template(self):
         """3D irradiance part of the sensor template, whatever the protobuf version used."""
         return self._sensor_template.irradiance_3d
-
-    def _sensor_mode_field(self, mode: str) -> str:
-        """Get the template field name corresponding to a 3D irradiance sensor mode."""
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "type_" + mode
-
-    def _get_sensor_mode(self, mode: str):
-        """Get the protobuf sub-message corresponding to a 3D irradiance sensor mode."""
-        return getattr(self._irradiance_3d_template, self._sensor_mode_field(mode))
-
-    def _has_sensor_mode(self, mode: str) -> bool:
-        """Tell if the template currently holds the given 3D irradiance sensor mode."""
-        return self._irradiance_3d_template.HasField(self._sensor_mode_field(mode))
 
     def _fill_parameters(
         self, default_parameters: Optional[Irradiance3DSensorParameters] = None
