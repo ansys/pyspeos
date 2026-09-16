@@ -64,7 +64,7 @@ try:
     sop_db, vop_db, bsdf_sop_link, vop_before_link, vop_after_link = create_templates(
         speos, bsdf_file_path
     )
-    # -
+# -
 
     # ## Build Metric Configurations
     #
@@ -118,14 +118,6 @@ try:
         [global_config, directional_config, slices_config],
     )
     # -
-
-    # ## Display Metric Statistics
-    #
-    # Print a compact textual summary before opening the figures.
-
-    # +
-    # -
-
     # ## Display Metrics Statistics
 
     # +
@@ -133,21 +125,17 @@ try:
         result_all.global_rta, result_all.directional_rta, result_all.bsdf_slices
     )
     # -
-    # -
 
     # ## Create Visualizations
     #
     # ``plot_results`` creates individual charts for each metric family and a
     # combined dashboard. Slice charts are grouped by sweep variable and label
     # each curve with its fixed input values.
-
+    
     # +
     plot_results(result_all)
-
-# -
-
+    # -
 # ## Cleanup
-
 # +
 finally:
     if all(item is not None for item in (bsdf_sop_link, vop_before_link, vop_after_link)):
