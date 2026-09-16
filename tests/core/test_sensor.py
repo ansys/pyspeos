@@ -2316,6 +2316,53 @@ def test_radiance_modify_after_reset(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_modify_after_reset(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor, and then modify."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+
+    # Ask for reset
+    sensor_3d.reset()
+
+    # Modify after a reset
+    # Test mode change (photometric to radiometric)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+
+    # Test integration type change (planar to radial)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+
+    # Change back to planar integration
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+
+    # Test mode change to colorimetric and wavelengths modification
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    color_parameters = ColorimetricParameters()
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == color_parameters.wavelength_range.start
+
+    # Modify wavelengths after reset
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().start = 450
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == 450
+
+    sensor_3d.delete()
+
+
 @pytest.mark.supported_speos_versions(min=251)
 def test_camera_modify_after_reset(speos: Speos):
     """Test reset of camera sensor, and then modify."""
@@ -4261,3 +4308,252 @@ def test_observer_sensor_load(speos: Speos):
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
     assert loaded_sensor.layer is None
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_radiometric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with radiometric type."""
+    p = Project(speos=speos)
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Radiometric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_radiometric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset - verify modifications work
+    assert has_sensor_mode(sensor1, "radiometric", local=True)
+    sensor1.set_dimensions().x_start = -75
+    assert irradiance_template(sensor1, local=True).dimensions.x_start == -75
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_photometric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with photometric type."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Photometric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_photometric()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_sensor_mode(sensor1, "photometric", local=True)
+    sensor1.set_illuminance_type_radial()
+    assert has_integration_type(sensor1, "radial", local=True)
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with colorimetric type."""
+    p = Project(speos=speos)
+    color_param = ColorimetricParameters()
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Colorimetric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_sensor_mode(sensor1, "colorimetric", local=True)
+    assert (
+        sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start
+        == color_param.wavelength_range.start
+    )
+    sensor1.set_type_colorimetric().set_wavelengths_range().start = 480
+    assert sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 480
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_radiometric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with radiometric type."""
+    p = Project(speos=speos)
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Radiometric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_radiometric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "radiometric", local=True)
+    sensor1.focal = 50
+    assert radiance_template(sensor1, local=True).focal == 50
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_photometric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with photometric type."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Photometric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_photometric()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "photometric", local=True)
+    sensor1.set_dimensions().x_start = -100
+    assert radiance_template(sensor1, local=True).dimensions.x_start == -100
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with colorimetric type."""
+    p = Project(speos=speos)
+    wl = WavelengthsRangeParameters()
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Colorimetric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "colorimetric", local=True)
+    assert (
+        radiance_sensor_mode(sensor1, mode="colorimetric", local=True).wavelengths_range.w_start
+        == wl.start
+    )
+    sensor1.set_type_colorimetric().set_wavelengths_range().start = 520
+    assert (
+        radiance_sensor_mode(sensor1, mode="colorimetric", local=True).wavelengths_range.w_start
+        == 520
+    )
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with radiometric type and radial integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Radiometric.Radial", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+    # Change integration type
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with radiometric type and planar integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Radiometric.Planar", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with photometric type and planar integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Photometric.Planar", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    # Switch to radiometric mode
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with photometric type and radial integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Photometric.Radial", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with colorimetric type."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    color_param = ColorimetricParameters()
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Colorimetric", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_colorimetric()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == color_param.wavelength_range.start
+    # Modify wavelengths
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().start = 490
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == 490
+    sensor_3d.delete()
