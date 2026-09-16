@@ -36,6 +36,8 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+import ansys.speos.core.body as body
+import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
@@ -48,11 +50,13 @@ from ansys.speos.core.generic.parameters import (
     VirtualBSDFSimulationParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.logger import LOG
+import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
@@ -435,6 +439,9 @@ class BaseSimulation:
         self._type = None
         self._template_class = None
         self._light_expert_changed = False
+        # Local (not yet committed) fast transmission gathering geometries.
+        # ``None`` means that no change is pending for the scene.
+        self._fast_transmission_gathering_geo_paths = None
 
         if simulation_instance is None:
             # Create local SimulationTemplate
@@ -744,6 +751,102 @@ class BaseSimulation:
             getattr(self._simulation_template, self._template_class).max_impact = value
         else:
             raise TypeError(f"Unknown simulation template type: {self._template_class}")
+
+    def _fast_transmission_gathering_template(self):
+        """Retrieve the simulation template handling fast transmission gathering.
+
+        Returns
+        -------
+        Union[ansys.api.speos.simulation.v1.simulation_template_pb2.DirectMCSimulationTemplate,\
+ansys.api.speos.simulation.v1.simulation_template_pb2.InverseMCSimulationTemplate]
+            Simulation template owning the ``fast_transmission_gathering`` boolean.
+
+        Raises
+        ------
+        TypeError
+            If the simulation type does not support fast transmission gathering.
+        """
+        if self._template_class is None:
+            raise TypeError(f"Unknown simulation template type: {self._template_class}")
+        template = getattr(self._simulation_template, self._template_class)
+        if not hasattr(template, "fast_transmission_gathering"):
+            raise TypeError(
+                "Fast transmission gathering is only available for direct and inverse "
+                f"simulations, not for {self._template_class}."
+            )
+        return template
+
+    @property
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(self) -> Optional[List[str]]:
+        """
+        Fast transmission gathering.
+
+        Fast transmission gathering accelerates the simulation by neglecting the light
+        refraction that occurs when the light is transmitted through a transparent surface.
+
+        This property gets or sets the geometries on which fast transmission gathering
+        is applied. Setting geometries activates fast transmission gathering in the
+        simulation template, setting ``None`` (or an empty list) removes all the fast
+        transmission gathering geometries and deactivates it.
+
+        Parameters
+        ----------
+        geometries : List[Union[str, ansys.speos.core.geo_ref.GeoRef, \
+ansys.speos.core.body.Body, ansys.speos.core.face.Face, \
+ansys.speos.core.part.Part.SubPart]], optional
+            Geometries with fast transmission gathering applied.
+            By default, ``None``, means that fast transmission gathering is deactivated.
+
+        Returns
+        -------
+        Optional[List[str]]
+            Geo-paths of the geometries with fast transmission gathering applied,
+            or ``None`` if fast transmission gathering is deactivated.
+
+        Raises
+        ------
+        TypeError
+            If the simulation type does not support fast transmission gathering, or if one of
+            the given geometries has an unsupported type.
+        NotImplementedError
+            If the Speos server version does not support fast transmission gathering geometries.
+
+        Notes
+        -----
+        The geometries are stored at scene level, they are then shared by all the simulations
+        of the project. They are sent to the server when the simulation is committed.
+        """
+        if not self._fast_transmission_gathering_template().fast_transmission_gathering:
+            return None
+        if self._fast_transmission_gathering_geo_paths is not None:
+            return list(self._fast_transmission_gathering_geo_paths)
+        if self._project is None or self._project.scene_link is None:
+            return []
+        scene_data = self._project.scene_link.get()
+        return list(scene_data.fast_transmission_gathering.geometries.geo_paths)
+
+    @fast_transmission_gathering.setter
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(
+        self,
+        geometries: Optional[List[Union[str, GeoRef, body.Body, face.Face, part.Part.SubPart]]] = (
+            None
+        ),
+    ) -> None:
+        template = self._fast_transmission_gathering_template()
+        geo_paths = []
+        for geometry in geometries if geometries else []:
+            if isinstance(geometry, str):
+                geo_paths.append(geometry)
+            elif isinstance(geometry, GeoRef):
+                geo_paths.append(geometry.to_native_link())
+            elif isinstance(geometry, (body.Body, face.Face, part.Part.SubPart)):
+                geo_paths.append(geometry.geo_path.to_native_link())
+            else:
+                raise TypeError(f"Type {type(geometry)} is not supported as geometry input.")
+        self._fast_transmission_gathering_geo_paths = geo_paths
+        template.fast_transmission_gathering = bool(geo_paths)
 
     def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
@@ -1145,25 +1248,36 @@ class BaseSimulation:
             )  # Only update if template has changed
 
     def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        update_scene = False
+
         # Look if an element corresponds to the _unique_id
         simulation_inst = next(
             (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
             None,
         )
+        if simulation_inst is None:
+            # if no, just add it to the list of simulation instances
+            scene_data.simulations.append(self._simulation_instance)
+            update_scene = True
+        elif simulation_inst != self._simulation_instance:
+            # if yes and changed, just replace
+            simulation_inst.CopyFrom(self._simulation_instance)
+            update_scene = True
 
-        if simulation_inst is not None:
-            if simulation_inst != self._simulation_instance:
-                simulation_inst.CopyFrom(
-                    self._simulation_instance
-                )  # if yes and change, just replace
-            else:
-                return False  # if yes but no change, no need to update the scene
-        else:
-            scene_data.simulations.insert(
-                len(scene_data.simulations), self._simulation_instance
-            )  # if no, just add it to the list of simulation instances
+        # Handle scene level fast transmission gathering geometries
+        geo_paths = self._fast_transmission_gathering_geo_paths
+        if geo_paths is not None:
+            self._fast_transmission_gathering_geo_paths = None
+            ftg = scene_data.fast_transmission_gathering
+            if geo_paths:
+                if list(ftg.geometries.geo_paths) != geo_paths:
+                    ftg.geometries.geo_paths[:] = geo_paths
+                    update_scene = True
+            elif scene_data.HasField("fast_transmission_gathering"):
+                scene_data.ClearField("fast_transmission_gathering")
+                update_scene = True
 
-        return True  # Mention that the scene needs to be updated
+        return update_scene  # Mention if the scene needs to be updated
 
     def _prepare_commit(self) -> None:
         # The _unique_id will help to find correct item in the scene.simulations:
@@ -1212,6 +1326,9 @@ class BaseSimulation:
         # Reset simulation template
         if self.simulation_template_link is not None:
             self._simulation_template = self.simulation_template_link.get()
+
+        # Drop local (not committed) fast transmission gathering geometries
+        self._fast_transmission_gathering_geo_paths = None
 
         # Reset simulation instance
         if self._project.scene_link is not None:
@@ -1355,6 +1472,8 @@ class SimulationDirect(BaseSimulation):
                         f": {type(default_parameters.colorimetric_standard).__name__}"
                     )
             self.dispersion = default_parameters.dispersion
+            if default_parameters.fast_transmission_gathering:
+                self.fast_transmission_gathering = default_parameters.fast_transmission_gathering
             self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
             self.max_impact = default_parameters.max_impact
 
@@ -1811,6 +1930,8 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
                         f": {type(default_parameters.colorimetric_standard).__name__}"
                     )
             self.dispersion = default_parameters.dispersion
+            if default_parameters.fast_transmission_gathering:
+                self.fast_transmission_gathering = default_parameters.fast_transmission_gathering
             self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
             self.max_impact = default_parameters.max_impact
             self.splitting = default_parameters.splitting
