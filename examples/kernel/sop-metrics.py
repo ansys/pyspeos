@@ -140,7 +140,7 @@ try:
     default_results = evaluate_metric(bsdf_sop_link, vop_before_link, vop_after_link)
     print(f"Default Global RTA samples: {len(default_results.global_rta.samples)}")
     # -
-# -
+
 
 # ## Cleanup
 #

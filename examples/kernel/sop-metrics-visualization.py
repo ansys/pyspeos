@@ -118,21 +118,12 @@ try:
         [global_config, directional_config, slices_config],
     )
     # -
-
-    # ## Display Metric Statistics
-    #
-    # Print a compact textual summary before opening the figures.
-
-    # +
-    # -
-
     # ## Display Metrics Statistics
 
     # +
     display_metrics_statistics(
         result_all.global_rta, result_all.directional_rta, result_all.bsdf_slices
     )
-    # -
     # -
 
     # ## Create Visualizations
@@ -143,11 +134,8 @@ try:
 
     # +
     plot_results(result_all)
-
-# -
-
+    # -
 # ## Cleanup
-
 # +
 finally:
     if all(item is not None for item in (bsdf_sop_link, vop_before_link, vop_after_link)):
