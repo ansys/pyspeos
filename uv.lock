@@ -203,15 +203,15 @@ wheels = [
 
 [[package]]
 name = "ansys-api-speos"
-version = "0.16.3"
+version = "0.17.dev1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "grpcio" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/31/1bc22b4ac6cb7b2dba69b21fba005c029becc3317bf716731be860450caa/ansys_api_speos-0.16.3.tar.gz", hash = "sha256:ddf735e44de42d03ee67625f8407056f8b97f2219cd61d82ed44777b64e207a9", size = 42810, upload-time = "2026-06-25T12:42:01.594Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/1c/901fcc2b998df85969b214bec362e82ee85bc286ec2ea7734102f5fe830c/ansys_api_speos-0.17.dev1.tar.gz", hash = "sha256:86d4677e10bb8a8b44f365ec0fca376528fc3426cc732e04bbfb4362e2c8244f", size = 56789, upload-time = "2026-09-14T10:14:57.824Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/0f/d0af06bc195c493e9e99785150881dcc8ca32e5dda42c46d7980d2e6066c/ansys_api_speos-0.16.3-py3-none-any.whl", hash = "sha256:3410103677662a02dc07012f1a2b5c99a2809b9a1b30b614786f1cc75081b00d", size = 315346, upload-time = "2026-06-25T12:42:00.234Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/fa/7bd35bfb5b6d18ce809f74a5ba819886a349a1eaa86ac36f9b822d39788c/ansys_api_speos-0.17.dev1-py3-none-any.whl", hash = "sha256:c4e805249ddb7ca8bb7b0da896ffb2f4008afab7d0412d80abf1d1549212cdcc", size = 411350, upload-time = "2026-09-14T10:14:56.537Z" },
 ]
 
 [[package]]
@@ -251,6 +251,7 @@ all = [
 ]
 graphics = [
     { name = "ansys-tools-visualization-interface" },
+    { name = "matplotlib" },
     { name = "pyvista" },
 ]
 jupyter = [
@@ -314,7 +315,7 @@ tests = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ansys-api-speos", specifier = "==0.16.3" },
+    { name = "ansys-api-speos", specifier = "==0.17.dev1" },
     { name = "ansys-platform-instancemanagement", marker = "extra == 'all'" },
     { name = "ansys-tools-common", specifier = ">=0.3.1" },
     { name = "ansys-tools-visualization-interface", marker = "extra == 'all'", specifier = ">=0.8.3" },
@@ -325,6 +326,7 @@ requires-dist = [
     { name = "grpcio-health-checking", specifier = ">=1.45.0" },
     { name = "ipywidgets", marker = "extra == 'jupyter'" },
     { name = "jupyterlab", marker = "extra == 'jupyter'", specifier = ">=4.6.2" },
+    { name = "matplotlib", marker = "extra == 'graphics'" },
     { name = "matplotlib", marker = "extra == 'jupyter'" },
     { name = "notebook", marker = "extra == 'jupyter'" },
     { name = "numpy", specifier = ">=1.20.3,<3" },
