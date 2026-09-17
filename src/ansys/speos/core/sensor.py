@@ -4867,10 +4867,7 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor.
         """
         had_type_photometric = self._has_sensor_mode("photometric")
-        if (
-            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
-            and not had_type_photometric
-        ):
+        if not had_type_photometric:
             self._get_sensor_mode("photometric").SetInParent()
         if self._type is None and had_type_photometric:
             # Happens in case of project created via load of speos file
@@ -4907,10 +4904,7 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor
         """
         had_type_radiometric = self._has_sensor_mode("radiometric")
-        if (
-            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
-            and not had_type_radiometric
-        ):
+        if not had_type_radiometric:
             self._get_sensor_mode("radiometric").SetInParent()
         if self._type is None and had_type_radiometric:
             # Happens in case of project created via load of speos file
@@ -4952,10 +4946,7 @@ class Sensor3DIrradiance(BaseSensor):
             self._irradiance_3d_template.ClearField("reflection")
             self._irradiance_3d_template.ClearField("transmission")
             self._irradiance_3d_template.ClearField("absorption")
-        if (
-            isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate)
-            and not had_type_colorimetric
-        ):
+        if not had_type_colorimetric:
             self._get_sensor_mode("colorimetric").SetInParent()
         if self._type is None and had_type_colorimetric:
             # Happens in case of project created via load of speos file

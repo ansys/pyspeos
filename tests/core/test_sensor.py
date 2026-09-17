@@ -4483,6 +4483,8 @@ def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_ver
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
     assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.set_type_photometric()
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
     sensor_3d.delete()
 
 
@@ -4532,6 +4534,9 @@ def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_ver
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
     assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
     sensor_3d.delete()
 
 
@@ -4561,4 +4566,6 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     sensor_3d.set_type_colorimetric().set_wavelengths_range().start = 490
     colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
     assert wavelength_range_start(colorimetric_info) == 490
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
     sensor_3d.delete()
