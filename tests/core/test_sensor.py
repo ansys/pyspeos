@@ -2629,6 +2629,197 @@ def test_xmpintensity_modify_after_reset(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
+def test_xmpintensity_dimension_setters_use_template_specific_fields(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity dimension setters against template v1 and v2 field layouts."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.Dimension.Fields",
+        feature_type=SensorXMPIntensity,
+    )
+    template = intensity_template(sensor1, local=True)
+    use_v2 = isinstance(sensor1._sensor_template, sensor_v2_pb2.SensorTemplate)
+
+    if use_v2:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+
+    sensor1.set_orientation_x_as_meridian()
+    sensor1.x_start = -12.5
+    sensor1.x_end = 12.5
+    sensor1.x_sampling = 61
+    sensor1.y_start = -22.5
+    sensor1.y_end = 22.5
+    sensor1.y_sampling = 121
+
+    meridian_orientation = intensity_orientation(sensor1, "x_as_meridian", local=True)
+    if use_v2:
+        assert meridian_orientation.HasField("dimensions")
+        meridian_dimensions = meridian_orientation.dimensions
+    else:
+        meridian_dimensions = meridian_orientation.intensity_dimensions
+    assert sensor1.x_start == -12.5
+    assert sensor1.x_end == 12.5
+    assert sensor1.x_sampling == 61
+    assert sensor1.y_start == -22.5
+    assert sensor1.y_end == 22.5
+    assert sensor1.y_sampling == 121
+    assert meridian_dimensions.x_start == -12.5
+    assert meridian_dimensions.x_end == 12.5
+    assert meridian_dimensions.x_sampling == 61
+    assert meridian_dimensions.y_start == -22.5
+    assert meridian_dimensions.y_end == 22.5
+    assert meridian_dimensions.y_sampling == 121
+
+    sensor1.set_orientation_x_as_parallel()
+    sensor1.x_start = -13.5
+    sensor1.x_end = 13.5
+    sensor1.x_sampling = 62
+    sensor1.y_start = -23.5
+    sensor1.y_end = 23.5
+    sensor1.y_sampling = 122
+
+    parallel_orientation = intensity_orientation(sensor1, "x_as_parallel", local=True)
+    if use_v2:
+        assert parallel_orientation.HasField("dimensions")
+        parallel_dimensions = parallel_orientation.dimensions
+    else:
+        parallel_dimensions = parallel_orientation.intensity_dimensions
+    assert sensor1.x_start == -13.5
+    assert sensor1.x_end == 13.5
+    assert sensor1.x_sampling == 62
+    assert sensor1.y_start == -23.5
+    assert sensor1.y_end == 23.5
+    assert sensor1.y_sampling == 122
+    assert parallel_dimensions.x_start == -13.5
+    assert parallel_dimensions.x_end == 13.5
+    assert parallel_dimensions.x_sampling == 62
+    assert parallel_dimensions.y_start == -23.5
+    assert parallel_dimensions.y_end == 23.5
+    assert parallel_dimensions.y_sampling == 122
+
+    sensor1.set_orientation_conoscopic()
+    sensor1.theta_max = 75.0
+    sensor1.theta_sampling = 123
+
+    conoscopic_orientation = intensity_orientation(sensor1, "conoscopic", local=True)
+    if use_v2:
+        assert conoscopic_orientation.HasField("dimensions")
+        conoscopic_dimensions = conoscopic_orientation.dimensions
+    else:
+        conoscopic_dimensions = conoscopic_orientation.conoscopic_intensity_dimensions
+    assert sensor1.theta_max == 75.0
+    assert sensor1.theta_sampling == 123
+    assert conoscopic_dimensions.theta_max == 75.0
+    assert conoscopic_dimensions.sampling == 123
+    assert template is intensity_template(sensor1, local=True)
+
+
+def test_xmpintensity_dimension_errors_and_resets_cover_template_versions(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity invalid dimension access and mismatch resets on both templates."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.Dimension.Errors",
+        feature_type=SensorXMPIntensity,
+    )
+
+    sensor1.set_orientation_conoscopic()
+    for attribute in [
+        "x_start",
+        "x_end",
+        "x_sampling",
+        "y_start",
+        "y_end",
+        "y_sampling",
+    ]:
+        with pytest.warns(UserWarning, match="This property doesn't exist"):
+            assert getattr(sensor1, attribute) is None
+    for attribute, value, error in [
+        ("x_start", -1.0, "x_start"),
+        ("x_end", 1.0, "x_end"),
+        ("x_sampling", 10, "x_sampling"),
+        ("y_start", -2.0, "y_start"),
+        ("y_end", 2.0, "y_end"),
+        ("y_sampling", 12, "y_sampling"),
+    ]:
+        with pytest.raises(TypeError, match=rf"Conoscopic Sensor has no {error} dimension"):
+            setattr(sensor1, attribute, value)
+
+    sensor1.set_orientation_x_as_meridian()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
+    meridian_defaults = IntensitySensorDimensionsXAsMeridianParameters()
+    assert sensor1.x_start == meridian_defaults.x_start
+    assert sensor1.x_end == meridian_defaults.x_end
+    assert sensor1.x_sampling == meridian_defaults.x_sampling
+    assert sensor1.y_start == meridian_defaults.y_start
+    assert sensor1.y_end == meridian_defaults.y_end
+    assert sensor1.y_sampling == meridian_defaults.y_sampling
+
+    sensor1.set_orientation_x_as_parallel()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
+    parallel_defaults = IntensitySensorDimensionsXAsParallelParameters()
+    assert sensor1.x_start == parallel_defaults.x_start
+    assert sensor1.x_end == parallel_defaults.x_end
+    assert sensor1.x_sampling == parallel_defaults.x_sampling
+    assert sensor1.y_start == parallel_defaults.y_start
+    assert sensor1.y_end == parallel_defaults.y_end
+    assert sensor1.y_sampling == parallel_defaults.y_sampling
+
+    with pytest.warns(UserWarning, match="This property doesn't exist"):
+        assert sensor1.theta_max is None
+    with pytest.warns(UserWarning, match="This property doesn't exist"):
+        assert sensor1.theta_sampling is None
+    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_max dimension"):
+        sensor1.theta_max = 60
+    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_max dimension"):
+        sensor1.theta_sampling = 61
+
+    sensor1.set_orientation_conoscopic()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
+    conoscopic_defaults = IntensitySensorDimensionsConoscopicParameters()
+    assert sensor1.theta_max == conoscopic_defaults.theta_max
+    assert sensor1.theta_sampling == conoscopic_defaults.theta_sampling
+
+
+def test_xmpintensity_near_field_disabled_getters_and_setters(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity near-field properties when near-field is disabled."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.NearField.Disabled",
+        feature_type=SensorXMPIntensity,
+    )
+
+    assert sensor1.near_field is False
+    assert sensor1.cell_distance is None
+    assert sensor1.cell_diameter is None
+
+    with pytest.raises(TypeError, match="Sensor position is not in near field"):
+        sensor1.cell_distance = 5
+    with pytest.raises(TypeError, match="Sensor position is not in nearfield"):
+        sensor1.cell_diameter = 0.5
+
+    sensor1.near_field = True
+    assert sensor1.near_field is True
+    assert sensor1.cell_distance == NearfieldParameters().cell_distance
+    assert sensor1.cell_diameter == pytest.approx(NearfieldParameters().cell_diameter)
+
+    sensor1.near_field = False
+    assert sensor1.near_field is False
+    assert sensor1.cell_distance is None
+    assert sensor1.cell_diameter is None
+
+    sensor1.delete()
+
+
 def test_delete_sensor(speos: Speos, sensor_template_version):
     """Test delete of sensor."""
     p = Project(speos=speos)
