@@ -4951,7 +4951,16 @@ class SensorXMPIntensity(BaseSensor):
     default_parameters : ansys.speos.core.generic.parameters.IntensityXMPSensorParameters, optional
         If defined the values in the sensor instance will be overwritten by the values of the data
         class
+
+    Notes
+    -----
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "intensity_sensor_template"
+    _sensor_mode_template_field_v2 = "intensity"
 
     def __init__(
         self,
@@ -4980,6 +4989,18 @@ class SensorXMPIntensity(BaseSensor):
         self._vis_radius = 1000
         self._fill_parameters(default_parameters)
 
+    @property
+    def _intensity_template(self):
+        """Intensity part of the sensor template, whatever the protobuf version used.
+
+        Returns
+        -------
+        Union[ansys.api.speos.sensor.v1.sensor_pb2.IntensitySensorTemplate, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.Intensity]
+            Protobuf sub-message holding the intensity sensor template definition.
+        """
+        return self._sensor_mode_template
+
     def _fill_parameters(
         self, default_parameters: Optional[IntensityXMPSensorParameters] = None
     ) -> None:
@@ -5003,13 +5024,13 @@ class SensorXMPIntensity(BaseSensor):
 
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
                 self._type = BaseSensor.Colorimetric(
-                    sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                    sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
             elif isinstance(default_parameters.sensor_type, SpectralParameters):
                 self._type = BaseSensor.Spectral(
-                    sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                    sensor_type_spectral=self._get_sensor_mode("spectral"),
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
@@ -5040,14 +5061,14 @@ class SensorXMPIntensity(BaseSensor):
                 self.cell_diameter = default_parameters.near_field_parameters.cell_diameter
             return
 
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("sensor_type_photometric"):
+        # Initialize from existing template (v1 or v2)
+        if self._has_sensor_mode("photometric"):
             self.set_type_photometric()
-        elif template.HasField("sensor_type_colorimetric"):
+        elif self._has_sensor_mode("colorimetric"):
             self.set_type_colorimetric()
-        elif template.HasField("sensor_type_radiometric"):
+        elif self._has_sensor_mode("radiometric"):
             self.set_type_radiometric()
-        elif template.HasField("sensor_type_spectral"):
+        elif self._has_sensor_mode("spectral"):
             self.set_type_spectral()
         properties = self._sensor_instance.intensity_properties
         if properties.HasField("layer_type_none"):
@@ -5096,10 +5117,16 @@ class SensorXMPIntensity(BaseSensor):
         feature_z_dir = np.array(feature_pos_info[9:12])
         feature_vis_radius = self._vis_radius
 
-        if self._sensor_template.intensity_sensor_template.HasField(
-            "intensity_orientation_conoscopic"
-        ):
-            # intensity sensor; non-conoscopic case
+        template = self._intensity_template
+        # Check conoscopic orientation (v1 and v2 compatible)
+        is_conoscopic = (
+            template.HasField("intensity_orientation_conoscopic")  # v1
+            if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate) is False
+            else template.HasField("orientation_conoscopic")  # v2
+        )
+
+        if is_conoscopic:
+            # intensity sensor; conoscopic case
             # simply fix vis sampling to 15 (radial) x 30 (azimuth)
             # determine the set of visualization triangles vertices
             feature_theta = float(self.get(key="theta_max"))
@@ -5155,9 +5182,13 @@ class SensorXMPIntensity(BaseSensor):
 
             # compute all the vertices
             iter = 0
-            if self._sensor_template.intensity_sensor_template.HasField(
-                "intensity_orientation_x_as_meridian"
-            ):
+            # Check x_as_meridian orientation (v1 and v2 compatible)
+            is_meridian = (
+                template.HasField("intensity_orientation_x_as_meridian")  # v1
+                if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate) is False
+                else template.HasField("orientation_x_as_meridian")  # v2
+            )
+            if is_meridian:
                 for x_tilt in x_tilts:
                     tilted_x = np.matmul(rm(x_tilt, feature_x_dir), u)
                     for y_tilt in y_tilts:
@@ -5209,18 +5240,19 @@ class SensorXMPIntensity(BaseSensor):
         bool
             Boolean to determine if sensor is in near-field.
         """
-        return self._sensor_template.intensity_sensor_template.HasField("near_field")
+        return self._intensity_template.HasField("near_field")
 
     @near_field.setter
     def near_field(self, value: bool) -> None:
+        template = self._intensity_template
         if value:
-            if not self._sensor_template.intensity_sensor_template.HasField("near_field"):
-                self._sensor_template.intensity_sensor_template.near_field.SetInParent()
+            if not template.HasField("near_field"):
+                template.near_field.SetInParent()
                 near_field = NearfieldParameters()
                 self.cell_distance = near_field.cell_distance
                 self.cell_diameter = near_field.cell_diameter
-        elif self._sensor_template.intensity_sensor_template.HasField("near_field"):
-            self._sensor_template.intensity_sensor_template.ClearField("near_field")
+        elif template.HasField("near_field"):
+            template.ClearField("near_field")
 
     @property
     def cell_distance(self) -> Union[float, None]:
@@ -5240,12 +5272,12 @@ class SensorXMPIntensity(BaseSensor):
             Distance of the measurement cell or None if Sensor is not in near field.
         """
         if self.near_field:
-            return self._sensor_template.intensity_sensor_template.near_field.cell_distance
+            return self._intensity_template.near_field.cell_distance
 
     @cell_distance.setter
     def cell_distance(self, value: float) -> None:
         if self.near_field:
-            self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
+            self._intensity_template.near_field.cell_distance = value
         else:
             raise TypeError("Sensor position is not in near field")
 
@@ -5269,19 +5301,15 @@ class SensorXMPIntensity(BaseSensor):
             diameter = (
                 2
                 * self.cell_distance
-                * np.tan(
-                    np.radians(
-                        self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
-                    )
-                )
+                * np.tan(np.radians(self._intensity_template.near_field.cell_integration_angle))
             )
             return diameter
 
     @cell_diameter.setter
     def cell_diameter(self, value: float) -> None:
         if self.near_field:
-            self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle = (
-                np.degrees(np.arctan(value / 2 / self.cell_distance))
+            self._intensity_template.near_field.cell_integration_angle = np.degrees(
+                np.arctan(value / 2 / self.cell_distance)
             )
         else:
             raise TypeError("Sensor position is not in nearfield")
@@ -5348,26 +5376,53 @@ class SensorXMPIntensity(BaseSensor):
 
     def set_orientation_x_as_meridian(self) -> None:
         """Set Orientation type: X As Meridian, Y as Parallel."""
-        self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.orientation_x_as_meridian.SetInParent()
+        else:
+            # V1: intensity_sensor_template
+            template.intensity_orientation_x_as_meridian.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
 
     def set_orientation_x_as_parallel(self) -> None:
         """Set Orientation type: X as Parallel, Y as Meridian."""
-        self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.orientation_x_as_parallel.SetInParent()
+        else:
+            # V1: intensity_sensor_template
+            template.intensity_orientation_x_as_parallel.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
 
     def set_orientation_conoscopic(self) -> None:
         """Set Orientation type to conoscopic."""
-        self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.orientation_conoscopic.SetInParent()
+        else:
+            # V1: intensity_sensor_template
+            template.intensity_orientation_conoscopic.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
 
     def set_viewing_direction_from_source(self) -> None:
         """Set viewing direction from source looking at sensor."""
-        self._sensor_template.intensity_sensor_template.from_source_looking_at_sensor.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            intensity = sensor_v2_pb2.SensorTemplate.Intensity
+            template.viewing_direction = intensity.VIEWING_DIRECTION_FROM_SOURCE_LOOKING_AT_SENSOR
+        else:
+            # V1: intensity_sensor_template
+            template.from_source_looking_at_sensor.SetInParent()
 
     def set_viewing_direction_from_sensor(self) -> None:
         """Set viewing direction from sensor looking at source."""
-        self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            intensity = sensor_v2_pb2.SensorTemplate.Intensity
+            template.viewing_direction = intensity.VIEWING_DIRECTION_FROM_SENSOR_LOOKING_AT_SOURCE
+        else:
+            # V1: intensity_sensor_template
+            template.from_sensor_looking_at_source.SetInParent()
 
     def _set_dimension_values(
         self,
@@ -5377,26 +5432,37 @@ class SensorXMPIntensity(BaseSensor):
             IntensitySensorDimensionsConoscopicParameters,
         ],
     ):
-        template = self._sensor_template.intensity_sensor_template
+        template = self._intensity_template
         warning_msg = (
             "Mismatch of dimensions and sensor orientation was detected. "
             "The sensor dimension are reset to the orientation types default values"
         )
-        if template.HasField("intensity_orientation_conoscopic"):
+
+        # Determine orientation for both v1 and v2
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2: orientation is oneof
+            is_conoscopic = template.HasField("orientation_conoscopic")
+            is_meridian = template.HasField("orientation_x_as_meridian")
+        else:
+            # V1: intensity_orientation_* is oneof
+            is_conoscopic = template.HasField("intensity_orientation_conoscopic")
+            is_meridian = template.HasField("intensity_orientation_x_as_meridian")
+
+        if is_conoscopic:
             if not isinstance(dimension, IntensitySensorDimensionsConoscopicParameters):
                 warnings.warn(warning_msg)
                 dimension = IntensitySensorDimensionsConoscopicParameters()
             self.theta_max = dimension.theta_max
             self.theta_sampling = dimension.theta_sampling
         else:
-            if template.HasField("intensity_orientation_conoscopic"):
-                if not isinstance(dimension, IntensitySensorDimensionsXAsParallelParameters):
-                    warnings.warn(warning_msg)
-                    dimension = IntensitySensorDimensionsXAsParallelParameters()
-            elif template.HasField("intensity_orientation_x_as_meridian"):
+            if is_meridian:
                 if not isinstance(dimension, IntensitySensorDimensionsXAsMeridianParameters):
                     warnings.warn(warning_msg)
                     dimension = IntensitySensorDimensionsXAsMeridianParameters()
+            else:
+                if not isinstance(dimension, IntensitySensorDimensionsXAsParallelParameters):
+                    warnings.warn(warning_msg)
+                    dimension = IntensitySensorDimensionsXAsParallelParameters()
             self.x_start = dimension.x_start
             self.x_end = dimension.x_end
             self.x_sampling = dimension.x_sampling
@@ -5418,24 +5484,45 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, float]:
             Minimum of x-axis in degree.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-            return None
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2: orientation is oneof with dimensions nested
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+                return None
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.x_start
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.x_start
+        else:
+            # V1: intensity_orientation_* is oneof with intensity_dimensions nested
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+                return None
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start
 
     @x_start.setter
     def x_start(self, value: float) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no x_start dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_start dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.x_start = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.x_start = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_start dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start = value
 
     @property
     def x_end(self) -> Union[None, float]:
@@ -5451,24 +5538,45 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, float]:
             Maximum of x-axis in degree.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-            return None
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+                return None
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.x_end
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.x_end
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+                return None
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end
 
     @x_end.setter
     def x_end(self, value: float) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no x_end dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_end dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.x_end = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.x_end = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_end dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end = value
 
     @property
     def x_sampling(self) -> Union[None, int]:
@@ -5484,23 +5592,43 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, int]:
             Number of Pixels along x-Axis.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.x_sampling
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.x_sampling
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling
 
     @x_sampling.setter
     def x_sampling(self, value: int) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no x_sampling dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_sampling dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.x_sampling = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.x_sampling = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no x_sampling dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling = value
 
     @property
     def y_end(self) -> Union[None, float]:
@@ -5516,23 +5644,43 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, float]:
             Maximum of y-axis in degree.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.y_end
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.y_end
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end
 
     @y_end.setter
     def y_end(self, value: float) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_end dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_end dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.y_end = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.y_end = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_end dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end = value
 
     @property
     def y_start(self) -> Union[None, float]:
@@ -5548,23 +5696,43 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, float]:
             Minimum of y-axis in degree.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.y_start
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.y_start
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start
 
     @y_start.setter
     def y_start(self, value: float) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_start dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_start dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.y_start = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.y_start = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_start dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start = value
 
     @property
     def y_sampling(self) -> Union[None, int]:
@@ -5580,23 +5748,43 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, int]:
             Number of Pixels along the y-axis.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            warnings.warn("This property doesn't exist with the current orientation")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("orientation_x_as_parallel"):
+                return template.orientation_x_as_parallel.dimensions.y_sampling
+            elif template.HasField("orientation_x_as_meridian"):
+                return template.orientation_x_as_meridian.dimensions.y_sampling
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                warnings.warn("This property doesn't exist with the current orientation")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling
 
     @y_sampling.setter
     def y_sampling(self, value: int) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_sampling dimension")
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling = value
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling = value
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_sampling dimension")
+            elif template.HasField("orientation_x_as_parallel"):
+                template.orientation_x_as_parallel.dimensions.y_sampling = value
+            elif template.HasField("orientation_x_as_meridian"):
+                template.orientation_x_as_meridian.dimensions.y_sampling = value
+        else:
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                raise TypeError("Conoscopic Sensor has no y_sampling dimension")
+            elif template.HasField("intensity_orientation_x_as_parallel"):
+                template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling = value
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling = value
 
     @property
     def theta_max(self) -> Union[None, float]:
@@ -5612,23 +5800,34 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, float]:
             Maximum value for Theta angle.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            return (
-                template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
-            )
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2: orientation_conoscopic.dimensions.theta_max
+            if template.HasField("orientation_conoscopic"):
+                return template.orientation_conoscopic.dimensions.theta_max
         else:
-            warnings.warn("This property doesn't exist with the current orientation")
+            # V1: intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
+            if template.HasField("intensity_orientation_conoscopic"):
+                conoscopic = template.intensity_orientation_conoscopic
+                return conoscopic.conoscopic_intensity_dimensions.theta_max
+        warnings.warn("This property doesn't exist with the current orientation")
 
     @theta_max.setter
     def theta_max(self, value: float) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max = (
-                value
-            )
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                template.orientation_conoscopic.dimensions.theta_max = value
+            else:
+                raise TypeError("Only Conoscopic Sensor has theta_max dimension")
         else:
-            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                conoscopic = template.intensity_orientation_conoscopic
+                conoscopic.conoscopic_intensity_dimensions.theta_max = value
+            else:
+                raise TypeError("Only Conoscopic Sensor has theta_max dimension")
 
     @property
     def theta_sampling(self) -> Union[None, int]:
@@ -5645,23 +5844,34 @@ class SensorXMPIntensity(BaseSensor):
         Union[None, int]:
             Sampling along theta axis in a conoscopic map.
         """
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            return (
-                template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
-            )
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2: orientation_conoscopic.dimensions.sampling
+            if template.HasField("orientation_conoscopic"):
+                return template.orientation_conoscopic.dimensions.sampling
         else:
-            warnings.warn("This property doesn't exist with the current orientation")
+            # V1: intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
+            if template.HasField("intensity_orientation_conoscopic"):
+                conoscopic = template.intensity_orientation_conoscopic
+                return conoscopic.conoscopic_intensity_dimensions.sampling
+        warnings.warn("This property doesn't exist with the current orientation")
 
     @theta_sampling.setter
     def theta_sampling(self, value: int) -> None:
-        template = self._sensor_template.intensity_sensor_template
-        if template.HasField("intensity_orientation_conoscopic"):
-            template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling = (
-                value
-            )
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            # V2
+            if template.HasField("orientation_conoscopic"):
+                template.orientation_conoscopic.dimensions.sampling = value
+            else:
+                raise TypeError("Only Conoscopic Sensor has theta_max dimension")
         else:
-            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+            # V1
+            if template.HasField("intensity_orientation_conoscopic"):
+                conoscopic = template.intensity_orientation_conoscopic
+                conoscopic.conoscopic_intensity_dimensions.sampling = value
+            else:
+                raise TypeError("Only Conoscopic Sensor has theta_max dimension")
 
     def set_type_photometric(self) -> SensorXMPIntensity:
         """Set type photometric.
@@ -5673,7 +5883,11 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorXMPIntensity
             Intensity sensor
         """
-        self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.mode_photometric.SetInParent()
+        else:
+            template.sensor_type_photometric.SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
@@ -5688,29 +5902,22 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
-        if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
-            "sensor_type_colorimetric"
-        ):
+        if self._type is None and self._has_sensor_mode("colorimetric"):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 stable_ctr=True,
                 default_parameters=ColorimetricParameters(),
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
-        ):
+        elif self._type._sensor_type_colorimetric is not self._get_sensor_mode("colorimetric"):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
-            )
+            self._type._sensor_type_colorimetric = self._get_sensor_mode("colorimetric")
         return self._type
 
     def set_type_radiometric(self) -> SensorXMPIntensity:
@@ -5723,7 +5930,11 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorXMPIntensity
             Intensity sensor.
         """
-        self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()
+        template = self._intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.mode_radiometric.SetInParent()
+        else:
+            template.sensor_type_radiometric.SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
         return self
 
@@ -5738,29 +5949,22 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Spectral
             Spectral type.
         """
-        if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
-            "sensor_type_spectral"
-        ):
+        if self._type is None and self._has_sensor_mode("spectral"):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                sensor_type_spectral=self._get_sensor_mode("spectral"),
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                sensor_type_spectral=self._get_sensor_mode("spectral"),
                 stable_ctr=True,
                 default_parameters=SpectralParameters(),
             )
-        elif (
-            self._type._sensor_type_spectral
-            is not self._sensor_template.intensity_sensor_template.sensor_type_spectral
-        ):
+        elif self._type._sensor_type_spectral is not self._get_sensor_mode("spectral"):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = (
-                self._sensor_template.intensity_sensor_template.sensor_type_spectral
-            )
+            self._type._sensor_type_spectral = self._get_sensor_mode("spectral")
         return self._type
 
     def set_layer_type_none(self) -> SensorXMPIntensity:
@@ -6249,7 +6453,14 @@ class SensorPolarIntensity(BaseSensor):
     -----
     ``PolarIntensityProperties`` in the scene proto only contains an ``axis_system`` field –
     there is no layer-type separation for polar intensity sensors.
+
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "polar_intensity_sensor_template"
+    _sensor_mode_template_field_v2 = "polar_intensity"
 
     def __init__(
         self,
@@ -6271,6 +6482,18 @@ class SensorPolarIntensity(BaseSensor):
             sensor_instance=sensor_instance,
         )
         self._fill_parameters(default_parameters)
+
+    @property
+    def _polar_intensity_template(self):
+        """Polar intensity part of the sensor template, whatever the protobuf version used.
+
+        Returns
+        -------
+        Union[ansys.api.speos.sensor.v1.sensor_pb2.PolarIntensitySensorTemplate, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.PolarIntensity]
+            Protobuf sub-message holding the polar intensity sensor template definition.
+        """
+        return self._sensor_mode_template
 
     def _fill_parameters(
         self, default_parameters: Optional[PolarIntensitySensorParameters] = None
@@ -6320,7 +6543,7 @@ class SensorPolarIntensity(BaseSensor):
             return
 
         # --- load-from-file path: reconstruct state from already-populated proto ---
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         # Nothing extra to reconstruct; properties are read directly from proto on demand.
         _ = template  # reference to avoid lint warning
 
@@ -6336,7 +6559,12 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.iesna_a.SetInParent()
+        template = self._polar_intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_A
+        else:
+            # V1
+            template.iesna_a.SetInParent()
         _dimensions = IESNA_A_B_DIMENSIONS
         self._set_sampling_dimensions(
             _dimensions.horizontal_sampling, _dimensions.vertical_sampling
@@ -6351,7 +6579,12 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.iesna_b.SetInParent()
+        template = self._polar_intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_B
+        else:
+            # V1
+            template.iesna_b.SetInParent()
         _dimensions = IESNA_A_B_DIMENSIONS
         self._set_sampling_dimensions(
             _dimensions.horizontal_sampling, _dimensions.vertical_sampling
@@ -6366,7 +6599,12 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.iesna_c.SetInParent()
+        template = self._polar_intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_C
+        else:
+            # V1
+            template.iesna_c.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
         self._set_sampling_dimensions(
             _dimensions.horizontal_sampling, _dimensions.vertical_sampling
@@ -6381,7 +6619,12 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.eulumdat.SetInParent()
+        template = self._polar_intensity_template
+        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_EULUMDAT
+        else:
+            # V1
+            template.eulumdat.SetInParent()
         _dimensions = PolarIntensityDimensionsParameters()
         self._set_sampling_dimensions(
             _dimensions.horizontal_sampling, _dimensions.vertical_sampling
@@ -6399,7 +6642,8 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.dimensions.SetInParent()
+        template = self._polar_intensity_template
+        template.dimensions.SetInParent()
 
     def _set_sampling_dimensions(
         self,
@@ -6422,7 +6666,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         template.dimensions.horizontal_sampling = int(horizontal_sampling)
         template.dimensions.vertical_sampling = int(vertical_sampling)
         return self
@@ -6435,7 +6679,8 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        self._sensor_template.polar_intensity_sensor_template.ClearField("dimensions")
+        template = self._polar_intensity_template
+        template.ClearField("dimensions")
         return self
 
     @property
@@ -6453,12 +6698,13 @@ class SensorPolarIntensity(BaseSensor):
         Union[Path, None]
             Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
         """
-        if not self._sensor_template.polar_intensity_sensor_template.HasField("dimensions"):
-            return Path(self._sensor_template.polar_intensity_sensor_template.adaptive_sampling_uri)
+        template = self._polar_intensity_template
+        if not template.HasField("dimensions"):
+            return Path(template.adaptive_sampling_uri)
 
     @adaptive_sampling_file.setter
     def adaptive_sampling_file(self, value: Union[Path, None]):
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if value is None:
             template.ClearField("adaptive_sampling_uri")
             self.set_constant_sampling()
@@ -6484,14 +6730,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[int, None]
             Horizontal sampling count, or ``None`` if adaptive sampling is active.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if template.HasField("dimensions"):
             return template.dimensions.horizontal_sampling
         return None
 
     @horizontal_sampling.setter
     def horizontal_sampling(self, value: int) -> None:
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("dimensions"):
             raise TypeError(
                 "Adaptive sampling is active; switch to constant sampling with "
@@ -6513,14 +6759,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[int, None]
             Vertical sampling count, or ``None`` if adaptive sampling is active.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if template.HasField("dimensions"):
             return template.dimensions.vertical_sampling
         return None
 
     @vertical_sampling.setter
     def vertical_sampling(self, value: int) -> None:
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("dimensions"):
             raise TypeError(
                 "Adaptive sampling is active; switch to constant sampling with "
@@ -6540,7 +6786,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("far_field"):
             template.far_field.SetInParent()
             self.integration_angle = 1
@@ -6556,7 +6802,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("near_field"):
             template.near_field.SetInParent()
             nf = NearfieldParameters()
@@ -6578,14 +6824,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Integration angle, or ``None`` when the sensor is in near-field mode.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if template.HasField("far_field"):
             return template.far_field.integration_angle
         return None
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> None:
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("far_field"):
             raise TypeError("Sensor is in near-field mode; call set_far_field() first.")
         template.far_field.integration_angle = float(value)
@@ -6604,14 +6850,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Cell distance, or ``None`` when the sensor is in far-field mode.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if template.HasField("near_field"):
             return template.near_field.cell_distance
         return None
 
     @cell_distance.setter
     def cell_distance(self, value: float) -> None:
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("near_field"):
             raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_distance = float(value)
@@ -6633,7 +6879,7 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Cell diameter, or ``None`` when the sensor is in far-field mode.
         """
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if template.HasField("near_field"):
             return (
                 2
@@ -6644,7 +6890,7 @@ class SensorPolarIntensity(BaseSensor):
 
     @cell_diameter.setter
     def cell_diameter(self, value: float) -> None:
-        template = self._sensor_template.polar_intensity_sensor_template
+        template = self._polar_intensity_template
         if not template.HasField("near_field"):
             raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_integration_angle = np.degrees(
