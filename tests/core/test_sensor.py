@@ -4452,6 +4452,7 @@ def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.commit()
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     # Ask for reset
+    sensor_3d.set_type_photometric().set_integration_radial()
     sensor_3d.reset()
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
@@ -4477,6 +4478,7 @@ def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.commit()
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     # Ask for reset
+    sensor_3d.set_type_photometric().set_integration_radial()
     sensor_3d.reset()
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
@@ -4499,6 +4501,7 @@ def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.commit()
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_radial()
     sensor_3d.reset()
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
@@ -4524,6 +4527,7 @@ def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.commit()
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_planar()
     sensor_3d.reset()
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
@@ -4547,6 +4551,7 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     sensor_3d.commit()
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_planar()
     sensor_3d.reset()
     # Modify after reset
     assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
