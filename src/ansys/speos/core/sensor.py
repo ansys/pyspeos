@@ -6711,7 +6711,16 @@ class SensorObserver(BaseSensor):
         If defined the values in the sensor instance will be overwritten by the values of the
         dataclass.
         By default, ``None``.
+
+    Notes
+    -----
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "observer_sensor_template"
+    _sensor_mode_template_field_v2 = "observer"
 
     def __init__(
         self,
@@ -6735,6 +6744,11 @@ class SensorObserver(BaseSensor):
 
         self._layer_type = None
         self._fill_parameters(default_parameters)
+
+    @property
+    def _observer_template(self):
+        """Observer part of the sensor template, whatever the protobuf version used."""
+        return self._sensor_mode_template
 
     def _fill_parameters(
         self, default_parameters: Optional[ObserverSensorParameters] = None
@@ -6782,11 +6796,11 @@ class SensorObserver(BaseSensor):
         float
             Current focal distance.
         """
-        return self._sensor_template.observer_sensor_template.focal
+        return self._observer_template.focal
 
     @focal.setter
     def focal(self, value: float) -> None:
-        self._sensor_template.observer_sensor_template.focal = float(value)
+        self._observer_template.focal = float(value)
 
     @property
     def integration_angle(self) -> float:
@@ -6802,11 +6816,11 @@ class SensorObserver(BaseSensor):
         float
             Current integration angle.
         """
-        return self._sensor_template.observer_sensor_template.integration_angle
+        return self._observer_template.integration_angle
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> None:
-        self._sensor_template.observer_sensor_template.integration_angle = float(value)
+        self._observer_template.integration_angle = float(value)
 
     @property
     def distance(self) -> float:
@@ -6822,11 +6836,11 @@ class SensorObserver(BaseSensor):
         float
             Current distance value.
         """
-        return self._sensor_template.observer_sensor_template.distance
+        return self._observer_template.distance
 
     @distance.setter
     def distance(self, value: float) -> None:
-        self._sensor_template.observer_sensor_template.distance = float(value)
+        self._observer_template.distance = float(value)
 
     @property
     def stereo_interocular_distance(self) -> Union[float, None]:
@@ -6846,15 +6860,15 @@ class SensorObserver(BaseSensor):
             Current stereo interocular distance in mm.
             If stereo setting is not activated, None will be returned.
         """
-        if self._sensor_template.observer_sensor_template.HasField("stereo"):
-            return self._sensor_template.observer_sensor_template.stereo.interocular_distance
+        if self._observer_template.HasField("stereo"):
+            return self._observer_template.stereo.interocular_distance
 
     @stereo_interocular_distance.setter
     def stereo_interocular_distance(self, value: None | float) -> None:
         if value is not None:
-            self._sensor_template.observer_sensor_template.stereo.interocular_distance = value
+            self._observer_template.stereo.interocular_distance = value
         else:
-            self._sensor_template.observer_sensor_template.ClearField("stereo")
+            self._observer_template.ClearField("stereo")
 
     def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
         """Configure the wavelength range of the sensor.
@@ -6865,7 +6879,7 @@ class SensorObserver(BaseSensor):
             Wavelength range object.
         """
         return BaseSensor.WavelengthsRange(
-            wavelengths_range=self._sensor_template.observer_sensor_template.wavelengths_range,
+            wavelengths_range=self._observer_template.wavelengths_range,
             stable_ctr=True,
         )
 
@@ -6878,7 +6892,7 @@ class SensorObserver(BaseSensor):
             Dimension class
         """
         return BaseSensor.Dimensions(
-            sensor_dimensions=self._sensor_template.observer_sensor_template.dimensions,
+            sensor_dimensions=self._observer_template.dimensions,
             stable_ctr=True,
         )
 
@@ -6891,7 +6905,7 @@ class SensorObserver(BaseSensor):
             Angular range object.
         """
         return BaseSensor.AngularRange(
-            angular_range=self._sensor_template.observer_sensor_template.sensors_locations,
+            angular_range=self._observer_template.sensors_locations,
             stable_ctr=True,
         )
 
