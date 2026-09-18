@@ -1,0 +1,396 @@
+
+
+
+
+
+
+:class:`SourceAmbientCieStandardGeneralSky`
+===========================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientCieStandardGeneralSky(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   CIE Standard General Sky source.
+
+   By default, luminance is set to 1000 cd/m2
+   [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+   Sun type is set to be automatic type.
+   CIE type is partly cloudy sky, no gradation towards zenith, slight brightening
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.AmbientCieStandardGeneralSkyParameters`] = :data:`python:None`
+           If defined the values in the SourceAmbientCieStandardGeneralSky instance
+            will be overwritten by the values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientCieStandardGeneralSky
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sun_automatic`
+            - Set sun type as automatic.
+          * - :py:attr:`~set_sun_manual`
+            - Set cie standard general sky sun type as manual.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~luminance`
+            - Luminance of the ambient CIE standard general sky source.
+          * - :py:attr:`~cie_type`
+            - Get the CIE type.
+          * - :py:attr:`~zenith_direction`
+            - Property zenith direction of the ambient source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Property whether reverse zenith direction of the ambient CIE standard general sky source.
+          * - :py:attr:`~north_direction`
+            - Property north direction of the ambient CIE standard general sky.
+          * - :py:attr:`~reverse_north_direction`
+            - Property whether reverse north direction of the ambient CIE standard general sky.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientCieStandardGeneralSky
+
+Property detail
+---------------
+
+.. py:property:: luminance
+   :type: float
+
+
+   
+   Luminance of the ambient CIE standard general sky source.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminance value in cd/m^2.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Luminance value in cd/m^2.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: cie_type
+   :type: ansys.speos.core.generic.parameters.CieType
+
+
+   
+   Get the CIE type.
+
+
+   :Parameters:
+
+       **ansys.speos.core.generic.parameters.CieType**
+           allowed type parameter values:
+               standard_overcast
+               overcast_steep_gradation
+               overcast_azimuthal_uniformity
+               overcast_slight_brightening
+               uniform_luminance
+               cloudy_slight_brightening
+               cloudy_nogradation_circumsolar
+               cloudy_solar_corona
+               cloudy_obscured_sun
+               cloudy_circumsolar_region
+               white_blue_distinct
+               standard_low_luminance
+               standard_polluted_atmosphere
+               cloudless_turbid_corona
+               white_blue_broad
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.generic.parameters.CieType`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Property zenith direction of the ambient source.
+
+       default value to be [0, 0, 1]
+
+   :Parameters:
+
+       **direction** : :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the ambient sky
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the ambient sky
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Property whether reverse zenith direction of the ambient CIE standard general sky source.
+
+       default value to be False.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: north_direction
+   :type: List[float]
+
+
+   
+   Property north direction of the ambient CIE standard general sky.
+
+       default value to be [0, 1, 0].
+
+   :Parameters:
+
+       **direction** : :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the ambient CIE standard general sky
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the ambient CIE standard general sky
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_north_direction
+   :type: bool
+
+
+   
+   Property whether reverse north direction of the ambient CIE standard general sky.
+
+       default value to be False.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to reverse north direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as reverse north direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sun_automatic()
+
+   
+   Set sun type as automatic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.AutomaticSun`
+           Sun automatic type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sun_manual()
+
+   
+   Set cie standard general sky sun type as manual.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.Manual`
+           Sun Manual type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

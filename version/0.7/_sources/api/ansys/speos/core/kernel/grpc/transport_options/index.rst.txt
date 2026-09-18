@@ -1,0 +1,131 @@
+
+
+
+
+
+
+The ``transport_options.py`` module
+===================================
+
+.. py:module:: ansys.speos.core.kernel.grpc.transport_options
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: transport_options
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.UDSOptions`
+            - Options for UDS transport mode.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.MTLSOptions`
+            - Options for mTLS transport mode.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.InsecureOptions`
+            - Options for insecure transport mode.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.WNUAOptions`
+            - Options for Windows Named User Authentication transport mode.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.TransportOptions`
+            - Transport options for the FileTransfer Tool client.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.grpc.transport_options.TransportMode`
+            - Enumeration of transport modes supported by the FileTransfer Tool.
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> UDSOptions</api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions>
+    <span class="nf nf-cod-symbol_class"></span> MTLSOptions</api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions>
+    <span class="nf nf-cod-symbol_class"></span> InsecureOptions</api/ansys/speos/core/kernel/grpc/transport_options/InsecureOptions>
+    <span class="nf nf-cod-symbol_class"></span> WNUAOptions</api/ansys/speos/core/kernel/grpc/transport_options/WNUAOptions>
+    <span class="nf nf-cod-symbol_class"></span> TransportOptions</api/ansys/speos/core/kernel/grpc/transport_options/TransportOptions>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> TransportMode</api/ansys/speos/core/kernel/grpc/transport_options/TransportMode>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Define supported transport options for the FileTransfer Tool client.
+
+This module provides classes and enumerations to configure and manage
+different transport modes (UDS, mTLS, Insecure) for the FileTransfer Tool.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

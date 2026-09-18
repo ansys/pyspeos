@@ -1,0 +1,241 @@
+
+
+
+
+
+
+:class:`Library`
+================
+
+.. py:class:: ansys.speos.core.intensity.Intensity.Library(library, library_props, default_values = True)
+
+   
+   Intensity of type: Library.
+   By default, orientation as axis system is chosen and no exit geometries.
+
+
+   :Parameters:
+
+       **library** : :obj:`ansys.api.speos.intensity.v1.IntensityTemplate.Library`
+           Library to complete.
+
+       **library_props** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties`
+           Library properties to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Library
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_intensity_file_uri`
+            - Set the intensity file.
+          * - :py:attr:`~set_orientation_axis_system`
+            - Set the intensity orientation from an axis system.
+          * - :py:attr:`~set_orientation_normal_to_surface`
+            - Set the intensity orientation as normal to surface.
+          * - :py:attr:`~set_orientation_normal_to_uv_map`
+            - Set the intensity orientation as normal to uv map.
+          * - :py:attr:`~set_exit_geometries`
+            - Set the exit geometries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.intensity.Intensity import Library
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_intensity_file_uri(uri)
+
+   
+   Set the intensity file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Intensity feature of type library.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_orientation_axis_system(axis_system = None)
+
+   
+   Set the intensity orientation from an axis system.
+
+
+   :Parameters:
+
+       **axis_system** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Orientation of the intensity [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Library intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_orientation_normal_to_surface()
+
+   
+   Set the intensity orientation as normal to surface.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Library intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_orientation_normal_to_uv_map()
+
+   
+   Set the intensity orientation as normal to uv map.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Library intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_exit_geometries(exit_geometries = None)
+
+   
+   Set the exit geometries.
+
+
+   :Parameters:
+
+       **exit_geometries** : :obj:`Optional`\[:obj:`List`\[:obj:`ansys.speos.core.geo_ref.GeoRef`]]
+           Exit geometries list.
+           By default, ``[]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Library intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

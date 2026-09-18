@@ -1,0 +1,423 @@
+
+
+
+
+
+
+:class:`OptProp`
+================
+
+
+.. py:class:: ansys.speos.core.opt_prop.OptProp(project, name, description = '', metadata = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseVop`, :py:obj:`BaseSop`
+
+
+   
+   Speos feature wrapper for an optical property (SOP + VOP + geometries).
+
+   By default, an OptProp is a 100% mirror surface with no volume optical
+   property and no geometries assigned.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Description of the feature. Default is an empty string.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]], :obj:`optional`
+           Metadata of the feature. Default is ``None``.
+
+       **default_parameters** : :obj:`Optional`\[:obj:`ansys.speos.core.generic.parameters.OptPropParameters`], :obj:`optional`
+           Default optical property parameters to initialize the OptProp. Default is ``None``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: OptProp
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_texture_layer`
+            - Create a new texture layer with default parameters and a default name.
+          * - :py:attr:`~get`
+            - Get a value or the whole dictionary representation.
+          * - :py:attr:`~commit`
+            - Commit the material instance and templates to the server scene.
+          * - :py:attr:`~reset`
+            - Reset local templates and material instance from the server.
+          * - :py:attr:`~delete`
+            - Delete templates and remove the material instance from the scene.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geometries`
+            - Geometries to which this material is applied.
+          * - :py:attr:`~texture`
+            - List of texture layers used in this material.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_template_link`
+            - Link object for the sop template in database.
+          * - :py:attr:`~vop_template_link`
+            - Link object for the vop template in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the optical property.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop import OptProp
+
+Property detail
+---------------
+
+.. py:property:: geometries
+   :type: List[str]
+
+
+   
+   Geometries to which this material is applied.
+
+   An empty list means "all geometries"; ``None`` means "no geometry".
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:str`]
+           List of geometry references used by this material.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: texture
+   :type: Optional[list[TextureLayer]]
+
+
+   
+   List of texture layers used in this material.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:list`\[:obj:`ansys.speos.core.opt_prop.TextureLayer`]]
+           Texture layers or ``None`` when not set.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sop_template_link
+   :value: None
+
+
+   
+   Link object for the sop template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: vop_template_link
+   :value: None
+
+
+   
+   Link object for the vop template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_texture_layer()
+
+   
+   Create a new texture layer with default parameters and a default name.
+
+   The default name is generated as "LayerX" where X is the index of the
+   layer in the texture list.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.TextureLayer`
+           The newly created texture layer.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get(key = '')
+
+   
+   Get a value or the whole dictionary representation.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`, :obj:`optional`
+           If provided, tries to find a JSON key that starts with ``key`` and
+           returns the best match. Default is empty string.
+
+
+
+   :Returns:
+
+       :class:`python:str` or :class:`python:dict`
+           If ``key`` is empty, returns the full dict representation. If a match
+           for ``key`` is found, returns the corresponding value. Otherwise,
+           prints available keys and returns ``None`` implicitly.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the optical property.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Readable string representation of the material instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Commit the material instance and templates to the server scene.
+
+
+
+
+
+   :Returns:
+
+       :obj:`OptProp`
+           Returns self after committing.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset local templates and material instance from the server.
+
+
+
+
+
+   :Returns:
+
+       :obj:`OptProp`
+           Returns self after resetting.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete templates and remove the material instance from the scene.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Returns self after deletion and cleanup.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

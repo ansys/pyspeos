@@ -1,0 +1,240 @@
+
+
+
+
+
+
+:class:`DimensionsParameters`
+=============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.DimensionsParameters
+
+   
+   Dimension Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: DimensionsParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_start`
+            - Lower bound x axis.
+          * - :py:attr:`~x_end`
+            - Upper bound x axis.
+          * - :py:attr:`~x_sampling`
+            - Sampling x axis.
+          * - :py:attr:`~y_start`
+            - Lower bound y axis.
+          * - :py:attr:`~y_end`
+            - Upper bound y axis.
+          * - :py:attr:`~y_sampling`
+            - Sampling y axis.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import DimensionsParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: x_start
+   :type:  float
+   :value: -50
+
+
+   
+   Lower bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_end
+   :type:  float
+   :value: 50
+
+
+   
+   Upper bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_sampling
+   :type:  int
+   :value: 100
+
+
+   
+   Sampling x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_start
+   :type:  float
+   :value: -50
+
+
+   
+   Lower bound y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_end
+   :type:  float
+   :value: 50
+
+
+   
+   Upper bound y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_sampling
+   :type:  int
+   :value: 100
+
+
+   
+   Sampling y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

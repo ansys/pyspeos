@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`NearfieldParameters`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.NearfieldParameters
+
+   
+   Parameters data class for Nearfield.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: NearfieldParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~cell_distance`
+            - Distance of cell from origin of the sensor.
+          * - :py:attr:`~cell_diameter`
+            - Diameter of cell.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import NearfieldParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: cell_distance
+   :type:  float
+   :value: 10
+
+
+   
+   Distance of cell from origin of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: cell_diameter
+   :type:  float
+   :value: 0.3491
+
+
+   
+   Diameter of cell.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
