@@ -34,6 +34,7 @@ import time
 import numpy as np
 
 from ansys.speos.core import LOG  # Global logger
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.job import JobLink, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import SpeosClient
@@ -57,6 +58,11 @@ def clean_all_dbs(speos_client: SpeosClient):
         + speos_client.scenes().list()
         + speos_client.simulation_templates().list()
         + speos_client.sensor_templates().list()
+        + (
+            speos_client.sensor_templates_v2().list()
+            if server_version_checker.is_version_supported(2027, 1, 0)
+            else []
+        )
         + speos_client.source_templates().list()
         + speos_client.intensity_templates().list()
         + speos_client.spectrums().list()
