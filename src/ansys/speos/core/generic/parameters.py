@@ -1254,6 +1254,12 @@ class DirectSimulationParameters:
     """Colorimetric standard used for result computation."""
     dispersion: bool = True
     """Whether wavelength dispersion is enabled."""
+    fast_transmission_gathering: Optional[list] = None
+    """Fast transmission gathering definition.
+
+    ``None`` deactivates fast transmission gathering, while a list of geometries
+    (geo-paths, ``GeoRef``, ``Body``, ``Face`` or ``Part.SubPart``) activates it on those
+    geometries. Requires Speos 2027 R1 or higher."""
     geom_distance_tolerance: float = 0.01
     """Geometry distance tolerance value."""
     max_impact: int = 100
@@ -1321,6 +1327,12 @@ class InverseSimulationParameters:
     """Colorimetric standard used for result computation."""
     dispersion: bool = False
     """Whether wavelength dispersion is enabled."""
+    fast_transmission_gathering: Optional[list] = None
+    """Fast transmission gathering definition.
+
+    ``None`` deactivates fast transmission gathering, while a list of geometries
+    (geo-paths, ``GeoRef``, ``Body``, ``Face`` or ``Part.SubPart``) activates it on those
+    geometries. Requires Speos 2027 R1 or higher."""
     geom_distance_tolerance: float = 0.01
     """Geometry distance tolerance value."""
     max_impact: int = 100

@@ -14,6 +14,7 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -141,6 +142,37 @@ simulation2_direct.sensor_paths = [SENSOR_NAME]  # use sensor instance name
 simulation2_direct.source_paths = [SOURCE_NAME]  # use source instance name
 simulation2_direct.commit()
 print(simulation2_direct)
+
+
+# ### Fast transmission gathering
+#
+# Fast transmission gathering accelerates the simulation by neglecting the light refraction that
+# occurs when the light is transmitted through a transparent surface.
+#
+# Starting with Speos 2027 R1, the geometries on which it is applied can be selected with the
+# ``fast_transmission_gathering`` property. Assigning a list of geometries activates it on those
+# geometries, while assigning ``None`` removes all of them and deactivates it.
+# The property returns the geo-paths of the selected geometries, or ``None`` when fast
+# transmission gathering is deactivated.
+#
+# Geometries can be given as ``Body``, ``Face``, ``SubPart``, ``GeoRef`` or geo-path strings.
+#
+# > **Note:** the geometries are stored at scene level, therefore they are shared by all the
+# > simulations of the project, and they are sent to the server at commit.
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    print(simulation2_direct.fast_transmission_gathering)  # None: deactivated by default
+
+    simulation2_direct.fast_transmission_gathering = [body_1]
+    simulation2_direct.commit()
+    print(simulation2_direct.fast_transmission_gathering)
+
+# Deactivate it: this also removes the geometries stored at scene level.
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    simulation2_direct.fast_transmission_gathering = None
+    simulation2_direct.commit()
+    print(simulation2_direct.fast_transmission_gathering)
 
 
 # ### Read information
