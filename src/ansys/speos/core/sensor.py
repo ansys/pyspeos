@@ -5883,11 +5883,7 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorXMPIntensity
             Intensity sensor
         """
-        template = self._intensity_template
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            template.mode_photometric.SetInParent()
-        else:
-            template.sensor_type_photometric.SetInParent()
+        self._get_sensor_mode("photometric").SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
@@ -5930,12 +5926,8 @@ class SensorXMPIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorXMPIntensity
             Intensity sensor.
         """
-        template = self._intensity_template
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            template.mode_radiometric.SetInParent()
-        else:
-            template.sensor_type_radiometric.SetInParent()
-        self._type = SensorTypes.radiometric.capitalize()
+        self._get_sensor_mode("radiometric").SetInParent()
+        self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
