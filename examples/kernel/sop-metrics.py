@@ -65,14 +65,11 @@ try:
     sop_db, vop_db, bsdf_sop_link, vop_before_link, vop_after_link = create_templates(
         speos, bsdf_file_path
     )
-    # -
-
-    # ## Build Metric Configurations
+    # Build Metric Configurations
     #
     # An impact definition contains the five inputs used by directional and
     # slice evaluations: incident/outgoing angles and wavelength.
 
-    # +
     normal_impact = make_impact_definition(0.0, 0.0, 0.0, 0.0, 550.0)
 
     # Global RTA needs only the wavelengths at which R, T, and A are sampled.
@@ -104,50 +101,41 @@ try:
     )
 
     slices_config = make_bsdf_slices_config(slice_configs)
-    # -
 
-    # ## Evaluate Configured Metrics
+    # Evaluate Configured Metrics
     #
     # ``evaluate_metric`` identifies each configuration from its protobuf
     # descriptor and fills the matching field in ``MetricsConfig``.
 
-    # +
     result_all = evaluate_metric(
         bsdf_sop_link,
         vop_before_link,
         vop_after_link,
         [global_config, directional_config, slices_config],
     )
-    # -
 
-    # ## Inspect Results
+    # Inspect Results
     #
     # The response contains ``global_rta``, ``directional_rta``, and
     # ``bsdf_slices`` fields corresponding to the requested configurations.
 
-    # +
     display_metrics_statistics(
         result_all.global_rta, result_all.directional_rta, result_all.bsdf_slices
     )
-    # -
 
-    # ## Evaluate Server Defaults
+    # Evaluate Server Defaults
     #
     # Omitting the configuration list sends no ``config`` field. The RPC
     # service then evaluates its default set of SOP metrics.
 
-    # +
     default_results = evaluate_metric(bsdf_sop_link, vop_before_link, vop_after_link)
     print(f"Default Global RTA samples: {len(default_results.global_rta.samples)}")
-    # -
 
-
-# ## Cleanup
+# Cleanup
 #
 # Delete the temporary SOP and VOP links and close the Speos connection even if
 # evaluation or reporting raises an exception.
 
-# +
 finally:
     if all(item is not None for item in (bsdf_sop_link, vop_before_link, vop_after_link)):
         cleanup(
