@@ -2706,9 +2706,9 @@ def test_surface_modify_after_reset(speos: Speos):
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
     # Intermediate class for intensity
-    assert source._intensity._intensity_template.HasField("cos")
+    assert source._intensity._sensor_mode_template.HasField("cos")
     source.intensity.set_gaussian()
-    assert source._intensity._intensity_template.HasField("gaussian")
+    assert source._intensity._sensor_mode_template.HasField("gaussian")
 
     # Intermediate class for exitance variable + Props
     assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
@@ -2761,9 +2761,9 @@ def test_thermic_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Modify and check intermediate class for intensity
-    assert source._intensity._intensity_template.cos.N == 2
+    assert source._intensity._sensor_mode_template.cos.N == 2
     source.intensity.set_cos().n = 3
-    assert source._intensity._intensity_template.cos.N == 3
+    assert source._intensity._sensor_mode_template.cos.N == 3
 
     # Modify and check intermediate class for exitance: temperature field and sop
     assert source._source_template.thermic.temperature_field.temperature_field_uri == str(
