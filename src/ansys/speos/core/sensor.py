@@ -4188,11 +4188,6 @@ class Sensor3DIrradiance(BaseSensor):
         self._layer_type = None
         self._fill_parameters(default_parameters)
 
-    @property
-    def _irradiance_3d_template(self):
-        """3D irradiance part of the sensor template, whatever the protobuf version used."""
-        return self._sensor_template.irradiance_3d
-
     def _fill_parameters(
         self, default_parameters: Optional[Irradiance3DSensorParameters] = None
     ) -> None:
@@ -4208,7 +4203,7 @@ class Sensor3DIrradiance(BaseSensor):
                 self._get_sensor_mode("radiometric").SetInParent()
                 self._type = Sensor3DIrradiance.Radiometric(
                     sensor_type_radiometric=self._get_sensor_mode("radiometric"),
-                    irradiance_3d_template=self._irradiance_3d_template,
+                    irradiance_3d_template=self._sensor_mode_template,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
@@ -4216,7 +4211,7 @@ class Sensor3DIrradiance(BaseSensor):
                 self._get_sensor_mode("photometric").SetInParent()
                 self._type = Sensor3DIrradiance.Photometric(
                     sensor_type_photometric=self._get_sensor_mode("photometric"),
-                    irradiance_3d_template=self._irradiance_3d_template,
+                    irradiance_3d_template=self._sensor_mode_template,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
@@ -4873,7 +4868,7 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = Sensor3DIrradiance.Photometric(
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=None,
                 stable_ctr=True,
             )
@@ -4881,7 +4876,7 @@ class Sensor3DIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
@@ -4889,7 +4884,7 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._refresh_binding(
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
             )
         return self._type
 
@@ -4910,7 +4905,7 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=None,
                 stable_ctr=True,
             )
@@ -4918,7 +4913,7 @@ class Sensor3DIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
@@ -4926,7 +4921,7 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._refresh_binding(
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
-                irradiance_3d_template=self._irradiance_3d_template,
+                irradiance_3d_template=self._sensor_mode_template,
             )
         return self._type
 
@@ -4943,9 +4938,9 @@ class Sensor3DIrradiance(BaseSensor):
         """
         had_type_colorimetric = self._has_sensor_mode("colorimetric")
         if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            self._irradiance_3d_template.ClearField("reflection")
-            self._irradiance_3d_template.ClearField("transmission")
-            self._irradiance_3d_template.ClearField("absorption")
+            self._sensor_mode_template.ClearField("reflection")
+            self._sensor_mode_template.ClearField("transmission")
+            self._sensor_mode_template.ClearField("absorption")
         if not had_type_colorimetric:
             self._get_sensor_mode("colorimetric").SetInParent()
         if self._type is None and had_type_colorimetric:
