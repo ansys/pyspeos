@@ -564,7 +564,7 @@ class PolarIntensitySensorParameters:
         By default, ``None``.
     integration_angle : float, optional
         Far-field integration angle in degrees. Used only when ``near_field`` is ``None``.
-        By default, ``5.0``.
+        By default, ``1.0``.
     axis_system : list[float], optional
         Position of the sensor ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
