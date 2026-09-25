@@ -1,0 +1,90 @@
+
+
+
+
+
+
+:class:`BaseSourceAmbient`
+==========================
+
+.. toctree::
+   :hidden:
+
+    AutomaticSun</api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun>
+    Manual</api/ansys/speos/core/source/BaseSourceAmbient.Manual>
+
+
+.. py:class:: ansys.speos.core.source.BaseSourceAmbient(project, name, description = '', metadata = None, source_instance = None)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   Super Class for ambient sources.
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which source shall be created.
+
+       **name** : :class:`python:str`
+           Name of the source.
+
+       **description** : :class:`python:str`
+           Description of the source.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **source_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance`, :obj:`optional`
+           Source instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a Super class, **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import BaseSourceAmbient
+
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+    ansys.speos.core.source.BaseSourceAmbient.Manual
+
+
+
+

@@ -1,0 +1,182 @@
+
+
+
+
+
+
+:class:`UserDefinedColorSpaceParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters
+
+   
+   User defined Color Space Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UserDefinedColorSpaceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~white_point_type`
+            - White point preset or custom white point definition.
+          * - :py:attr:`~red_spectrum_uri`
+            - Path to the red primary spectrum.
+          * - :py:attr:`~blue_spectrum_uri`
+            - Path to the blue primary spectrum.
+          * - :py:attr:`~green_spectrum_uri`
+            - Path to the green primary spectrum.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UserDefinedColorSpaceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: white_point_type
+   :type:  Union[WhitePointType, UserDefinedWhitePointParameters]
+
+   
+   White point preset or custom white point definition.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: red_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the red primary spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: blue_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the blue primary spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: green_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the green primary spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

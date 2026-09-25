@@ -1,0 +1,87 @@
+
+
+
+
+
+
+The ``component.py`` module
+===========================
+
+.. py:module:: ansys.speos.core.component
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: component
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.component.LightBoxFileInstance`
+            - Represent a LightBox file containing geometries and sources.
+
+
+          * - :py:obj:`~ansys.speos.core.component.LightBox`
+            - Represent the Speos LightBox component feature.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> LightBoxFileInstance</api/ansys/speos/core/component/LightBoxFileInstance>
+    <span class="nf nf-cod-symbol_class"></span> LightBox</api/ansys/speos/core/component/LightBox>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provide API helpers for the Speos LightBox component feature.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

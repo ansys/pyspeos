@@ -1,0 +1,374 @@
+
+
+
+
+
+
+:class:`Body`
+=============
+
+
+.. py:class:: ansys.speos.core.body.Body(speos_client, name, description = '', metadata = None, parent_part = None)
+
+   
+   Feature : Body.
+
+
+   :Parameters:
+
+       **speos_client** : :obj:`ansys.speos.core.kernel.client.SpeosClient`
+           The Speos instance client.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Mapping`\[:class:`python:str`, :class:`python:str`]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **parent_part** : :obj:`Union`\[:obj:`ansys.speos.core.part.Part`, :obj:`ansys.speos.core.part.Part.SubPart`], :obj:`optional`
+           Feature containing this sub part.
+           By default, ``None``.
+
+   :Attributes:
+
+       **body_link** : :obj:`ansys.speos.core.kernel.body.BodyLink`
+           Link object for the body in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Body
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_face`
+            - Create a face in this element.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+          * - :py:attr:`~find`
+            - Find feature(s). In a body, only faces features can be found.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geo_path`
+            - Geometry path to be used within other speos objects.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~body_link`
+            - Link object for the body in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the body.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.body import Body
+
+Property detail
+---------------
+
+.. py:property:: geo_path
+   :type: ansys.speos.core.geo_ref.GeoRef
+
+
+   
+   Geometry path to be used within other speos objects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: body_link
+   :value: None
+
+
+   
+   Link object for the body in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_face(name, description = '', metadata = None)
+
+   
+   Create a face in this element.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the body.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.body.Body`
+           Body feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.body.Body`
+           Body feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.body.Body`
+           Body feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: find(name, name_regex = False, feature_type = None)
+
+   
+   Find feature(s). In a body, only faces features can be found.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+           Example "FaceName"
+
+       **name_regex** : :ref:`bool <python:bltin-boolean-values>`
+           Allows to use regex for name parameter.
+           By default, ``False``, means that regex is not used for name parameter.
+
+       **feature_type** : :obj:`type`
+           Type of the wanted feature (example: ansys.speos.core.face.Face).
+           By default, ``None``, means that all features will be considered.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.speos.core.face.Face`]
+           Found features.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

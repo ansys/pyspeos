@@ -1,0 +1,210 @@
+
+
+
+
+
+
+:class:`AmbientEnvironmentParameters`
+=====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientEnvironmentParameters
+
+   
+   Ambient Environment Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientEnvironmentParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction vector.
+          * - :py:attr:`~north_direction`
+            - North direction vector.
+          * - :py:attr:`~luminance`
+            - Environment luminance value.
+          * - :py:attr:`~image_file_uri`
+            - Path to the environment image.
+          * - :py:attr:`~color_space_type`
+            - Color space preset or custom color space definition.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientEnvironmentParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+   
+   Zenith direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: north_direction
+   :type:  list[float]
+   :value: [0, 1, 0]
+
+
+   
+   North direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: luminance
+   :type:  float
+   :value: 1000.0
+
+
+   
+   Environment luminance value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: image_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the environment image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: color_space_type
+   :type:  Union[ColorSpaceType, UserDefinedColorSpaceParameters]
+
+   
+   Color space preset or custom color space definition.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`FluxFromFileParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.FluxFromFileParameters
+
+   
+   Flux from intensity file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: FluxFromFileParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~value`
+            - Whether to read flux from the source intensity file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import FluxFromFileParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: value
+   :type:  bool
+   :value: True
+
+
+   
+   Whether to read flux from the source intensity file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

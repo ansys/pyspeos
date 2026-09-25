@@ -1,0 +1,129 @@
+
+
+
+
+
+
+:class:`NormalMapParameters`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.NormalMapParameters
+
+   Bases: :py:obj:`ImageTextureParameters`
+
+
+   
+   Parameters of a normal map based texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: NormalMapParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~normal_map_type`
+            - Mapping parameters to apply on the normal map if normal_map_type is from_normal_map.
+          * - :py:attr:`~roughness`
+            - Roughness value to apply on the normal map
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import NormalMapParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: normal_map_type
+   :type:  NormalMapTypes
+
+   
+   Mapping parameters to apply on the normal map if normal_map_type is from_normal_map.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: roughness
+   :type:  float
+   :value: 1
+
+
+   
+   Roughness value to apply on the normal map
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
