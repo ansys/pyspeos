@@ -2777,7 +2777,7 @@ def test_xmpintensity_dimension_errors_and_resets_cover_template_versions(
         assert sensor1.theta_sampling is None
     with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_max dimension"):
         sensor1.theta_max = 60
-    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_max dimension"):
+    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_sampling dimension"):
         sensor1.theta_sampling = 61
 
     sensor1.set_orientation_conoscopic()
