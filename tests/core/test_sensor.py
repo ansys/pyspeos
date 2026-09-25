@@ -169,6 +169,26 @@ def has_radiance_sensor_mode(sensor_feature, mode: str, local: bool = False) -> 
     )
 
 
+def immersive_template(sensor_feature, local: bool = False):
+    """Get the immersive part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.immersive
+    return template.immersive_sensor_template
+
+
+def has_immersive_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an immersive definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("immersive")
+    return template.HasField("immersive_sensor_template")
+
+
 def _sensor_mode_field(sensor_feature, mode: str) -> str:
     """Get the protobuf field name of a sensor mode for the template version in use."""
     if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
@@ -2800,7 +2820,7 @@ def test_create_by_parameters(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor(speos: Speos):
+def test_create_immersive_sensor(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with default parameters."""
     p = Project(speos=speos)
     default_params = ImmersiveSensorParameters()
@@ -2829,12 +2849,12 @@ def test_create_immersive_sensor(speos: Speos):
     assert len(p.scene_link.get().sensors) == 0
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert has_immersive_template(sensor1)
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("immersive_properties")
 
     # Verify template values on the server
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == default_params.sampling
     assert tmpl.integration_angle == default_params.integration_angle
     assert tmpl.wavelengths_range.w_start == default_params.wavelengths_range.start
@@ -2847,7 +2867,7 @@ def test_create_immersive_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor_custom_parameters(speos: Speos):
+def test_create_immersive_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -2893,7 +2913,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
     sensor1.commit()
 
     # Verify values on the server after commit
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 128
     assert tmpl.integration_angle == 10.0
     assert tmpl.stereo.interocular_distance == 6.5
@@ -2916,7 +2936,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_setters(speos: Speos):
+def test_immersive_sensor_setters(speos: Speos, sensor_template_version):
     """Test property setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -2950,7 +2970,7 @@ def test_immersive_sensor_setters(speos: Speos):
     assert sensor1.exclude_top is False
 
     sensor1.commit()
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 256
     assert tmpl.integration_angle == 7.5
     assert tmpl.stereo.interocular_distance == 6.5
@@ -2962,7 +2982,7 @@ def test_immersive_sensor_setters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_layer_types(speos: Speos):
+def test_immersive_sensor_layer_types(speos: Speos, sensor_template_version):
     """Test layer type setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -2986,7 +3006,7 @@ def test_immersive_sensor_layer_types(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_commit_reset_delete(speos: Speos):
+def test_immersive_sensor_commit_reset_delete(speos: Speos, sensor_template_version):
     """Test commit, reset, and delete lifecycle of immersive sensor."""
     p = Project(speos=speos)
 
@@ -3004,7 +3024,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
     # Modify locally, not committed
     sensor1.sampling = 512
     assert sensor1.sampling == 512
-    assert sensor1.sensor_template_link.get().immersive_sensor_template.sampling == default_sampling
+    assert immersive_template(sensor1).sampling == default_sampling
 
     # Reset restores server values
     sensor1.reset()
@@ -3018,7 +3038,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_wrong_parameters(speos: Speos):
+def test_immersive_sensor_wrong_parameters(speos: Speos, sensor_template_version):
     """Test that passing wrong parameter type raises TypeError."""
     p = Project(speos=speos)
 
@@ -3031,7 +3051,7 @@ def test_immersive_sensor_wrong_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_load_immersive_sensor_from_speos_file(speos: Speos):
+def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_version):
     """Test loading an immersive sensor from an existing .speos file.
 
     Verifies that the sensor settings (sampling, integration angle, wavelengths
@@ -3050,7 +3070,7 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
 
     # Verify the sensor template link was populated on load
     assert sensor.sensor_template_link is not None
-    assert sensor.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert has_immersive_template(sensor)
 
     # Template-level settings
     assert sensor.sampling == 600
