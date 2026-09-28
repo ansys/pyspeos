@@ -4714,13 +4714,19 @@ class SensorXMPIntensity(BaseSensor):
         )
 
         # Attribute gathering more complex intensity type
-        self._cell_diameter = None
         self._vis_radius = 1000
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(
         self, default_parameters: Optional[IntensityXMPSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+        self._layer_type = None
+
         if default_parameters:
             match default_parameters.orientation:
                 case IntensitySensorOrientationTypes.conoscopic:
@@ -5429,7 +5435,7 @@ class SensorXMPIntensity(BaseSensor):
         if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
             "sensor_type_colorimetric"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
                 stable_ctr=True,
@@ -5441,14 +5447,7 @@ class SensorXMPIntensity(BaseSensor):
                 stable_ctr=True,
                 default_parameters=ColorimetricParameters(),
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
-            )
+
         return self._type
 
     def set_type_radiometric(self) -> SensorXMPIntensity:
@@ -5479,7 +5478,7 @@ class SensorXMPIntensity(BaseSensor):
         if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
             "sensor_type_spectral"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
                 stable_ctr=True,
@@ -5491,14 +5490,7 @@ class SensorXMPIntensity(BaseSensor):
                 stable_ctr=True,
                 default_parameters=SpectralParameters(),
             )
-        elif (
-            self._type._sensor_type_spectral
-            is not self._sensor_template.intensity_sensor_template.sensor_type_spectral
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = (
-                self._sensor_template.intensity_sensor_template.sensor_type_spectral
-            )
+
         return self._type
 
     def set_layer_type_none(self) -> SensorXMPIntensity:
@@ -5538,7 +5530,7 @@ class SensorXMPIntensity(BaseSensor):
         if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
             "layer_type_face"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
                 stable_ctr=True,
@@ -5550,14 +5542,7 @@ class SensorXMPIntensity(BaseSensor):
                 stable_ctr=True,
                 default_parameters=LayerByFaceParameters(),
             )
-        elif (
-            self._layer_type._layer_type_face
-            is not self._sensor_instance.intensity_properties.layer_type_face
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_face = (
-                self._sensor_instance.intensity_properties.layer_type_face
-            )
+
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
@@ -5571,7 +5556,7 @@ class SensorXMPIntensity(BaseSensor):
         if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
             "layer_type_sequence"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
                 stable_ctr=True,
@@ -5583,14 +5568,7 @@ class SensorXMPIntensity(BaseSensor):
                 stable_ctr=True,
                 default_parameters=LayerBySequenceParameters(),
             )
-        elif (
-            self._layer_type._layer_type_sequence
-            is not self._sensor_instance.intensity_properties.layer_type_sequence
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_sequence = (
-                self._sensor_instance.intensity_properties.layer_type_sequence
-            )
+
         return self._layer_type
 
     @property

@@ -2161,6 +2161,75 @@ def test_3d_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
+def test_xmp_intensity_reset_internal_attributes(speos: Speos):
+    """Test reset of xmp intensity sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorXMPIntensity = p.create_sensor(name="Sensor.1", feature_type=SensorXMPIntensity)
+    wr = sensor1.set_type_spectral().set_wavelengths_range()
+    wr.start = 500
+    wr.end = 600
+    wr.sampling = 3
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 4
+    sensor1.near_field = True
+    sensor1.cell_distance = 25
+    sensor1.cell_diameter = 0.5
+    sensor1.set_orientation_conoscopic()
+    sensor1.theta_max = 21
+    sensor1.theta_sampling = 5
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.spectral is not None
+    # Check layer type
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+
+    # Modify type and check
+    wr = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wr.start = 600
+    wr.end = 800
+    wr.sampling = 4
+    assert sensor1.colorimetric is not None
+    assert sensor1.spectral is None
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+    # Modify near field
+    sensor1.near_field = False
+    # Modify orientation
+    sensor1.set_orientation_x_as_meridian()
+    sensor1.x_start = 11
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.colorimetric is None
+    assert sensor1.spectral is not None
+    wr = sensor1.spectral.set_wavelengths_range()
+    assert wr.start == 500
+    assert wr.end == 600
+    assert wr.sampling == 3
+    # Check layer type after the reset
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+    assert sensor1.layer.maximum_nb_of_sequence == 4
+    # Check near field
+    assert sensor1.near_field is True
+    assert sensor1.cell_distance == 25
+    assert sensor1.cell_diameter == 0.5
+    # Check orientation and dim
+    assert sensor1.theta_max == 21
+    assert sensor1.theta_sampling == 5
+    assert sensor1.x_start is None
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
