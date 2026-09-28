@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from difflib import SequenceMatcher
 from pathlib import Path
 import tempfile
@@ -87,7 +88,7 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
-class BaseSensor:
+class BaseSensor(ABC):
     """Base class for Sensor.
 
     Parameters
@@ -174,6 +175,21 @@ class BaseSensor:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
             self._sensor_instance.ClearField("lxp_properties")
+
+    @abstractmethod
+    def _fill_parameters(self, default_parameters=None) -> None:
+        """Populate the feature from a parameters dataclass or from the local protobuf data.
+
+        Parameters
+        ----------
+        default_parameters : optional
+            Parameters dataclass of the concrete sensor. When ``None``, the sensor state is
+            rebuilt from the already-populated template and instance.
+
+        Notes
+        -----
+        Overridden by every concrete sensor class.
+        """
 
     class AngularRange:
         """Angular range for Observer sensor locations on a sphere.
@@ -1178,6 +1194,9 @@ class BaseSensor:
             )
             if ssr_inst is not None:
                 self._sensor_instance = ssr_inst
+
+        # Call _fill_parameters to update the local attributes
+        self._fill_parameters(default_parameters=None)
         return self
 
     def delete(self) -> BaseSensor:
@@ -2591,11 +2610,19 @@ class SensorIrradiance(BaseSensor):
 
         # Attribute gathering more complex layer type
         self._layer_type = None
+
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(
         self, default_parameters: Optional[IrradianceSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+        self._layer_type = None
+
         if default_parameters:
             self._sensor_dimensions = self.Dimensions(
                 sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
@@ -2843,14 +2870,6 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if (
-            self._sensor_dimensions._sensor_dimensions
-            is not self._sensor_template.irradiance_sensor_template.dimensions
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = (
-                self._sensor_template.irradiance_sensor_template.dimensions
-            )
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorIrradiance:
@@ -2881,7 +2900,7 @@ class SensorIrradiance(BaseSensor):
         if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
             "sensor_type_colorimetric"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
                 default_parameters=None,
@@ -2894,14 +2913,7 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
-            )
+
         return self._type
 
     def set_type_radiometric(self) -> SensorIrradiance:
@@ -2932,7 +2944,7 @@ class SensorIrradiance(BaseSensor):
         if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
             "sensor_type_spectral"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
                 default_parameters=None,
@@ -2945,14 +2957,7 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=SpectralParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_spectral
-            is not self._sensor_template.irradiance_sensor_template.sensor_type_spectral
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = (
-                self._sensor_template.irradiance_sensor_template.sensor_type_spectral
-            )
+
         return self._type
 
     @property
@@ -3193,7 +3198,7 @@ class SensorIrradiance(BaseSensor):
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_face"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
                 default_parameters=None,
@@ -3206,14 +3211,7 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=LayerByFaceParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._layer_type._layer_type_face
-            is not self._sensor_instance.irradiance_properties.layer_type_face
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_face = (
-                self._sensor_instance.irradiance_properties.layer_type_face
-            )
+
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
@@ -3227,7 +3225,7 @@ class SensorIrradiance(BaseSensor):
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_sequence"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
                 default_parameters=None,
@@ -3240,14 +3238,7 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=LayerBySequenceParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._layer_type._layer_type_sequence
-            is not self._sensor_instance.irradiance_properties.layer_type_sequence
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_sequence = (
-                self._sensor_instance.irradiance_properties.layer_type_sequence
-            )
+
         return self._layer_type
 
     def set_layer_type_polarization(self) -> SensorIrradiance:
@@ -3275,7 +3266,7 @@ class SensorIrradiance(BaseSensor):
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_incidence_angle"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
                 default_parameters=None,
@@ -3288,14 +3279,7 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=LayerByIncidenceAngleParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._layer_type._layer_type_incidence_angle
-            is not self._sensor_instance.irradiance_properties.layer_type_incidence_angle
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_incidence_angle = (
-                self._sensor_instance.irradiance_properties.layer_type_incidence_angle
-            )
+
         return self._layer_type
 
     @property
