@@ -624,14 +624,6 @@ class BaseSensor(ABC):
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if (
-                self._wavelengths_range._wavelengths_range
-                is not self._sensor_type_colorimetric.wavelengths_range
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._wavelengths_range._wavelengths_range = (
-                    self._sensor_type_colorimetric.wavelengths_range
-                )
             return self._wavelengths_range
 
     class Spectral:
@@ -684,13 +676,6 @@ class BaseSensor(ABC):
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if (
-                self._wavelengths_range._wavelengths_range
-                is not self._sensor_type_spectral.wavelengths_range
-            ):
-                self._wavelengths_range._wavelengths_range = (
-                    self._sensor_type_spectral.wavelengths_range
-                )
             return self._wavelengths_range
 
     class FaceLayer:
