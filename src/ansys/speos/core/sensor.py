@@ -2102,6 +2102,9 @@ class SensorCamera(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex type
+        self._type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -2110,8 +2113,6 @@ class SensorCamera(BaseSensor):
             sensor_instance=sensor_instance,
         )
 
-        # Attribute gathering more complex camera mode
-        self._type = None
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
@@ -2597,6 +2598,12 @@ class SensorIrradiance(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex type
+        self._type = None
+
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -2604,12 +2611,6 @@ class SensorIrradiance(BaseSensor):
             metadata=metadata,
             sensor_instance=sensor_instance,
         )
-
-        # Attribute gathering more complex irradiance type
-        self._type = None
-
-        # Attribute gathering more complex layer type
-        self._layer_type = None
 
         self._fill_parameters(default_parameters)
 
@@ -3365,6 +3366,12 @@ class SensorRadiance(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex type
+        self._type = None
+
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -3372,12 +3379,6 @@ class SensorRadiance(BaseSensor):
             metadata=metadata,
             sensor_instance=sensor_instance,
         )
-
-        # Attribute gathering more complex radiance type
-        self._type = None
-
-        # Attribute gathering more complex layer type
-        self._layer_type = None
 
         # Attribute to keep track of sensor dimensions object
         self._fill_parameters(default_parameters)
@@ -3930,6 +3931,12 @@ class Sensor3DIrradiance(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex type
+        self._type = None
+
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -3938,11 +3945,6 @@ class Sensor3DIrradiance(BaseSensor):
             sensor_instance=sensor_instance,
         )
 
-        # Attribute gathering more complex irradiance type
-        self._type = None
-
-        # Attribute gathering more complex layer type
-        self._layer_type = None
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(
@@ -4736,6 +4738,12 @@ class SensorXMPIntensity(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex type
+        self._type = None
+
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -4745,8 +4753,6 @@ class SensorXMPIntensity(BaseSensor):
         )
 
         # Attribute gathering more complex intensity type
-        self._type = None
-        self._layer_type = None
         self._cell_diameter = None
         self._vis_radius = 1000
         self._fill_parameters(default_parameters)
@@ -5689,6 +5695,9 @@ class SensorImmersive(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -5697,7 +5706,6 @@ class SensorImmersive(BaseSensor):
             sensor_instance=sensor_instance,
         )
 
-        self._layer_type = None
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(
@@ -6496,6 +6504,9 @@ class SensorObserver(BaseSensor):
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
         super().__init__(
             project=project,
             name=name,
@@ -6504,7 +6515,6 @@ class SensorObserver(BaseSensor):
             sensor_instance=sensor_instance,
         )
 
-        self._layer_type = None
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(
