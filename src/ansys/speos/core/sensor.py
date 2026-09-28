@@ -3386,6 +3386,13 @@ class SensorRadiance(BaseSensor):
     def _fill_parameters(
         self, default_parameters: Optional[RadianceSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+        self._layer_type = None
+
         if default_parameters:
             self.focal = default_parameters.focal_length
             self.integration_angle = default_parameters.integration_angle
@@ -3595,14 +3602,6 @@ class SensorRadiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if (
-            self._sensor_dimensions._sensor_dimensions
-            is not self._sensor_template.radiance_sensor_template.dimensions
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = (
-                self._sensor_template.radiance_sensor_template.dimensions
-            )
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorRadiance:
@@ -3633,7 +3632,7 @@ class SensorRadiance(BaseSensor):
         if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
             "sensor_type_colorimetric"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
                 default_parameters=None,
@@ -3646,14 +3645,7 @@ class SensorRadiance(BaseSensor):
                 default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
-            )
+
         return self._type
 
     def set_type_radiometric(self) -> SensorRadiance:
@@ -3684,7 +3676,7 @@ class SensorRadiance(BaseSensor):
         if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
             "sensor_type_spectral"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
                 default_parameters=None,
@@ -3697,14 +3689,7 @@ class SensorRadiance(BaseSensor):
                 default_parameters=SpectralParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_spectral
-            is not self._sensor_template.radiance_sensor_template.sensor_type_spectral
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = (
-                self._sensor_template.radiance_sensor_template.sensor_type_spectral
-            )
+
         return self._type
 
     @property
@@ -3833,7 +3818,7 @@ class SensorRadiance(BaseSensor):
         if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
             "layer_type_face"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
                 default_parameters=None,
@@ -3846,14 +3831,7 @@ class SensorRadiance(BaseSensor):
                 default_parameters=LayerByFaceParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._layer_type._layer_type_face
-            is not self._sensor_instance.radiance_properties.layer_type_face
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_face = (
-                self._sensor_instance.radiance_properties.layer_type_face
-            )
+
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
@@ -3867,7 +3845,7 @@ class SensorRadiance(BaseSensor):
         if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
             "layer_type_sequence"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
                 default_parameters=None,
@@ -3880,14 +3858,7 @@ class SensorRadiance(BaseSensor):
                 default_parameters=LayerBySequenceParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._layer_type._layer_type_sequence
-            is not self._sensor_instance.radiance_properties.layer_type_sequence
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_sequence = (
-                self._sensor_instance.radiance_properties.layer_type_sequence
-            )
+
         return self._layer_type
 
 
