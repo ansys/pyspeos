@@ -2110,6 +2110,57 @@ def test_radiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
+def test_3d_irradiance_reset_internal_attributes(speos: Speos):
+    """Test reset of 3D irradiance sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+
+    # Create + commit
+    sensor1: Sensor3DIrradiance = p.create_sensor(name="Sensor.1", feature_type=Sensor3DIrradiance)
+    planar = sensor1.set_type_radiometric().set_integration_planar()
+    planar.reflection = False
+    planar.absorption = False
+    planar.transmission = True
+    sensor1.set_layer_type_source()
+    sensor1.geometries = [body]
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.radiometric is not None
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify type and check
+    sensor1.set_type_photometric().set_integration_planar()
+    assert sensor1.photometric is not None
+    assert sensor1.radiometric is None
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.photometric is None
+    assert sensor1.radiometric is not None
+    isinstance(sensor1.radiometric._integration_type, Sensor3DIrradiance.Measures)
+    assert not sensor1.radiometric._integration_type.reflection
+    assert not sensor1.radiometric._integration_type.absorption
+    assert sensor1.radiometric._integration_type.transmission
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)

@@ -3921,6 +3921,13 @@ class Sensor3DIrradiance(BaseSensor):
     def _fill_parameters(
         self, default_parameters: Optional[Irradiance3DSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+        self._layer_type = None
+
         if default_parameters:
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
                 self._type = Sensor3DIrradiance.Colorimetric(
@@ -4011,10 +4018,15 @@ class Sensor3DIrradiance(BaseSensor):
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
+            # _fill_parameters resets class local attributes.
+            # Important because _fill_parameters can be called from different places:
+            #     - during initialization
+            #     - after a reset
+            self._integration_type = None
+
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
-                        self.set_integration_planar()
                         self._integration_type = Sensor3DIrradiance.Measures(
                             illuminance_type=self._sensor_type_radiometric.integration_type_planar,
                             default_parameters=default_parameters.measures,
@@ -4027,11 +4039,7 @@ class Sensor3DIrradiance(BaseSensor):
             if self._sensor_type_radiometric.HasField("integration_type_radial"):
                 self.set_integration_radial()
             else:
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+                self.set_integration_planar()
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -4042,19 +4050,21 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
-            if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
+            if self._integration_type is None and self._sensor_type_radiometric.HasField(
+                "integration_type_planar"
+            ):
+                # Happens in case of project created via load of speos file, or after a reset.
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=True,
+                )
+            elif not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
+                # if the _integration_type is not Measures then we create a new type.
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
-                )
-            elif (
-                self._integration_type._illuminance_type
-                is not self._sensor_type_radiometric.integration_type_planar
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._integration_type._illuminance_type = (
-                    self._sensor_type_radiometric.integration_type_planar
                 )
             return self._integration_type
 
@@ -4102,10 +4112,15 @@ class Sensor3DIrradiance(BaseSensor):
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
+            # _fill_parameters resets class local attributes.
+            # Important because _fill_parameters can be called from different places:
+            #     - during initialization
+            #     - after a reset
+            self._integration_type = None
+
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
-                        self.set_integration_planar()
                         self._integration_type = Sensor3DIrradiance.Measures(
                             illuminance_type=self._sensor_type_photometric.integration_type_planar,
                             default_parameters=default_parameters.measures,
@@ -4118,11 +4133,7 @@ class Sensor3DIrradiance(BaseSensor):
             if self._sensor_type_photometric.HasField("integration_type_radial"):
                 self.set_integration_radial()
             else:
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+                self.set_integration_planar()
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -4133,20 +4144,23 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
+            if self._integration_type is None and self._sensor_type_photometric.HasField(
+                "integration_type_planar"
+            ):
+                # Happens in case of project created via load of speos file, or after a reset.
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=True,
+                )
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
+                # if the _integration_type is not Measures then we create a new type.
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_photometric.integration_type_planar,
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
-            elif (
-                self._integration_type._illuminance_type
-                is not self._sensor_type_photometric.integration_type_planar
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._integration_type._illuminance_type = (
-                    self._sensor_type_photometric.integration_type_planar
-                )
+
             return self._integration_type
 
         def set_integration_radial(self) -> None:
@@ -4306,9 +4320,6 @@ class Sensor3DIrradiance(BaseSensor):
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if self._wavelengths_range._wavelengths_range is not self._sensor_type_colorimetric:
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._wavelengths_range._wavelengths_range = self._sensor_type_colorimetric
             return self._wavelengths_range
 
     @property
@@ -4452,27 +4463,20 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_photometric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Photometric):
-            # if the _type is not Colorimetric then we create a new type.
+            # if the _type is not Photometric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_photometric
-            is not self._sensor_template.irradiance_3d.type_photometric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_photometric = (
-                self._sensor_template.irradiance_3d.type_photometric
-            )
+
         return self._type
 
     def set_type_radiometric(self) -> Sensor3DIrradiance.Radiometric:
@@ -4486,27 +4490,20 @@ class Sensor3DIrradiance(BaseSensor):
             3D Irradiance sensor
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_radiometric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Radiometric):
-            # if the _type is not Colorimetric then we create a new type.
+            # if the _type is not Radiometric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_radiometric
-            is not self._sensor_template.irradiance_3d.type_radiometric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_radiometric = (
-                self._sensor_template.irradiance_3d.type_radiometric
-            )
+
         return self._type
 
     def set_type_colorimetric(self) -> Sensor3DIrradiance.Colorimetric:
@@ -4521,7 +4518,7 @@ class Sensor3DIrradiance(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
                 default_parameters=None,
@@ -4534,14 +4531,7 @@ class Sensor3DIrradiance(BaseSensor):
                 default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._sensor_type_colorimetric
-            is not self._sensor_template.irradiance_3d.type_colorimetric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = (
-                self._sensor_template.irradiance_3d.type_colorimetric
-            )
+
         return self._type
 
     def set_ray_file_type_none(self) -> Sensor3DIrradiance:
