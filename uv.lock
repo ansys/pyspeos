@@ -352,7 +352,7 @@ dev = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.0.2" },
+    { name = "trame-client", specifier = "<4.1.1" },
     { name = "ty", specifier = "==0.0.49" },
 ]
 doc = [
@@ -366,7 +366,7 @@ doc = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.0.2" },
+    { name = "trame-client", specifier = "<4.1.1" },
 ]
 quality = [
     { name = "prek", specifier = "==0.5.0" },
@@ -4462,14 +4462,14 @@ wheels = [
 
 [[package]]
 name = "trame-client"
-version = "4.0.1"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "trame-common" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/98/87/4447c26bafcb07359c3329e8c0262e1fd252f61dbbcdef706897d5df6d77/trame_client-4.0.1.tar.gz", hash = "sha256:5569c7f9fdbe4eb989e8ec9bf2e68e506bda16d703957deeadd5dad9e6877bb5", size = 550322, upload-time = "2026-09-09T22:33:25.037Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/38/8ebc00a78a29b1bea9285866bb16f0af61c7922517f70398cdb5453ada1f/trame_client-4.1.0.tar.gz", hash = "sha256:63fbf128090ab334d432d0661a09a6b738027b26ac9be03f4497559fb839c70c", size = 552102, upload-time = "2026-09-14T06:56:49.199Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/2c/e95dd3e1377ac489b43e17a22072a3ae8c48a0873563db0f2b876770a36f/trame_client-4.0.1-py3-none-any.whl", hash = "sha256:8484212680d1667c7b83b80b5edc8c3a91e2987651444580fe57297b9b7fff05", size = 564993, upload-time = "2026-09-09T22:33:23.42Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/32/d40b06ab592b73c68c1551108917c298f050676fb56735d83f155995318c/trame_client-4.1.0-py3-none-any.whl", hash = "sha256:b4cb4411d4cade529591650d9d2439c7aa7e64235159b3ff57a7943202841113", size = 567283, upload-time = "2026-09-14T06:56:47.519Z" },
 ]
 
 [[package]]
