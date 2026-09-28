@@ -352,7 +352,7 @@ dev = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.0.2" },
+    { name = "trame-client", specifier = "<4.1.1" },
     { name = "ty", specifier = "==0.0.49" },
 ]
 doc = [
@@ -366,7 +366,7 @@ doc = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.0.2" },
+    { name = "trame-client", specifier = "<4.1.1" },
 ]
 quality = [
     { name = "prek", specifier = "==0.5.0" },
@@ -2919,7 +2919,7 @@ wheels = [
 
 [[package]]
 name = "numpydoc"
-version = "1.10.0"
+version = "1.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -2927,9 +2927,9 @@ dependencies = [
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/3c/dfccc9e7dee357fb2aa13c3890d952a370dd0ed071e0f7ed62ed0df567c1/numpydoc-1.10.0.tar.gz", hash = "sha256:3f7970f6eee30912260a6b31ac72bba2432830cd6722569ec17ee8d3ef5ffa01", size = 94027, upload-time = "2025-12-02T16:39:12.937Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/2f/5e9bf8ed0a93587b8089242b4926dfd04d4b3b0b65f04345d219a1225f03/numpydoc-1.11.0.tar.gz", hash = "sha256:26db0adaac8087e98da05c86b11198defd962aef7c21f4dffd2703c8c6eb4187", size = 101575, upload-time = "2026-09-15T16:31:08.905Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/5e/3a6a3e90f35cea3853c45e5d5fb9b7192ce4384616f932cf7591298ab6e1/numpydoc-1.10.0-py3-none-any.whl", hash = "sha256:3149da9874af890bcc2a82ef7aae5484e5aa81cb2778f08e3c307ba6d963721b", size = 69255, upload-time = "2025-12-02T16:39:11.561Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/e5/f5c38d4899cd8edd5b522071c5658202077d113c3225484d779cf257970e/numpydoc-1.11.0-py3-none-any.whl", hash = "sha256:493ad2ce0d8275ca5da484ec37dbdbbc1334c3a6968dffd10ec729b51753e15e", size = 71464, upload-time = "2026-09-15T16:31:07.521Z" },
 ]
 
 [[package]]
@@ -4472,14 +4472,14 @@ wheels = [
 
 [[package]]
 name = "trame-client"
-version = "4.0.1"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "trame-common" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/98/87/4447c26bafcb07359c3329e8c0262e1fd252f61dbbcdef706897d5df6d77/trame_client-4.0.1.tar.gz", hash = "sha256:5569c7f9fdbe4eb989e8ec9bf2e68e506bda16d703957deeadd5dad9e6877bb5", size = 550322, upload-time = "2026-09-09T22:33:25.037Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/38/8ebc00a78a29b1bea9285866bb16f0af61c7922517f70398cdb5453ada1f/trame_client-4.1.0.tar.gz", hash = "sha256:63fbf128090ab334d432d0661a09a6b738027b26ac9be03f4497559fb839c70c", size = 552102, upload-time = "2026-09-14T06:56:49.199Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/2c/e95dd3e1377ac489b43e17a22072a3ae8c48a0873563db0f2b876770a36f/trame_client-4.0.1-py3-none-any.whl", hash = "sha256:8484212680d1667c7b83b80b5edc8c3a91e2987651444580fe57297b9b7fff05", size = 564993, upload-time = "2026-09-09T22:33:23.42Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/32/d40b06ab592b73c68c1551108917c298f050676fb56735d83f155995318c/trame_client-4.1.0-py3-none-any.whl", hash = "sha256:b4cb4411d4cade529591650d9d2439c7aa7e64235159b3ff57a7943202841113", size = 567283, upload-time = "2026-09-14T06:56:47.519Z" },
 ]
 
 [[package]]
