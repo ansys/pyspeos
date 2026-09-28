@@ -2175,12 +2175,6 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
     wr.end = 600
     wr.sampling = 3
     sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 4
-    sensor1.near_field = True
-    sensor1.cell_distance = 25
-    sensor1.cell_diameter = 0.5
-    sensor1.set_orientation_conoscopic()
-    sensor1.theta_max = 21
-    sensor1.theta_sampling = 5
     sensor1.commit()
 
     # Check type
@@ -2198,11 +2192,6 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
     # Modify layer type and check
     sensor1.set_layer_type_none()
     assert sensor1.layer == LayerTypes.none
-    # Modify near field
-    sensor1.near_field = False
-    # Modify orientation
-    sensor1.set_orientation_x_as_meridian()
-    sensor1.x_start = 11
 
     # Ask for reset
     sensor1.reset()
@@ -2217,14 +2206,35 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
     # Check layer type after the reset
     assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
     assert sensor1.layer.maximum_nb_of_sequence == 4
-    # Check near field
-    assert sensor1.near_field is True
-    assert sensor1.cell_distance == 25
-    assert sensor1.cell_diameter == 0.5
-    # Check orientation and dim
-    assert sensor1.theta_max == 21
-    assert sensor1.theta_sampling == 5
-    assert sensor1.x_start is None
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_immersive_reset_internal_attributes(speos: Speos):
+    """Test reset of immersive sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorImmersive = p.create_sensor(name="Sensor.1", feature_type=SensorImmersive)
+    sensor1.set_layer_type_source()
+    sensor1.commit()
+
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
 
     sensor1.delete()
 

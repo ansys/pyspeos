@@ -5650,6 +5650,12 @@ class SensorImmersive(BaseSensor):
     def _fill_parameters(
         self, default_parameters: Optional[ImmersiveSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._layer_type = None
+
         if default_parameters:
             self.sampling = default_parameters.sampling
             self.integration_angle = default_parameters.integration_angle
