@@ -6465,6 +6465,12 @@ class SensorObserver(BaseSensor):
     def _fill_parameters(
         self, default_parameters: Optional[ObserverSensorParameters] = None
     ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._layer_type = None
+
         if default_parameters:
             self.focal = default_parameters.focal
             self.integration_angle = default_parameters.integration_angle
@@ -6489,6 +6495,12 @@ class SensorObserver(BaseSensor):
             _ang = self.set_angular_range()
             _ang._fill_parameters(default_parameters.sensors_locations)
             return
+
+        # Load state from existing template/instance (reset path)
+        if self._sensor_instance.observer_properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif self._sensor_instance.observer_properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
 
     # ------------------------------------------------------------------
     # Template-level properties

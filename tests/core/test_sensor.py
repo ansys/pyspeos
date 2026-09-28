@@ -2240,6 +2240,35 @@ def test_immersive_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
+def test_observer_reset_internal_attributes(speos: Speos):
+    """Test reset of observer sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorObserver = p.create_sensor(name="Sensor.1", feature_type=SensorObserver)
+    sensor1.set_layer_type_source()
+    sensor1.commit()
+
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
