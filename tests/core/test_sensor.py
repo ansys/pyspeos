@@ -4313,4 +4313,4 @@ def test_observer_sensor_load(speos: Speos):
     assert loaded_ang.y_sampling == params.sensors_locations.y_sampling
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
-    assert loaded_sensor.layer is None
+    assert loaded_sensor.layer == params.layer_type
