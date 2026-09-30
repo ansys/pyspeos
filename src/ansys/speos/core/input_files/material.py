@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import astuple, dataclass, field
 from typing import ClassVar, List, Mapping, Optional, Union
 
 from ansys.speos.core.input_files._base import (
@@ -182,6 +182,218 @@ MaterialDispersion = Union[
     MaterialKettlerHelmholtz,
 ]
 """Dispersion models accepted by :class:`MaterialFile`."""
+
+
+@dataclass
+class MaterialMetallicCurve:
+    """Dispersion of a metal given by its complex refractive index.
+
+    Parameters
+    ----------
+    wavelengths : List[float], optional
+        Wavelengths of the curve, in nm. By default, ``[]``.
+    indices : List[float], optional
+        Real part n of the refractive index at each wavelength. By default, ``[]``.
+    extinctions : List[float], optional
+        Extinction coefficient k at each wavelength. By default, ``[]``.
+    """
+
+    wavelengths: List[float] = field(default_factory=list)
+    indices: List[float] = field(default_factory=list)
+    extinctions: List[float] = field(default_factory=list)
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        _check_columns(
+            {
+                "wavelengths": self.wavelengths,
+                "indices": self.indices,
+                "extinctions": self.extinctions,
+            }
+        )
+        lines = [self.KEYWORD, str(len(self.wavelengths))]
+        lines.extend(
+            " ".join(format_number(value) for value in row)
+            for row in zip(self.wavelengths, self.indices, self.extinctions)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialMetallicCurve:
+        wavelengths, indices, extinctions = [], [], []
+        for _ in range(reader.next_int()):
+            wavelength, index, extinction = reader.next_floats(count=3)
+            wavelengths.append(wavelength)
+            indices.append(index)
+            extinctions.append(extinction)
+        return cls(wavelengths=wavelengths, indices=indices, extinctions=extinctions)
+
+
+@dataclass
+class MaterialBirefringentCurve:
+    """Refractive indices of a birefringent material along its three axes.
+
+    Speos does not make the indices of a birefringent material vary with the wavelength
+    when they are given explicitly, so a single index per axis is stored.
+
+    Parameters
+    ----------
+    wavelength : float, optional
+        Wavelength the indices are given at, in nm. By default, ``550.0``.
+    index_a : float, optional
+        Refractive index along the ``a`` axis. By default, ``1.5``.
+    index_b : float, optional
+        Refractive index along the ``b`` axis. By default, ``1.5``.
+    index_c : float, optional
+        Refractive index along the ``c`` axis. By default, ``1.5``.
+    optical_class : int, optional
+        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+        ``2`` for a biaxial one. By default, ``0``.
+    """
+
+    wavelength: float = 550.0
+    index_a: float = 1.5
+    index_b: float = 1.5
+    index_c: float = 1.5
+    optical_class: int = 0
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        return [
+            self.KEYWORD,
+            "1",
+            f"{format_number(self.wavelength)} {format_number(self.index_a)}",
+            str(self.optical_class),
+            f"{format_number(self.index_b)} {format_number(self.index_c)}",
+        ]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentCurve:
+        count = reader.next_int()
+        if count != 1:
+            raise reader.error(
+                "the indices of a birefringent material do not vary with the wavelength, "
+                f"expected a single wavelength, got {count}."
+            )
+        wavelength, index_a = reader.next_floats(count=2)
+        optical_class = reader.next_int()
+        index_b, index_c = reader.next_floats(count=2)
+        return cls(
+            wavelength=wavelength,
+            index_a=index_a,
+            index_b=index_b,
+            index_c=index_c,
+            optical_class=optical_class,
+        )
+
+
+@dataclass
+class MaterialBirefringentSellmeier:
+    """Dispersion of a birefringent material given by the Sellmeier coefficients.
+
+    Parameters
+    ----------
+    a, b, c : MaterialSellmeier, optional
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
+        :class:`MaterialSellmeier` model with null coefficients.
+    optical_class : int, optional
+        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+        ``2`` for a biaxial one. By default, ``0``.
+    """
+
+    a: MaterialSellmeier = field(default_factory=MaterialSellmeier)
+    b: MaterialSellmeier = field(default_factory=MaterialSellmeier)
+    c: MaterialSellmeier = field(default_factory=MaterialSellmeier)
+    optical_class: int = 0
+
+    KEYWORD: ClassVar[str] = MaterialSellmeier.KEYWORD
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    COEFFICIENTS: ClassVar[type] = MaterialSellmeier
+    """Model holding the coefficients of a single axis."""
+
+    def _to_lines(self) -> List[str]:
+        return _birefringent_coefficient_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentSellmeier:
+        return _read_birefringent_coefficients(cls, reader)
+
+
+@dataclass
+class MaterialBirefringentKettlerHelmholtz:
+    """Dispersion of a birefringent material given by the Kettler-Helmholtz coefficients.
+
+    Parameters
+    ----------
+    a, b, c : MaterialKettlerHelmholtz, optional
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
+        :class:`MaterialKettlerHelmholtz` model with null coefficients.
+    optical_class : int, optional
+        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+        ``2`` for a biaxial one. By default, ``0``.
+    """
+
+    a: MaterialKettlerHelmholtz = field(default_factory=MaterialKettlerHelmholtz)
+    b: MaterialKettlerHelmholtz = field(default_factory=MaterialKettlerHelmholtz)
+    c: MaterialKettlerHelmholtz = field(default_factory=MaterialKettlerHelmholtz)
+    optical_class: int = 0
+
+    KEYWORD: ClassVar[str] = MaterialKettlerHelmholtz.KEYWORD
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    COEFFICIENTS: ClassVar[type] = MaterialKettlerHelmholtz
+    """Model holding the coefficients of a single axis."""
+
+    def _to_lines(self) -> List[str]:
+        return _birefringent_coefficient_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentKettlerHelmholtz:
+        return _read_birefringent_coefficients(cls, reader)
+
+
+MaterialBirefringence = Union[
+    MaterialBirefringentCurve,
+    MaterialBirefringentSellmeier,
+    MaterialBirefringentKettlerHelmholtz,
+]
+"""Dispersion models accepted by a birefringent :class:`MaterialFile`."""
+
+_COEFFICIENT_COUNT = 6
+"""Number of coefficients an analytic dispersion model holds for a single axis."""
+
+
+def _birefringent_coefficient_lines(model) -> List[str]:
+    """Write the coefficients of an axis as one number per line.
+
+    The ``a`` axis comes first, then the optical class, then the ``b`` and the ``c`` axes
+    interleaved coefficient by coefficient.
+    """
+    lines = [model.KEYWORD]
+    lines.extend(format_number(value) for value in astuple(model.a))
+    lines.append(str(model.optical_class))
+    for value_b, value_c in zip(astuple(model.b), astuple(model.c)):
+        lines.extend((format_number(value_b), format_number(value_c)))
+    return lines
+
+
+def _read_birefringent_coefficients(model_class, reader: LineReader):
+    """Read the coefficients of the three axes of a birefringent material."""
+    coefficients = model_class.COEFFICIENTS
+    axis_a = coefficients(*(reader.next_floats(count=1)[0] for _ in range(_COEFFICIENT_COUNT)))
+    optical_class = reader.next_int()
+    interleaved = [reader.next_floats(count=1)[0] for _ in range(2 * _COEFFICIENT_COUNT)]
+    return model_class(
+        a=axis_a,
+        b=coefficients(*interleaved[0::2]),
+        c=coefficients(*interleaved[1::2]),
+        optical_class=optical_class,
+    )
 
 
 @dataclass
@@ -406,6 +618,11 @@ VolumeScattering = Union[
 """Scattering phase functions accepted by :class:`MaterialFile`."""
 
 
+def _is_type(material_type: str, expected: str) -> bool:
+    """Tell whether a material type line names the expected flavor of the format."""
+    return material_type.strip().lower() == expected.lower()
+
+
 def _check_columns(columns: Mapping[str, List[float]]) -> None:
     """Check that named columns are non empty and hold the same number of values."""
     lengths = {name: len(values) for name, values in columns.items()}
@@ -483,20 +700,29 @@ class MaterialFile(SpeosTextFileFormat):
     wavelength. Setting :attr:`scattering` adds a volume scattering block, which turns the
     file into the scattering flavor of the format.
 
+    :attr:`material_type` selects the flavor of the format, and with it the models
+    :attr:`dispersion` accepts. A metallic material holds nothing but the complex
+    refractive index of the metal, while a birefringent one holds an index per axis, the
+    orientation of these axes and an absorption curve per axis.
+
     Parameters
     ----------
     description : str, optional
         Free text written on the second line of the file. By default, ``""``.
     material_type : str, optional
-        Type of material, for example ``"Isotropic"``, ``"Birefringent"``,
-        ``"Fluorescent"`` or ``"Metallic"``. By default, ``"Isotropic"``.
-    dispersion : MaterialDispersion, optional
-        How the refractive index varies with the wavelength. By default, a
-        :class:`MaterialConstringence` model.
+        Type of material, one of ``"Isotropic"``, ``"Metallic"`` or ``"Birefringent"``.
+        By default, ``"Isotropic"``.
+    dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
+        How the refractive index varies with the wavelength. A metallic material needs a
+        :class:`MaterialMetallicCurve` and a birefringent one needs one of the
+        :obj:`MaterialBirefringence` models. By default, a :class:`MaterialConstringence`
+        model.
     absorption_wavelengths : List[float], optional
-        Wavelengths of the absorption curve, in nm. By default, ``[]``.
+        Wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+        whose extinction coefficient already holds the absorption. By default, ``[]``.
     absorption_values : List[float], optional
-        Absorption coefficient at each wavelength, in mm-1. By default, ``[]``.
+        Absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+        the absorption along the ``a`` axis. By default, ``[]``.
     measured_concentration : float, optional
         Concentration the absorption curve was measured at. By default, ``1.0``.
     user_concentration : float, optional
@@ -508,6 +734,18 @@ class MaterialFile(SpeosTextFileFormat):
     scattering : Optional[VolumeScattering], optional
         Scattering phase function. By default, ``None``, which writes a non-scattering
         material.
+    axis_j : List[float], optional
+        Direction of the ``b`` axis of a birefringent material. Ignored by the other
+        flavors. By default, ``[1.0, 0.0, 0.0]``.
+    axis_k : List[float], optional
+        Direction of the ``c`` axis of a birefringent material. Ignored by the other
+        flavors. By default, ``[0.0, 1.0, 0.0]``.
+    absorption_values_b : List[float], optional
+        Absorption of a birefringent material along its ``b`` axis, one value per
+        wavelength of the absorption curve. By default, ``[]``.
+    absorption_values_c : List[float], optional
+        Absorption of a birefringent material along its ``c`` axis, one value per
+        wavelength of the absorption curve. By default, ``[]``.
 
     Examples
     --------
@@ -522,7 +760,9 @@ class MaterialFile(SpeosTextFileFormat):
 
     description: str = ""
     material_type: str = "Isotropic"
-    dispersion: MaterialDispersion = field(default_factory=MaterialConstringence)
+    dispersion: Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve] = field(
+        default_factory=MaterialConstringence
+    )
     absorption_wavelengths: List[float] = field(default_factory=list, metadata=_ABSORPTION)
     absorption_values: List[float] = field(default_factory=list, metadata=_ABSORPTION)
     measured_concentration: float = 1.0
@@ -530,10 +770,23 @@ class MaterialFile(SpeosTextFileFormat):
     scattering_wavelengths: List[float] = field(default_factory=list, metadata=_DIFFUSION)
     scattering_values: List[float] = field(default_factory=list, metadata=_DIFFUSION)
     scattering: Optional[VolumeScattering] = None
+    axis_j: List[float] = field(default_factory=lambda: [1.0, 0.0, 0.0])
+    axis_k: List[float] = field(default_factory=lambda: [0.0, 1.0, 0.0])
+    absorption_values_b: List[float] = field(default_factory=list)
+    absorption_values_c: List[float] = field(default_factory=list)
 
     EXTENSION = ".material"
     HEADER = "OPTIS - Material file v13"
     HEADER_PREFIX = "OPTIS - Material file"
+
+    ISOTROPIC: ClassVar[str] = "Isotropic"
+    """Material type of the default flavor of the format."""
+
+    METALLIC: ClassVar[str] = "Metallic"
+    """Material type of the metallic flavor of the format."""
+
+    BIREFRINGENT: ClassVar[str] = "Birefringent"
+    """Material type of the birefringent flavor of the format."""
 
     DISPERSIONS: ClassVar[tuple] = (
         MaterialConstringence,
@@ -542,6 +795,13 @@ class MaterialFile(SpeosTextFileFormat):
         MaterialKettlerHelmholtz,
     )
     """Dispersion models the file can hold."""
+
+    BIREFRINGENT_DISPERSIONS: ClassVar[tuple] = (
+        MaterialBirefringentCurve,
+        MaterialBirefringentSellmeier,
+        MaterialBirefringentKettlerHelmholtz,
+    )
+    """Dispersion models a birefringent material can hold."""
 
     SCATTERINGS: ClassVar[tuple] = (
         VolumeScatteringUserDefined,
@@ -557,23 +817,100 @@ class MaterialFile(SpeosTextFileFormat):
         Raises
         ------
         ValueError
-            If the absorption curve is empty or inconsistent, or if a scattering phase
-            function is set without a matching diffusion curve.
+            If the dispersion model does not match :attr:`material_type`, if the
+            absorption curve is empty or inconsistent, if a scattering phase function is
+            set without a matching diffusion curve, or if a metallic material carries data
+            the format cannot store.
         """
+        if self._has_type(self.METALLIC):
+            self._validate_metallic()
+            return
+        self._validate_dispersion()
         _check_columns(_tagged(self, _ABSORPTION))
+        if self._has_type(self.BIREFRINGENT):
+            self._validate_birefringent()
         if self.scattering is None:
             return
         _check_columns(_tagged(self, _DIFFUSION))
         self.scattering.validate()
 
+    def _has_type(self, material_type: str) -> bool:
+        return _is_type(self.material_type, material_type)
+
+    def _validate_dispersion(self) -> None:
+        """Check that the dispersion model belongs to the flavor of the material type."""
+        expected = (
+            self.BIREFRINGENT_DISPERSIONS if self._has_type(self.BIREFRINGENT) else self.DISPERSIONS
+        )
+        if not isinstance(self.dispersion, expected):
+            raise ValueError(
+                f"A {self.material_type!r} material needs one of "
+                f"{[model.__name__ for model in expected]}, got "
+                f"{type(self.dispersion).__name__}."
+            )
+
+    def _validate_metallic(self) -> None:
+        """Check a metallic material, which holds nothing but its complex index."""
+        if not isinstance(self.dispersion, MaterialMetallicCurve):
+            raise ValueError(
+                "A metallic material needs a MaterialMetallicCurve, got "
+                f"{type(self.dispersion).__name__}."
+            )
+        _check_columns(
+            {
+                "wavelengths": self.dispersion.wavelengths,
+                "indices": self.dispersion.indices,
+                "extinctions": self.dispersion.extinctions,
+            }
+        )
+        if self.absorption_wavelengths or self.absorption_values:
+            raise ValueError(
+                "A metallic material has no absorption curve, its extinction coefficient "
+                "already holds the absorption."
+            )
+        if self.scattering is not None or self.scattering_wavelengths or self.scattering_values:
+            raise ValueError("A metallic material cannot scatter light in its volume.")
+
+    def _validate_birefringent(self) -> None:
+        """Check the axes and the per axis absorption of a birefringent material."""
+        if self.dispersion.optical_class not in (0, 1, 2):
+            raise ValueError(
+                "optical_class must be 0 for a negative uniaxial material, 1 for a positive "
+                f"uniaxial one or 2 for a biaxial one, got {self.dispersion.optical_class}."
+            )
+        for name in ("axis_j", "axis_k"):
+            axis = getattr(self, name)
+            if len(axis) != 3:
+                raise ValueError(f"{name} must hold 3 coordinates, got {len(axis)}.")
+        expected = len(self.absorption_wavelengths)
+        for name in ("absorption_values_b", "absorption_values_c"):
+            values = getattr(self, name)
+            if len(values) != expected:
+                raise ValueError(
+                    f"{name} must hold one value per absorption wavelength, expected "
+                    f"{expected}, got {len(values)}."
+                )
+
     def _to_lines(self) -> List[str]:
         lines = [self.description, self.material_type]
         lines.extend(self.dispersion._to_lines())
+        if self._has_type(self.METALLIC):
+            return lines
+
+        birefringent = self._has_type(self.BIREFRINGENT)
+        if birefringent:
+            lines.append(" ".join(format_number(value) for value in self.axis_j))
+            lines.append(" ".join(format_number(value) for value in self.axis_k))
         lines.append(str(len(self.absorption_wavelengths)))
         lines.extend(
             f"{format_number(wavelength)} {format_number(value)}"
             for wavelength, value in zip(self.absorption_wavelengths, self.absorption_values)
         )
+        if birefringent:
+            lines.extend(
+                f"{format_number(value_b)} {format_number(value_c)}"
+                for value_b, value_c in zip(self.absorption_values_b, self.absorption_values_c)
+            )
         lines.append(format_number(self.measured_concentration))
         lines.append(format_number(self.user_concentration))
         lines.append("1" if self.scattering is not None else "0")
@@ -595,12 +932,29 @@ class MaterialFile(SpeosTextFileFormat):
     def _from_lines(cls, reader: LineReader) -> MaterialFile:
         description = reader.next_line()
         material_type = reader.next_data_line()
+        metallic = _is_type(material_type, cls.METALLIC)
+        birefringent = _is_type(material_type, cls.BIREFRINGENT)
 
         keyword = reader.next_data_line()
-        models = {model.KEYWORD.lower(): model for model in cls.DISPERSIONS}
+        if metallic:
+            if keyword.lower() != MaterialMetallicCurve.KEYWORD.lower():
+                raise reader.error(
+                    "a metallic material needs a "
+                    f"{MaterialMetallicCurve.KEYWORD!r} index variation mode, got {keyword!r}."
+                )
+            return cls(
+                description=description,
+                material_type=material_type,
+                dispersion=MaterialMetallicCurve._from_lines(reader),
+            )
+
+        candidates = cls.BIREFRINGENT_DISPERSIONS if birefringent else cls.DISPERSIONS
+        models = {model.KEYWORD.lower(): model for model in candidates}
         if keyword.lower() not in models:
             raise reader.error(f"unknown index variation mode {keyword!r}.")
         dispersion = models[keyword.lower()]._from_lines(reader)
+
+        axes = [reader.next_floats(count=3), reader.next_floats(count=3)] if birefringent else []
 
         absorption_wavelengths, absorption_values = [], []
         for _ in range(reader.next_int()):
@@ -614,9 +968,16 @@ class MaterialFile(SpeosTextFileFormat):
             dispersion=dispersion,
             absorption_wavelengths=absorption_wavelengths,
             absorption_values=absorption_values,
-            measured_concentration=reader.next_floats(count=1)[0],
-            user_concentration=reader.next_floats(count=1)[0],
         )
+        if birefringent:
+            material.axis_j, material.axis_k = axes
+            for _ in absorption_wavelengths:
+                value_b, value_c = reader.next_floats(count=2)
+                material.absorption_values_b.append(value_b)
+                material.absorption_values_c.append(value_c)
+        material.measured_concentration = reader.next_floats(count=1)[0]
+        material.user_concentration = reader.next_floats(count=1)[0]
+
         if not reader.next_int():
             return material
 

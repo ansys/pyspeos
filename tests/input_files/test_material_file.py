@@ -25,10 +25,14 @@
 import pytest
 
 from ansys.speos.core import (
+    MaterialBirefringentCurve,
+    MaterialBirefringentKettlerHelmholtz,
+    MaterialBirefringentSellmeier,
     MaterialConstringence,
     MaterialDispersionCurve,
     MaterialFile,
     MaterialKettlerHelmholtz,
+    MaterialMetallicCurve,
     MaterialSellmeier,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringGegenbauer,
@@ -36,6 +40,36 @@ from ansys.speos.core import (
     VolumeScatteringUserDefined,
 )
 from tests.input_files import read_lines
+
+
+@pytest.fixture
+def metallic_material():
+    """Build a metallic material, which holds nothing but its complex refractive index."""
+    return MaterialFile(
+        description="Gold",
+        material_type="Metallic",
+        dispersion=MaterialMetallicCurve(
+            wavelengths=[486.0, 532.0, 643.0],
+            indices=[1.0821, 0.55731, 0.18664],
+            extinctions=[1.7661, 2.1222, 3.3662],
+        ),
+    )
+
+
+@pytest.fixture
+def birefringent_material():
+    """Build a birefringent material with an absorption curve along its three axes."""
+    return MaterialFile(
+        description="Calcite",
+        material_type="Birefringent",
+        dispersion=MaterialBirefringentCurve(
+            wavelength=550.0, index_a=1.5, index_b=1.51, index_c=1.65, optical_class=2
+        ),
+        absorption_wavelengths=[486.0, 532.0, 643.0],
+        absorption_values=[0.1, 0.2, 0.3],
+        absorption_values_b=[0.4, 0.5, 0.6],
+        absorption_values_c=[0.7, 0.8, 0.9],
+    )
 
 
 @pytest.fixture
@@ -255,4 +289,219 @@ def test_an_unknown_dispersion_keyword_is_reported(tmp_path):
     path.write_text("OPTIS - Material file v13\nSomething\nIsotropic\nQuantum\n", encoding="utf-8")
 
     with pytest.raises(ValueError, match="unknown index variation mode"):
+        MaterialFile.load(path)
+
+
+def test_metallic_write_matches_the_speos_layout(metallic_material, tmp_path):
+    """A metallic file stops after its index curve, the extinction holds the absorption."""
+    path = metallic_material.save(tmp_path / "gold.material")
+
+    assert read_lines(path) == [
+        "OPTIS - Material file v13",
+        "Gold",
+        "Metallic",
+        "Dispersion_Curve",
+        "3",
+        "486 1.0821 1.7661",
+        "532 0.55731 2.1222",
+        "643 0.18664 3.3662",
+    ]
+    assert MaterialFile.load(path) == metallic_material
+
+
+def test_a_metallic_material_needs_an_index_curve(tmp_path):
+    """A metallic material without its complex index cannot be written."""
+    material = MaterialFile(material_type="Metallic", dispersion=MaterialMetallicCurve())
+
+    with pytest.raises(ValueError, match="must not be empty"):
+        material.save(tmp_path / "invalid.material")
+
+
+def test_a_metallic_material_rejects_another_dispersion_model(tmp_path):
+    """Speos only describes a metal by its complex refractive index."""
+    material = MaterialFile(material_type="Metallic", dispersion=MaterialConstringence())
+
+    with pytest.raises(ValueError, match="needs a MaterialMetallicCurve"):
+        material.save(tmp_path / "invalid.material")
+
+
+def test_a_metallic_material_rejects_an_absorption_curve(tmp_path, metallic_material):
+    """The metallic flavor of the format has nowhere to store an absorption curve."""
+    metallic_material.absorption_wavelengths = [550.0]
+    metallic_material.absorption_values = [0.1]
+
+    with pytest.raises(ValueError, match="no absorption curve"):
+        metallic_material.save(tmp_path / "invalid.material")
+
+
+def test_a_metallic_material_rejects_a_scattering(tmp_path, metallic_material):
+    """The metallic flavor of the format has nowhere to store a volume scattering."""
+    metallic_material.scattering = VolumeScatteringHenyeyGreenstein(anisotropies=[0.5])
+
+    with pytest.raises(ValueError, match="cannot scatter light"):
+        metallic_material.save(tmp_path / "invalid.material")
+
+
+def test_a_metallic_file_rejects_another_dispersion_keyword(tmp_path):
+    """Reading a metallic material given by an analytic model must fail clearly."""
+    path = tmp_path / "bad_metal.material"
+    path.write_text("OPTIS - Material file v13\nGold\nMetallic\nSellMeier\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="metallic material needs a 'Dispersion_Curve'"):
+        MaterialFile.load(path)
+
+
+def test_birefringent_curve_write_matches_the_speos_layout(birefringent_material, tmp_path):
+    """The indices of the three axes frame the optical class, and each axis absorbs."""
+    path = birefringent_material.save(tmp_path / "calcite.material")
+
+    assert read_lines(path) == [
+        "OPTIS - Material file v13",
+        "Calcite",
+        "Birefringent",
+        "Dispersion_Curve",
+        "1",
+        "550 1.5",
+        "2",
+        "1.51 1.65",
+        "1 0 0",
+        "0 1 0",
+        "3",
+        "486 0.1",
+        "532 0.2",
+        "643 0.3",
+        "0.4 0.7",
+        "0.5 0.8",
+        "0.6 0.9",
+        "1",
+        "1",
+        "0",
+    ]
+    assert MaterialFile.load(path) == birefringent_material
+
+
+def test_birefringent_sellmeier_interleaves_the_two_last_axes(birefringent_material, tmp_path):
+    """The coefficients of the b and the c axes alternate, one number per line."""
+    birefringent_material.dispersion = MaterialBirefringentSellmeier(
+        a=MaterialSellmeier(1.0, 2.0, 3.0, 4.0, 5.0, 6.0),
+        b=MaterialSellmeier(10.0, 20.0, 30.0, 40.0, 50.0, 60.0),
+        c=MaterialSellmeier(11.0, 21.0, 31.0, 41.0, 51.0, 61.0),
+        optical_class=1,
+    )
+    path = birefringent_material.save(tmp_path / "sellmeier.material")
+
+    assert read_lines(path)[3:23] == [
+        "SellMeier",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "1",
+        "10",
+        "11",
+        "20",
+        "21",
+        "30",
+        "31",
+        "40",
+        "41",
+        "50",
+        "51",
+        "60",
+        "61",
+    ]
+    assert MaterialFile.load(path) == birefringent_material
+
+
+def test_birefringent_kettler_helmholtz_round_trips(birefringent_material, tmp_path):
+    """The Kettler-Helmholtz flavor uses the same layout as the Sellmeier one."""
+    birefringent_material.dispersion = MaterialBirefringentKettlerHelmholtz(
+        a=MaterialKettlerHelmholtz(2.4, -0.01, 0.001),
+        b=MaterialKettlerHelmholtz(2.5, -0.02, 0.002),
+        c=MaterialKettlerHelmholtz(2.6, -0.03, 0.003),
+    )
+    path = birefringent_material.save(tmp_path / "helmholtz.material")
+
+    assert read_lines(path)[3] == "Kettler-Helmotz"
+    assert MaterialFile.load(path) == birefringent_material
+
+
+def test_a_birefringent_material_can_scatter(birefringent_material, tmp_path):
+    """The scattering block closes a birefringent file the way it closes an isotropic one."""
+    birefringent_material.scattering_wavelengths = [486.0]
+    birefringent_material.scattering_values = [0.1]
+    birefringent_material.scattering = VolumeScatteringHenyeyGreenstein(anisotropies=[0.9])
+    path = birefringent_material.save(tmp_path / "scattering.material")
+
+    assert read_lines(path)[-6:] == [
+        "OPTIS - Volumic Scattering file v1",
+        "1",
+        "1",
+        "486 0.1",
+        "1",
+        "0.9",
+    ]
+    assert MaterialFile.load(path) == birefringent_material
+
+
+def test_a_birefringent_material_rejects_an_isotropic_dispersion(tmp_path):
+    """An isotropic model cannot describe the three axes of a birefringent material."""
+    material = MaterialFile(
+        material_type="Birefringent",
+        dispersion=MaterialConstringence(),
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+    )
+
+    with pytest.raises(ValueError, match="MaterialBirefringentCurve"):
+        material.save(tmp_path / "invalid.material")
+
+
+def test_an_isotropic_material_rejects_a_birefringent_dispersion(tmp_path):
+    """A birefringent model needs the birefringent flavor of the format."""
+    material = MaterialFile(
+        dispersion=MaterialBirefringentCurve(),
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+    )
+
+    with pytest.raises(ValueError, match="MaterialConstringence"):
+        material.save(tmp_path / "invalid.material")
+
+
+def test_an_unknown_optical_class_is_rejected(birefringent_material, tmp_path):
+    """Speos only knows the negative uniaxial, positive uniaxial and biaxial classes."""
+    birefringent_material.dispersion.optical_class = 3
+
+    with pytest.raises(ValueError, match="optical_class must be 0"):
+        birefringent_material.save(tmp_path / "invalid.material")
+
+
+def test_an_axis_needs_three_coordinates(birefringent_material, tmp_path):
+    """The b and c axes are written as 3D directions."""
+    birefringent_material.axis_k = [0.0, 1.0]
+
+    with pytest.raises(ValueError, match="axis_k must hold 3 coordinates"):
+        birefringent_material.save(tmp_path / "invalid.material")
+
+
+def test_each_axis_absorbs_at_every_wavelength(birefringent_material, tmp_path):
+    """The absorption along b and c share the wavelengths of the absorption along a."""
+    birefringent_material.absorption_values_c = [0.7]
+
+    with pytest.raises(ValueError, match="absorption_values_c must hold one value"):
+        birefringent_material.save(tmp_path / "invalid.material")
+
+
+def test_a_birefringent_index_curve_holds_a_single_wavelength(tmp_path):
+    """Speos does not make the explicit indices of a birefringent material vary."""
+    path = tmp_path / "two_wavelengths.material"
+    path.write_text(
+        "OPTIS - Material file v13\nCalcite\nBirefringent\nDispersion_Curve\n2\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="expected a single wavelength, got 2"):
         MaterialFile.load(path)

@@ -33,10 +33,12 @@ from ansys.speos.core import (
     CoatedSurfaceFile,
     CoatedSurfaceSample,
     GeoRef,
+    MaterialBirefringentSellmeier,
     MaterialConstringence,
     MaterialDispersionCurve,
     MaterialFile,
     MaterialKettlerHelmholtz,
+    MaterialMetallicCurve,
     MaterialSellmeier,
     Project,
     Ray,
@@ -112,6 +114,28 @@ VOLUME_MATERIALS = {
         VolumeScatteringUserDefined(
             wavelengths=[], angles=[0.0, 90.0, 180.0], values=[[100.0], [50.0], [0.0]]
         ),
+    ),
+    # The metallic and the birefringent flavors of the format, which lay out differently.
+    "metallic": MaterialFile(
+        material_type="Metallic",
+        dispersion=MaterialMetallicCurve(
+            wavelengths=[486.0, 532.0, 643.0],
+            indices=[1.0821, 0.55731, 0.18664],
+            extinctions=[1.7661, 2.1222, 3.3662],
+        ),
+    ),
+    "birefringent": MaterialFile(
+        material_type="Birefringent",
+        dispersion=MaterialBirefringentSellmeier(
+            a=MaterialSellmeier(b1=1.03, c1=0.0060, b2=0.23, c2=0.02, b3=1.01, c3=103.56),
+            b=MaterialSellmeier(b1=1.04, c1=0.0061, b2=0.24, c2=0.021, b3=1.02, c3=103.57),
+            c=MaterialSellmeier(b1=1.05, c1=0.0062, b2=0.25, c2=0.022, b3=1.03, c3=103.58),
+            optical_class=2,
+        ),
+        absorption_wavelengths=_ABSORPTION_WAVELENGTHS,
+        absorption_values=_ABSORPTION_VALUES,
+        absorption_values_b=_ABSORPTION_VALUES,
+        absorption_values_c=_ABSORPTION_VALUES,
     ),
 }
 """One :class:`MaterialFile` per dispersion model and per scattering phase function."""

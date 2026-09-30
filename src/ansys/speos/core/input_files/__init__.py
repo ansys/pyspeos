@@ -30,10 +30,14 @@ module covers a single file extension.
 from ansys.speos.core.input_files._base import SpeosFileFormat, SpeosTextFileFormat
 from ansys.speos.core.input_files.coated_surface import CoatedSurfaceFile, CoatedSurfaceSample
 from ansys.speos.core.input_files.material import (
+    MaterialBirefringentCurve,
+    MaterialBirefringentKettlerHelmholtz,
+    MaterialBirefringentSellmeier,
     MaterialConstringence,
     MaterialDispersionCurve,
     MaterialFile,
     MaterialKettlerHelmholtz,
+    MaterialMetallicCurve,
     MaterialSellmeier,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringGegenbauer,
@@ -52,10 +56,14 @@ from ansys.speos.core.input_files.texture_3d import Texture3DMappingFile, Textur
 __all__ = [
     "CoatedSurfaceFile",
     "CoatedSurfaceSample",
+    "MaterialBirefringentCurve",
+    "MaterialBirefringentKettlerHelmholtz",
+    "MaterialBirefringentSellmeier",
     "MaterialConstringence",
     "MaterialDispersionCurve",
     "MaterialFile",
     "MaterialKettlerHelmholtz",
+    "MaterialMetallicCurve",
     "MaterialSellmeier",
     "Ray",
     "RayFile",
