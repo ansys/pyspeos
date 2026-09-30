@@ -6317,18 +6317,6 @@ class SensorPolarIntensity(BaseSensor):
         )
         self._fill_parameters(default_parameters)
 
-    @property
-    def _polar_intensity_template(self):
-        """Polar intensity part of the sensor template, whatever the protobuf version used.
-
-        Returns
-        -------
-        Union[ansys.api.speos.sensor.v1.sensor_pb2.PolarIntensitySensorTemplate, \
-        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.PolarIntensity]
-            Protobuf sub-message holding the polar intensity sensor template definition.
-        """
-        return self._sensor_mode_template
-
     def _fill_parameters(
         self, default_parameters: Optional[PolarIntensitySensorParameters] = None
     ) -> None:
@@ -6388,7 +6376,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if self._is_template_v2:
             template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_A
         else:
@@ -6408,7 +6396,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if self._is_template_v2:
             template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_B
         else:
@@ -6428,7 +6416,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if self._is_template_v2:
             template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_IESNA_C
         else:
@@ -6448,7 +6436,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if self._is_template_v2:
             template.result_format = sensor_v2_pb2.SensorTemplate.PolarIntensity.FORMAT_EULUMDAT
         else:
@@ -6471,7 +6459,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         template.dimensions.SetInParent()
         return self
 
@@ -6496,7 +6484,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         template.dimensions.horizontal_sampling = int(horizontal_sampling)
         template.dimensions.vertical_sampling = int(vertical_sampling)
         return self
@@ -6509,7 +6497,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         template.ClearField("dimensions")
         return self
 
@@ -6528,13 +6516,13 @@ class SensorPolarIntensity(BaseSensor):
         Union[Path, None]
             Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("dimensions"):
             return Path(template.adaptive_sampling_uri)
 
     @adaptive_sampling_file.setter
     def adaptive_sampling_file(self, value: Union[Path, None]):
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if value is None:
             template.ClearField("adaptive_sampling_uri")
             self.set_constant_sampling()
@@ -6560,14 +6548,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[int, None]
             Horizontal sampling count, or ``None`` if adaptive sampling is active.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if template.HasField("dimensions"):
             return template.dimensions.horizontal_sampling
         return None
 
     @horizontal_sampling.setter
     def horizontal_sampling(self, value: int) -> None:
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("dimensions"):
             raise TypeError(
                 "Adaptive sampling is active; switch to constant sampling with "
@@ -6589,14 +6577,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[int, None]
             Vertical sampling count, or ``None`` if adaptive sampling is active.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if template.HasField("dimensions"):
             return template.dimensions.vertical_sampling
         return None
 
     @vertical_sampling.setter
     def vertical_sampling(self, value: int) -> None:
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("dimensions"):
             raise TypeError(
                 "Adaptive sampling is active; switch to constant sampling with "
@@ -6616,7 +6604,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("far_field"):
             template.far_field.SetInParent()
             self.integration_angle = 1
@@ -6632,7 +6620,7 @@ class SensorPolarIntensity(BaseSensor):
         ansys.speos.core.sensor.SensorPolarIntensity
             This polar intensity sensor.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("near_field"):
             template.near_field.SetInParent()
             nf = NearfieldParameters()
@@ -6654,14 +6642,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Integration angle, or ``None`` when the sensor is in near-field mode.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if template.HasField("far_field"):
             return template.far_field.integration_angle
         return None
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> None:
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("far_field"):
             raise TypeError("Sensor is in near-field mode; call set_far_field() first.")
         template.far_field.integration_angle = float(value)
@@ -6680,14 +6668,14 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Cell distance, or ``None`` when the sensor is in far-field mode.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if template.HasField("near_field"):
             return template.near_field.cell_distance
         return None
 
     @cell_distance.setter
     def cell_distance(self, value: float) -> None:
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("near_field"):
             raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_distance = float(value)
@@ -6709,7 +6697,7 @@ class SensorPolarIntensity(BaseSensor):
         Union[float, None]
             Cell diameter, or ``None`` when the sensor is in far-field mode.
         """
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if template.HasField("near_field"):
             return (
                 2
@@ -6720,7 +6708,7 @@ class SensorPolarIntensity(BaseSensor):
 
     @cell_diameter.setter
     def cell_diameter(self, value: float) -> None:
-        template = self._polar_intensity_template
+        template = self._sensor_mode_template
         if not template.HasField("near_field"):
             raise TypeError("Sensor is in far-field mode; call set_near_field() first.")
         template.near_field.cell_integration_angle = np.degrees(
