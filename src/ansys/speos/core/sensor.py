@@ -4242,8 +4242,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_radiometric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModeRadiometric]
+            SensorTypeRadiometric protobuf object to modify.
+        irradiance_3d_template: Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
             Uses default values when True.
@@ -4389,8 +4395,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_photometric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModePhotometric]
+            SensorTypePhotometric protobuf object to modify.
+        irradiance_3d_template: Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
             Uses default values when True.
@@ -4538,8 +4550,10 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
-            SensorTypeColorimetric protobuf object to modify.
+        illuminance_type : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.MeasuresParameters]] = None
             Uses default values when True.
@@ -4641,8 +4655,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
+        sensor_type_colorimetric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModePhotometric]
             SensorTypeColorimetric protobuf object to modify.
+        irradiance_3d_template: Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.ColorimetricParameters] = None
             Uses default values when True.
