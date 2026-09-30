@@ -223,7 +223,7 @@ class BaseSensor:
         google.protobuf.message.Message
             Protobuf sub-message for the active sensor template version.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+        if self._is_template_v2:
             return getattr(self._sensor_template, field_v2)
         return getattr(self._sensor_template, field_v1)
 
@@ -276,7 +276,7 @@ class BaseSensor:
         str
             Name of the protobuf field for the sensor template version in use.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+        if self._is_template_v2:
             return self._sensor_mode_field_prefix_v2 + mode
         return self._sensor_mode_field_prefix_v1 + mode
 
@@ -1274,7 +1274,7 @@ class BaseSensor:
     def _commit_template(self) -> None:
         # Save or Update the sensor template (depending on if it was already committed before)
         if self.sensor_template_link is None:
-            if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            if self._is_template_v2:
                 self.sensor_template_link = self._project.client.sensor_templates_v2().create(
                     message=self._sensor_template
                 )
@@ -4926,7 +4926,7 @@ class Sensor3DIrradiance(BaseSensor):
             Colorimetric type.
         """
         had_type_colorimetric = self._has_sensor_mode("colorimetric")
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+        if self._is_template_v2:
             self._sensor_mode_template.ClearField("reflection")
             self._sensor_mode_template.ClearField("transmission")
             self._sensor_mode_template.ClearField("absorption")
