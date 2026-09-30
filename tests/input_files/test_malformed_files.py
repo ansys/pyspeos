@@ -37,10 +37,12 @@ from ansys.speos.core import (
     MaterialDispersionCurve,
     MaterialFile,
     SimpleScatteringSurfaceFile,
+    SpectrumFile,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
+from tests.input_files import ASSETS_DIR
 
 VALID_MATERIAL = """OPTIS - Material file v13
 Test material
@@ -226,3 +228,20 @@ def test_constringence_reads_bad_numeric_tokens_with_a_precise_location(tmp_path
         MaterialConstringence(57.2, 1.49)
         == MaterialFile.load(write(tmp_path, "good_index.material", VALID_MATERIAL)).dispersion
     )
+
+
+def test_an_encrypted_material_is_rejected():
+    """An encrypted file carries the usual header, so only its payload gives it away."""
+    encrypted = ASSETS_DIR / "input_files" / "Encrypted.material"
+
+    with pytest.raises(ValueError, match="cannot read encrypted Speos input files"):
+        MaterialFile.load(encrypted)
+
+
+def test_every_text_format_rejects_a_binary_payload(tmp_path):
+    """The encrypted file guard protects every text format, not only the materials."""
+    path = tmp_path / "encrypted.spectrum"
+    path.write_bytes(b"OPTIS - Spectrum file v1.0\n\x00\x01\x02\x03")
+
+    with pytest.raises(ValueError, match="not a plain text file"):
+        SpectrumFile.load(path)

@@ -72,6 +72,35 @@ def format_number(value: float) -> str:
     return repr(value)
 
 
+_SNIFF_SIZE = 4096
+"""Number of bytes read at the start of a file to tell text content from binary content."""
+
+
+def _check_text_file(path: Path) -> None:
+    """Check that a file holds text and not the binary payload of an encrypted file.
+
+    Speos writes its encrypted input files with the very same extension and header line as
+    the plain ones, so the only reliable clue is the compressed payload that follows.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        Path of the file to check.
+
+    Raises
+    ------
+    ValueError
+        If the beginning of the file holds binary content.
+    """
+    with path.open("rb") as stream:
+        head = stream.read(_SNIFF_SIZE)
+    if b"\x00" in head:
+        raise ValueError(
+            f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input "
+            "files, save the file without encryption from Speos and read it again."
+        )
+
+
 def check_percentage(name: str, value: float) -> None:
     """Check that a value is a percentage expressed between 0 and 100.
 
@@ -313,6 +342,7 @@ class SpeosTextFileFormat(SpeosFileFormat, ABC):
 
     @classmethod
     def _decode(cls, path: Path) -> "SpeosTextFileFormat":
+        _check_text_file(path)
         lines = path.read_text(encoding=ENCODING, errors="replace").splitlines()
         reader = LineReader(lines, path)
         if cls.HEADER:
