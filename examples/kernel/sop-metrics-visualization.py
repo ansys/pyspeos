@@ -1,4 +1,4 @@
-"""Evaluate and visualize SOP metrics with a notebook-style script."""
+# # Evaluate and visualize SOP metrics
 
 # ## Prerequisites
 #
@@ -26,7 +26,9 @@ from ansys.speos.core.sop_metrics_plotting import configure_plotting_theme, plot
 from ansys.speos.core.speos import Speos
 
 # -
+
 # ## Start/Connect to Speos RPC Server
+
 # +
 HOSTNAME = "localhost"
 GRPC_PORT = 50098
@@ -43,9 +45,7 @@ if USE_DOCKER:
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
-bsdf_file_path = str(
-    Path("D:/AnsysDev/pyspeos/pyspeos/tests/assets/Gaussian Fresnel 10 deg.anisotropicbsdf")
-)
+bsdf_file_path = str(assets_data_path / "Gaussian Fresnel 10 deg.anisotropicbsdf")
 sop_db = vop_db = bsdf_sop_link = vop_before_link = vop_after_link = None
 # -
 

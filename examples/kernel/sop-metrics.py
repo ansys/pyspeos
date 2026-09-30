@@ -1,4 +1,4 @@
-"""Evaluate SOP metrics with a notebook-style, executable script."""
+# # Evaluate SOP metrics
 
 # ## Prerequisites
 #
