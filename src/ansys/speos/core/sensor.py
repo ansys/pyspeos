@@ -1533,6 +1533,12 @@ class SensorCamera(BaseSensor):
             def _fill_parameters(
                 self, default_parameters: Optional[ColorParameters] = None
             ) -> None:
+                # _fill_parameters resets class local attributes.
+                # Important because _fill_parameters can be called from different places:
+                #     - during initialization
+                #     - after a reset
+                self._mode = None
+
                 if not default_parameters:
                     if self._mode_color.HasField("balance_mode_userwhite"):
                         self.set_balance_mode_user_white()
@@ -1677,7 +1683,7 @@ class SensorCamera(BaseSensor):
                     Balance UserWhite mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
-                    # Happens in case of project created via load of speos file
+                    # Happens in case of project created via load of speos file, or after a reset.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
                         default_parameters=None,
@@ -1692,12 +1698,7 @@ class SensorCamera(BaseSensor):
                         default_parameters=BalanceModeUserWhiteParameters(),
                         stable_ctr=True,
                     )
-                elif (
-                    self._mode._balance_mode_user_white
-                    is not self._mode_color.balance_mode_userwhite
-                ):
-                    # Happens in case of feature reset (to be sure to always modify correct data)
-                    self._mode._balance_mode_user_white = self._mode_color.balance_mode_userwhite
+
                 return self._mode
 
             def set_balance_mode_display_primaries(
@@ -1716,7 +1717,7 @@ class SensorCamera(BaseSensor):
                     Balance DisplayPrimaries mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
-                    # Happens in case of project created via load of speos file
+                    # Happens in case of project created via load of speos file, or after a reset.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display,
                         default_parameters=None,
@@ -1731,9 +1732,7 @@ class SensorCamera(BaseSensor):
                         default_parameters=BalanceModeDisplayPrimariesParameters(),
                         stable_ctr=True,
                     )
-                elif self._mode._balance_mode_display is not self._mode_color.balance_mode_display:
-                    # Happens in case of feature reset (to be sure to always modify correct data)
-                    self._mode._balance_mode_display = self._mode_color.balance_mode_display
+
                 return self._mode
 
         def __init__(
@@ -1760,6 +1759,12 @@ class SensorCamera(BaseSensor):
             default_parameters: Optional[PhotometricCameraParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
+            # _fill_parameters resets class local attributes.
+            # Important because _fill_parameters can be called from different places:
+            #     - during initialization
+            #     - after a reset
+            self._mode = None
+
             if default_parameters:
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
@@ -1969,14 +1974,6 @@ class SensorCamera(BaseSensor):
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if (
-                self._wavelengths_range._wavelengths_range
-                is not self._mode_photometric.wavelengths_range
-            ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._wavelengths_range._wavelengths_range = (
-                    self._mode_photometric.wavelengths_range
-                )
             return self._wavelengths_range
 
         def set_mode_monochromatic(
@@ -2013,7 +2010,7 @@ class SensorCamera(BaseSensor):
                 Color mode.
             """
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
-                # Happens in case of project created via load of speos file
+                # Happens in case of project created via load of speos file, or after a reset.
                 self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color,
                     default_parameters=None,
@@ -2026,9 +2023,7 @@ class SensorCamera(BaseSensor):
                     default_parameters=None,
                     stable_ctr=True,
                 )
-            elif self._mode._mode_color is not self._mode_photometric.color_mode_color:
-                # Happens in case of feature reset (to be sure to always modify correct data)
-                self._mode._mode_color = self._mode_photometric.color_mode_color
+
             return self._mode
 
         @property
@@ -2101,6 +2096,12 @@ class SensorCamera(BaseSensor):
         self._fill_parameters(default_parameters)
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+
         if not default_parameters:
             template = self._sensor_template.camera_sensor_template
             if template.HasField("sensor_mode_photometric"):
@@ -2485,7 +2486,7 @@ class SensorCamera(BaseSensor):
         if self._type is None and self._sensor_template.camera_sensor_template.HasField(
             "sensor_mode_photometric"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after a reset.
             self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
                 camera_props=self._sensor_instance.camera_properties,
@@ -2500,14 +2501,7 @@ class SensorCamera(BaseSensor):
                 default_parameters=PhotometricCameraParameters(),
                 stable_ctr=True,
             )
-        elif (
-            self._type._mode_photometric
-            is not self._sensor_template.camera_sensor_template.sensor_mode_photometric
-        ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._mode_photometric = (
-                self._sensor_template.camera_sensor_template.sensor_mode_photometric
-            )
+
         return self._type
 
     def commit(self) -> SensorCamera:
@@ -2839,7 +2833,7 @@ class SensorIrradiance(BaseSensor):
         Returns
         -------
         Union[\
-            None,\
+            str,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle\

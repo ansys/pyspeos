@@ -2240,6 +2240,39 @@ def test_immersive_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
+def test_camera_reset_internal_attributes(speos: Speos):
+    """Test reset of camera sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorCamera = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
+    mode_photo = sensor1.set_mode_photometric()
+    mode_photo.set_mode_monochromatic(
+        spectrum_file_uri=Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    mode_photo.set_layer_type_source()
+    sensor1.commit()
+
+    # Check types
+    assert sensor1.photometric is not None
+
+    # Modify type and check
+    sensor1.set_mode_geometric()
+    assert sensor1.photometric is None
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.photometric is not None
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
 def test_observer_reset_internal_attributes(speos: Speos):
     """Test reset of observer sensor, and check value of internal attributes.
 
