@@ -117,7 +117,12 @@ class SceneLink(CrudItem):
             This is only necessary when the user protects the speos light box with a password.
         """
         self._actions_stub.LoadFile(
-            messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
+            messages.LoadFile_Request(
+                guid=self.key,
+                file_uri=str(file_uri),
+                password=password,
+                force_version={"SensorTemplateVersion": 1},
+            )
         )
 
     # Actions
