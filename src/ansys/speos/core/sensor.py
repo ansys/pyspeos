@@ -90,18 +90,6 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.spectrum import Spectrum
 
-CameraModePhotometricProto = (
-    camera_sensor_pb2.SensorCameraModePhotometric
-    | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric
-)
-CameraModeColorProto = (
-    camera_sensor_pb2.SensorCameraColorModeColor
-    | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor
-)
-CameraWhiteBalanceUserProto = (
-    camera_sensor_pb2.SensorCameraBalanceModeUserwhite
-    | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeUser
-)
 CameraDisplayPrimariesProto = (
     camera_sensor_pb2.SensorCameraBalanceModeDisplay
     | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries
@@ -1583,7 +1571,9 @@ class SensorCamera(BaseSensor):
 
         Parameters
         ----------
-        mode_photometric : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
+        mode_photometric : Union[\
+        ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor]
             Camera photometric mode protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.PhotometricCameraParameters] = None
@@ -1607,7 +1597,9 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            mode_color : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor
+            mode_color : Union[\
+            ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor,
+            ansys.api.speos.sensor.v1.sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor]
                 Camera color mode protobuf object to modify.
             default_parameters : ansys.speos.core.generic.parameters.ColorParameters, optional
                 If defined the values in the sensor instance will be overwritten by the values of
@@ -1631,8 +1623,10 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                balance_mode_user_white : \
-                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeUserwhite
+                balance_mode_user_white : Union[\
+                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeUserwhite,
+                ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.\
+                ModeColor.WhiteBalanceModeUser]
                     Camera balance user defined whitew mode protobuf object to modify.
                 default_parameters : \
                 ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters, optional
@@ -1650,7 +1644,10 @@ class SensorCamera(BaseSensor):
 
                 def __init__(
                     self,
-                    balance_mode_user_white: CameraWhiteBalanceUserProto,
+                    balance_mode_user_white: Union[
+                        camera_sensor_pb2.SensorCameraBalanceModeUserwhite,
+                        sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeUser,
+                    ],
                     default_parameters: Optional[BalanceModeUserWhiteParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
@@ -1740,8 +1737,10 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                balance_mode_display : \
-                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeDisplay
+                balance_mode_display : Union[\
+                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeDisplay,
+                ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric\
+                .ModeColor.WhiteBalanceModeDisplayPrimaries]
                     Camera balance mode display protobuf object to modify.
                 default_parameters : \
                 ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters, optional
@@ -1759,7 +1758,10 @@ class SensorCamera(BaseSensor):
                     self,
                     project: project.Project,
                     name: str,
-                    balance_mode_display: CameraDisplayPrimariesProto,
+                    balance_mode_display: Union[
+                        camera_sensor_pb2.SensorCameraBalanceModeDisplay,
+                        sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries,
+                    ],
                     default_parameters: Optional[BalanceModeDisplayPrimariesParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
@@ -1913,7 +1915,10 @@ class SensorCamera(BaseSensor):
                 self,
                 project: project.Project,
                 name: str,
-                mode_color: CameraModeColorProto,
+                mode_color: Union[
+                    camera_sensor_pb2.SensorCameraColorModeColor,
+                    sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor,
+                ],
                 default_parameters: Optional[ColorParameters] = None,
                 stable_ctr: bool = False,
             ) -> None:
@@ -1934,7 +1939,10 @@ class SensorCamera(BaseSensor):
 
             def _bind_mode_color(
                 self,
-                mode_color: CameraModeColorProto,
+                mode_color: Union[
+                    camera_sensor_pb2.SensorCameraColorModeColor,
+                    sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor,
+                ],
             ) -> None:
                 self._mode_color = mode_color
                 if hasattr(self._mode_color, "red_spectrum_guid"):
@@ -2241,7 +2249,10 @@ class SensorCamera(BaseSensor):
             self,
             project: project.Project,
             name: str,
-            mode_photometric: CameraModePhotometricProto,
+            mode_photometric: Union[
+                camera_sensor_pb2.SensorCameraModePhotometric,
+                sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric,
+            ],
             camera_props: ProtoScene.SensorInstance.CameraProperties,
             default_parameters: Optional[PhotometricCameraParameters] = None,
             stable_ctr: bool = False,
@@ -2265,7 +2276,8 @@ class SensorCamera(BaseSensor):
 
         def _bind_mode_photometric(
             self,
-            mode_photometric: CameraModePhotometricProto,
+            mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric
+            | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric,
         ) -> None:
             self._mode_photometric = mode_photometric
             if hasattr(self._mode_photometric, "transmittance_spectrum_guid"):
