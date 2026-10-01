@@ -132,6 +132,92 @@ def test_source_group_api_local_validation(monkeypatch):
         sim.add_source_group(name="Group.Unsupported", source_paths=["source.1"])
 
 
+def _create_geometry_test_prerequisites(p: Project) -> tuple[Body, Body]:
+    """Create a root part containing two bodies."""
+    root_part = p.create_root_part()
+    bodies = []
+    for index in range(2):
+        body = root_part.create_body(name="Body.{}".format(index + 1))
+        face = body.create_face(name="Face.{}".format(index + 1))
+        face.vertices = [0, index, 0, 0, index + 1, 0, 1, index + 1, 0]
+        face.facets = [0, 1, 2]
+        face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+        bodies.append(body)
+    root_part.commit()
+    return bodies[0], bodies[1]
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_fast_transmission_gathering(speos: Speos):
+    """Test fast transmission gathering on a simulation of a project containing geometry."""
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Current Speos server is not supporting fast transmission gathering geometry.")
+
+    p = Project(speos=speos)
+    body_1, body_2 = _create_geometry_test_prerequisites(p)
+    geo_paths = [body_1.geo_path.to_native_link(), body_2.geo_path.to_native_link()]
+
+    sim = p.create_simulation(name="Direct.FTG", feature_type=SimulationDirect)
+    simulation_template = sim._simulation_template.direct_mc_simulation_template
+
+    # Default value: fast transmission gathering is deactivated
+    assert simulation_template.fast_transmission_gathering is False
+    assert sim.fast_transmission_gathering is None
+
+    # Activate it on the project geometries, mixing supported geometry input types
+    sim.fast_transmission_gathering = [body_1, body_2.geo_path]
+    assert simulation_template.fast_transmission_gathering is True
+    assert sim.fast_transmission_gathering == geo_paths
+
+    # Geometries are stored at scene level when the simulation is committed
+    sim.commit()
+    scene_data = p.scene_link.get()
+    assert list(scene_data.fast_transmission_gathering.geometries.geo_paths) == geo_paths
+    assert sim.fast_transmission_gathering == geo_paths
+
+    # Reset overrides the local not committed geometries by the committed ones
+    sim.fast_transmission_gathering = [body_1]
+    assert sim.fast_transmission_gathering == [geo_paths[0]]
+    sim.reset()
+    simulation_template = sim._simulation_template.direct_mc_simulation_template
+    assert sim._fast_transmission_gathering_geo_paths is None
+    assert simulation_template.fast_transmission_gathering is True
+    assert sim.fast_transmission_gathering == geo_paths
+
+    # Reset also cancels a local not committed deactivation
+    sim.fast_transmission_gathering = None
+    sim.reset()
+    simulation_template = sim._simulation_template.direct_mc_simulation_template
+    assert simulation_template.fast_transmission_gathering is True
+    assert sim.fast_transmission_gathering == geo_paths
+
+    # Committing after a reset does not modify the scene level geometries
+    sim.commit()
+    scene_data = p.scene_link.get()
+    assert list(scene_data.fast_transmission_gathering.geometries.geo_paths) == geo_paths
+
+    # Deactivation removes the scene level geometries
+    sim.fast_transmission_gathering = None
+    sim.commit()
+    scene_data = p.scene_link.get()
+    assert scene_data.HasField("fast_transmission_gathering") is False
+    assert simulation_template.fast_transmission_gathering is False
+    assert sim.fast_transmission_gathering is None
+
+    # Unsupported geometry type
+    with pytest.raises(TypeError, match="is not supported as geometry input"):
+        sim.fast_transmission_gathering = [42]
+
+    # Unsupported simulation type
+    sim_interactive = p.create_simulation(
+        name="Interactive.FTG", feature_type=SimulationInteractive
+    )
+    with pytest.raises(TypeError, match="only available for direct and inverse"):
+        sim_interactive.fast_transmission_gathering = None
+
+    sim.delete()
+
+
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_direct(speos: Speos):
     """Test creation of Direct Simulation."""
@@ -193,8 +279,8 @@ def test_create_direct(speos: Speos):
     assert simulation_template.dispersion is False
 
     # fast_transmission_gathering
-    # sim1.set_fast_transmission_gathering(value=True)
-    # assert simulation_template.fast_transmission_gathering is True
+    # see test_fast_transmission_gathering, it requires a Speos server 2027 R1 or higher
+
     # ambient_material_uri
     sim1.ambient_material_file_uri = Path(test_path) / "AIR.material"
     assert simulation_template.ambient_material_uri.endswith("AIR.material")
