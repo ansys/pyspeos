@@ -5942,7 +5942,16 @@ class SensorImmersive(BaseSensor):
         If defined the values in the sensor instance will be overwritten by the values of the
         dataclass.
         By default, ``None``.
+
+    Notes
+    -----
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "immersive_sensor_template"
+    _sensor_mode_template_field_v2 = "immersive"
 
     def __init__(
         self,
@@ -6015,11 +6024,11 @@ class SensorImmersive(BaseSensor):
         int
             Current sampling value.
         """
-        return self._sensor_template.immersive_sensor_template.sampling
+        return self._sensor_mode_template.sampling
 
     @sampling.setter
     def sampling(self, value: int) -> None:
-        self._sensor_template.immersive_sensor_template.sampling = int(value)
+        self._sensor_mode_template.sampling = int(value)
 
     @property
     def integration_angle(self) -> float:
@@ -6035,11 +6044,11 @@ class SensorImmersive(BaseSensor):
         float
             Current integration angle.
         """
-        return self._sensor_template.immersive_sensor_template.integration_angle
+        return self._sensor_mode_template.integration_angle
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> None:
-        self._sensor_template.immersive_sensor_template.integration_angle = float(value)
+        self._sensor_mode_template.integration_angle = float(value)
 
     @property
     def stereo_interocular_distance(self) -> float:
@@ -6059,14 +6068,14 @@ class SensorImmersive(BaseSensor):
             Current stereo interocular distance in mm.
             If stereo setting is not activated, distance will be 0 mm.
         """
-        return self._sensor_template.immersive_sensor_template.stereo.interocular_distance
+        return self._sensor_mode_template.stereo.interocular_distance
 
     @stereo_interocular_distance.setter
     def stereo_interocular_distance(self, value: None | float) -> None:
         if value is not None:
-            self._sensor_template.immersive_sensor_template.stereo.interocular_distance = value
+            self._sensor_mode_template.stereo.interocular_distance = value
         else:
-            self._sensor_template.immersive_sensor_template.ClearField("stereo")
+            self._sensor_mode_template.ClearField("stereo")
 
     def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
         """Configure the wavelength range of the sensor.
@@ -6077,7 +6086,7 @@ class SensorImmersive(BaseSensor):
             Wavelength range object.
         """
         return BaseSensor.WavelengthsRange(
-            wavelengths_range=self._sensor_template.immersive_sensor_template.wavelengths_range,
+            wavelengths_range=self._sensor_mode_template.wavelengths_range,
             stable_ctr=True,
         )
 
@@ -6093,11 +6102,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.front
+        return self._sensor_mode_template.exclude_faces.front
 
     @exclude_front.setter
     def exclude_front(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.front = bool(value)
+        self._sensor_mode_template.exclude_faces.front = bool(value)
 
     @property
     def exclude_back(self) -> bool:
@@ -6111,11 +6120,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.back
+        return self._sensor_mode_template.exclude_faces.back
 
     @exclude_back.setter
     def exclude_back(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.back = bool(value)
+        self._sensor_mode_template.exclude_faces.back = bool(value)
 
     @property
     def exclude_left(self) -> bool:
@@ -6129,11 +6138,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.left
+        return self._sensor_mode_template.exclude_faces.left
 
     @exclude_left.setter
     def exclude_left(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.left = bool(value)
+        self._sensor_mode_template.exclude_faces.left = bool(value)
 
     @property
     def exclude_right(self) -> bool:
@@ -6147,11 +6156,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.right
+        return self._sensor_mode_template.exclude_faces.right
 
     @exclude_right.setter
     def exclude_right(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.right = bool(value)
+        self._sensor_mode_template.exclude_faces.right = bool(value)
 
     @property
     def exclude_top(self) -> bool:
@@ -6165,11 +6174,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.top
+        return self._sensor_mode_template.exclude_faces.top
 
     @exclude_top.setter
     def exclude_top(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.top = bool(value)
+        self._sensor_mode_template.exclude_faces.top = bool(value)
 
     @property
     def exclude_bottom(self) -> bool:
@@ -6183,11 +6192,11 @@ class SensorImmersive(BaseSensor):
         -------
         bool
         """
-        return self._sensor_template.immersive_sensor_template.exclude_faces.bottom
+        return self._sensor_mode_template.exclude_faces.bottom
 
     @exclude_bottom.setter
     def exclude_bottom(self, value: bool) -> None:
-        self._sensor_template.immersive_sensor_template.exclude_faces.bottom = bool(value)
+        self._sensor_mode_template.exclude_faces.bottom = bool(value)
 
     # ------------------------------------------------------------------
     # Instance-level properties
