@@ -177,6 +177,8 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         )
         lines.append("1" if self.fresnel else "0")
         if not self.fresnel:
+            if self.reflection is None:
+                raise ValueError("reflection is required when fresnel is disabled.")
             lines.append(format_number(self.reflection))
         return lines
 

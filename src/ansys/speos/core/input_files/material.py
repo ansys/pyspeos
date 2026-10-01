@@ -873,6 +873,12 @@ class MaterialFile(SpeosTextFileFormat):
 
     def _validate_birefringent(self) -> None:
         """Check the axes and the per axis absorption of a birefringent material."""
+        if not isinstance(self.dispersion, self.BIREFRINGENT_DISPERSIONS):
+            raise ValueError(
+                f"A {self.material_type!r} material needs one of "
+                f"{[model.__name__ for model in self.BIREFRINGENT_DISPERSIONS]}, got "
+                f"{type(self.dispersion).__name__}."
+            )
         if self.dispersion.optical_class not in (0, 1, 2):
             raise ValueError(
                 "optical_class must be 0 for a negative uniaxial material, 1 for a positive "
