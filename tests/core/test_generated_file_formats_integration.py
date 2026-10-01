@@ -22,7 +22,6 @@
 
 """Check that a running Speos server accepts the input files PySpeos writes locally."""
 
-import itertools
 from pathlib import Path
 import shutil
 import uuid
@@ -155,9 +154,20 @@ SURFACE_MATERIALS = {
 }
 """One surface property file per Speos surface property format."""
 
-# Pair each volume material with a surface material, cycling the shorter list, so every
-# format is exercised once instead of testing the full cross-product of combinations.
-_TEST_CASES = list(zip(VOLUME_MATERIALS, itertools.cycle(SURFACE_MATERIALS)))
+# Pair each volume material with a surface material so every format is exercised without
+# testing the full cross-product. A missing surface file uses an Optical Polished property.
+_TEST_CASES = [
+    ("constringence", "coated"),
+    ("dispersion_curve", "scattering"),
+    ("sellmeier", "simple_scattering"),
+    ("kettler_helmholtz", "coated"),
+    ("henyey_greenstein", "scattering"),
+    ("double_henyey_greenstein", "simple_scattering"),
+    ("gegenbauer", "coated"),
+    ("user_defined", "scattering"),
+    ("metallic", "simple_scattering"),
+    ("birefringent", None),
+]
 
 
 @pytest.fixture
@@ -215,7 +225,7 @@ def _create_cube_body(root_part, name: str):
     ("volume_name", "surface_name"), _TEST_CASES, ids=[f"{v}-{s}" for v, s in _TEST_CASES]
 )
 def test_generated_files_are_usable_in_a_full_simulation(
-    speos: Speos, generated_assets_dir, surface_name: str, volume_name: str
+    speos: Speos, generated_assets_dir, surface_name: str | None, volume_name: str
 ):
     """A whole simulation combining every generated file type must commit successfully."""
     write_dir, server_dir = generated_assets_dir
@@ -223,9 +233,11 @@ def test_generated_files_are_usable_in_a_full_simulation(
     VOLUME_MATERIALS[volume_name].save(write_dir / "integration.material")
     material_path = server_dir / "integration.material"
 
-    surface_file_name = "integration" + SURFACE_MATERIALS[surface_name].EXTENSION
-    SURFACE_MATERIALS[surface_name].save(write_dir / surface_file_name)
-    surface_path = server_dir / surface_file_name
+    surface_path = None
+    if surface_name is not None:
+        surface_file_name = "integration" + SURFACE_MATERIALS[surface_name].EXTENSION
+        SURFACE_MATERIALS[surface_name].save(write_dir / surface_file_name)
+        surface_path = server_dir / surface_file_name
 
     SpectrumFile(
         description="Integration test spectrum",
@@ -253,9 +265,12 @@ def test_generated_files_are_usable_in_a_full_simulation(
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_library()
     opt_prop.vop_library.material_file_uri = material_path
-    # Surface optical property, from a generated surface property file.
-    opt_prop.set_surface_library()
-    opt_prop.sop_library.file_uri = surface_path
+    if surface_path is None:
+        opt_prop.set_surface_opticalpolished()
+    else:
+        # Surface optical property, from a generated surface property file.
+        opt_prop.set_surface_library()
+        opt_prop.sop_library.file_uri = surface_path
     opt_prop.geometries = [GeoRef.from_native_link("Body.1")]
     opt_prop.commit()
 
@@ -287,8 +302,11 @@ def test_generated_files_are_usable_in_a_full_simulation(
     assert opt_prop.vop_template_link.get().library.material_file_uri.endswith(
         "integration.material"
     )
-    assert opt_prop.sop_template_link.get().HasField("library")
-    assert opt_prop.sop_template_link.get().library.sop_file_uri.endswith(surface_path.name)
+    if surface_path is None:
+        assert opt_prop.sop_template_link.get().HasField("optical_polished")
+    else:
+        assert opt_prop.sop_template_link.get().HasField("library")
+        assert opt_prop.sop_template_link.get().library.sop_file_uri.endswith(surface_path.name)
 
     spectrum_guid = luminaire.source_template_link.get().luminaire.spectrum_guid
     assert spectrum_guid
