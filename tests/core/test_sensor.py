@@ -135,6 +135,26 @@ def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
     return template.HasField("irradiance_sensor_template")
 
 
+def observer_template(sensor_feature, local: bool = False):
+    """Get the observer part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.observer
+    return template.observer_sensor_template
+
+
+def has_observer_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an observer definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("observer")
+    return template.HasField("observer_sensor_template")
+
+
 def radiance_template(sensor_feature, local: bool = False):
     """Get the radiance part of a sensor template, whatever the protobuf version in use."""
     template = (
@@ -4259,7 +4279,7 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_default(speos: Speos):
+def test_create_observer_sensor_default(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with default parameters."""
     p = Project(speos=speos)
 
@@ -4276,7 +4296,7 @@ def test_create_observer_sensor_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_custom_parameters(speos: Speos):
+def test_create_observer_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -4304,7 +4324,7 @@ def test_create_observer_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_focal_property(speos: Speos):
+def test_observer_sensor_focal_property(speos: Speos, sensor_template_version):
     """Test focal distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Focal", feature_type=SensorObserver)
@@ -4318,7 +4338,7 @@ def test_observer_sensor_focal_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_integration_angle_property(speos: Speos):
+def test_observer_sensor_integration_angle_property(speos: Speos, sensor_template_version):
     """Test integration angle property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.IntAngle", feature_type=SensorObserver)
@@ -4332,7 +4352,7 @@ def test_observer_sensor_integration_angle_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_distance_property(speos: Speos):
+def test_observer_sensor_distance_property(speos: Speos, sensor_template_version):
     """Test distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Distance", feature_type=SensorObserver)
@@ -4346,7 +4366,7 @@ def test_observer_sensor_distance_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_stereo_interocular_distance(speos: Speos):
+def test_observer_sensor_stereo_interocular_distance(speos: Speos, sensor_template_version):
     """Test stereo interocular distance property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Stereo", feature_type=SensorObserver)
@@ -4361,7 +4381,7 @@ def test_observer_sensor_stereo_interocular_distance(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_wavelengths_range(speos: Speos):
+def test_observer_sensor_wavelengths_range(speos: Speos, sensor_template_version):
     """Test wavelengths range configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.WL", feature_type=SensorObserver)
@@ -4381,7 +4401,7 @@ def test_observer_sensor_wavelengths_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_dimensions(speos: Speos):
+def test_observer_sensor_dimensions(speos: Speos, sensor_template_version):
     """Test dimensions configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Dims", feature_type=SensorObserver)
@@ -4407,7 +4427,7 @@ def test_observer_sensor_dimensions(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_angular_range(speos: Speos):
+def test_observer_sensor_angular_range(speos: Speos, sensor_template_version):
     """Test angular range configuration for sensor locations."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AngularRange", feature_type=SensorObserver)
@@ -4433,7 +4453,7 @@ def test_observer_sensor_angular_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_axis_system(speos: Speos):
+def test_observer_sensor_axis_system(speos: Speos, sensor_template_version):
     """Test axis system property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AxisSys", feature_type=SensorObserver)
@@ -4448,7 +4468,7 @@ def test_observer_sensor_axis_system(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_commit_and_check_template(speos: Speos):
+def test_observer_sensor_commit_and_check_template(speos: Speos, sensor_template_version):
     """Test committing Observer sensor and checking template."""
     p = Project(speos=speos)
 
@@ -4466,20 +4486,31 @@ def test_observer_sensor_commit_and_check_template(speos: Speos):
     # Check sensor template link exists
     assert sensor.sensor_template_link is not None
 
-    # Get template and verify it has observer_sensor_template
-    template = sensor.sensor_template_link.get()
-    assert template.HasField("observer_sensor_template")
+    # Verify the local template uses the expected protobuf version and field name
+    if isinstance(sensor._sensor_template, ProtoSensorTemplateV2):
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer")
+    else:
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplate)
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer_sensor_template")
 
-    # Verify observer template properties
-    observer_template = template.observer_sensor_template
-    assert observer_template.focal == 350.0
-    assert observer_template.integration_angle == 8.0
-    assert observer_template.distance == 120.0
-    assert observer_template.stereo.interocular_distance == 60.0
+    # Get template and verify observer properties are preserved after commit
+    template = sensor.sensor_template_link.get()
+    if isinstance(template, ProtoSensorTemplateV2):
+        assert template.HasField("observer")
+    else:
+        assert template.HasField("observer_sensor_template")
+
+    observer = observer_template(sensor)
+    assert observer.focal == 350.0
+    assert observer.integration_angle == 8.0
+    assert observer.distance == 120.0
+    assert observer.stereo.interocular_distance == 60.0
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_with_parameters_dataclass(speos: Speos):
+def test_observer_sensor_with_parameters_dataclass(speos: Speos, sensor_template_version):
     """Test Observer sensor creation with full parameter dataclass configuration."""
     p = Project(speos=speos)
 
@@ -4542,7 +4573,7 @@ def test_observer_sensor_with_parameters_dataclass(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_load(speos: Speos):
+def test_observer_sensor_load(speos: Speos, sensor_template_version):
     """Test loading and hydrating Observer sensor from scene."""
     p = Project(speos=speos, path=test_path / "observer_test.1.speos" / "observer_test.1.speos")
 
