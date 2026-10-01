@@ -259,7 +259,6 @@ def test_generated_files_are_usable_in_a_full_simulation(
     p = Project(speos=speos)
     root_part = p.create_root_part()
     _create_cube_body(root_part, name="Body.1")
-    root_part.commit()
 
     # Volume optical property, from a generated *.material file.
     opt_prop = p.create_optical_property(name="Material.1")
@@ -272,27 +271,27 @@ def test_generated_files_are_usable_in_a_full_simulation(
         opt_prop.set_surface_library()
         opt_prop.sop_library.file_uri = surface_path
     opt_prop.geometries = [GeoRef.from_native_link("Body.1")]
-    opt_prop.commit()
 
     sensor = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     sensor.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    sensor.commit()
 
     # Luminaire source, spectrum from a generated *.spectrum file.
     luminaire = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
     luminaire.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     luminaire.spectrum.set_library().file_uri = spectrum_path
-    luminaire.commit()
 
     # Ray file source, from a generated *.ray file.
     ray_source = p.create_source(name="RayFile.1", feature_type=SourceRayFile)
     ray_source.ray_file_uri = ray_path
-    ray_source.commit()
 
     simulation = p.create_simulation(name="Direct.1", feature_type=SimulationDirect)
     simulation.sensor_paths = [sensor]
     simulation.source_paths = [luminaire, ray_source]
-    simulation.commit()
+
+    # Commit the project (ie commit all features in the project)
+    p.commit()
+
+    # Run the simulation
     simulation.compute_CPU()
 
     assert simulation.simulation_template_link is not None
