@@ -69,9 +69,6 @@ venv.bak/
 # temp testing
 tmp.out
 
-# test generated files
-tests/assets/generated/
-
 # Sphinx documentation
 doc/_build/
 doc/source/api/
