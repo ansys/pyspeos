@@ -1,0 +1,193 @@
+
+
+
+
+
+
+:class:`LayerTypeSequence`
+==========================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.LayerTypeSequence(layer_type_sequence, default_parameters = None, stable_ctr = False)
+
+   
+   Type of layer : Sequence.
+
+   Includes in the result one layer per sequence.
+   By default, the sequence is defined per geometries, with a maximum number of 10 sequences.
+
+   :Parameters:
+
+       **layer_type_sequence** :         :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence`
+           LayerTypeSequence protobuf object to modify.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.LayerBySequenceParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_layer_type_sequence method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypeSequence
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_define_sequence_per_geometries`
+            - Define sequence per geometries.
+          * - :py:attr:`~set_define_sequence_per_faces`
+            - Define sequence per faces.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~maximum_nb_of_sequence`
+            - Value of the maximum number of sequences.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import LayerTypeSequence
+
+Property detail
+---------------
+
+.. py:property:: maximum_nb_of_sequence
+   :type: int
+
+
+   
+   Value of the maximum number of sequences.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Maximum number of sequences. By default, ``10``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           maximum number of sequences.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_define_sequence_per_geometries()
+
+   
+   Define sequence per geometries.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_define_sequence_per_faces()
+
+   
+   Define sequence per faces.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

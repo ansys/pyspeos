@@ -1,0 +1,165 @@
+
+
+
+
+
+
+:class:`CieType`
+================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.CieType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   CIE Standard General Sky, CIE Type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CieType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~standard_overcast`
+            - 
+          * - :py:attr:`~overcast_steep_gradation`
+            - 
+          * - :py:attr:`~overcast_azimuthal_uniformity`
+            - 
+          * - :py:attr:`~overcast_slight_brightening`
+            - 
+          * - :py:attr:`~uniform_luminance`
+            - 
+          * - :py:attr:`~cloudy_slight_brightening`
+            - 
+          * - :py:attr:`~cloudy_nogradation_circumsolar`
+            - 
+          * - :py:attr:`~cloudy_solar_corona`
+            - 
+          * - :py:attr:`~cloudy_obscured_sun`
+            - 
+          * - :py:attr:`~cloudy_circumsolar_region`
+            - 
+          * - :py:attr:`~white_blue_distinct`
+            - 
+          * - :py:attr:`~standard_low_luminance`
+            - 
+          * - :py:attr:`~standard_polluted_atmosphere`
+            - 
+          * - :py:attr:`~cloudless_turbid_corona`
+            - 
+          * - :py:attr:`~white_blue_broad`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import CieType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: standard_overcast
+   :value: 'standard_overcast'
+
+
+.. py:attribute:: overcast_steep_gradation
+   :value: 'overcast_steep_gradation'
+
+
+.. py:attribute:: overcast_azimuthal_uniformity
+   :value: 'overcast_azimuthal_uniformity'
+
+
+.. py:attribute:: overcast_slight_brightening
+   :value: 'overcast_slight_brightening'
+
+
+.. py:attribute:: uniform_luminance
+   :value: 'uniform_luminance'
+
+
+.. py:attribute:: cloudy_slight_brightening
+   :value: 'cloudy_slight_brightening'
+
+
+.. py:attribute:: cloudy_nogradation_circumsolar
+   :value: 'cloudy_nogradation_circumsolar'
+
+
+.. py:attribute:: cloudy_solar_corona
+   :value: 'cloudy_solar_corona'
+
+
+.. py:attribute:: cloudy_obscured_sun
+   :value: 'cloudy_obscured_sun'
+
+
+.. py:attribute:: cloudy_circumsolar_region
+   :value: 'cloudy_circumsolar_region'
+
+
+.. py:attribute:: white_blue_distinct
+   :value: 'white_blue_distinct'
+
+
+.. py:attribute:: standard_low_luminance
+   :value: 'standard_low_luminance'
+
+
+.. py:attribute:: standard_polluted_atmosphere
+   :value: 'standard_polluted_atmosphere'
+
+
+.. py:attribute:: cloudless_turbid_corona
+   :value: 'cloudless_turbid_corona'
+
+
+.. py:attribute:: white_blue_broad
+   :value: 'white_blue_broad'
+
+
+
+
+
+

@@ -1,0 +1,102 @@
+
+
+
+
+
+
+:class:`ImageTexture`
+=====================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.ImageTexture(parent, default_parameters = None, stable_ctr=False)
+
+   Bases: :py:obj:`_RepeatableTextureMap`
+
+
+   
+   Image texture mapping properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ImageTexture
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~image_file_uri`
+            - URI of the texture bitmap file.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import ImageTexture
+
+Property detail
+---------------
+
+.. py:property:: image_file_uri
+   :type: Optional[str]
+
+
+   
+   URI of the texture bitmap file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

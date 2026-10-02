@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``intensity.py`` module
+===========================
+
+.. py:module:: ansys.speos.core.intensity
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: intensity
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.intensity.Intensity`
+            - Speos feature : Intensity.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Intensity</api/ansys/speos/core/intensity/Intensity>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Intensity.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

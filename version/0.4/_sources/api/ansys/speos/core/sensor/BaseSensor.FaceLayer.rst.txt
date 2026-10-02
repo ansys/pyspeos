@@ -1,0 +1,129 @@
+
+
+
+
+
+
+:class:`FaceLayer`
+==================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.FaceLayer(name, geometries)
+
+   
+   Layer composed of name and geometries.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the layer.
+
+       **geometries** : :obj:`List`\[:obj:`ansys.speos.core.geo_ref.GeoRef`]
+           List of geometries included in this layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: FaceLayer
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - Name of the layer
+          * - :py:attr:`~geometries`
+            - List of geometries included in this layer.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import FaceLayer
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: name
+
+   
+   Name of the layer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geometries
+
+   
+   List of geometries included in this layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

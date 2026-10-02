@@ -1,0 +1,46 @@
+
+
+
+
+
+
+:class:`SourceSampling`
+=======================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationInverse.SourceSampling
+
+   
+   Disabled - Setting source sampling is not available for this simulation type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationInverse import SourceSampling
+
+
+
+
+

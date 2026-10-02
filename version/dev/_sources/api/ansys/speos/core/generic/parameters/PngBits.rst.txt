@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`PngBits`
+================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.PngBits
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Bit resolution of create PNG image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PngBits
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~png_08`
+            - 
+          * - :py:attr:`~png_10`
+            - 
+          * - :py:attr:`~png_12`
+            - 
+          * - :py:attr:`~png_16`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import PngBits
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: png_08
+   :value: 'png_08'
+
+
+.. py:attribute:: png_10
+   :value: 'png_10'
+
+
+.. py:attribute:: png_12
+   :value: 'png_12'
+
+
+.. py:attribute:: png_16
+   :value: 'png_16'
+
+
+
+
+
+

@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`IntensityCosParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityCosParameters
+
+   
+   Intensity Cos Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityCosParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~n`
+            - Exponent applied to the cosine intensity distribution.
+          * - :py:attr:`~total_angle`
+            - Total angular extent of the cosine distribution.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityCosParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: n
+   :type:  float
+   :value: 3
+
+
+   
+   Exponent applied to the cosine intensity distribution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: total_angle
+   :type:  float
+   :value: 180
+
+
+   
+   Total angular extent of the cosine distribution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

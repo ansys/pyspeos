@@ -1,0 +1,454 @@
+
+
+
+
+
+
+:class:`ImmersiveSensorParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ImmersiveSensorParameters
+
+   
+   Parameters for :class:`~ansys.speos.core.sensor.SensorImmersive`.
+
+
+   :Parameters:
+
+       **sampling** : :class:`python:int`, :obj:`optional`
+           Horizontal and vertical number of pixels for a face.
+           By default, ``600``.
+
+       **integration_angle** : :class:`python:float`, :obj:`optional`
+           Integration angle in degrees for direct simulations.
+           By default, ``5.0``.
+
+       **wavelengths_range** : :obj:`ansys.speos.core.generic.parameters.WavelengthsRangeParameters`, :obj:`optional`
+           Spectral range to use for simulation.
+           By default, a range from 400nm to 700nm with sampling of 13.
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
+           X corresponds to Front direction. Y corresponds to Top direction.
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+       **layer_type** : :obj:`Union`\[:obj:`LayerTypes.none`, :obj:`LayerTypes.by_source`], :obj:`optional`
+           Layer separation type.
+           By default, ``LayerTypes.none``.
+
+       **exclude_front** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude front face.
+           By default, ``False``.
+
+       **exclude_back** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude back face.
+           By default, ``False``.
+
+       **exclude_left** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude left face.
+           By default, ``False``.
+
+       **exclude_right** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude right face.
+           By default, ``False``.
+
+       **exclude_top** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude top face.
+           By default, ``False``.
+
+       **exclude_bottom** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Exclude bottom face.
+           By default, ``False``.
+
+       **interocular_distance** : :class:`python:float`, :obj:`optional`
+           Distance between the left and right eyes, in millimeters.
+           By default, None.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ImmersiveSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sampling`
+            - Horizontal and vertical pixel count per face.
+          * - :py:attr:`~integration_angle`
+            - Integration angle in degrees.
+          * - :py:attr:`~wavelengths_range`
+            - Spectral range.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~layer_type`
+            - Layer separation type.
+          * - :py:attr:`~exclude_front`
+            - Exclude front face.
+          * - :py:attr:`~exclude_back`
+            - Exclude back face.
+          * - :py:attr:`~exclude_left`
+            - Exclude left face.
+          * - :py:attr:`~exclude_right`
+            - Exclude right face.
+          * - :py:attr:`~exclude_top`
+            - Exclude top face.
+          * - :py:attr:`~exclude_bottom`
+            - Exclude bottom face.
+          * - :py:attr:`~interocular_distance`
+            - Distance between viewpoints in mm.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ImmersiveSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sampling
+   :type:  int
+   :value: 600
+
+
+   
+   Horizontal and vertical pixel count per face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_angle
+   :type:  float
+   :value: 5.0
+
+
+   
+   Integration angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: wavelengths_range
+   :type:  WavelengthsRangeParameters
+
+   
+   Spectral range.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  LayerTypes
+
+   
+   Layer separation type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_front
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude front face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_back
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude back face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_left
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude left face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_right
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude right face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_top
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude top face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exclude_bottom
+   :type:  bool
+   :value: False
+
+
+   
+   Exclude bottom face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: interocular_distance
+   :type:  Optional[float]
+   :value: None
+
+
+   
+   Distance between viewpoints in mm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

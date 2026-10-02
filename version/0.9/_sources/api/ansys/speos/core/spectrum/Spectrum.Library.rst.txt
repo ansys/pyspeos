@@ -1,0 +1,123 @@
+
+
+
+
+
+
+:class:`Library`
+================
+
+
+.. py:class:: ansys.speos.core.spectrum.Spectrum.Library(library, default_parameters = None, stable_ctr = False)
+
+   
+   Library type of spectrum.
+
+   By default, file uri is empty.
+
+   :Parameters:
+
+       **library** : :obj:`ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum.Library`
+           Library protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.SpectrumLibraryParameters`] = :data:`python:None`
+           If defined the values in the Library instance will be
+           overwritten by the values of the data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_blackbody method available in
+   Spectrum classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Library
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~file_uri`
+            - Property the file uri of the library type spectrum.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.spectrum.Spectrum import Library
+
+Property detail
+---------------
+
+.. py:property:: file_uri
+   :type: str
+
+
+   
+   Property the file uri of the library type spectrum.
+
+
+   :Parameters:
+
+       **file_uri** : :obj:`Union`\[:class:`python:str`, :obj:`pathlib.Path`]
+           File uri of the library type spectrum.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           File uri of the library type spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

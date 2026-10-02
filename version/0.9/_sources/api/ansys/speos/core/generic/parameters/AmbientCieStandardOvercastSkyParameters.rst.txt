@@ -1,0 +1,154 @@
+
+
+
+
+
+
+:class:`AmbientCieStandardOvercastSkyParameters`
+================================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientCieStandardOvercastSkyParameters
+
+   
+   Ambient CIE Standard Overcast Sky Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientCieStandardOvercastSkyParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~luminance`
+            - Luminance value in cd/m^2.
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction vector.
+          * - :py:attr:`~spectrum_type`
+            - Spectrum type for the overcast ambient source (blackbody or library spectra only).
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientCieStandardOvercastSkyParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: luminance
+   :type:  float
+   :value: 1000.0
+
+
+   
+   Luminance value in cd/m^2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+   
+   Zenith direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: spectrum_type
+   :type:  Union[SpectrumLibraryParameters, SpectrumBlackBodyParameters]
+
+   
+   Spectrum type for the overcast ambient source (blackbody or library spectra only).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

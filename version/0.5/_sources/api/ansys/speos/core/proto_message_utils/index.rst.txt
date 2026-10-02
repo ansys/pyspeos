@@ -1,0 +1,106 @@
+
+
+
+
+
+
+The ``proto_message_utils.py`` module
+=====================================
+
+.. py:module:: ansys.speos.core.proto_message_utils
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: proto_message_utils
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~dict_to_str`
+            - Transform a dictionary into a string.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module with method to process Protobuf messages.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: dict_to_str(dict)
+
+   
+   Transform a dictionary into a string.
+
+
+   :Parameters:
+
+       **dict**
+           Dictionary to transform.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           String representation of the dictionary.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

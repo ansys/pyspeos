@@ -1,0 +1,130 @@
+
+
+
+
+
+
+The ``client.py`` module
+========================
+
+.. py:module:: ansys.speos.core.kernel.client
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: client
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.client.SpeosClient`
+            - Wraps a speos gRPC connection.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~wait_until_healthy`
+            - Wait until a channel is healthy before returning.
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SpeosClient</api/ansys/speos/core/kernel/client/SpeosClient>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: wait_until_healthy(channel, timeout)
+
+   
+   Wait until a channel is healthy before returning.
+
+
+   :Parameters:
+
+       **channel** : :obj:`~grpc.Channel`
+           Channel to wait until established and healthy.
+
+       **timeout** : :class:`python:float`
+           Timeout in seconds. One attempt will be made each 100 milliseconds
+           until the timeout is exceeded.
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`TimeoutError`
+           Raised when the total elapsed time exceeds ``timeout``.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

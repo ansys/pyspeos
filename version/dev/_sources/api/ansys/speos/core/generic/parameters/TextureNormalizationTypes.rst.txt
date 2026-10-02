@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`TextureNormalizationTypes`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.TextureNormalizationTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Texture normalization types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TextureNormalizationTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~unspecified`
+            - 
+          * - :py:attr:`~none`
+            - 
+          * - :py:attr:`~color_from_texture`
+            - 
+          * - :py:attr:`~color_from_bsdf`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import TextureNormalizationTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: unspecified
+   :value: 'unspecified'
+
+
+.. py:attribute:: none
+   :value: 'none'
+
+
+.. py:attribute:: color_from_texture
+   :value: 'color_from_texture'
+
+
+.. py:attribute:: color_from_bsdf
+   :value: 'color_from_bsdf'
+
+
+
+
+
+

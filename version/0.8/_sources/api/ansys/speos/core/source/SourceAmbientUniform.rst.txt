@@ -1,0 +1,399 @@
+
+
+
+
+
+
+:class:`SourceAmbientUniform`
+=============================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientUniform(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   Uniform ambient source.
+
+   Sets a constant luminance for the entire sky (or full sphere if mirrored_extent is True)
+   without any sun contribution.
+
+   By default, luminance is set to 1000 cd/m^2, mirrored_extent is False and
+   [0, 0, 1] is used as zenith direction.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.AmbientUniformParameters`] = :data:`python:None`
+           If defined the values in the SourceAmbientUniform instance will be
+           overwritten by the values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientUniform
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sun_manual`
+            - Set the uniform ambient sun direction manually.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~luminance`
+            - Luminance of the uniform ambient source.
+          * - :py:attr:`~mirrored_extent`
+            - Mirrored extent of the uniform ambient source.
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction of the uniform ambient source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Reverse zenith direction of the uniform ambient source.
+          * - :py:attr:`~spectrum`
+            - Spectrum of the uniform ambient source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientUniform
+
+Property detail
+---------------
+
+.. py:property:: luminance
+   :type: float
+
+
+   
+   Luminance of the uniform ambient source.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminance value in cd/m^2.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Luminance value in cd/m^2.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: mirrored_extent
+   :type: bool
+
+
+   
+   Mirrored extent of the uniform ambient source.
+
+   If True the ambient light covers all space, if False only the upper half space.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to cover all space, False to cover only the upper half space.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if covering all space, False if covering only the upper half space.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Zenith direction of the uniform ambient source.
+
+
+   :Parameters:
+
+       **direction** : :obj:`List`\[:class:`python:float`]
+           Direction defining the zenith of the uniform ambient source.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Direction defining the zenith of the uniform ambient source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Reverse zenith direction of the uniform ambient source.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: spectrum
+   :type: ansys.speos.core.spectrum.Spectrum
+
+
+   
+   Spectrum of the uniform ambient source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum associated with this source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sun_manual()
+
+   
+   Set the uniform ambient sun direction manually.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.Manual`
+           Manual sun feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientUniform`
+           Ambient uniform Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientUniform`
+           Ambient uniform Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientUniform`
+           Ambient uniform Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
