@@ -2002,6 +2002,306 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_internal_attributes(speos: Speos):
+    """Test reset of irradiance sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorIrradiance = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
+    wr = sensor1.set_type_spectral().set_wavelengths_range()
+    wr.start = 500
+    wr.end = 600
+    wr.sampling = 3
+    sensor1.set_layer_type_incidence_angle().sampling = 5
+    sensor1.dimensions.x_sampling = 32
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.spectral is not None
+    # Check layer type
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeIncidenceAngle)
+
+    # Modify type and check
+    wr = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wr.start = 600
+    wr.end = 800
+    wr.sampling = 4
+    assert sensor1.colorimetric is not None
+    assert sensor1.spectral is None
+    # Modify layer type and check
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 4
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+    # Modify dimension
+    sensor1.dimensions.x_sampling = 45
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.colorimetric is None
+    assert sensor1.spectral is not None
+    wr = sensor1.spectral.set_wavelengths_range()
+    assert wr.start == 500
+    assert wr.end == 600
+    assert wr.sampling == 3
+    # Check layer type after the reset
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeIncidenceAngle)
+    assert sensor1.layer.sampling == 5
+    assert sensor1.dimensions.x_sampling == 32
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_internal_attributes(speos: Speos):
+    """Test reset of radiance sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorRadiance = p.create_sensor(name="Sensor.1", feature_type=SensorRadiance)
+    wr = sensor1.set_type_spectral().set_wavelengths_range()
+    wr.start = 500
+    wr.end = 600
+    wr.sampling = 3
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 4
+    sensor1.dimensions.x_sampling = 32
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.spectral is not None
+    # Check layer type
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+
+    # Modify type and check
+    wr = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wr.start = 600
+    wr.end = 800
+    wr.sampling = 4
+    assert sensor1.colorimetric is not None
+    assert sensor1.spectral is None
+    # Modify layer type and check
+    sensor1.set_layer_type_source()
+    assert sensor1.layer == LayerTypes.by_source
+    # Modify dimension
+    sensor1.dimensions.x_sampling = 45
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.colorimetric is None
+    assert sensor1.spectral is not None
+    wr = sensor1.spectral.set_wavelengths_range()
+    assert wr.start == 500
+    assert wr.end == 600
+    assert wr.sampling == 3
+    # Check layer type after the reset
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+    assert sensor1.layer.maximum_nb_of_sequence == 4
+    assert sensor1.dimensions.x_sampling == 32
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3d_irradiance_reset_internal_attributes(speos: Speos):
+    """Test reset of 3D irradiance sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+
+    # Create + commit
+    sensor1: Sensor3DIrradiance = p.create_sensor(name="Sensor.1", feature_type=Sensor3DIrradiance)
+    planar = sensor1.set_type_radiometric().set_integration_planar()
+    planar.reflection = False
+    planar.absorption = False
+    planar.transmission = True
+    sensor1.set_layer_type_source()
+    sensor1.geometries = [body]
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.radiometric is not None
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify type and check
+    sensor1.set_type_photometric().set_integration_planar()
+    assert sensor1.photometric is not None
+    assert sensor1.radiometric is None
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.photometric is None
+    assert sensor1.radiometric is not None
+    isinstance(sensor1.radiometric._integration_type, Sensor3DIrradiance.Measures)
+    assert not sensor1.radiometric._integration_type.reflection
+    assert not sensor1.radiometric._integration_type.absorption
+    assert sensor1.radiometric._integration_type.transmission
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_xmp_intensity_reset_internal_attributes(speos: Speos):
+    """Test reset of xmp intensity sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorXMPIntensity = p.create_sensor(name="Sensor.1", feature_type=SensorXMPIntensity)
+    wr = sensor1.set_type_spectral().set_wavelengths_range()
+    wr.start = 500
+    wr.end = 600
+    wr.sampling = 3
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 4
+    sensor1.commit()
+
+    # Check type
+    assert sensor1.spectral is not None
+    # Check layer type
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+
+    # Modify type and check
+    wr = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wr.start = 600
+    wr.end = 800
+    wr.sampling = 4
+    assert sensor1.colorimetric is not None
+    assert sensor1.spectral is None
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.colorimetric is None
+    assert sensor1.spectral is not None
+    wr = sensor1.spectral.set_wavelengths_range()
+    assert wr.start == 500
+    assert wr.end == 600
+    assert wr.sampling == 3
+    # Check layer type after the reset
+    assert isinstance(sensor1.layer, BaseSensor.LayerTypeSequence)
+    assert sensor1.layer.maximum_nb_of_sequence == 4
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_immersive_reset_internal_attributes(speos: Speos):
+    """Test reset of immersive sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorImmersive = p.create_sensor(name="Sensor.1", feature_type=SensorImmersive)
+    sensor1.set_layer_type_source()
+    sensor1.commit()
+
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_camera_reset_internal_attributes(speos: Speos):
+    """Test reset of camera sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorCamera = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
+    mode_photo = sensor1.set_mode_photometric()
+    mode_photo.set_mode_monochromatic(
+        spectrum_file_uri=Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    mode_photo.set_layer_type_source()
+    sensor1.commit()
+
+    # Check types
+    assert sensor1.photometric is not None
+
+    # Modify type and check
+    sensor1.set_mode_geometric()
+    assert sensor1.photometric is None
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check type after the reset
+    assert sensor1.photometric is not None
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_observer_reset_internal_attributes(speos: Speos):
+    """Test reset of observer sensor, and check value of internal attributes.
+
+    In this test, we check using properties (returning internal attributes), like a client would do.
+    """
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1: SensorObserver = p.create_sensor(name="Sensor.1", feature_type=SensorObserver)
+    sensor1.set_layer_type_source()
+    sensor1.commit()
+
+    # Check layer type
+    assert sensor1.layer == LayerTypes.by_source
+
+    # Modify layer type and check
+    sensor1.set_layer_type_none()
+    assert sensor1.layer == LayerTypes.none
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Check layer type after the reset
+    assert sensor1.layer == LayerTypes.by_source
+
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
@@ -4046,4 +4346,4 @@ def test_observer_sensor_load(speos: Speos):
     assert loaded_ang.y_sampling == params.sensors_locations.y_sampling
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
-    assert loaded_sensor.layer is None
+    assert loaded_sensor.layer == params.layer_type
