@@ -1571,10 +1571,16 @@ class SensorCamera(BaseSensor):
 
         Parameters
         ----------
+        project : ansys.speos.core.project.Project
+            PySpeos Project object
+        name : str
+            Object Name stored in the Speos Server
         mode_photometric : Union[\
         ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
         ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor]
             Camera photometric mode protobuf object to modify.
+        camera_props: ansys.speos.core.kernel.scene.ProtoScene.SensorInstance.CameraProperties
+            Camera properties of SensorInstance
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.PhotometricCameraParameters] = None
             If defined the values in the sensor instance will be overwritten by the values of the
@@ -2705,13 +2711,6 @@ class SensorCamera(BaseSensor):
         self._type = None
         self._fill_parameters(default_parameters)
 
-    @property
-    def _camera_template(
-        self,
-    ) -> camera_sensor_pb2.CameraSensorTemplate | sensor_v2_pb2.SensorTemplate.Camera:
-        """Camera part of the sensor template, whatever the protobuf version used."""
-        return self._sensor_mode_template
-
     def _camera_mode_field(self, mode: str) -> str:
         """Get the v1/v2 protobuf field name for a camera sensor mode."""
         if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
@@ -2720,7 +2719,7 @@ class SensorCamera(BaseSensor):
 
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         if not default_parameters:
-            template = self._camera_template
+            template = self._sensor_mode_template
             if template.HasField(self._camera_mode_field("photometric")):
                 self.set_mode_photometric()
             elif template.HasField(self._camera_mode_field("geometric")):
@@ -2731,7 +2730,7 @@ class SensorCamera(BaseSensor):
                 project=self._project,
                 name=self._name,
                 mode_photometric=getattr(
-                    self._camera_template,
+                    self._sensor_mode_template,
                     self._camera_mode_field("photometric"),
                 ),
                 camera_props=self._sensor_instance.camera_properties,
@@ -2904,11 +2903,11 @@ class SensorCamera(BaseSensor):
         float
             Distance between the center of the optical system and the focus. (mm)
         """
-        return self._camera_template.focal_length
+        return self._sensor_mode_template.focal_length
 
     @focal_length.setter
     def focal_length(self, value: float) -> SensorCamera:
-        self._camera_template.focal_length = value
+        self._sensor_mode_template.focal_length = value
 
     @property
     def imager_distance(self) -> SensorCamera:
@@ -2926,11 +2925,11 @@ class SensorCamera(BaseSensor):
             Imager distance (mm). The imager is located at the focal point.
             The Imager distance has no impact on the result.
         """
-        return self._camera_template.imager_distance
+        return self._sensor_mode_template.imager_distance
 
     @imager_distance.setter
     def imager_distance(self, value: float) -> None:
-        self._camera_template.imager_distance = value
+        self._sensor_mode_template.imager_distance = value
 
     @property
     def f_number(self) -> float:
@@ -2948,11 +2947,11 @@ class SensorCamera(BaseSensor):
             F-number represents the aperture of the front lens.
             F number has no impact on the result.
         """
-        return self._camera_template.f_number
+        return self._sensor_mode_template.f_number
 
     @f_number.setter
     def f_number(self, value: float = 20) -> None:
-        self._camera_template.f_number = value
+        self._sensor_mode_template.f_number = value
 
     @property
     def distortion_file_uri(self) -> str:
@@ -2970,11 +2969,11 @@ class SensorCamera(BaseSensor):
             Optical aberration that deforms and bends straight lines. The distortion is expressed in
             a .OPTDistortion file.
         """
-        return self._camera_template.distortion_file_uri
+        return self._sensor_mode_template.distortion_file_uri
 
     @distortion_file_uri.setter
     def distortion_file_uri(self, uri: Union[str, Path]) -> None:
-        self._camera_template.distortion_file_uri = str(Path(uri))
+        self._sensor_mode_template.distortion_file_uri = str(Path(uri))
 
     @property
     def horz_pixel(self) -> int:
@@ -2991,11 +2990,11 @@ class SensorCamera(BaseSensor):
         int
             The horizontal pixels number corresponding to the camera resolution.
         """
-        return self._camera_template.horz_pixel
+        return self._sensor_mode_template.horz_pixel
 
     @horz_pixel.setter
     def horz_pixel(self, value: int) -> None:
-        self._camera_template.horz_pixel = value
+        self._sensor_mode_template.horz_pixel = value
 
     @property
     def vert_pixel(self) -> int:
@@ -3012,11 +3011,11 @@ class SensorCamera(BaseSensor):
         int
             The vertical pixels number corresponding to the camera resolution.
         """
-        return self._camera_template.vert_pixel
+        return self._sensor_mode_template.vert_pixel
 
     @vert_pixel.setter
     def vert_pixel(self, value: int) -> None:
-        self._camera_template.vert_pixel = value
+        self._sensor_mode_template.vert_pixel = value
 
     @property
     def width(self) -> float:
@@ -3032,11 +3031,11 @@ class SensorCamera(BaseSensor):
         float
             Sensor's width (mm).
         """
-        return self._camera_template.width
+        return self._sensor_mode_template.width
 
     @width.setter
     def width(self, value: float) -> None:
-        self._camera_template.width = value
+        self._sensor_mode_template.width = value
 
     @property
     def height(self) -> float:
@@ -3053,11 +3052,11 @@ class SensorCamera(BaseSensor):
             Sensor's height (mm).
             `.
         """
-        return self._camera_template.height
+        return self._sensor_mode_template.height
 
     @height.setter
     def height(self, value: float) -> None:
-        self._camera_template.height = value
+        self._sensor_mode_template.height = value
 
     @property
     def axis_system(self) -> List[float]:
@@ -3091,7 +3090,7 @@ class SensorCamera(BaseSensor):
             Geometric Camera feature
         """
         self._type = None
-        getattr(self._camera_template, self._camera_mode_field("geometric")).SetInParent()
+        getattr(self._sensor_mode_template, self._camera_mode_field("geometric")).SetInParent()
         return self
 
     def set_mode_photometric(self) -> SensorCamera.Photometric:
@@ -3106,12 +3105,12 @@ class SensorCamera(BaseSensor):
             Photometric Camera Sensor feature
         """
         field_name = self._camera_mode_field("photometric")
-        if self._type is None and self._camera_template.HasField(field_name):
+        if self._type is None and self._sensor_mode_template.HasField(field_name):
             # Happens in case of project created via load of speos file
             self._type = SensorCamera.Photometric(
                 project=self._project,
                 name=self._name,
-                mode_photometric=getattr(self._camera_template, field_name),
+                mode_photometric=getattr(self._sensor_mode_template, field_name),
                 camera_props=self._sensor_instance.camera_properties,
                 default_parameters=None,
                 stable_ctr=True,
@@ -3121,14 +3120,14 @@ class SensorCamera(BaseSensor):
             self._type = SensorCamera.Photometric(
                 project=self._project,
                 name=self._name,
-                mode_photometric=getattr(self._camera_template, field_name),
+                mode_photometric=getattr(self._sensor_mode_template, field_name),
                 camera_props=self._sensor_instance.camera_properties,
                 default_parameters=PhotometricCameraParameters(),
                 stable_ctr=True,
             )
-        elif self._type._mode_photometric is not getattr(self._camera_template, field_name):
+        elif self._type._mode_photometric is not getattr(self._sensor_mode_template, field_name):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._bind_mode_photometric(getattr(self._camera_template, field_name))
+            self._type._bind_mode_photometric(getattr(self._sensor_mode_template, field_name))
         if self._type._camera_props is not self._sensor_instance.camera_properties:
             self._type._camera_props = self._sensor_instance.camera_properties
         return self._type
@@ -3157,7 +3156,7 @@ class SensorCamera(BaseSensor):
             super().commit()
         except grpc.RpcError:
             for value in values_v2:
-                self._camera_template.ClearField(value)
+                self._sensor_mode_template.ClearField(value)
             try:
                 super().commit()
                 warnings.warn(msg.format(str(values_v2)), stacklevel=2)
