@@ -22,8 +22,10 @@
 
 """Module to ease version checks."""
 
+from typing import Optional
 
-def check_version(input_version: str, major: int, minor: int, patch: int) -> bool:
+
+def check_version(input_version: str, major: int, minor: int, patch: Optional[int] = None) -> bool:
     """Check that the input version is greater than or equal to the major.minor.patch.
 
     Parameters
@@ -34,13 +36,22 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
         Major release version, e.g. 2025
     minor : int
         Minor release version e.g. 2
-    patch : int
-        Service Pack version e.g. 3
+    patch : Optional[int]
+        Service Pack version e.g. 3.
+        If not provided, the patch is not considered in the comparison.
 
     Returns
     -------
     bool
         True if the input version is >= to the major.minor.patch
+
+    Notes
+    -----
+    The patch part of *input_version* can carry a suffix, e.g. ``"3-suffix"``.
+    In that case only the leading number (``3``) is used for the comparison.
+    The patch part can also be a development marker, e.g. ``"dev0"``, ``"dev1"``.
+    A development patch is always considered lower than any numbered patch,
+    including ``0``.
     """
     values = input_version.split(".")
     if "-" in values[2]:
@@ -51,8 +62,13 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
         if int(values[1]) > minor:
             return True
         elif int(values[1]) == minor:
-            if int(values[2]) >= patch:
+            if patch is None:
                 return True
+
+            if values[2].isdigit():
+                if int(values[2]) >= patch:
+                    return True
+            # A development patch (e.g. "dev0") is lower than any numbered patch.
 
     return False
 
