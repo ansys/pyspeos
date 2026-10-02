@@ -135,6 +135,26 @@ def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
     return template.HasField("irradiance_sensor_template")
 
 
+def observer_template(sensor_feature, local: bool = False):
+    """Get the observer part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.observer
+    return template.observer_sensor_template
+
+
+def has_observer_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an observer definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("observer")
+    return template.HasField("observer_sensor_template")
+
+
 def radiance_template(sensor_feature, local: bool = False):
     """Get the radiance part of a sensor template, whatever the protobuf version in use."""
     template = (
@@ -167,6 +187,26 @@ def has_radiance_sensor_mode(sensor_feature, mode: str, local: bool = False) -> 
     return radiance_template(sensor_feature, local).HasField(
         _sensor_mode_field(sensor_feature, mode)
     )
+
+
+def immersive_template(sensor_feature, local: bool = False):
+    """Get the immersive part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.immersive
+    return template.immersive_sensor_template
+
+
+def has_immersive_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an immersive definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("immersive")
+    return template.HasField("immersive_sensor_template")
 
 
 def _sensor_mode_field(sensor_feature, mode: str) -> str:
@@ -3350,7 +3390,7 @@ def test_create_by_parameters(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor(speos: Speos):
+def test_create_immersive_sensor(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with default parameters."""
     p = Project(speos=speos)
     default_params = ImmersiveSensorParameters()
@@ -3379,12 +3419,12 @@ def test_create_immersive_sensor(speos: Speos):
     assert len(p.scene_link.get().sensors) == 0
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert has_immersive_template(sensor1)
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("immersive_properties")
 
     # Verify template values on the server
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == default_params.sampling
     assert tmpl.integration_angle == default_params.integration_angle
     assert tmpl.wavelengths_range.w_start == default_params.wavelengths_range.start
@@ -3397,7 +3437,7 @@ def test_create_immersive_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor_custom_parameters(speos: Speos):
+def test_create_immersive_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -3443,7 +3483,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
     sensor1.commit()
 
     # Verify values on the server after commit
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 128
     assert tmpl.integration_angle == 10.0
     assert tmpl.stereo.interocular_distance == 6.5
@@ -3466,7 +3506,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_setters(speos: Speos):
+def test_immersive_sensor_setters(speos: Speos, sensor_template_version):
     """Test property setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -3500,7 +3540,7 @@ def test_immersive_sensor_setters(speos: Speos):
     assert sensor1.exclude_top is False
 
     sensor1.commit()
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 256
     assert tmpl.integration_angle == 7.5
     assert tmpl.stereo.interocular_distance == 6.5
@@ -3512,7 +3552,7 @@ def test_immersive_sensor_setters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_layer_types(speos: Speos):
+def test_immersive_sensor_layer_types(speos: Speos, sensor_template_version):
     """Test layer type setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -3536,7 +3576,7 @@ def test_immersive_sensor_layer_types(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_commit_reset_delete(speos: Speos):
+def test_immersive_sensor_commit_reset_delete(speos: Speos, sensor_template_version):
     """Test commit, reset, and delete lifecycle of immersive sensor."""
     p = Project(speos=speos)
 
@@ -3554,7 +3594,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
     # Modify locally, not committed
     sensor1.sampling = 512
     assert sensor1.sampling == 512
-    assert sensor1.sensor_template_link.get().immersive_sensor_template.sampling == default_sampling
+    assert immersive_template(sensor1).sampling == default_sampling
 
     # Reset restores server values
     sensor1.reset()
@@ -3568,7 +3608,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_wrong_parameters(speos: Speos):
+def test_immersive_sensor_wrong_parameters(speos: Speos, sensor_template_version):
     """Test that passing wrong parameter type raises TypeError."""
     p = Project(speos=speos)
 
@@ -3581,7 +3621,7 @@ def test_immersive_sensor_wrong_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_load_immersive_sensor_from_speos_file(speos: Speos):
+def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_version):
     """Test loading an immersive sensor from an existing .speos file.
 
     Verifies that the sensor settings (sampling, integration angle, wavelengths
@@ -3600,7 +3640,7 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
 
     # Verify the sensor template link was populated on load
     assert sensor.sensor_template_link is not None
-    assert sensor.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert has_immersive_template(sensor)
 
     # Template-level settings
     assert sensor.sampling == 600
@@ -4381,7 +4421,7 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_default(speos: Speos):
+def test_create_observer_sensor_default(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with default parameters."""
     p = Project(speos=speos)
 
@@ -4398,7 +4438,7 @@ def test_create_observer_sensor_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_custom_parameters(speos: Speos):
+def test_create_observer_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -4426,7 +4466,7 @@ def test_create_observer_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_focal_property(speos: Speos):
+def test_observer_sensor_focal_property(speos: Speos, sensor_template_version):
     """Test focal distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Focal", feature_type=SensorObserver)
@@ -4440,7 +4480,7 @@ def test_observer_sensor_focal_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_integration_angle_property(speos: Speos):
+def test_observer_sensor_integration_angle_property(speos: Speos, sensor_template_version):
     """Test integration angle property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.IntAngle", feature_type=SensorObserver)
@@ -4454,7 +4494,7 @@ def test_observer_sensor_integration_angle_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_distance_property(speos: Speos):
+def test_observer_sensor_distance_property(speos: Speos, sensor_template_version):
     """Test distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Distance", feature_type=SensorObserver)
@@ -4468,7 +4508,7 @@ def test_observer_sensor_distance_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_stereo_interocular_distance(speos: Speos):
+def test_observer_sensor_stereo_interocular_distance(speos: Speos, sensor_template_version):
     """Test stereo interocular distance property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Stereo", feature_type=SensorObserver)
@@ -4483,7 +4523,7 @@ def test_observer_sensor_stereo_interocular_distance(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_wavelengths_range(speos: Speos):
+def test_observer_sensor_wavelengths_range(speos: Speos, sensor_template_version):
     """Test wavelengths range configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.WL", feature_type=SensorObserver)
@@ -4503,7 +4543,7 @@ def test_observer_sensor_wavelengths_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_dimensions(speos: Speos):
+def test_observer_sensor_dimensions(speos: Speos, sensor_template_version):
     """Test dimensions configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Dims", feature_type=SensorObserver)
@@ -4529,7 +4569,7 @@ def test_observer_sensor_dimensions(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_angular_range(speos: Speos):
+def test_observer_sensor_angular_range(speos: Speos, sensor_template_version):
     """Test angular range configuration for sensor locations."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AngularRange", feature_type=SensorObserver)
@@ -4555,7 +4595,7 @@ def test_observer_sensor_angular_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_axis_system(speos: Speos):
+def test_observer_sensor_axis_system(speos: Speos, sensor_template_version):
     """Test axis system property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AxisSys", feature_type=SensorObserver)
@@ -4570,7 +4610,7 @@ def test_observer_sensor_axis_system(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_commit_and_check_template(speos: Speos):
+def test_observer_sensor_commit_and_check_template(speos: Speos, sensor_template_version):
     """Test committing Observer sensor and checking template."""
     p = Project(speos=speos)
 
@@ -4588,20 +4628,31 @@ def test_observer_sensor_commit_and_check_template(speos: Speos):
     # Check sensor template link exists
     assert sensor.sensor_template_link is not None
 
-    # Get template and verify it has observer_sensor_template
-    template = sensor.sensor_template_link.get()
-    assert template.HasField("observer_sensor_template")
+    # Verify the local template uses the expected protobuf version and field name
+    if isinstance(sensor._sensor_template, ProtoSensorTemplateV2):
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer")
+    else:
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplate)
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer_sensor_template")
 
-    # Verify observer template properties
-    observer_template = template.observer_sensor_template
-    assert observer_template.focal == 350.0
-    assert observer_template.integration_angle == 8.0
-    assert observer_template.distance == 120.0
-    assert observer_template.stereo.interocular_distance == 60.0
+    # Get template and verify observer properties are preserved after commit
+    template = sensor.sensor_template_link.get()
+    if isinstance(template, ProtoSensorTemplateV2):
+        assert template.HasField("observer")
+    else:
+        assert template.HasField("observer_sensor_template")
+
+    observer = observer_template(sensor)
+    assert observer.focal == 350.0
+    assert observer.integration_angle == 8.0
+    assert observer.distance == 120.0
+    assert observer.stereo.interocular_distance == 60.0
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_with_parameters_dataclass(speos: Speos):
+def test_observer_sensor_with_parameters_dataclass(speos: Speos, sensor_template_version):
     """Test Observer sensor creation with full parameter dataclass configuration."""
     p = Project(speos=speos)
 
@@ -4664,7 +4715,7 @@ def test_observer_sensor_with_parameters_dataclass(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_load(speos: Speos):
+def test_observer_sensor_load(speos: Speos, sensor_template_version):
     """Test loading and hydrating Observer sensor from scene."""
     p = Project(speos=speos, path=test_path / "observer_test.1.speos" / "observer_test.1.speos")
 
