@@ -4329,7 +4329,7 @@ class Sensor3DIrradiance(BaseSensor):
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
                         self._integration_type = Sensor3DIrradiance.Measures(
-                            illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                            illuminance_type=self._planar_measures_target(),
                             default_parameters=default_parameters.measures,
                             stable_ctr=stable_ctr,
                         )
