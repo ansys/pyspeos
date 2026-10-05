@@ -91,11 +91,6 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.spectrum import Spectrum
 
-CameraDisplayPrimariesProto = (
-    camera_sensor_pb2.SensorCameraBalanceModeDisplay
-    | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries
-)
-
 
 class BaseSensor(ABC):
     """Base class for Sensor.
@@ -1792,7 +1787,10 @@ class SensorCamera(BaseSensor):
 
                 def _bind_balance_mode_display(
                     self,
-                    balance_mode_display: CameraDisplayPrimariesProto,
+                    balance_mode_display: Union[
+                        camera_sensor_pb2.SensorCameraBalanceModeDisplay,
+                        sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries,
+                    ],
                 ) -> None:
                     self._balance_mode_display = balance_mode_display
                     if hasattr(self._balance_mode_display, "red_display_spectrum_guid"):
