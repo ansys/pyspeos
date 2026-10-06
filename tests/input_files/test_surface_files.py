@@ -22,6 +22,8 @@
 
 """Test the surface optical property file formats."""
 
+from dataclasses import is_dataclass
+
 import pytest
 
 from ansys.speos.core import (
@@ -30,6 +32,10 @@ from ansys.speos.core import (
     ScatteringSurfaceFile,
     ScatteringSurfaceSample,
     SimpleScatteringSurfaceFile,
+)
+from ansys.speos.core.input_files.scattering_surface import (
+    _CONTRIBUTIONS as CONTRIBUTIONS,
+    _WIDTHS as WIDTHS,
 )
 from tests.input_files import ASSETS_DIR, read_lines
 
@@ -111,32 +117,152 @@ def test_scattering_surface_absorption_completes_the_budget(documented_scatterin
     assert samples[2][0].absorption == pytest.approx(100.0)
 
 
-def test_scattering_surface_needs_the_full_incidence_range(documented_scattering_surface, tmp_path):
+def test_scattering_surface_needs_the_full_incidence_range(documented_scattering_surface):
     """Speos needs the incidences to span 0 to 90 degrees."""
-    documented_scattering_surface.incident_angles = [0.0, 45.0, 60.0]
-
     with pytest.raises(ValueError, match="0 and 90 degrees"):
-        documented_scattering_surface.save(tmp_path / "surface.scattering")
+        documented_scattering_surface.incident_angles = [0.0, 45.0, 60.0]
+    assert documented_scattering_surface.incident_angles == [0.0, 45.0, 90.0]
 
 
-def test_scattering_surface_needs_two_wavelengths(tmp_path):
+def test_scattering_surface_needs_two_wavelengths():
     """Speos needs at least two wavelengths."""
-    surface = ScatteringSurfaceFile(
-        wavelengths=[400.0],
-        incident_angles=[0.0, 90.0],
-        samples=[[ScatteringSurfaceSample()], [ScatteringSurfaceSample()]],
-    )
-
     with pytest.raises(ValueError, match="two wavelengths"):
-        surface.save(tmp_path / "surface.scattering")
+        ScatteringSurfaceFile(
+            wavelengths=[400.0],
+            incident_angles=[0.0, 90.0],
+            samples=[[ScatteringSurfaceSample()], [ScatteringSurfaceSample()]],
+        )
 
 
-def test_scattering_surface_rejects_an_over_unity_budget(documented_scattering_surface, tmp_path):
+def test_scattering_surface_rejects_an_over_unity_budget(documented_scattering_surface):
     """The reflection and transmission contributions must not exceed 100%."""
-    documented_scattering_surface.samples[0][0].lambertian_reflection = 80.0
-
     with pytest.raises(ValueError, match="absorption of -40"):
-        documented_scattering_surface.save(tmp_path / "surface.scattering")
+        documented_scattering_surface.samples[0][0].lambertian_reflection = 80.0
+    assert documented_scattering_surface.samples[0][0].lambertian_reflection == 20.0
+
+
+@pytest.mark.parametrize("name", CONTRIBUTIONS + WIDTHS)
+def test_scattering_surface_sample_validated_properties(name):
+    """Every sample property accepts valid values and rejects invalid assignments atomically."""
+    sample = ScatteringSurfaceSample()
+    assert getattr(sample, name) == 0.0
+    setattr(sample, name, 20.0)
+    assert getattr(sample, name) == 20.0
+    for value in (-1.0, 101.0, float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError, match=name):
+            setattr(sample, name, value)
+        assert getattr(sample, name) == 20.0
+        with pytest.raises(ValueError, match=name):
+            ScatteringSurfaceSample(**{name: value})
+
+
+@pytest.mark.parametrize("name", CONTRIBUTIONS)
+def test_scattering_surface_sample_budget_is_validated_for_each_contribution(name):
+    """Each contribution setter checks the budget before replacing its previous value."""
+    other = next(entry for entry in CONTRIBUTIONS if entry != name)
+    sample = ScatteringSurfaceSample(**{other: 80.0, name: 20.0})
+    assert sample.absorption == 0.0
+    with pytest.raises(ValueError, match="absorption"):
+        setattr(sample, name, 21.0)
+    assert getattr(sample, name) == 20.0
+    with pytest.raises(ValueError, match="absorption"):
+        ScatteringSurfaceSample(**{other: 80.0, name: 21.0})
+    setattr(sample, other, 70.0)
+    setattr(sample, name, 30.0)
+    assert sample.absorption == 0.0
+
+
+@pytest.mark.parametrize("name", WIDTHS)
+def test_scattering_surface_sample_width_bounds(name):
+    """Gaussian widths include 90 degrees but reject wider lobes."""
+    sample = ScatteringSurfaceSample(**{name: 90.0})
+    assert getattr(sample, name) == 90.0
+    with pytest.raises(ValueError, match="90 degrees"):
+        setattr(sample, name, 90.1)
+    assert getattr(sample, name) == 90.0
+
+
+@pytest.mark.parametrize(
+    ("name", "value", "message"),
+    [
+        ("wavelengths", [600.0, 400.0], "sorted"),
+        ("wavelengths", [400.0, float("nan")], "finite"),
+        ("wavelengths", [400.0, float("inf")], "finite"),
+        ("wavelengths", [400.0, 500.0, 600.0], "one entry per wavelength"),
+        ("incident_angles", [90.0, 0.0], "sorted"),
+        ("incident_angles", [0.0, 90.0, 91.0], "between 0 and 90"),
+        ("incident_angles", [0.0, float("nan"), 90.0], "between 0 and 90"),
+        ("incident_angles", [0.0, 90.0], "one row per angle"),
+        ("description", "first\nsecond", "single line"),
+        ("description", "first\rsecond", "single line"),
+        ("description", "first\u2028second", "single line"),
+        ("samples", [[ScatteringSurfaceSample()]], "one row per angle"),
+        ("samples", [[ScatteringSurfaceSample()]] * 3, "one entry per wavelength"),
+    ],
+)
+def test_scattering_surface_file_assignment_is_atomic(
+    documented_scattering_surface, name, value, message
+):
+    """Invalid file property assignments preserve the previous value."""
+    previous = getattr(documented_scattering_surface, name)
+    with pytest.raises(ValueError, match=message):
+        setattr(documented_scattering_surface, name, value)
+    assert getattr(documented_scattering_surface, name) == previous
+
+
+def test_scattering_surface_file_rejects_wrong_types(documented_scattering_surface):
+    """Descriptions and grid entries must have the expected types."""
+    with pytest.raises(TypeError, match="string"):
+        documented_scattering_surface.description = 12
+    with pytest.raises(TypeError, match="ScatteringSurfaceSample"):
+        documented_scattering_surface.samples = [[object()]]
+    documented_scattering_surface.validate()
+
+
+def test_scattering_surface_copies_list_containers(documented_scattering_surface):
+    """Input and output lists cannot bypass validation while samples remain editable."""
+    wavelengths = documented_scattering_surface.wavelengths
+    angles = documented_scattering_surface.incident_angles
+    samples = documented_scattering_surface.samples
+    surface = ScatteringSurfaceFile(wavelengths, angles, samples)
+    wavelengths.clear()
+    angles.clear()
+    samples[0].clear()
+    samples.clear()
+    surface.wavelengths.clear()
+    surface.incident_angles.clear()
+    surface.samples[0].clear()
+    surface.samples.clear()
+    surface.validate()
+    surface.samples[0][0].specular_reflection = 25.0
+    assert surface.samples[0][0].specular_reflection == 25.0
+    grid = surface.samples
+    grid[0][0] = ScatteringSurfaceSample()
+    surface.samples = grid
+    assert surface.samples[0][0].absorption == 100.0
+
+
+def test_scattering_surface_staged_construction_and_resize(tmp_path):
+    """Empty defaults allow staged construction but cannot be saved as a complete file."""
+    surface = ScatteringSurfaceFile()
+    assert not is_dataclass(surface)
+    assert not is_dataclass(ScatteringSurfaceSample())
+    assert surface.wavelengths == surface.incident_angles == surface.samples == []
+    assert surface.description == "Scattering surface"
+    with pytest.raises(ValueError, match="two wavelengths"):
+        surface.save(tmp_path / "empty.scattering")
+    assert not (tmp_path / "empty.scattering").exists()
+    surface.samples = [[ScatteringSurfaceSample()] * 2 for _ in range(2)]
+    surface.wavelengths = [400.0, 700.0]
+    surface.incident_angles = [0.0, 90.0]
+    surface.validate()
+    surface.samples = []
+    surface.wavelengths = [400.0, 550.0, 700.0]
+    surface.incident_angles = [0.0, 45.0, 90.0]
+    surface.samples = [[ScatteringSurfaceSample()] * 3 for _ in range(3)]
+    surface.description = ""
+    path = surface.save(tmp_path / "resized.scattering")
+    assert ScatteringSurfaceFile.load(path) == surface
 
 
 @pytest.fixture
