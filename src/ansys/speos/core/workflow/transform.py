@@ -111,12 +111,21 @@ def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
     sine = math.sin(angle)
     return np.array(
         [
-            [cosine + x * x * (1 - cosine), x * y * (1 - cosine) - z * sine,
-             x * z * (1 - cosine) + y * sine],
-            [y * x * (1 - cosine) + z * sine, cosine + y * y * (1 - cosine),
-             y * z * (1 - cosine) - x * sine],
-            [z * x * (1 - cosine) - y * sine, z * y * (1 - cosine) + x * sine,
-             cosine + z * z * (1 - cosine)],
+            [
+                cosine + x * x * (1 - cosine),
+                x * y * (1 - cosine) - z * sine,
+                x * z * (1 - cosine) + y * sine,
+            ],
+            [
+                y * x * (1 - cosine) + z * sine,
+                cosine + y * y * (1 - cosine),
+                y * z * (1 - cosine) - x * sine,
+            ],
+            [
+                z * x * (1 - cosine) - y * sine,
+                z * y * (1 - cosine) + x * sine,
+                cosine + z * z * (1 - cosine),
+            ],
         ]
     )
 
@@ -220,9 +229,7 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
         feature._project._features.append(copied)
     elif isinstance(feature, part.Part.SubPart):
         parent = feature._parent_part
-        copied = parent.create_sub_part(
-            name=name, description=feature._part_instance.description
-        )
+        copied = parent.create_sub_part(name=name, description=feature._part_instance.description)
         copied._part.CopyFrom(feature._part)
         if feature.part_link is not None:
             copied.part_link = feature.part_link
@@ -414,9 +421,7 @@ def rotate_feature(
         If an input is invalid or a standalone Face is provided.
     """
     rotation_point = _validate_vector3(point, "point")
-    rotation = _rotation_matrix(
-        _validate_vector3(axis, "axis"), _validate_scalar(angle, "angle")
-    )
+    rotation = _rotation_matrix(_validate_vector3(axis, "axis"), _validate_scalar(angle, "angle"))
     translation = rotation_point - rotation @ rotation_point
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, rotation, translation)

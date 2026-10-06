@@ -24,8 +24,7 @@
 
 import pytest
 
-from ansys.speos.core import body as body_module
-from ansys.speos.core import source
+from ansys.speos.core import body as body_module, source
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import ProtoFace
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
@@ -39,9 +38,7 @@ class _TestSource(source.BaseSource):
         self._name = "test_source"
         self._project = None
         self.axis_system = (
-            [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-            if axis_system is None
-            else axis_system
+            [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1] if axis_system is None else axis_system
         )
         self.commit_count = 0
 
