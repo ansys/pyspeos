@@ -24,14 +24,19 @@
 
 from __future__ import annotations
 
-from copy import copy
 import math
 from typing import Union
 
 import numpy as np
 
-from ansys.speos.core import body as body_module
-from ansys.speos.core import component, face as face_module, part, sensor, source
+from ansys.speos.core import (
+    body as body_module,
+    component,
+    face as face_module,
+    part,
+    sensor,
+    source,
+)
 from ansys.speos.core.kernel.scene import ProtoScene
 
 TransformableFeature = Union[
@@ -51,7 +56,10 @@ def _validate_vector3(value: list[float], name: str) -> np.ndarray:
         raise ValueError(f"{name} must contain exactly three values.")
     if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
         raise TypeError(f"{name} values must be numeric.")
-    vector = np.asarray(value, dtype=float)
+    try:
+        vector = np.asarray(value, dtype=float)
+    except OverflowError as error:
+        raise ValueError(f"{name} values must be finite.") from error
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} values must be finite.")
     return vector
@@ -65,7 +73,10 @@ def _validate_axis_system12(value: list[float], name: str) -> np.ndarray:
         raise ValueError(f"{name} must contain exactly twelve values.")
     if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
         raise TypeError(f"{name} values must be numeric.")
-    axis_system = np.asarray(value, dtype=float)
+    try:
+        axis_system = np.asarray(value, dtype=float)
+    except OverflowError as error:
+        raise ValueError(f"{name} values must be finite.") from error
     if not np.all(np.isfinite(axis_system)):
         raise ValueError(f"{name} values must be finite.")
     return axis_system
@@ -75,9 +86,13 @@ def _validate_scalar(value: float, name: str) -> float:
     """Validate and convert a finite scalar."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"{name} must be a finite number.")
-    if not math.isfinite(value):
+    try:
+        scalar = float(value)
+    except OverflowError as error:
+        raise ValueError(f"{name} must be finite.") from error
+    if not math.isfinite(scalar):
         raise ValueError(f"{name} must be finite.")
-    return float(value)
+    return scalar
 
 
 def _normalize(vector: np.ndarray, name: str) -> np.ndarray:
@@ -138,7 +153,9 @@ def _feature_siblings(feature: TransformableFeature) -> list:
     parent = _get_parent(feature)
     if parent is None:
         return []
-    return parent._features if isinstance(feature, (component.LightBox, source.BaseSource, sensor.BaseSensor)) else parent._geom_features
+    if isinstance(feature, (component.LightBox, source.BaseSource, sensor.BaseSensor)):
+        return parent._features
+    return parent._geom_features
 
 
 def _copy_name(feature: TransformableFeature, name: str | None) -> str:
@@ -162,28 +179,39 @@ def _copy_name(feature: TransformableFeature, name: str | None) -> str:
 
 def _copy_axis_feature(feature: TransformableFeature, name: str) -> TransformableFeature:
     """Duplicate an axis-system feature and add it to its owning project."""
-    copied = copy(feature)
-    copied._name = name
     if isinstance(feature, source.BaseSource):
-        copied._source_instance = ProtoScene.SourceInstance()
+        metadata = dict(feature._source_instance.metadata)
+        metadata.pop("UniqueId", None)
+        copied = type(feature)(
+            project=feature._project,
+            name=name,
+            description=feature._source_instance.description,
+            metadata=metadata,
+        )
         copied._source_instance.CopyFrom(feature._source_instance)
         copied._source_instance.name = name
         copied._source_instance.metadata.pop("UniqueId", None)
         copied._source_instance.source_guid = ""
-        copied._source_template = type(feature._source_template)()
         copied._source_template.CopyFrom(feature._source_template)
         copied._source_template.name = name
         copied.source_template_link = None
         copied._unique_id = None
+        copied._source_path = name
         copied._fill_parameters(default_parameters=None)
         feature._project._features.append(copied)
     elif isinstance(feature, sensor.BaseSensor):
-        copied._sensor_instance = ProtoScene.SensorInstance()
+        metadata = dict(feature._sensor_instance.metadata)
+        metadata.pop("UniqueId", None)
+        copied = type(feature)(
+            project=feature._project,
+            name=name,
+            description=feature._sensor_instance.description,
+            metadata=metadata,
+        )
         copied._sensor_instance.CopyFrom(feature._sensor_instance)
         copied._sensor_instance.name = name
         copied._sensor_instance.metadata.pop("UniqueId", None)
         copied._sensor_instance.sensor_guid = ""
-        copied._sensor_template = type(feature._sensor_template)()
         copied._sensor_template.CopyFrom(feature._sensor_template)
         copied._sensor_template.name = name
         copied.sensor_template_link = None
@@ -192,7 +220,9 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
         feature._project._features.append(copied)
     elif isinstance(feature, part.Part.SubPart):
         parent = feature._parent_part
-        copied = parent.create_sub_part(name=name, description=feature._part_instance.description)
+        copied = parent.create_sub_part(
+            name=name, description=feature._part_instance.description
+        )
         copied._part.CopyFrom(feature._part)
         if feature.part_link is not None:
             copied.part_link = feature.part_link
@@ -208,7 +238,9 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
         instance.name = name
         instance.metadata.pop("UniqueId", None)
         instance.metadata["UniqueId"] = "pending"
-        copied = component.LightBox(name=name, parent_project=feature._parent_project, instance=instance)
+        copied = component.LightBox(
+            name=name, parent_project=feature._parent_project, instance=instance
+        )
         copied._scene_instance.name = name
         copied._scene_instance.metadata.pop("UniqueId", None)
         copied._unique_id = None
@@ -281,9 +313,19 @@ def _prepare_transform(
         raise ValueError("Transforming a standalone Face is not supported; transform its Body.")
     if not isinstance(
         feature,
-        (source.BaseSource, sensor.BaseSensor, component.LightBox, part.Part.SubPart, body_module.Body),
+        (
+            source.BaseSource,
+            sensor.BaseSensor,
+            component.LightBox,
+            part.Part.SubPart,
+            body_module.Body,
+        ),
     ):
         raise TypeError(f"Unsupported feature type: {type(feature).__name__}.")
+    if isinstance(feature, (source.BaseSource, sensor.BaseSensor)) and not hasattr(
+        feature, "axis_system"
+    ):
+        raise TypeError(f"{type(feature).__name__} does not expose an axis_system to transform.")
     if not copy_feature and name is not None:
         raise ValueError("name can only be provided when copy=True.")
     if not copy_feature:

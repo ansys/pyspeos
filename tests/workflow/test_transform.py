@@ -35,6 +35,7 @@ class _TestSource(source.BaseSource):
     """Minimal source wrapper for exercising axis-system transforms."""
 
     def __init__(self, axis_system=None):
+        """Initialize a source-like feature."""
         self._name = "test_source"
         self._project = None
         self.axis_system = (
@@ -70,6 +71,7 @@ def _make_body():
 
 
 def test_move_feature_normalizes_direction_and_commits():
+    """Normalize the translation vector and commit the source."""
     feature = _TestSource()
 
     result = move_feature(feature, [0, 3, 0], 2)
@@ -81,6 +83,7 @@ def test_move_feature_normalizes_direction_and_commits():
 
 
 def test_rotate_feature_around_point_and_commits():
+    """Rotate both origin and orientation around a point."""
     feature = _TestSource(axis_system=[2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
     rotate_feature(feature, [1, 0, 0], [0, 0, 1], 90)
@@ -91,6 +94,7 @@ def test_rotate_feature_around_point_and_commits():
 
 
 def test_axis_to_axis_maps_origin_and_orientation():
+    """Map feature pose from the reference frame into the target frame."""
     feature = _TestSource()
     reference = [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     target = [0, 2, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1]
@@ -102,6 +106,7 @@ def test_axis_to_axis_maps_origin_and_orientation():
 
 
 def test_body_copy_transforms_mesh_without_modifying_original(monkeypatch):
+    """Transform copied body vertices and preserve its original mesh."""
     monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
     original, original_face = _make_body()
 
@@ -125,16 +130,19 @@ def test_body_copy_transforms_mesh_without_modifying_original(monkeypatch):
     ],
 )
 def test_move_feature_rejects_invalid_inputs(args, error):
+    """Reject malformed, zero-length, and non-finite movement arguments."""
     with pytest.raises(error):
         move_feature(_TestSource(), *args)
 
 
 def test_rotate_feature_rejects_zero_axis():
+    """Reject a zero-length rotation axis."""
     with pytest.raises(ValueError, match="zero vector"):
         rotate_feature(_TestSource(), [0, 0, 0], [0, 0, 0], 45)
 
 
 def test_axis_to_axis_rejects_invalid_frames():
+    """Reject malformed or non-rigid coordinate frames."""
     with pytest.raises(ValueError, match="twelve values"):
         axis_to_axis_feature(_TestSource(), [0, 0, 0], [0, 0, 0])
 
@@ -145,6 +153,7 @@ def test_axis_to_axis_rejects_invalid_frames():
 
 
 def test_face_and_unknown_feature_are_rejected():
+    """Reject standalone faces and unsupported feature types."""
     body, face = _make_body()
     with pytest.raises(ValueError, match="standalone Face"):
         move_feature(face, [1, 0, 0], 1)
