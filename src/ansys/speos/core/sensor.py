@@ -3088,9 +3088,6 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if self._sensor_dimensions._sensor_dimensions is not self._sensor_mode_template.dimensions:
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_mode_template.dimensions
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorIrradiance:
@@ -3119,7 +3116,7 @@ class SensorIrradiance(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
@@ -3161,7 +3158,7 @@ class SensorIrradiance(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=None,
@@ -3824,9 +3821,6 @@ class SensorRadiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if self._sensor_dimensions._sensor_dimensions is not self._sensor_mode_template.dimensions:
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_mode_template.dimensions
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorRadiance:
@@ -3855,7 +3849,7 @@ class SensorRadiance(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
@@ -3897,7 +3891,7 @@ class SensorRadiance(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=None,
@@ -4297,23 +4291,6 @@ class Sensor3DIrradiance(BaseSensor):
                 )
             return self._sensor_type_radiometric.HasField("integration_type_" + integration_type)
 
-        def _refresh_binding(
-            self,
-            sensor_type_radiometric: Union[
-                sensor_pb2.TypeRadiometric,
-                sensor_v2_pb2.SensorTemplate.ModeRadiometric,
-            ],
-            irradiance_3d_template: Union[
-                sensor_pb2.SensorTemplate.Irradiance3D,
-                sensor_v2_pb2.SensorTemplate.Irradiance3D,
-            ],
-        ) -> None:
-            """Refresh protobuf bindings after a feature reset."""
-            self._sensor_type_radiometric = sensor_type_radiometric
-            self._irradiance_3d_template = irradiance_3d_template
-            if isinstance(self._integration_type, Sensor3DIrradiance.Measures):
-                self._integration_type._illuminance_type = self._planar_measures_target()
-
         def _fill_parameters(
             self,
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
@@ -4328,11 +4305,8 @@ class Sensor3DIrradiance(BaseSensor):
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
-                        self._integration_type = Sensor3DIrradiance.Measures(
-                            illuminance_type=self._planar_measures_target(),
-                            default_parameters=default_parameters.measures,
-                            stable_ctr=stable_ctr,
-                        )
+                        self._integration_type = self.set_integration_planar()
+                        self._integration_type._fill_parameters(default_parameters.measures)
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
                 return
@@ -4351,7 +4325,6 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
-            self._set_integration_type("planar")
             if self._integration_type is None and self._has_integration_type("planar"):
                 # Happens in case of project created via load of speos file, or after a reset.
                 self._integration_type = Sensor3DIrradiance.Measures(
@@ -4366,6 +4339,7 @@ class Sensor3DIrradiance(BaseSensor):
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
+            self._set_integration_type("planar")
             return self._integration_type
 
         def set_integration_radial(self) -> None:
@@ -4460,23 +4434,6 @@ class Sensor3DIrradiance(BaseSensor):
                 )
             return self._sensor_type_photometric.HasField("integration_type_" + integration_type)
 
-        def _refresh_binding(
-            self,
-            sensor_type_photometric: Union[
-                sensor_pb2.TypePhotometric,
-                sensor_v2_pb2.SensorTemplate.ModePhotometric,
-            ],
-            irradiance_3d_template: Union[
-                sensor_pb2.SensorTemplate.Irradiance3D,
-                sensor_v2_pb2.SensorTemplate.Irradiance3D,
-            ],
-        ) -> None:
-            """Refresh protobuf bindings after a feature reset."""
-            self._sensor_type_photometric = sensor_type_photometric
-            self._irradiance_3d_template = irradiance_3d_template
-            if isinstance(self._integration_type, Sensor3DIrradiance.Measures):
-                self._integration_type._illuminance_type = self._planar_measures_target()
-
         def _fill_parameters(
             self,
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
@@ -4511,7 +4468,6 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
-            self._set_integration_type("planar")
             if self._integration_type is None and self._has_integration_type("planar"):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._planar_measures_target(),
@@ -4525,6 +4481,7 @@ class Sensor3DIrradiance(BaseSensor):
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
+            self._set_integration_type("planar")
             return self._integration_type
 
         def set_integration_radial(self) -> None:
@@ -4651,13 +4608,9 @@ class Sensor3DIrradiance(BaseSensor):
         Parameters
         ----------
         sensor_type_colorimetric : Union[\
-        ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric,
-        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModePhotometric]
+        ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModeColorimetric]
             SensorTypeColorimetric protobuf object to modify.
-        irradiance_3d_template: Union[\
-        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
-        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
-            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.ColorimetricParameters] = None
             Uses default values when True.
@@ -4699,17 +4652,6 @@ class Sensor3DIrradiance(BaseSensor):
             if "wavelengths_range" in self._sensor_type_colorimetric.DESCRIPTOR.fields_by_name:
                 return self._sensor_type_colorimetric.wavelengths_range
             return self._sensor_type_colorimetric
-
-        def _refresh_binding(
-            self,
-            sensor_type_colorimetric: Union[
-                sensor_pb2.TypeColorimetric,
-                sensor_v2_pb2.SensorTemplate.ModeColorimetric,
-            ],
-        ) -> None:
-            """Refresh protobuf bindings after a feature reset."""
-            self._sensor_type_colorimetric = sensor_type_colorimetric
-            self._wavelengths_range._wavelengths_range = self._wavelengths_range_target()
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -4865,7 +4807,7 @@ class Sensor3DIrradiance(BaseSensor):
         if not had_type_photometric:
             self._get_sensor_mode("photometric").SetInParent()
         if self._type is None and had_type_photometric:
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = Sensor3DIrradiance.Photometric(
                 sensor_type_photometric=self._get_sensor_mode("photometric"),
                 irradiance_3d_template=self._sensor_mode_template,
@@ -4897,7 +4839,7 @@ class Sensor3DIrradiance(BaseSensor):
         if not had_type_radiometric:
             self._get_sensor_mode("radiometric").SetInParent()
         if self._type is None and had_type_radiometric:
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._get_sensor_mode("radiometric"),
                 irradiance_3d_template=self._sensor_mode_template,
@@ -4934,7 +4876,7 @@ class Sensor3DIrradiance(BaseSensor):
         if not had_type_colorimetric:
             self._get_sensor_mode("colorimetric").SetInParent()
         if self._type is None and had_type_colorimetric:
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
@@ -5912,7 +5854,7 @@ class SensorXMPIntensity(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 stable_ctr=True,
@@ -5953,7 +5895,7 @@ class SensorXMPIntensity(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 stable_ctr=True,
