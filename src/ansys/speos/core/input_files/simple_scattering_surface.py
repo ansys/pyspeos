@@ -24,18 +24,20 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import ClassVar, List, Optional
 
 from ansys.speos.core.input_files._base import (
     LineReader,
     SpeosTextFileFormat,
+    _finite_number,
+    _percentage,
+    _property_name,
+    _single_line,
     check_percentage,
     format_number,
 )
 
 
-@dataclass
 class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
 
@@ -76,6 +78,12 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         Free text written on the second line of the file. By default,
         ``"Scattering surface"``.
 
+    Notes
+    -----
+    Setters reject invalid values before changing the model. Lower an outgoing contribution
+    before increasing another in a fully allocated side budget. Transmission-side values
+    remain stored outside Both mode; enabling Both validates their combined budget.
+
     Examples
     --------
     >>> from ansys.speos.core.input_files.simple_scattering_surface import (
@@ -85,16 +93,224 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     >>> diffuser.save("white_diffuser.simplescattering")
     """
 
-    mode: str = "Reflection"
-    absorption: float = 0.0
-    lambertian: float = 0.0
-    gaussian: float = 0.0
-    gaussian_fwhm: float = 0.0
-    lambertian_transmission: float = 0.0
-    gaussian_transmission: float = 0.0
-    gaussian_fwhm_transmission: float = 0.0
-    reflection: Optional[float] = None
-    description: str = "Scattering surface"
+    def __init__(
+        self,
+        mode: str = "Reflection",
+        absorption: float = 0.0,
+        lambertian: float = 0.0,
+        gaussian: float = 0.0,
+        gaussian_fwhm: float = 0.0,
+        lambertian_transmission: float = 0.0,
+        gaussian_transmission: float = 0.0,
+        gaussian_fwhm_transmission: float = 0.0,
+        reflection: Optional[float] = None,
+        description: str = "Scattering surface",
+    ) -> None:
+        self._lambertian = self._gaussian = 0.0
+        self._lambertian_transmission = self._gaussian_transmission = 0.0
+        self.mode = mode
+        self.absorption = absorption
+        self.lambertian = lambertian
+        self.gaussian = gaussian
+        self.gaussian_fwhm = gaussian_fwhm
+        self.lambertian_transmission = lambertian_transmission
+        self.gaussian_transmission = gaussian_transmission
+        self.gaussian_fwhm_transmission = gaussian_fwhm_transmission
+        self.reflection = reflection
+        self.description = description
+
+    @property
+    def mode(self) -> str:
+        """Active sides of the surface.
+
+        Returns
+        -------
+        str
+            Reflection, Transmission, or Both.
+        """
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: str) -> None:
+        if value not in self.MODES:
+            raise ValueError(f"mode must be one of {self.MODES}, got {value!r}.")
+        if value == "Both":
+            self._check_side(
+                "_transmission", self._lambertian_transmission, self._gaussian_transmission
+            )
+        self._mode = value
+
+    @property
+    def absorption(self) -> float:
+        """Absorbed contribution, in percent.
+
+        Returns
+        -------
+        float
+            Percentage between 0 and 100.
+        """
+        return self._absorption
+
+    @absorption.setter
+    def absorption(self, value: float) -> None:
+        self._absorption = _percentage(
+            _property_name(SimpleScatteringSurfaceFile.absorption), value
+        )
+
+    @property
+    def lambertian(self) -> float:
+        """Lambertian contribution of the first side, in percent.
+
+        Returns
+        -------
+        float
+            Percentage within the side's light budget.
+        """
+        return self._lambertian
+
+    @lambertian.setter
+    def lambertian(self, value: float) -> None:
+        value = _percentage(_property_name(SimpleScatteringSurfaceFile.lambertian), value)
+        self._check_side("", value, self._gaussian)
+        self._lambertian = value
+
+    @property
+    def gaussian(self) -> float:
+        """Gaussian contribution of the first side, in percent.
+
+        Returns
+        -------
+        float
+            Percentage within the side's light budget.
+        """
+        return self._gaussian
+
+    @gaussian.setter
+    def gaussian(self, value: float) -> None:
+        value = _percentage(_property_name(SimpleScatteringSurfaceFile.gaussian), value)
+        self._check_side("", self._lambertian, value)
+        self._gaussian = value
+
+    @property
+    def gaussian_fwhm(self) -> float:
+        """Gaussian width of the first side, in degrees.
+
+        Returns
+        -------
+        float
+            Finite full width at half maximum.
+        """
+        return self._gaussian_fwhm
+
+    @gaussian_fwhm.setter
+    def gaussian_fwhm(self, value: float) -> None:
+        self._gaussian_fwhm = _finite_number(
+            _property_name(SimpleScatteringSurfaceFile.gaussian_fwhm), value
+        )
+
+    @property
+    def lambertian_transmission(self) -> float:
+        """Lambertian contribution of the second side, in percent.
+
+        Returns
+        -------
+        float
+            Percentage used in Both mode.
+        """
+        return self._lambertian_transmission
+
+    @lambertian_transmission.setter
+    def lambertian_transmission(self, value: float) -> None:
+        value = _percentage(
+            _property_name(SimpleScatteringSurfaceFile.lambertian_transmission), value
+        )
+        if self._mode == "Both":
+            self._check_side("_transmission", value, self._gaussian_transmission)
+        self._lambertian_transmission = value
+
+    @property
+    def gaussian_transmission(self) -> float:
+        """Gaussian contribution of the second side, in percent.
+
+        Returns
+        -------
+        float
+            Percentage used in Both mode.
+        """
+        return self._gaussian_transmission
+
+    @gaussian_transmission.setter
+    def gaussian_transmission(self, value: float) -> None:
+        value = _percentage(
+            _property_name(SimpleScatteringSurfaceFile.gaussian_transmission), value
+        )
+        if self._mode == "Both":
+            self._check_side("_transmission", self._lambertian_transmission, value)
+        self._gaussian_transmission = value
+
+    @property
+    def gaussian_fwhm_transmission(self) -> float:
+        """Gaussian width of the second side, in degrees.
+
+        Returns
+        -------
+        float
+            Finite full width at half maximum.
+        """
+        return self._gaussian_fwhm_transmission
+
+    @gaussian_fwhm_transmission.setter
+    def gaussian_fwhm_transmission(self, value: float) -> None:
+        self._gaussian_fwhm_transmission = _finite_number(
+            _property_name(SimpleScatteringSurfaceFile.gaussian_fwhm_transmission), value
+        )
+
+    @property
+    def reflection(self) -> Optional[float]:
+        """Explicit reflection share or Fresnel splitting.
+
+        Returns
+        -------
+        Optional[float]
+            Percentage, or None to use Fresnel laws.
+        """
+        return self._reflection
+
+    @reflection.setter
+    def reflection(self, value: Optional[float]) -> None:
+        self._reflection = (
+            None
+            if value is None
+            else _percentage(_property_name(SimpleScatteringSurfaceFile.reflection), value)
+        )
+
+    @property
+    def description(self) -> str:
+        """Single-line description.
+
+        Returns
+        -------
+        str
+            Free text written after the header.
+        """
+        return self._description
+
+    @description.setter
+    def description(self, value: str) -> None:
+        self._description = _single_line(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(mode),
+        _property_name(absorption),
+        _property_name(lambertian),
+        _property_name(gaussian),
+        _property_name(gaussian_fwhm),
+        _property_name(lambertian_transmission),
+        _property_name(gaussian_transmission),
+        _property_name(gaussian_fwhm_transmission),
+        _property_name(reflection),
+        _property_name(description),
+    )
 
     EXTENSION = ".simplescattering"
     HEADER = "OPTIS - Simple scattering surface file v2.0"

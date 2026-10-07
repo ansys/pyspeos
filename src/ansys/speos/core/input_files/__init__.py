@@ -25,6 +25,11 @@
 Every class in this package describes a file that Speos reads as an input, so they are
 parsed and written locally and never require a connection to a Speos gRPC server. Each
 module covers a single file extension.
+
+Models use explicit constructors and properties that validate assignments before storing
+data. List properties return copied containers; nested model objects remain shared and
+editable through their setters. Empty collections support staged construction, while
+``validate()`` and ``save()`` require complete data.
 """
 
 from ansys.speos.core.input_files._base import SpeosFileFormat, SpeosTextFileFormat

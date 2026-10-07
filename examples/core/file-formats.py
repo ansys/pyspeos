@@ -69,6 +69,15 @@ print(spectrum_path.read_text())
 reloaded = SpectrumFile.load(spectrum_path)
 print(reloaded.wavelengths, reloaded.values)
 
+# Property assignments validate immediately. List getters return copies, so assign an
+# edited list back to update the spectrum. Empty defaults support staged construction,
+# but `validate()` and `save()` require complete, matching data.
+
+values = reloaded.values
+values[0] = 10.0
+reloaded.values = values
+print(reloaded.values)
+
 # ## Create a volume optical property file
 
 # A `*.material` file describes how light travels inside a body. It always holds a
@@ -83,6 +92,15 @@ pmma = MaterialFile(
 )
 pmma_path = pmma.save(OUTPUT_DIR / "pmma.material")
 print(pmma_path.read_text())
+
+# Nested models stay editable through their validated properties. Switching between an
+# isotropic, metallic, or birefringent flavor requires constructing a new `MaterialFile`
+# with the corresponding dispersion model.
+
+dispersion = pmma.dispersion
+assert isinstance(dispersion, MaterialConstringence)
+dispersion.index = 1.5
+print(dispersion.index)
 
 # Adding a scattering phase function turns the same file into a diffusing material. The
 # diffusion coefficient is given in mm-1 for each wavelength, and the Henyey-Greenstein
@@ -168,7 +186,7 @@ print(coating_path.read_text())
 
 # A ray file holds the rays emitted by a measured or simulated source. Each ray carries a
 # start position in mm, a direction given as cosines, a wavelength in nm and a relative
-# energy. The direction must be a unit vector, which `validate()` enforces.
+# energy. The direction must already be a unit vector at construction or assignment.
 
 # +
 rays = RayFile(

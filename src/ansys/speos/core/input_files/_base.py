@@ -22,7 +22,7 @@
 
 """Common building blocks shared by the modules of :mod:`ansys.speos.core.input_files`.
 
-The classes and helpers here back every ``*File`` dataclass of the package (for example
+The classes and helpers here back every ``*File`` model of the package (for example
 :class:`ansys.speos.core.input_files.material.MaterialFile` or
 :class:`ansys.speos.core.input_files.spectrum_file.SpectrumFile`). They describe files
 that Speos reads as inputs, so they are parsed and written locally and never require a
@@ -38,10 +38,9 @@ Every format class exposes the same three entry points:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import fields
 import math
 from pathlib import Path
-from typing import ClassVar, List, Mapping, Optional, Sequence, Union
+from typing import ClassVar, List, Mapping, Optional, Sequence, TypeVar, Union, cast
 
 NEWLINE = "\r\n"
 """Line separator used by the Speos text input files."""
@@ -118,6 +117,79 @@ def check_percentage(name: str, value: float) -> None:
     """
     if not 0.0 <= value <= 100.0:
         raise ValueError(f"{name} must be between 0 and 100, got {value}.")
+
+
+def _finite_number(name: str, value: float) -> float:
+    """Convert a numeric value without accepting nonfinite data."""
+    value = float(value)
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite, got {value}.")
+    return value
+
+
+def _percentage(name: str, value: float) -> float:
+    """Convert and validate a finite percentage before storing it."""
+    value = _finite_number(name, value)
+    check_percentage(name, value)
+    return value
+
+
+def _finite_values(name: str, values: Sequence[float]) -> List[float]:
+    """Copy a numeric column while validating its entries."""
+    if isinstance(values, (str, bytes)):
+        raise TypeError(f"{name} must be a numeric sequence, not text.")
+    return [_finite_number(name, value) for value in values]
+
+
+def _numeric_tuple(name: str, values: Sequence[float], count: int = 3) -> tuple[float, ...]:
+    """Validate a fixed-size numeric vector and store it immutably."""
+    values = tuple(_finite_values(name, values))
+    if len(values) != count:
+        raise ValueError(f"{name} must hold {count} coordinates, got {len(values)}.")
+    return values
+
+
+def _single_line(value: str) -> str:
+    """Validate a file description without silently changing it."""
+    if not isinstance(value, str):
+        raise TypeError("description must be a string.")
+    if value and value.splitlines() != [value]:
+        raise ValueError("description must be a single line.")
+    return value
+
+
+def _matching_columns(columns: Mapping[str, Sequence[float]], complete: bool = False) -> None:
+    """Check populated columns, allowing empty columns only while building a draft."""
+    lengths = {name: len(values) for name, values in columns.items()}
+    populated = {length for length in lengths.values() if length}
+    if len(populated) > 1 or (complete and len(set(lengths.values())) > 1):
+        raise ValueError(f"All the columns must have the same length, got {lengths}.")
+    if complete and not populated:
+        raise ValueError(f"The columns {list(columns)} must not be empty.")
+
+
+def _matching_grid(
+    name: str,
+    rows: Sequence[Sequence[object]],
+    *,
+    row_count: int | None = None,
+    column_count: int | None = None,
+    row_axis: str = "angle",
+    incidences: Sequence[float] | None = None,
+) -> None:
+    """Check known grid dimensions without imposing a format's completeness policy."""
+    if row_count is not None and len(rows) != row_count:
+        raise ValueError(
+            f"{name} must hold one row per {row_axis}, expected {row_count} rows, got {len(rows)}."
+        )
+    if column_count is not None:
+        for index, row in enumerate(rows):
+            if len(row) != column_count:
+                location = f"At {incidences[index]} degrees, " if incidences is not None else ""
+                raise ValueError(
+                    f"{location}{name} must hold one entry per wavelength, "
+                    f"expected {column_count}, got {len(row)}."
+                )
 
 
 class LineReader:
@@ -246,7 +318,31 @@ class LineReader:
         return values
 
 
-class SpeosFileFormat(ABC):
+def _property_name(attribute: property) -> str:
+    """Retrieve the name of a property defined with a named getter."""
+    if not isinstance(attribute, property):
+        raise TypeError("Expected a property descriptor.")
+    if attribute.fget is None:
+        raise ValueError("The property must have a getter.")
+    return attribute.fget.__name__
+
+
+class _ValueComparable:
+    """Compare explicitly declared model fields without adding file I/O behavior."""
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]]
+
+    def __eq__(self, other: object) -> bool:
+        """Compare declared fields of models with exactly the same concrete type."""
+        if type(self) is not type(other):
+            return NotImplemented
+        return all(getattr(self, name) == getattr(other, name) for name in self._EQUALITY_FIELDS)
+
+
+_FileFormat = TypeVar("_FileFormat", bound="SpeosFileFormat")
+
+
+class SpeosFileFormat(_ValueComparable, ABC):
     """Base class for the Speos input files that PySpeos reads and writes locally.
 
     Notes
@@ -258,7 +354,7 @@ class SpeosFileFormat(ABC):
     """Usual file extension of the format."""
 
     @classmethod
-    def load(cls, file_path: Union[str, Path]) -> "SpeosFileFormat":
+    def load(cls: type[_FileFormat], file_path: Union[str, Path]) -> _FileFormat:
         """Read a file and return the corresponding model.
 
         Parameters
@@ -281,7 +377,7 @@ class SpeosFileFormat(ABC):
         path = Path(file_path)
         if not path.is_file():
             raise FileNotFoundError(f"No such file: {path}")
-        return cls._decode(path)
+        return cast(_FileFormat, cls._decode(path))
 
     def save(self, file_path: Union[str, Path]) -> Path:
         """Write the model to a file, creating the parent directories if needed.
@@ -368,27 +464,6 @@ class SpeosTextFileFormat(SpeosFileFormat, ABC):
     def _tabulated(values: Sequence[float]) -> str:
         """Join values with a tabulation, after a leading tabulation."""
         return "\t" + "\t".join(format_number(value) for value in values)
-
-
-_PERCENT = {"unit": "percent"}
-"""Field metadata of a value expressed as a percentage of the incident light."""
-
-_DEGREES = {"unit": "degrees"}
-"""Field metadata of a value expressed as an angle in degrees."""
-
-
-def _tagged_names(model, tag: Mapping[str, str]) -> List[str]:
-    """Return the names of the dataclass fields carrying exactly the given metadata.
-
-    ``model`` is either a dataclass or an instance of one, and the names come back in
-    declaration order, which every format here also uses as its file order.
-    """
-    return [entry.name for entry in fields(model) if entry.metadata == tag]
-
-
-def _tagged(model, tag: Mapping[str, str]) -> dict:
-    """Return the values of the dataclass fields carrying exactly the given metadata."""
-    return {name: getattr(model, name) for name in _tagged_names(model, tag)}
 
 
 def _wavelength_line(wavelengths: Sequence[float], values_per_wavelength: int) -> str:

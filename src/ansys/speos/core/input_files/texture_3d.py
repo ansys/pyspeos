@@ -31,14 +31,19 @@ needed.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import ClassVar, List, Tuple
 
-from ansys.speos.core.input_files._base import LineReader, SpeosTextFileFormat, format_number
+from ansys.speos.core.input_files._base import (
+    LineReader,
+    SpeosTextFileFormat,
+    _numeric_tuple,
+    _property_name,
+    _ValueComparable,
+    format_number,
+)
 
 
-@dataclass
-class TexturePattern:
+class TexturePattern(_ValueComparable):
     """Placement of one pattern of a Speos 3D Texture.
 
     Parameters
@@ -55,15 +60,108 @@ class TexturePattern:
     scale : Tuple[float, float, float], optional
         Scale factors along the X, Y and Z directions, ``1`` meaning 100 percent of the
         original pattern size. By default, ``(1.0, 1.0, 1.0)``.
+
+    Notes
+    -----
+    Construction and setters validate finite three-component vectors before storing them
+    as immutable tuples. Editing a pattern shared with a mapping does not notify the
+    mapping; its uniform-scale constraint is rechecked when validating or saving it.
     """
 
-    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)
-    x_direction: Tuple[float, float, float] = (1.0, 0.0, 0.0)
-    y_direction: Tuple[float, float, float] = (0.0, 1.0, 0.0)
-    scale: Tuple[float, float, float] = (1.0, 1.0, 1.0)
+    def __init__(
+        self,
+        position: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+        x_direction: Tuple[float, float, float] = (1.0, 0.0, 0.0),
+        y_direction: Tuple[float, float, float] = (0.0, 1.0, 0.0),
+        scale: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    ) -> None:
+        self.position = position
+        self.x_direction = x_direction
+        self.y_direction = y_direction
+        self.scale = scale
+
+    @property
+    def position(self) -> Tuple[float, ...]:
+        """Pattern origin.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite Cartesian coordinates.
+        """
+        return self._position
+
+    @position.setter
+    def position(self, values: Tuple[float, float, float]) -> None:
+        self._position = _numeric_tuple(_property_name(TexturePattern.position), values)
+
+    @property
+    def x_direction(self) -> Tuple[float, ...]:
+        """Pattern X direction.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite direction coordinates.
+        """
+        return self._x_direction
+
+    @x_direction.setter
+    def x_direction(self, values: Tuple[float, float, float]) -> None:
+        self._x_direction = _numeric_tuple(_property_name(TexturePattern.x_direction), values)
+
+    @property
+    def y_direction(self) -> Tuple[float, ...]:
+        """Pattern Y direction.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite direction coordinates.
+        """
+        return self._y_direction
+
+    @y_direction.setter
+    def y_direction(self, values: Tuple[float, float, float]) -> None:
+        self._y_direction = _numeric_tuple(_property_name(TexturePattern.y_direction), values)
+
+    @property
+    def scale(self) -> Tuple[float, ...]:
+        """Pattern scale factors.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite scale factors.
+        """
+        return self._scale
+
+    @scale.setter
+    def scale(self, values: Tuple[float, float, float]) -> None:
+        self._scale = _numeric_tuple(_property_name(TexturePattern.scale), values)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(position),
+        _property_name(x_direction),
+        _property_name(y_direction),
+        _property_name(scale),
+    )
+
+    def validate(self) -> None:
+        """Check vector dimensions and finite coordinates.
+
+        Raises
+        ------
+        ValueError
+            If a vector is not a finite three-component vector.
+        """
+        for name in self._EQUALITY_FIELDS:
+            _numeric_tuple(name, getattr(self, name))
 
 
-@dataclass
+_PATTERN_FIELDS = TexturePattern._EQUALITY_FIELDS
+
+
 class Texture3DMappingFile(SpeosTextFileFormat):
     """Speos ``*.OPT3DMapping`` file, laying out the patterns of a 3D Texture.
 
@@ -78,6 +176,12 @@ class Texture3DMappingFile(SpeosTextFileFormat):
         Whether to write a single scale factor per pattern instead of one per direction.
         By default, ``False``. Reading a file sets this from the number of columns found.
 
+    Notes
+    -----
+    The pattern list is copied on assignment and access, while pattern objects stay shared.
+    Setters check the current uniform-scale constraint before storing values, and
+    :meth:`validate` rechecks it after child edits. Empty lists permit drafts, not saved files.
+
     Examples
     --------
     >>> from ansys.speos.core.input_files.texture_3d import (
@@ -88,8 +192,67 @@ class Texture3DMappingFile(SpeosTextFileFormat):
     >>> Texture3DMappingFile(patterns=patterns).save("prisms.OPT3DMapping")
     """
 
-    patterns: List[TexturePattern] = field(default_factory=list)
-    uniform_scale: bool = False
+    def __init__(
+        self, patterns: List[TexturePattern] | None = None, uniform_scale: bool = False
+    ) -> None:
+        self._patterns: List[TexturePattern] = []
+        self._uniform_scale = False
+        self.patterns = patterns if patterns is not None else []
+        self.uniform_scale = uniform_scale
+
+    @property
+    def patterns(self) -> List[TexturePattern]:
+        """Pattern collection with a copied container and shared patterns.
+
+        Returns
+        -------
+        List[TexturePattern]
+            Validated pattern objects.
+        """
+        return self._patterns.copy()
+
+    @patterns.setter
+    def patterns(self, values: List[TexturePattern]) -> None:
+        values = list(values)
+        for pattern in values:
+            if not isinstance(pattern, TexturePattern):
+                raise TypeError("patterns must contain TexturePattern objects.")
+            pattern.validate()
+        self._check_uniform(values, self._uniform_scale)
+        self._patterns = values
+
+    @property
+    def uniform_scale(self) -> bool:
+        """Whether the mapping writes one scale factor per pattern.
+
+        Returns
+        -------
+        bool
+            True when each pattern must have equal scale factors.
+        """
+        return self._uniform_scale
+
+    @uniform_scale.setter
+    def uniform_scale(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("uniform_scale must be a bool.")
+        self._check_uniform(self._patterns, value)
+        self._uniform_scale = value
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(patterns),
+        _property_name(uniform_scale),
+    )
+
+    @staticmethod
+    def _check_uniform(patterns: List[TexturePattern], uniform: bool) -> None:
+        if uniform:
+            for index, pattern in enumerate(patterns):
+                if len(set(pattern.scale)) != 1:
+                    raise ValueError(
+                        f"Pattern {index + 1}: uniform_scale needs the same scale factor along "
+                        f"X, Y and Z, got {pattern.scale}."
+                    )
 
     EXTENSION = ".OPT3DMapping"
 
@@ -105,16 +268,11 @@ class Texture3DMappingFile(SpeosTextFileFormat):
             If the mapping holds no pattern, or if :attr:`uniform_scale` is set while a
             pattern scales differently along X, Y and Z.
         """
-        if not self.patterns:
+        if not self._patterns:
             raise ValueError("A 3D Texture mapping must hold at least one pattern.")
-        if not self.uniform_scale:
-            return
-        for index, pattern in enumerate(self.patterns):
-            if len(set(pattern.scale)) != 1:
-                raise ValueError(
-                    f"Pattern {index + 1}: uniform_scale needs the same scale factor along "
-                    f"X, Y and Z, got {pattern.scale}."
-                )
+        for pattern in self._patterns:
+            pattern.validate()
+        self._check_uniform(self._patterns, self._uniform_scale)
 
     def _to_lines(self) -> List[str]:
         lines = [str(len(self.patterns))]

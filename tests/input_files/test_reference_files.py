@@ -42,6 +42,8 @@ Each test states what the article says the file holds, then checks that reading 
 exactly that, and that writing the model back reproduces the original lines.
 """
 
+from inspect import signature
+
 import pytest
 
 from ansys.speos.core import (
@@ -52,6 +54,11 @@ from ansys.speos.core import (
     MaterialFile,
     MaterialMetallicCurve,
     MaterialSellmeier,
+    Ray,
+    RayFile,
+    ScatteringSurfaceFile,
+    ScatteringSurfaceSample,
+    SimpleScatteringSurfaceFile,
     SpectrumFile,
     Texture3DMappingFile,
     TexturePattern,
@@ -60,6 +67,7 @@ from ansys.speos.core import (
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
+from ansys.speos.core.input_files._base import SpeosFileFormat, _property_name, _ValueComparable
 from tests.input_files import ASSETS_DIR, read_lines
 
 REFERENCE_DIR = ASSETS_DIR / "input_files"
@@ -239,12 +247,8 @@ def test_birefringent_material():
 
 def test_a_single_wavelength_phase_function_must_not_carry_a_wavelength(tmp_path):
     """The reference files show that Speos drops the wavelength for a single factor."""
-    material = material_with(
-        VolumeScatteringHenyeyGreenstein(wavelengths=[550.0], anisotropies=[0.9])
-    )
-
     with pytest.raises(ValueError, match="leave wavelengths empty"):
-        material.save(tmp_path / "invalid.material")
+        VolumeScatteringHenyeyGreenstein(wavelengths=[550.0], anisotropies=[0.9])
 
 
 def test_coated_surface():
@@ -347,3 +351,124 @@ def test_the_texture_3d_mappings_are_written_back_byte_for_byte(file_name, tmp_p
     written = Texture3DMappingFile.load(reference).save(tmp_path / file_name)
 
     assert written.read_bytes() == reference.read_bytes()
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        CoatedSurfaceFile,
+        CoatedSurfaceSample,
+        Ray,
+        RayFile,
+        ScatteringSurfaceFile,
+        ScatteringSurfaceSample,
+        SimpleScatteringSurfaceFile,
+        SpectrumFile,
+        Texture3DMappingFile,
+        TexturePattern,
+        *MaterialFile.DISPERSIONS,
+        MaterialMetallicCurve,
+        *MaterialFile.BIREFRINGENT_DISPERSIONS,
+        *MaterialFile.SCATTERINGS,
+        MaterialFile,
+    ),
+)
+def test_models_share_the_explicit_equality_contract(model_class):
+    """Every model declares its fields and inherits strict, unhashable value equality."""
+    model, other = model_class(), model_class()
+    assert model._EQUALITY_FIELDS
+    assert set(model._EQUALITY_FIELDS) == set(signature(model_class).parameters)
+    for name in model._EQUALITY_FIELDS:
+        attribute = getattr(model_class, name)
+        assert isinstance(attribute, property)
+        assert _property_name(attribute) == name
+    assert model_class.__eq__ is _ValueComparable.__eq__
+    assert model == other
+    assert model.__eq__(object()) is NotImplemented
+    assert model != object()
+    with pytest.raises(TypeError):
+        hash(model)
+
+    derived_class = type(f"Derived{model_class.__name__}", (model_class,), {})
+    derived = derived_class()
+    assert model.__eq__(derived) is NotImplemented
+    assert derived.__eq__(model) is NotImplemented
+    assert model != derived
+    assert derived == derived_class()
+
+
+def test_property_names_follow_named_getter_symbols():
+    """A field inventory uses the actual getter symbol rather than a repeated name string."""
+
+    class RenamedModel(_ValueComparable):
+        """Model with a named property used directly in its field inventory."""
+
+        @property
+        def renamed_value(self) -> float:
+            """Return the sample value."""
+            return 1.0
+
+        _EQUALITY_FIELDS = (_property_name(renamed_value),)
+
+    assert RenamedModel._EQUALITY_FIELDS == ("renamed_value",)
+    assert RenamedModel() == RenamedModel()
+
+
+def test_property_names_require_a_getter():
+    """A write-only property cannot supply a getter name."""
+    attribute = property(fset=lambda instance, value: None)
+    with pytest.raises(ValueError, match="must have a getter"):
+        _property_name(attribute)
+
+
+@pytest.mark.parametrize("attribute", (object(), "reflection_p", 1.0))
+def test_property_names_reject_nonproperty_inputs(attribute):
+    """The property-name helper rejects values that are not property descriptors."""
+    with pytest.raises(TypeError, match="property descriptor"):
+        _property_name(attribute)
+
+
+def test_equality_mixin_requires_declared_fields():
+    """Missing field declarations fail rather than treating arbitrary models as equal."""
+
+    class UndeclaredModel(_ValueComparable):
+        """Model deliberately missing its equality field declaration."""
+
+    with pytest.raises(AttributeError, match="_EQUALITY_FIELDS"):
+        UndeclaredModel() == UndeclaredModel()
+
+
+def test_shared_equality_observes_nested_model_changes():
+    """Nested coefficient and ray edits remain visible through parent model equality."""
+    material, other_material = MaterialFile(), MaterialFile()
+    assert material == other_material
+    material.dispersion.index = 1.6
+    assert material != other_material
+
+    birefringent, other_birefringent = (
+        MaterialBirefringentSellmeier(),
+        MaterialBirefringentSellmeier(),
+    )
+    assert birefringent == other_birefringent
+    birefringent.b.b1 = 1.0
+    assert birefringent != other_birefringent
+
+    rays, other_rays = RayFile([Ray()]), RayFile([Ray()])
+    assert rays == other_rays
+    rays.rays[0].energy = 0.5
+    assert rays != other_rays
+
+
+def test_standalone_models_do_not_inherit_file_io():
+    """The equality mixin does not expose file I/O on standalone nested models."""
+    for model_class in (
+        Ray,
+        TexturePattern,
+        CoatedSurfaceSample,
+        ScatteringSurfaceSample,
+        *MaterialFile.DISPERSIONS,
+        *MaterialFile.SCATTERINGS,
+    ):
+        assert issubclass(model_class, _ValueComparable)
+        assert not issubclass(model_class, SpeosFileFormat)
+        assert not hasattr(model_class, "save")

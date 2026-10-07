@@ -24,18 +24,26 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import math
 from pathlib import Path
 import struct
 from typing import ClassVar, List, Optional, Tuple, Union
 
 import numpy as np
 
-from ansys.speos.core.input_files._base import ENCODING, NEWLINE, SpeosFileFormat, format_number
+from ansys.speos.core.input_files._base import (
+    ENCODING,
+    NEWLINE,
+    SpeosFileFormat,
+    _finite_number,
+    _numeric_tuple,
+    _property_name,
+    _ValueComparable,
+    format_number,
+)
 
 
-@dataclass
-class Ray:
+class Ray(_ValueComparable):
     """Single ray of a Speos ray file.
 
     Parameters
@@ -61,16 +69,131 @@ class Ray:
     The direction cosines relate to the zenith angle theta and the azimuth angle phi
     through ``l = sin(theta) * cos(phi)``, ``m = sin(theta) * sin(phi)`` and
     ``n = cos(theta)``.
+    Vector setters store finite immutable tuples. The direction must already be normalized
+    within a tolerance of 1e-3 when constructing or updating a ray; it is not normalized
+    automatically.
     """
 
-    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)
-    direction: Tuple[float, float, float] = (0.0, 0.0, 1.0)
-    wavelength: float = 555.0
-    energy: float = 1.0
-    polarization: Optional[Tuple[float, float, float, float, float]] = None
+    def __init__(
+        self,
+        position: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+        direction: Tuple[float, float, float] = (0.0, 0.0, 1.0),
+        wavelength: float = 555.0,
+        energy: float = 1.0,
+        polarization: Optional[Tuple[float, float, float, float, float]] = None,
+    ) -> None:
+        self.position = position
+        self.direction = direction
+        self.wavelength = wavelength
+        self.energy = energy
+        self.polarization = polarization
+
+    @property
+    def position(self) -> Tuple[float, ...]:
+        """Starting coordinates in mm.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite Cartesian coordinates.
+        """
+        return self._position
+
+    @position.setter
+    def position(self, values: Tuple[float, float, float]) -> None:
+        self._position = _numeric_tuple(_property_name(Ray.position), values)
+
+    @property
+    def direction(self) -> Tuple[float, ...]:
+        """Direction cosines of the ray.
+
+        Returns
+        -------
+        Tuple[float, ...]
+            Three finite coordinates with unit norm within 1e-3.
+        """
+        return self._direction
+
+    @direction.setter
+    def direction(self, values: Tuple[float, float, float]) -> None:
+        direction = _numeric_tuple(_property_name(Ray.direction), values)
+        self._check_direction(direction)
+        self._direction = direction
+
+    @staticmethod
+    def _check_direction(values: Tuple[float, ...]) -> None:
+        norm = math.hypot(*values)
+        if abs(norm - 1.0) > 1e-3:
+            raise ValueError(
+                f"direction must be a unit vector of direction cosines, got a norm of {norm}."
+            )
+
+    @property
+    def wavelength(self) -> float:
+        """Wavelength of the ray, in nm.
+
+        Returns
+        -------
+        float
+            Finite wavelength.
+        """
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        self._wavelength = _finite_number(_property_name(Ray.wavelength), value)
+
+    @property
+    def energy(self) -> float:
+        """Relative radiometric energy.
+
+        Returns
+        -------
+        float
+            Finite relative energy.
+        """
+        return self._energy
+
+    @energy.setter
+    def energy(self, value: float) -> None:
+        self._energy = _finite_number(_property_name(Ray.energy), value)
+
+    @property
+    def polarization(self) -> Optional[Tuple[float, ...]]:
+        """Polarization ellipse parameters.
+
+        Returns
+        -------
+        Optional[Tuple[float, ...]]
+            Five finite parameters, or None for an unpolarized ray.
+        """
+        return self._polarization
+
+    @polarization.setter
+    def polarization(self, values: Optional[Tuple[float, float, float, float, float]]) -> None:
+        self._polarization = (
+            None if values is None else _numeric_tuple(_property_name(Ray.polarization), values, 5)
+        )
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(position),
+        _property_name(direction),
+        _property_name(wavelength),
+        _property_name(energy),
+        _property_name(polarization),
+    )
+
+    def validate(self) -> None:
+        """Check that the ray direction retains its unit norm.
+
+        Raises
+        ------
+        ValueError
+            If the direction is not a unit vector.
+        """
+        self._check_direction(self._direction)
 
 
-@dataclass
 class RayFile(SpeosFileFormat):
     """Speos ray file, holding the rays emitted by a measured or simulated source.
 
@@ -94,6 +217,9 @@ class RayFile(SpeosFileFormat):
     direction cosines, the wavelength and the energy. The text flavor does not carry any
     flux, so :meth:`load_text` leaves :attr:`radiant_flux` and :attr:`luminous_flux` at
     their default.
+    The :attr:`rays` getter copies the container but keeps ray objects shared. Assign an
+    edited list back to replace rays. An empty list permits a draft but cannot be saved.
+    Polarization consistency across rays is required by :meth:`save_text` only.
 
     Examples
     --------
@@ -102,9 +228,68 @@ class RayFile(SpeosFileFormat):
     >>> RayFile(rays=rays, radiant_flux=1.0, luminous_flux=112.0).save("laser.ray")
     """
 
-    rays: List[Ray] = field(default_factory=list)
-    radiant_flux: float = 1.0
-    luminous_flux: float = 683.0
+    def __init__(
+        self, rays: List[Ray] | None = None, radiant_flux: float = 1.0, luminous_flux: float = 683.0
+    ) -> None:
+        self.rays = rays if rays is not None else []
+        self.radiant_flux = radiant_flux
+        self.luminous_flux = luminous_flux
+
+    @property
+    def rays(self) -> List[Ray]:
+        """Ray collection with a copied container and shared rays.
+
+        Returns
+        -------
+        List[Ray]
+            Editable validated ray objects.
+        """
+        return self._rays.copy()
+
+    @rays.setter
+    def rays(self, values: List[Ray]) -> None:
+        values = list(values)
+        for ray in values:
+            if not isinstance(ray, Ray):
+                raise TypeError("rays must contain Ray objects.")
+            ray.validate()
+        self._rays = values
+
+    @property
+    def radiant_flux(self) -> float:
+        """Total radiant flux, in W.
+
+        Returns
+        -------
+        float
+            Finite radiant flux.
+        """
+        return self._radiant_flux
+
+    @radiant_flux.setter
+    def radiant_flux(self, value: float) -> None:
+        self._radiant_flux = _finite_number(_property_name(RayFile.radiant_flux), value)
+
+    @property
+    def luminous_flux(self) -> float:
+        """Total luminous flux, in lm.
+
+        Returns
+        -------
+        float
+            Finite luminous flux.
+        """
+        return self._luminous_flux
+
+    @luminous_flux.setter
+    def luminous_flux(self, value: float) -> None:
+        self._luminous_flux = _finite_number(_property_name(RayFile.luminous_flux), value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(rays),
+        _property_name(radiant_flux),
+        _property_name(luminous_flux),
+    )
 
     EXTENSION = ".ray"
 
@@ -120,19 +305,14 @@ class RayFile(SpeosFileFormat):
         ValueError
             If the file holds no ray, or if a ray direction is not a unit vector.
         """
-        if not self.rays:
+        if not self._rays:
             raise ValueError("A ray file must hold at least one ray.")
-        for index, ray in enumerate(self.rays):
-            norm = float(np.linalg.norm(ray.direction))
-            if abs(norm - 1.0) > 1e-3:
-                raise ValueError(
-                    f"Ray {index + 1}: direction must be a unit vector of direction cosines, "
-                    f"got a norm of {norm}."
-                )
+        for ray in self._rays:
+            ray.validate()
 
     def _encode(self, path: Path) -> None:
-        values = np.empty((len(self.rays), self._RAY_VALUE_COUNT), dtype="<f4")
-        for index, ray in enumerate(self.rays):
+        values = np.empty((len(self._rays), self._RAY_VALUE_COUNT), dtype="<f4")
+        for index, ray in enumerate(self._rays):
             values[index] = (*ray.position, *ray.direction, ray.wavelength, ray.energy)
         header = struct.pack(
             self._HEADER_FORMAT, self.radiant_flux, *self._HEADER_MARKERS, self.luminous_flux
@@ -185,12 +365,12 @@ class RayFile(SpeosFileFormat):
             If the rays are invalid, or if only some of them carry a polarization.
         """
         self.validate()
-        polarized = [ray.polarization is not None for ray in self.rays]
+        polarized = [ray.polarization is not None for ray in self._rays]
         if any(polarized) and not all(polarized):
             raise ValueError("Either every ray or no ray at all must carry a polarization.")
 
-        lines = [str(len(self.rays))]
-        for index, ray in enumerate(self.rays):
+        lines = [str(len(self._rays))]
+        for index, ray in enumerate(self._rays):
             values = [*ray.position, *ray.direction, ray.wavelength, ray.energy]
             if ray.polarization is not None:
                 values.extend(ray.polarization)

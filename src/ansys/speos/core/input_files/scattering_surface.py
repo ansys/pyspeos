@@ -25,35 +25,21 @@
 from __future__ import annotations
 
 import math
-from typing import List
+from typing import ClassVar, List
 
 from ansys.speos.core.input_files._base import (
     LineReader,
     SpeosTextFileFormat,
     _data_line,
+    _property_name,
     _read_grid,
+    _ValueComparable,
     _wavelength_line,
     check_percentage,
 )
 
-_CONTRIBUTIONS = (
-    "specular_reflection",
-    "specular_transmission",
-    "lambertian_reflection",
-    "lambertian_transmission",
-    "gaussian_reflection",
-    "gaussian_transmission",
-)
-_WIDTHS = (
-    "gaussian_fwhm_incidence_reflection",
-    "gaussian_fwhm_incidence_transmission",
-    "gaussian_fwhm_perpendicular_reflection",
-    "gaussian_fwhm_perpendicular_transmission",
-)
-_SAMPLE_FIELDS = _CONTRIBUTIONS + _WIDTHS
 
-
-class ScatteringSurfaceSample:
+class ScatteringSurfaceSample(_ValueComparable):
     """Scattering contributions of a surface at one angle of incidence and one wavelength.
 
     Every contribution is a percentage of the incident light. What is left once the six
@@ -132,12 +118,6 @@ class ScatteringSurfaceSample:
         self.gaussian_fwhm_perpendicular_reflection = gaussian_fwhm_perpendicular_reflection
         self.gaussian_fwhm_perpendicular_transmission = gaussian_fwhm_perpendicular_transmission
 
-    def __eq__(self, other: object) -> bool:
-        """Compare the contributions and Gaussian widths of two samples."""
-        if type(self) is not type(other):
-            return NotImplemented
-        return all(getattr(self, name) == getattr(other, name) for name in _SAMPLE_FIELDS)
-
     def _set_contribution(self, name: str, value: float) -> None:
         value = float(value)
         check_percentage(name, value)
@@ -170,7 +150,7 @@ class ScatteringSurfaceSample:
 
     @specular_reflection.setter
     def specular_reflection(self, value: float) -> None:
-        self._set_contribution("specular_reflection", value)
+        self._set_contribution(_property_name(ScatteringSurfaceSample.specular_reflection), value)
 
     @property
     def specular_transmission(self) -> float:
@@ -185,7 +165,7 @@ class ScatteringSurfaceSample:
 
     @specular_transmission.setter
     def specular_transmission(self, value: float) -> None:
-        self._set_contribution("specular_transmission", value)
+        self._set_contribution(_property_name(ScatteringSurfaceSample.specular_transmission), value)
 
     @property
     def lambertian_reflection(self) -> float:
@@ -200,7 +180,7 @@ class ScatteringSurfaceSample:
 
     @lambertian_reflection.setter
     def lambertian_reflection(self, value: float) -> None:
-        self._set_contribution("lambertian_reflection", value)
+        self._set_contribution(_property_name(ScatteringSurfaceSample.lambertian_reflection), value)
 
     @property
     def lambertian_transmission(self) -> float:
@@ -215,7 +195,9 @@ class ScatteringSurfaceSample:
 
     @lambertian_transmission.setter
     def lambertian_transmission(self, value: float) -> None:
-        self._set_contribution("lambertian_transmission", value)
+        self._set_contribution(
+            _property_name(ScatteringSurfaceSample.lambertian_transmission), value
+        )
 
     @property
     def gaussian_reflection(self) -> float:
@@ -230,7 +212,7 @@ class ScatteringSurfaceSample:
 
     @gaussian_reflection.setter
     def gaussian_reflection(self, value: float) -> None:
-        self._set_contribution("gaussian_reflection", value)
+        self._set_contribution(_property_name(ScatteringSurfaceSample.gaussian_reflection), value)
 
     @property
     def gaussian_transmission(self) -> float:
@@ -245,7 +227,7 @@ class ScatteringSurfaceSample:
 
     @gaussian_transmission.setter
     def gaussian_transmission(self, value: float) -> None:
-        self._set_contribution("gaussian_transmission", value)
+        self._set_contribution(_property_name(ScatteringSurfaceSample.gaussian_transmission), value)
 
     @property
     def gaussian_fwhm_incidence_reflection(self) -> float:
@@ -260,7 +242,9 @@ class ScatteringSurfaceSample:
 
     @gaussian_fwhm_incidence_reflection.setter
     def gaussian_fwhm_incidence_reflection(self, value: float) -> None:
-        self._set_width("gaussian_fwhm_incidence_reflection", value)
+        self._set_width(
+            _property_name(ScatteringSurfaceSample.gaussian_fwhm_incidence_reflection), value
+        )
 
     @property
     def gaussian_fwhm_incidence_transmission(self) -> float:
@@ -275,7 +259,9 @@ class ScatteringSurfaceSample:
 
     @gaussian_fwhm_incidence_transmission.setter
     def gaussian_fwhm_incidence_transmission(self, value: float) -> None:
-        self._set_width("gaussian_fwhm_incidence_transmission", value)
+        self._set_width(
+            _property_name(ScatteringSurfaceSample.gaussian_fwhm_incidence_transmission), value
+        )
 
     @property
     def gaussian_fwhm_perpendicular_reflection(self) -> float:
@@ -290,7 +276,9 @@ class ScatteringSurfaceSample:
 
     @gaussian_fwhm_perpendicular_reflection.setter
     def gaussian_fwhm_perpendicular_reflection(self, value: float) -> None:
-        self._set_width("gaussian_fwhm_perpendicular_reflection", value)
+        self._set_width(
+            _property_name(ScatteringSurfaceSample.gaussian_fwhm_perpendicular_reflection), value
+        )
 
     @property
     def gaussian_fwhm_perpendicular_transmission(self) -> float:
@@ -305,7 +293,25 @@ class ScatteringSurfaceSample:
 
     @gaussian_fwhm_perpendicular_transmission.setter
     def gaussian_fwhm_perpendicular_transmission(self, value: float) -> None:
-        self._set_width("gaussian_fwhm_perpendicular_transmission", value)
+        self._set_width(
+            _property_name(ScatteringSurfaceSample.gaussian_fwhm_perpendicular_transmission), value
+        )
+
+    _CONTRIBUTIONS: ClassVar[tuple[str, ...]] = (
+        _property_name(specular_reflection),
+        _property_name(specular_transmission),
+        _property_name(lambertian_reflection),
+        _property_name(lambertian_transmission),
+        _property_name(gaussian_reflection),
+        _property_name(gaussian_transmission),
+    )
+    _WIDTHS: ClassVar[tuple[str, ...]] = (
+        _property_name(gaussian_fwhm_incidence_reflection),
+        _property_name(gaussian_fwhm_incidence_transmission),
+        _property_name(gaussian_fwhm_perpendicular_reflection),
+        _property_name(gaussian_fwhm_perpendicular_transmission),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = _CONTRIBUTIONS + _WIDTHS
 
     @property
     def absorption(self) -> float:
@@ -338,6 +344,11 @@ class ScatteringSurfaceSample:
                 "The reflection and transmission contributions must not sum to more than "
                 f"100, got an absorption of {self.absorption}."
             )
+
+
+_CONTRIBUTIONS = ScatteringSurfaceSample._CONTRIBUTIONS
+_WIDTHS = ScatteringSurfaceSample._WIDTHS
+_SAMPLE_FIELDS = ScatteringSurfaceSample._EQUALITY_FIELDS
 
 
 class ScatteringSurfaceFile(SpeosTextFileFormat):
@@ -398,15 +409,6 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
         self.incident_angles = incident_angles if incident_angles is not None else []
         self.samples = samples if samples is not None else []
         self.description = description
-
-    def __eq__(self, other: object) -> bool:
-        """Compare the axes, samples, and description of two surfaces."""
-        if type(self) is not type(other):
-            return NotImplemented
-        return all(
-            getattr(self, name) == getattr(other, name)
-            for name in ("wavelengths", "incident_angles", "samples", "description")
-        )
 
     @property
     def wavelengths(self) -> List[float]:
@@ -491,6 +493,13 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
         if len((value + "\n").splitlines()) != 1:
             raise ValueError("description must be a single line.")
         self._description = value
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(incident_angles),
+        _property_name(samples),
+        _property_name(description),
+    )
 
     @staticmethod
     def _check_wavelengths(values: List[float]) -> None:

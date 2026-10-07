@@ -39,6 +39,15 @@ from ansys.speos.core import (
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
+from ansys.speos.core.input_files.material import (
+    _ABSORPTION_NAMES,
+    _BIREFRINGENT_FIELDS,
+    _CURVE_FIELDS,
+    _DIFFUSION_NAMES,
+    _KETTLER_FIELDS,
+    _METALLIC_FIELDS,
+    _SELLMEIER_FIELDS,
+)
 from tests.input_files import read_lines
 
 
@@ -251,10 +260,15 @@ def test_user_defined_phase_function_round_trips(tmp_path):
     assert MaterialFile.load(path) == material
 
 
-def test_a_material_needs_an_absorption_curve(tmp_path):
-    """Speos always needs the absorption variation of the material."""
+def test_material_without_absorption_cannot_be_saved(tmp_path):
+    """An absorption-free material draft can be constructed but cannot be saved."""
+    material = MaterialFile()
+    path = tmp_path / "empty.material"
+
     with pytest.raises(ValueError, match="must not be empty"):
-        MaterialFile().save(tmp_path / "empty.material")
+        material.save(path)
+
+    assert not path.exists()
 
 
 def test_a_scattering_material_needs_a_diffusion_curve(tmp_path):
@@ -271,16 +285,8 @@ def test_a_scattering_material_needs_a_diffusion_curve(tmp_path):
 
 def test_an_out_of_range_anisotropy_is_rejected(tmp_path):
     """The Henyey-Greenstein anisotropy factor lives between -1 and 1."""
-    material = MaterialFile(
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-        scattering_wavelengths=[550.0],
-        scattering_values=[0.1],
-        scattering=VolumeScatteringHenyeyGreenstein(anisotropies=[1.5]),
-    )
-
     with pytest.raises(ValueError, match="between -1 and 1"):
-        material.save(tmp_path / "invalid.material")
+        VolumeScatteringHenyeyGreenstein(anisotropies=[1.5])
 
 
 def test_an_unknown_dispersion_keyword_is_reported(tmp_path):
@@ -319,27 +325,22 @@ def test_a_metallic_material_needs_an_index_curve(tmp_path):
 
 def test_a_metallic_material_rejects_another_dispersion_model(tmp_path):
     """Speos only describes a metal by its complex refractive index."""
-    material = MaterialFile(material_type="Metallic", dispersion=MaterialConstringence())
-
     with pytest.raises(ValueError, match="needs a MaterialMetallicCurve"):
-        material.save(tmp_path / "invalid.material")
+        MaterialFile(material_type="Metallic", dispersion=MaterialConstringence())
 
 
 def test_a_metallic_material_rejects_an_absorption_curve(tmp_path, metallic_material):
     """The metallic flavor of the format has nowhere to store an absorption curve."""
-    metallic_material.absorption_wavelengths = [550.0]
-    metallic_material.absorption_values = [0.1]
-
     with pytest.raises(ValueError, match="no absorption curve"):
-        metallic_material.save(tmp_path / "invalid.material")
+        metallic_material.absorption_wavelengths = [550.0]
+    assert metallic_material.absorption_wavelengths == []
 
 
 def test_a_metallic_material_rejects_a_scattering(tmp_path, metallic_material):
     """The metallic flavor of the format has nowhere to store a volume scattering."""
-    metallic_material.scattering = VolumeScatteringHenyeyGreenstein(anisotropies=[0.5])
-
     with pytest.raises(ValueError, match="cannot scatter light"):
-        metallic_material.save(tmp_path / "invalid.material")
+        metallic_material.scattering = VolumeScatteringHenyeyGreenstein(anisotropies=[0.5])
+    assert metallic_material.scattering is None
 
 
 def test_a_metallic_file_rejects_another_dispersion_keyword(tmp_path):
@@ -448,51 +449,35 @@ def test_a_birefringent_material_can_scatter(birefringent_material, tmp_path):
 
 def test_a_birefringent_material_rejects_an_isotropic_dispersion(tmp_path):
     """An isotropic model cannot describe the three axes of a birefringent material."""
-    material = MaterialFile(
-        material_type="Birefringent",
-        dispersion=MaterialConstringence(),
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-    )
-
     with pytest.raises(ValueError, match="MaterialBirefringentCurve"):
-        material.save(tmp_path / "invalid.material")
+        MaterialFile(material_type="Birefringent", dispersion=MaterialConstringence())
 
 
 def test_an_isotropic_material_rejects_a_birefringent_dispersion(tmp_path):
     """A birefringent model needs the birefringent flavor of the format."""
-    material = MaterialFile(
-        dispersion=MaterialBirefringentCurve(),
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-    )
-
     with pytest.raises(ValueError, match="MaterialConstringence"):
-        material.save(tmp_path / "invalid.material")
+        MaterialFile(dispersion=MaterialBirefringentCurve())
 
 
 def test_an_unknown_optical_class_is_rejected(birefringent_material, tmp_path):
     """Speos only knows the negative uniaxial, positive uniaxial and biaxial classes."""
-    birefringent_material.dispersion.optical_class = 3
-
     with pytest.raises(ValueError, match="optical_class must be 0"):
-        birefringent_material.save(tmp_path / "invalid.material")
+        birefringent_material.dispersion.optical_class = 3
+    assert birefringent_material.dispersion.optical_class == 2
 
 
 def test_an_axis_needs_three_coordinates(birefringent_material, tmp_path):
     """The b and c axes are written as 3D directions."""
-    birefringent_material.axis_k = [0.0, 1.0]
-
     with pytest.raises(ValueError, match="axis_k must hold 3 coordinates"):
-        birefringent_material.save(tmp_path / "invalid.material")
+        birefringent_material.axis_k = [0.0, 1.0]
+    assert birefringent_material.axis_k == [0.0, 1.0, 0.0]
 
 
 def test_each_axis_absorbs_at_every_wavelength(birefringent_material, tmp_path):
     """The absorption along b and c share the wavelengths of the absorption along a."""
-    birefringent_material.absorption_values_c = [0.7]
-
     with pytest.raises(ValueError, match="absorption_values_c must hold one value"):
-        birefringent_material.save(tmp_path / "invalid.material")
+        birefringent_material.absorption_values_c = [0.7]
+    assert birefringent_material.absorption_values_c == [0.7, 0.8, 0.9]
 
 
 def test_a_birefringent_index_curve_holds_a_single_wavelength(tmp_path):
@@ -505,3 +490,181 @@ def test_a_birefringent_index_curve_holds_a_single_wavelength(tmp_path):
 
     with pytest.raises(ValueError, match="expected a single wavelength, got 2"):
         MaterialFile.load(path)
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        *MaterialFile.DISPERSIONS,
+        MaterialMetallicCurve,
+        *MaterialFile.BIREFRINGENT_DISPERSIONS,
+        *MaterialFile.SCATTERINGS,
+        MaterialFile,
+    ),
+)
+def test_material_models_have_explicit_value_equality(model_class):
+    """All material classes are ordinary classes with retained value equality."""
+    model = model_class()
+    assert model == model_class()
+    assert model != object()
+
+
+@pytest.mark.parametrize(
+    ("model_class", "name"),
+    [(MaterialConstringence, name) for name in ("constringence", "index")]
+    + [(MaterialSellmeier, name) for name in _SELLMEIER_FIELDS]
+    + [(MaterialKettlerHelmholtz, name) for name in _KETTLER_FIELDS]
+    + [(MaterialBirefringentCurve, name) for name in _BIREFRINGENT_FIELDS[:-1]]
+    + [(MaterialFile, name) for name in ("measured_concentration", "user_concentration")],
+)
+def test_material_scalar_setters_are_atomic(model_class, name):
+    """Every scalar parameter rejects nonfinite values before changing state."""
+    model = model_class()
+    setattr(model, name, -0.5)
+    assert getattr(model, name) == -0.5
+    for value in (float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError, match="finite"):
+            setattr(model, name, value)
+        assert getattr(model, name) == -0.5
+        with pytest.raises(ValueError, match="finite"):
+            model_class(**{name: value})
+
+
+@pytest.mark.parametrize(
+    "model_class", (MaterialBirefringentSellmeier, MaterialBirefringentKettlerHelmholtz)
+)
+def test_birefringent_defaults_are_independent_and_typed(model_class):
+    """Each birefringent axis and instance owns an independent default coefficient model."""
+    model = model_class()
+    assert model.a is not model.b and model.b is not model.c
+    assert model.a is not model_class().a
+    previous = model.a
+    with pytest.raises(TypeError):
+        model.a = MaterialConstringence()
+    assert model.a is previous
+    for value in (3, 1.5, True):
+        with pytest.raises(ValueError):
+            model.optical_class = value
+        assert model.optical_class == 0
+
+
+@pytest.mark.parametrize(
+    ("model_class", "names"),
+    [(MaterialDispersionCurve, _CURVE_FIELDS), (MaterialMetallicCurve, _METALLIC_FIELDS)],
+)
+def test_material_curves_copy_columns_and_validate_lengths(model_class, names):
+    """Curve columns validate atomically and support clear-then-repopulate resizing."""
+    values = [400.0, 700.0]
+    model = model_class(**{name: values for name in names})
+    values.clear()
+    for name in names:
+        getattr(model, name).clear()
+        with pytest.raises(ValueError):
+            setattr(model, name, [1.0])
+        assert getattr(model, name) == [400.0, 700.0]
+        with pytest.raises(ValueError):
+            setattr(model, name, [float("inf"), 0.0])
+    for name in names:
+        setattr(model, name, [])
+    with pytest.raises(ValueError):
+        model.validate()
+    for name in names:
+        setattr(model, name, [550.0])
+    model.validate()
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        VolumeScatteringHenyeyGreenstein,
+        VolumeScatteringDoubleHenyeyGreenstein,
+        VolumeScatteringGegenbauer,
+    ),
+)
+def test_phase_columns_copy_validate_and_resize(model_class):
+    """Phase models retain spectral and nonspectral semantics with validated copied columns."""
+    model = model_class(
+        wavelengths=[400.0, 700.0], **{name: [0.5, 0.6] for name in model_class._COLUMN_NAMES}
+    )
+    for name in model_class._COLUMN_NAMES:
+        getattr(model, name).clear()
+        with pytest.raises(ValueError):
+            setattr(model, name, [0.5])
+        assert getattr(model, name) == [0.5, 0.6]
+        with pytest.raises(ValueError):
+            setattr(model, name, [float("nan"), 0.5])
+    for name in model_class._COLUMN_NAMES:
+        setattr(model, name, [])
+    model.wavelengths = []
+    for name in model_class._COLUMN_NAMES:
+        setattr(model, name, [0.5])
+    model.validate()
+    with pytest.raises(ValueError, match="leave wavelengths empty"):
+        model.wavelengths = [550.0]
+    assert model.wavelengths == []
+
+
+def test_user_defined_grid_copies_and_validates():
+    """User-defined phase grids copy both row containers and validate candidate axes."""
+    values = [[1.0], [0.0]]
+    model = VolumeScatteringUserDefined(angles=[0.0, 180.0], values=values)
+    values[0].clear()
+    model.values[1].clear()
+    model.validate()
+    for name, invalid in (
+        ("values", [[1.0, 2.0], [0.0]]),
+        ("angles", [0.0]),
+        ("wavelengths", [550.0]),
+        ("values", [[float("inf")], [0.0]]),
+    ):
+        previous = getattr(model, name)
+        with pytest.raises(ValueError):
+            setattr(model, name, invalid)
+        assert getattr(model, name) == previous
+
+
+def test_material_flavor_changes_require_a_new_material(documented_material):
+    """Flavor and dispersion setters reject incompatible changes without partial updates."""
+    previous = documented_material.dispersion
+    for material_type in ("Metallic", "Birefringent", "Unknown"):
+        with pytest.raises(ValueError):
+            documented_material.material_type = material_type
+        assert documented_material.material_type == "Isotropic"
+    with pytest.raises(ValueError):
+        documented_material.dispersion = MaterialMetallicCurve()
+    assert documented_material.dispersion is previous
+    documented_material.material_type = " isotropic "
+    assert documented_material.material_type == " isotropic "
+
+
+@pytest.mark.parametrize(
+    "name", (*_ABSORPTION_NAMES, *_DIFFUSION_NAMES, "absorption_values_b", "absorption_values_c")
+)
+def test_material_columns_validate_atomically(birefringent_material, name):
+    """Material curve setters reject nonfinite entries and copy containers."""
+    previous = getattr(birefringent_material, name)
+    with pytest.raises(ValueError):
+        setattr(birefringent_material, name, [float("nan")])
+    assert getattr(birefringent_material, name) == previous
+    getattr(birefringent_material, name).clear()
+    assert getattr(birefringent_material, name) == previous
+
+
+def test_material_defaults_and_shared_child_completeness(tmp_path):
+    """Defaults are independent and incomplete shared phase models are caught before saving."""
+    first, second = MaterialFile(), MaterialFile()
+    assert first.dispersion is not second.dispersion
+    first.axis_j[0] = 10.0
+    assert first.axis_j == [1.0, 0.0, 0.0]
+    phase = VolumeScatteringHenyeyGreenstein(anisotropies=[0.5])
+    material = MaterialFile(
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+        scattering_wavelengths=[550.0],
+        scattering_values=[0.1],
+        scattering=phase,
+    )
+    phase.anisotropies = []
+    with pytest.raises(ValueError):
+        material.save(tmp_path / "incomplete.material")
+    assert not (tmp_path / "incomplete.material").exists()

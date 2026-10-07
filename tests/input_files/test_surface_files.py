@@ -33,6 +33,7 @@ from ansys.speos.core import (
     ScatteringSurfaceSample,
     SimpleScatteringSurfaceFile,
 )
+from ansys.speos.core.input_files.coated_surface import _COATING_FIELDS
 from ansys.speos.core.input_files.scattering_surface import (
     _CONTRIBUTIONS as CONTRIBUTIONS,
     _WIDTHS as WIDTHS,
@@ -322,10 +323,9 @@ def test_coated_surface_rejects_an_out_of_range_value(documented_coated_surface,
     A polarization summing to more than 100 percent is not rejected though: the coating
     sample published by Ansys does overrun it, see ``test_reference_files``.
     """
-    documented_coated_surface.samples[0][0].reflection_s = 120.0
-
     with pytest.raises(ValueError, match="reflection_s must be between 0 and 100"):
-        documented_coated_surface.save(tmp_path / "coating.coated")
+        documented_coated_surface.samples[0][0].reflection_s = 120.0
+    assert documented_coated_surface.samples[0][0].reflection_s == 31.9
 
 
 @pytest.mark.parametrize(
@@ -395,15 +395,134 @@ def test_simple_scattering_both_sides_with_an_explicit_split(tmp_path):
     assert SimpleScatteringSurfaceFile.load(path) == surface
 
 
-def test_simple_scattering_rejects_an_unknown_mode(tmp_path):
-    """Only the three modes known by Speos are accepted."""
+def test_simple_scattering_shared_equality_contract():
+    """Shared equality retains value comparison, strict types, and unhashable models."""
+    surface = SimpleScatteringSurfaceFile(lambertian=50.0)
+    other = SimpleScatteringSurfaceFile(lambertian=50.0)
+    assert surface is not other
+    assert surface == other
+    other.lambertian = 40.0
+    assert surface != other
+    assert surface.__eq__(object()) is NotImplemented
+    assert surface.__hash__ is None
+    with pytest.raises(TypeError):
+        hash(surface)
+
+    class DerivedSurface(SimpleScatteringSurfaceFile):
+        """A derived surface used to verify exact-type comparison."""
+
+    derived = DerivedSurface(lambertian=50.0)
+    assert surface.__eq__(derived) is NotImplemented
+    assert derived.__eq__(surface) is NotImplemented
+    assert surface != derived
+    assert derived == DerivedSurface(lambertian=50.0)
+
+
+def test_simple_scattering_rejects_an_unknown_mode_at_construction():
+    """An unknown simple-scattering mode must be rejected during construction."""
     with pytest.raises(ValueError, match="mode must be one of"):
-        SimpleScatteringSurfaceFile(mode="Diffuse").save(tmp_path / "invalid.simplescattering")
+        SimpleScatteringSurfaceFile(mode="Diffuse")
 
 
 def test_simple_scattering_rejects_an_over_unity_budget(tmp_path):
     """The Lambertian and Gaussian shares of a side must not exceed 100%."""
-    surface = SimpleScatteringSurfaceFile(lambertian=60.0, gaussian=60.0)
-
     with pytest.raises(ValueError, match="must not sum to more than 100"):
-        surface.save(tmp_path / "invalid.simplescattering")
+        SimpleScatteringSurfaceFile(lambertian=60.0, gaussian=60.0)
+
+
+@pytest.mark.parametrize("name", _COATING_FIELDS)
+def test_coated_sample_setters_are_atomic(name):
+    """Each coating contribution validates without imposing a polarization budget."""
+    sample = CoatedSurfaceSample(80.0, 80.0, 80.0, 80.0)
+    assert sample.absorption_p == -60.0
+    for value in (-1.0, 101.0, float("nan"), float("inf")):
+        with pytest.raises(ValueError):
+            setattr(sample, name, value)
+        assert getattr(sample, name) == 80.0
+
+
+def test_coated_grid_setters_copy_and_validate():
+    """Coatings allow one sample and arbitrary incidence endpoints, but validate the grid."""
+    row = [CoatedSurfaceSample()]
+    surface = CoatedSurfaceFile([550.0], [45.0], [row])
+    row.clear()
+    surface.samples[0].clear()
+    surface.wavelengths.clear()
+    surface.validate()
+    for name, values in (
+        ("wavelengths", [700.0, 400.0]),
+        ("incident_angles", [91.0]),
+        ("samples", [[object()]]),
+    ):
+        previous = getattr(surface, name)
+        with pytest.raises((ValueError, TypeError)):
+            setattr(surface, name, values)
+        assert getattr(surface, name) == previous
+
+
+@pytest.mark.parametrize(
+    ("model_class", "name"),
+    [(CoatedSurfaceSample, "reflection_p"), (SimpleScatteringSurfaceFile, "absorption")],
+)
+@pytest.mark.parametrize("value", (0, 25.5, 100, "12.5"))
+def test_shared_percentage_setters_preserve_conversion(model_class, name, value):
+    """Shared percentage validation retains float conversion and inclusive boundaries."""
+    model = model_class()
+    setattr(model, name, value)
+    assert getattr(model, name) == float(value)
+    assert isinstance(getattr(model, name), float)
+
+
+@pytest.mark.parametrize(
+    ("samples", "message"),
+    [
+        ([[CoatedSurfaceSample()], [CoatedSurfaceSample()]], "one row per angle"),
+        ([[CoatedSurfaceSample(), CoatedSurfaceSample()]], "one entry per wavelength"),
+    ],
+)
+def test_coated_grid_dimensions_reject_assignments_atomically(samples, message):
+    """Shared grid checks reject mismatched dimensions without replacing existing samples."""
+    surface = CoatedSurfaceFile([550.0], [45.0], [[CoatedSurfaceSample()]])
+    previous = surface.samples
+    with pytest.raises(ValueError, match=message):
+        surface.samples = samples
+    assert surface.samples == previous
+
+
+def test_simple_scattering_mode_switch_validates_candidate_budget():
+    """An inactive second side is checked when enabling Both mode without losing state."""
+    surface = SimpleScatteringSurfaceFile(lambertian_transmission=80.0, gaussian_transmission=80.0)
+    with pytest.raises(ValueError, match="sum"):
+        surface.mode = "Both"
+    assert surface.mode == "Reflection"
+    surface.gaussian_transmission = 20.0
+    surface.mode = "Both"
+    with pytest.raises(ValueError, match="sum"):
+        surface.gaussian_transmission = 21.0
+    assert surface.gaussian_transmission == 20.0
+    surface.reflection = 50.0
+    assert not surface.fresnel
+    surface.reflection = None
+    assert surface.fresnel
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "absorption",
+        "lambertian",
+        "gaussian",
+        "gaussian_fwhm",
+        "lambertian_transmission",
+        "gaussian_transmission",
+        "gaussian_fwhm_transmission",
+        "reflection",
+    ),
+)
+def test_simple_scattering_setters_reject_nonfinite_values(name):
+    """Every numeric surface property rejects nonfinite assignments atomically."""
+    surface = SimpleScatteringSurfaceFile()
+    previous = getattr(surface, name)
+    with pytest.raises(ValueError):
+        setattr(surface, name, float("inf"))
+    assert getattr(surface, name) == previous

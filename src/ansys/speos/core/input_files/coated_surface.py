@@ -24,23 +24,25 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import List
+from typing import ClassVar, List
 
 from ansys.speos.core.input_files._base import (
-    _PERCENT,
     LineReader,
     SpeosTextFileFormat,
     _data_line,
+    _finite_values,
+    _matching_grid,
+    _percentage,
+    _property_name,
     _read_grid,
-    _tagged,
+    _single_line,
+    _ValueComparable,
     _wavelength_line,
     check_percentage,
 )
 
 
-@dataclass
-class CoatedSurfaceSample:
+class CoatedSurfaceSample(_ValueComparable):
     """Coating response at one angle of incidence and one wavelength.
 
     Parameters
@@ -55,10 +57,89 @@ class CoatedSurfaceSample:
         Transmitted part of the S polarization, in percent. By default, ``0.0``.
     """
 
-    reflection_p: float = field(default=0.0, metadata=_PERCENT)
-    transmission_p: float = field(default=0.0, metadata=_PERCENT)
-    reflection_s: float = field(default=0.0, metadata=_PERCENT)
-    transmission_s: float = field(default=0.0, metadata=_PERCENT)
+    def __init__(
+        self,
+        reflection_p: float = 0.0,
+        transmission_p: float = 0.0,
+        reflection_s: float = 0.0,
+        transmission_s: float = 0.0,
+    ) -> None:
+        self.reflection_p = reflection_p
+        self.transmission_p = transmission_p
+        self.reflection_s = reflection_s
+        self.transmission_s = transmission_s
+
+    @property
+    def reflection_p(self) -> float:
+        """Reflected P polarization, in percent.
+
+        Returns
+        -------
+        float
+            Contribution between 0 and 100.
+        """
+        return self._reflection_p
+
+    @reflection_p.setter
+    def reflection_p(self, value: float) -> None:
+        self._reflection_p = _percentage(_property_name(CoatedSurfaceSample.reflection_p), value)
+
+    @property
+    def transmission_p(self) -> float:
+        """Transmitted P polarization, in percent.
+
+        Returns
+        -------
+        float
+            Contribution between 0 and 100.
+        """
+        return self._transmission_p
+
+    @transmission_p.setter
+    def transmission_p(self, value: float) -> None:
+        self._transmission_p = _percentage(
+            _property_name(CoatedSurfaceSample.transmission_p), value
+        )
+
+    @property
+    def reflection_s(self) -> float:
+        """Reflected S polarization, in percent.
+
+        Returns
+        -------
+        float
+            Contribution between 0 and 100.
+        """
+        return self._reflection_s
+
+    @reflection_s.setter
+    def reflection_s(self, value: float) -> None:
+        self._reflection_s = _percentage(_property_name(CoatedSurfaceSample.reflection_s), value)
+
+    @property
+    def transmission_s(self) -> float:
+        """Transmitted S polarization, in percent.
+
+        Returns
+        -------
+        float
+            Contribution between 0 and 100.
+        """
+        return self._transmission_s
+
+    @transmission_s.setter
+    def transmission_s(self, value: float) -> None:
+        self._transmission_s = _percentage(
+            _property_name(CoatedSurfaceSample.transmission_s), value
+        )
+
+    _COATING_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(reflection_p),
+        _property_name(transmission_p),
+        _property_name(reflection_s),
+        _property_name(transmission_s),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = _COATING_FIELDS
 
     @property
     def absorption_p(self) -> float:
@@ -96,11 +177,13 @@ class CoatedSurfaceSample:
         coating samples published by Ansys do overrun 100 percent on a polarization, and
         the Coated Surface Editor only flags it.
         """
-        for name, value in _tagged(self, _PERCENT).items():
-            check_percentage(name, value)
+        for name in self._COATING_FIELDS:
+            check_percentage(name, getattr(self, name))
 
 
-@dataclass
+_COATING_FIELDS = CoatedSurfaceSample._COATING_FIELDS
+
+
 class CoatedSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
 
@@ -123,6 +206,10 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     Notes
     -----
     A Speos coating is only valid for the rays crossing the interface in one direction.
+    List getters copy the containers, while sample objects remain shared and editable
+    through validated properties. To resize a populated grid, clear :attr:`samples`, set
+    the axes, then assign the new grid. Empty lists allow drafts; :meth:`save` requires
+    complete axes and samples.
 
     Examples
     --------
@@ -138,10 +225,114 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     ... ).save("mirror.coated")
     """
 
-    wavelengths: List[float] = field(default_factory=list)
-    incident_angles: List[float] = field(default_factory=list)
-    samples: List[List[CoatedSurfaceSample]] = field(default_factory=list)
-    description: str = "Coated surface"
+    def __init__(
+        self,
+        wavelengths: List[float] | None = None,
+        incident_angles: List[float] | None = None,
+        samples: List[List[CoatedSurfaceSample]] | None = None,
+        description: str = "Coated surface",
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._incident_angles: List[float] = []
+        self._samples: List[List[CoatedSurfaceSample]] = []
+        self.wavelengths = wavelengths if wavelengths is not None else []
+        self.incident_angles = incident_angles if incident_angles is not None else []
+        self.samples = samples if samples is not None else []
+        self.description = description
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Sorted wavelengths in nm, returned as a copy.
+
+        Returns
+        -------
+        List[float]
+            Finite wavelengths, or an empty draft column.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: List[float]) -> None:
+        values = _finite_values(_property_name(CoatedSurfaceFile.wavelengths), values)
+        if sorted(values) != values:
+            raise ValueError("wavelengths must be sorted in increasing order.")
+        self._check_grid(self._samples, self._incident_angles, values)
+        self._wavelengths = values
+
+    @property
+    def incident_angles(self) -> List[float]:
+        """Sorted incidence angles in degrees, returned as a copy.
+
+        Returns
+        -------
+        List[float]
+            Angles between 0 and 90, or an empty draft column.
+        """
+        return self._incident_angles.copy()
+
+    @incident_angles.setter
+    def incident_angles(self, values: List[float]) -> None:
+        values = _finite_values(_property_name(CoatedSurfaceFile.incident_angles), values)
+        if sorted(values) != values:
+            raise ValueError("incident_angles must be sorted in increasing order.")
+        if any(not 0.0 <= value <= 90.0 for value in values):
+            raise ValueError("incident_angles must be between 0 and 90 degrees.")
+        self._check_grid(self._samples, values, self._wavelengths)
+        self._incident_angles = values
+
+    @property
+    def samples(self) -> List[List[CoatedSurfaceSample]]:
+        """Sample grid with copied containers and shared samples.
+
+        Returns
+        -------
+        List[List[CoatedSurfaceSample]]
+            Rows per incidence and columns per wavelength.
+        """
+        return [row.copy() for row in self._samples]
+
+    @samples.setter
+    def samples(self, values: List[List[CoatedSurfaceSample]]) -> None:
+        values = [list(row) for row in values]
+        for row in values:
+            for sample in row:
+                if not isinstance(sample, CoatedSurfaceSample):
+                    raise TypeError("samples must contain CoatedSurfaceSample objects.")
+                sample.validate()
+        self._check_grid(values, self._incident_angles, self._wavelengths)
+        self._samples = values
+
+    @property
+    def description(self) -> str:
+        """Single-line description.
+
+        Returns
+        -------
+        str
+            Free text written after the header.
+        """
+        return self._description
+
+    @description.setter
+    def description(self, value: str) -> None:
+        self._description = _single_line(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(incident_angles),
+        _property_name(samples),
+        _property_name(description),
+    )
+
+    @staticmethod
+    def _check_grid(samples, angles, wavelengths) -> None:
+        _matching_grid(
+            "samples",
+            samples,
+            row_count=len(angles) if samples and angles else None,
+            column_count=len(wavelengths) if wavelengths else None,
+            row_axis="angle of incidence",
+        )
 
     EXTENSION = ".coated"
     HEADER = "OPTIS - Coated surface file v1.0"
@@ -166,17 +357,15 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
             raise ValueError("incident_angles must be sorted in increasing order.")
         if any(not 0.0 <= angle <= 90.0 for angle in self.incident_angles):
             raise ValueError("incident_angles must be between 0 and 90 degrees.")
-        if len(self.samples) != len(self.incident_angles):
-            raise ValueError(
-                f"samples must hold one row per angle of incidence, expected "
-                f"{len(self.incident_angles)} rows, got {len(self.samples)}."
-            )
-        for angle, row in zip(self.incident_angles, self.samples):
-            if len(row) != len(self.wavelengths):
-                raise ValueError(
-                    f"At {angle} degrees, samples must hold one entry per wavelength, "
-                    f"expected {len(self.wavelengths)}, got {len(row)}."
-                )
+        _matching_grid(
+            "samples",
+            self._samples,
+            row_count=len(self._incident_angles),
+            column_count=len(self._wavelengths),
+            row_axis="angle of incidence",
+            incidences=self._incident_angles,
+        )
+        for row in self._samples:
             for sample in row:
                 sample.validate()
 

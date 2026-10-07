@@ -24,12 +24,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import List
+from typing import ClassVar, List
 
 from ansys.speos.core.input_files._base import (
     LineReader,
     SpeosTextFileFormat,
+    _finite_values,
+    _property_name,
+    _single_line,
     check_percentage,
     format_number,
 )
@@ -39,7 +41,6 @@ MAX_SPECTRUM_SAMPLES = 32767
 """Maximum number of wavelength samples accepted by Speos in a ``*.spectrum`` file."""
 
 
-@dataclass
 class SpectrumFile(SpeosTextFileFormat):
     """Speos ``*.spectrum`` file, holding a sampled spectral distribution.
 
@@ -56,15 +57,102 @@ class SpectrumFile(SpeosTextFileFormat):
     description : str, optional
         Free text written on the second line of the file. By default, ``""``.
 
+    Notes
+    -----
+    Construction and setters validate numeric data before storing it. List getters return
+    copies; assign an edited list back to change the model. Empty columns permit staged
+    construction, while :meth:`validate` and :meth:`save` require complete matching columns.
+    To resize a populated spectrum, clear :attr:`values`, replace :attr:`wavelengths`, then
+    assign the new values.
+
     Examples
     --------
     >>> from ansys.speos.core.input_files.spectrum_file import SpectrumFile
     >>> SpectrumFile(wavelengths=[400.0, 700.0], values=[100.0, 50.0]).save("led.spectrum")
     """
 
-    wavelengths: List[float] = field(default_factory=list)
-    values: List[float] = field(default_factory=list)
-    description: str = ""
+    def __init__(
+        self,
+        wavelengths: List[float] | None = None,
+        values: List[float] | None = None,
+        description: str = "",
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._values: List[float] = []
+        self.wavelengths = wavelengths if wavelengths is not None else []
+        self.values = values if values is not None else []
+        self.description = description
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Wavelengths in nm, returned as a copy.
+
+        Returns
+        -------
+        List[float]
+            Finite sample wavelengths.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: List[float]) -> None:
+        values = _finite_values(_property_name(SpectrumFile.wavelengths), values)
+        self._check_columns(values, self._values)
+        self._wavelengths = values
+
+    @property
+    def values(self) -> List[float]:
+        """Spectral values in percent, returned as a copy.
+
+        Returns
+        -------
+        List[float]
+            Values between 0 and 100.
+        """
+        return self._values.copy()
+
+    @values.setter
+    def values(self, values: List[float]) -> None:
+        name = _property_name(SpectrumFile.values)
+        values = _finite_values(name, values)
+        for value in values:
+            check_percentage(name, value)
+        self._check_columns(self._wavelengths, values)
+        self._values = values
+
+    @property
+    def description(self) -> str:
+        """Single-line description.
+
+        Returns
+        -------
+        str
+            Free text written after the header.
+        """
+        return self._description
+
+    @description.setter
+    def description(self, value: str) -> None:
+        self._description = _single_line(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(values),
+        _property_name(description),
+    )
+
+    @staticmethod
+    def _check_columns(wavelengths: List[float], values: List[float]) -> None:
+        if wavelengths and values and len(wavelengths) != len(values):
+            raise ValueError(
+                f"wavelengths and values must have the same length, got "
+                f"{len(wavelengths)} and {len(values)}."
+            )
+        count = max(len(wavelengths), len(values))
+        if count > MAX_SPECTRUM_SAMPLES:
+            raise ValueError(
+                f"A spectrum cannot hold more than {MAX_SPECTRUM_SAMPLES} samples, got {count}."
+            )
 
     EXTENSION = ".spectrum"
     HEADER = "OPTIS - Spectrum file v1"

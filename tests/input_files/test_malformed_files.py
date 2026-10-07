@@ -159,14 +159,8 @@ def test_material_rejects_an_unsupported_scattering_model_id(tmp_path):
 
 def test_dispersion_curve_needs_matching_wavelengths_and_indices(tmp_path):
     """A dispersion curve with mismatched wavelength and index lists must be rejected."""
-    material = MaterialFile(
-        dispersion=MaterialDispersionCurve(wavelengths=[480.0, 650.0], indices=[1.5]),
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-    )
-
-    with pytest.raises(ValueError, match="non empty and of equal length"):
-        material.save(tmp_path / "invalid.material")
+    with pytest.raises(ValueError, match="same length"):
+        MaterialDispersionCurve(wavelengths=[480.0, 650.0], indices=[1.5])
 
 
 def test_user_defined_phase_function_needs_at_least_one_angle(tmp_path):
@@ -185,35 +179,19 @@ def test_user_defined_phase_function_needs_at_least_one_angle(tmp_path):
 
 def test_phase_function_needs_wavelengths_for_more_than_one_set(tmp_path):
     """Several anisotropy factors without matching wavelengths must be rejected."""
-    material = MaterialFile(
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-        scattering_wavelengths=[480.0, 650.0],
-        scattering_values=[0.1, 0.2],
-        scattering=VolumeScatteringHenyeyGreenstein(anisotropies=[0.8, 0.9]),
-    )
-
     with pytest.raises(ValueError, match="wavelengths is required"):
-        material.save(tmp_path / "invalid.material")
+        VolumeScatteringHenyeyGreenstein(anisotropies=[0.8, 0.9])
 
 
 def test_phase_function_columns_must_have_the_same_length(tmp_path):
     """Mismatched column lengths inside a phase function must be reported, not misread."""
-    material = MaterialFile(
-        absorption_wavelengths=[550.0],
-        absorption_values=[0.0],
-        scattering_wavelengths=[480.0, 650.0],
-        scattering_values=[0.1, 0.2],
-        scattering=VolumeScatteringDoubleHenyeyGreenstein(
+    with pytest.raises(ValueError, match="must have the same length"):
+        VolumeScatteringDoubleHenyeyGreenstein(
             wavelengths=[480.0, 650.0],
             anisotropies_1=[0.8, 0.9],
             anisotropies_2=[0.8],
             ratios=[0.5, 0.5],
-        ),
-    )
-
-    with pytest.raises(ValueError, match="must have the same length"):
-        material.save(tmp_path / "invalid.material")
+        )
 
 
 def test_constringence_reads_bad_numeric_tokens_with_a_precise_location(tmp_path):

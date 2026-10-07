@@ -84,22 +84,90 @@ def test_from_sampled_rejects_other_spectrum_types():
 
 
 @pytest.mark.parametrize(
-    ("spectrum", "message"),
+    ("parameters", "message"),
     [
-        (SpectrumFile(wavelengths=[400.0], values=[]), "same length"),
-        (SpectrumFile(), "at least one sample"),
-        (SpectrumFile(wavelengths=[400.0], values=[120.0]), "between 0 and 100"),
-        (SpectrumFile(wavelengths=[400.0], values=[-1.0]), "between 0 and 100"),
+        ({"wavelengths": [400.0], "values": [120.0]}, "between 0 and 100"),
+        ({"wavelengths": [400.0], "values": [-1.0]}, "between 0 and 100"),
         (
-            SpectrumFile(wavelengths=[1.0] * 32768, values=[1.0] * 32768),
+            {"wavelengths": [1.0] * 32768, "values": [1.0] * 32768},
             "more than 32767 samples",
         ),
     ],
 )
-def test_invalid_spectra_are_rejected(spectrum, message, tmp_path):
-    """Saving must refuse a spectrum that Speos would not accept."""
+def test_invalid_spectra_are_rejected_at_construction(parameters, message):
+    """Invalid spectral data must be rejected during construction."""
     with pytest.raises(ValueError, match=message):
-        spectrum.save(tmp_path / "invalid.spectrum")
+        SpectrumFile(**parameters)
+
+
+@pytest.mark.parametrize(
+    ("parameters", "message"),
+    [
+        ({"wavelengths": [400.0], "values": []}, "same length"),
+        ({}, "at least one sample"),
+    ],
+)
+def test_incomplete_spectra_cannot_be_saved(parameters, message, tmp_path):
+    """Incomplete spectra can be constructed but must be rejected when saving."""
+    spectrum = SpectrumFile(**parameters)
+    path = tmp_path / "invalid.spectrum"
+
+    with pytest.raises(ValueError, match=message):
+        spectrum.save(path)
+
+    assert not path.exists()
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("values", [-1.0]),
+        ("values", [float("nan")]),
+        ("wavelengths", [float("inf")]),
+        ("wavelengths", [400.0, 500.0]),
+        ("description", "first\nsecond"),
+    ],
+)
+def test_spectrum_setters_preserve_state_on_failure(name, value):
+    """Rejected assignments do not change the previous property value."""
+    spectrum = SpectrumFile([400.0], [50.0])
+    previous = getattr(spectrum, name)
+    with pytest.raises(ValueError):
+        setattr(spectrum, name, value)
+    assert getattr(spectrum, name) == previous
+
+
+def test_spectrum_lists_are_copied_and_can_be_resized():
+    """Copied containers protect data while clearing permits staged resizing."""
+    wavelengths, values = [700.0, 400.0], [100.0, 50.0]
+    spectrum = SpectrumFile(wavelengths, values)
+    wavelengths.clear()
+    values.clear()
+    spectrum.values.clear()
+    spectrum.wavelengths.clear()
+    spectrum.validate()
+    spectrum.values = []
+    spectrum.wavelengths = [550.0]
+    spectrum.values = [25.0]
+    spectrum.validate()
+    assert spectrum == SpectrumFile([550.0], [25.0])
+
+
+@pytest.mark.parametrize("value", ("line\n", "line\r", "line\r\n", "line\u2028", "line\x85"))
+def test_descriptions_reject_trailing_line_separators(value):
+    """Description validation rejects line separators even at the end of the string."""
+    spectrum = SpectrumFile(description="previous")
+    with pytest.raises(ValueError, match="single line"):
+        spectrum.description = value
+    assert spectrum.description == "previous"
+
+
+def test_columns_reject_text_sequences():
+    """A numeric sequence cannot be supplied as a string of numeric characters."""
+    spectrum = SpectrumFile([400.0], [50.0])
+    with pytest.raises(TypeError, match="numeric sequence"):
+        spectrum.values = "123"
+    assert spectrum.values == [50.0]
 
 
 def test_a_file_with_a_foreign_header_is_rejected(tmp_path):

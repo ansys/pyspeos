@@ -38,21 +38,29 @@ def documented_rays():
     """Build the five rays used as an example by the Speos documentation."""
     return RayFile(
         rays=[
-            Ray(position=(-0.5, 0.4, 0.4), direction=(0.5, -0.1, 0.7), wavelength=555.0),
-            Ray(position=(0.7, -0.5, 12.0), direction=(0.2, -0.4, 0.2), wavelength=555.0),
-            Ray(position=(0.8, -0.2, 18.0), direction=(-0.5, -0.4, 0.7), wavelength=532.0),
-            Ray(position=(-0.1, 0.5, 4.0), direction=(0.5, 0.2, 0.7), wavelength=452.0),
-            Ray(position=(1.7, -0.8, 2.0), direction=(0.2, -0.4, 0.6), wavelength=633.0),
+            Ray(
+                position=(-0.5, 0.4, 0.4), direction=_normalize((0.5, -0.1, 0.7)), wavelength=555.0
+            ),
+            Ray(
+                position=(0.7, -0.5, 12.0), direction=_normalize((0.2, -0.4, 0.2)), wavelength=555.0
+            ),
+            Ray(
+                position=(0.8, -0.2, 18.0),
+                direction=_normalize((-0.5, -0.4, 0.7)),
+                wavelength=532.0,
+            ),
+            Ray(position=(-0.1, 0.5, 4.0), direction=_normalize((0.5, 0.2, 0.7)), wavelength=452.0),
+            Ray(
+                position=(1.7, -0.8, 2.0), direction=_normalize((0.2, -0.4, 0.6)), wavelength=633.0
+            ),
         ]
     )
 
 
-def _normalize(ray_file):
-    """Scale every ray direction to a unit vector, as Speos expects."""
-    for ray in ray_file.rays:
-        norm = math.dist((0.0, 0.0, 0.0), ray.direction)
-        ray.direction = tuple(value / norm for value in ray.direction)
-    return ray_file
+def _normalize(direction):
+    """Normalize a direction before constructing a validated ray."""
+    norm = math.hypot(*direction)
+    return tuple(value / norm for value in direction)
 
 
 def test_read_a_binary_file_produced_by_speos():
@@ -79,7 +87,6 @@ def test_round_trip_a_binary_file_produced_by_speos(tmp_path):
 
 def test_binary_round_trip_keeps_the_flux(documented_rays, tmp_path):
     """The total fluxes must survive a binary write and read."""
-    _normalize(documented_rays)
     documented_rays.radiant_flux = 2.5
     documented_rays.luminous_flux = 280.0
 
@@ -102,7 +109,6 @@ def test_text_write_matches_the_documented_layout(tmp_path):
 
 def test_text_round_trip(documented_rays, tmp_path):
     """Reading back a written text file must give equivalent rays."""
-    _normalize(documented_rays)
     path = documented_rays.save_text(tmp_path / "rays.txt")
 
     assert RayFile.load_text(path).rays == documented_rays.rays
@@ -156,16 +162,59 @@ def test_a_partially_polarized_file_is_rejected(tmp_path):
 
 def test_a_direction_that_is_not_a_unit_vector_is_rejected(tmp_path):
     """Speos stores the direction as cosines, so it must be a unit vector."""
-    rays = RayFile(rays=[Ray(direction=(1.0, 1.0, 1.0))])
-
     with pytest.raises(ValueError, match="unit vector"):
-        rays.save(tmp_path / "invalid.ray")
+        Ray(direction=(1.0, 1.0, 1.0))
 
 
-def test_an_empty_ray_file_is_rejected(tmp_path):
-    """A ray file must hold at least one ray."""
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("position", (1.0, 2.0)),
+        ("direction", (0.0, 0.0, 0.0)),
+        ("polarization", (1.0, 2.0)),
+        ("wavelength", float("inf")),
+        ("energy", float("nan")),
+    ],
+)
+def test_ray_setters_validate_atomically(name, value):
+    """Invalid ray values are rejected before replacing the previous value."""
+    ray = Ray()
+    previous = getattr(ray, name)
+    with pytest.raises(ValueError):
+        setattr(ray, name, value)
+    assert getattr(ray, name) == previous
+    with pytest.raises(ValueError):
+        Ray(**{name: value})
+
+
+def test_ray_direction_tolerance_and_copied_collection():
+    """Direction tolerance is retained and the file copies its ray container."""
+    ray = Ray(direction=(0.0, 0.0, 1.0005))
+    values = [ray]
+    ray_file = RayFile(values)
+    values.clear()
+    ray_file.rays.clear()
+    assert ray_file.rays == [ray]
+    with pytest.raises(ValueError):
+        ray.direction = (0.0, 0.0, 1.002)
+    with pytest.raises(TypeError):
+        ray_file.rays = [object()]
+    with pytest.raises(ValueError):
+        ray_file.radiant_flux = float("inf")
+    assert ray_file.radiant_flux == 1.0
+    ray_file.rays[0].energy = 0.5
+    assert ray.energy == 0.5
+
+
+def test_empty_ray_files_cannot_be_saved(tmp_path):
+    """An empty ray file can be constructed but must be rejected when saving."""
+    ray_file = RayFile()
+    path = tmp_path / "empty.ray"
+
     with pytest.raises(ValueError, match="at least one ray"):
-        RayFile().save(tmp_path / "empty.ray")
+        ray_file.save(path)
+
+    assert not path.exists()
 
 
 def test_a_truncated_binary_file_is_reported(tmp_path):

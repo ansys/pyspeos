@@ -25,6 +25,7 @@
 import pytest
 
 from ansys.speos.core import Texture3DMappingFile, TexturePattern
+from ansys.speos.core.input_files.texture_3d import _PATTERN_FIELDS
 from tests.input_files import read_lines
 
 
@@ -71,18 +72,56 @@ def test_a_uniform_scale_writes_a_single_column(tmp_path):
 
 def test_a_uniform_scale_needs_equal_factors(tmp_path):
     """The single scale factor flavor cannot carry different factors per direction."""
-    mapping = Texture3DMappingFile(
-        patterns=[TexturePattern(scale=(1.0, 2.0, 3.0))], uniform_scale=True
-    )
+    with pytest.raises(ValueError, match="same scale factor"):
+        Texture3DMappingFile(patterns=[TexturePattern(scale=(1.0, 2.0, 3.0))], uniform_scale=True)
 
+
+@pytest.mark.parametrize("name", _PATTERN_FIELDS)
+def test_pattern_vectors_validate_and_copy(name):
+    """Every pattern vector is finite, three-dimensional and stored immutably."""
+    pattern = TexturePattern()
+    values = [2.0, 3.0, 4.0]
+    setattr(pattern, name, values)
+    values.clear()
+    assert getattr(pattern, name) == (2.0, 3.0, 4.0)
+    for invalid in ((1.0, 2.0), (float("nan"), 0.0, 0.0)):
+        with pytest.raises(ValueError):
+            setattr(pattern, name, invalid)
+        assert getattr(pattern, name) == (2.0, 3.0, 4.0)
+
+
+def test_mapping_validates_parent_constraints_after_child_edits(tmp_path):
+    """Shared pattern edits are rechecked before writing the mapping."""
+    pattern = TexturePattern()
+    values = [pattern]
+    mapping = Texture3DMappingFile(values, True)
+    values.clear()
+    mapping.patterns.clear()
+    assert mapping.patterns == [pattern]
+    pattern.scale = (1.0, 2.0, 3.0)
     with pytest.raises(ValueError, match="same scale factor"):
         mapping.save(tmp_path / "invalid.OPT3DMapping")
+    assert not (tmp_path / "invalid.OPT3DMapping").exists()
+    mapping.uniform_scale = False
+    with pytest.raises(ValueError):
+        mapping.uniform_scale = True
+    assert mapping.uniform_scale is False
+    with pytest.raises(TypeError):
+        mapping.uniform_scale = 1
+    with pytest.raises(TypeError):
+        mapping.patterns = [object()]
+    assert mapping.patterns == [pattern]
 
 
-def test_an_empty_mapping_is_rejected(tmp_path):
-    """A mapping must lay out at least one pattern."""
+def test_empty_mappings_cannot_be_saved(tmp_path):
+    """An empty mapping can be constructed but must be rejected when saving."""
+    mapping = Texture3DMappingFile()
+    path = tmp_path / "empty.OPT3DMapping"
+
     with pytest.raises(ValueError, match="at least one pattern"):
-        Texture3DMappingFile().save(tmp_path / "empty.OPT3DMapping")
+        mapping.save(path)
+
+    assert not path.exists()
 
 
 def test_an_unexpected_column_count_is_reported(tmp_path):
