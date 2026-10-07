@@ -2680,8 +2680,8 @@ class SensorCamera(BaseSensor):
             feature_camera_z_dir = np.array(feature_pos_info[9:12])
             feature_width = float(self.get(key="width"))
             feature_height = float(self.get(key="height"))
-            feature_camera_focal = float(self.get(key="focal_length"))
-            feature_camera_image_dis = float(self.get(key="imager_distance"))
+            feature_camera_focal = self.focal_length
+            feature_camera_image_dis = self.imager_distance
 
             # camera radiance sensor
             p1 = (
