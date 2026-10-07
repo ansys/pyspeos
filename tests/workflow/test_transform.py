@@ -313,9 +313,7 @@ def test_scalar_validator_rejects_non_finite_or_non_numeric_values(value):
 
 def test_axis_frame_rejects_left_handed_basis():
     """Reject an axis system whose basis has a negative determinant."""
-    left_handed = _validate_axis_system12(
-        [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, -1], "frame"
-    )
+    left_handed = _validate_axis_system12([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, -1], "frame")
     with pytest.raises(ValueError, match="right-handed"):
         _axis_frame(left_handed, "frame")
 
