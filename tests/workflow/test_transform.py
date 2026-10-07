@@ -24,6 +24,7 @@
 
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from ansys.speos.core import body as body_module, component, part, sensor, source
@@ -146,11 +147,11 @@ class _TestSensor(sensor.BaseSensor):
         return self
 
 
-def _make_body():
+def _make_body(parent_part=None):
     body = object.__new__(body_module.Body)
     body._name = "mesh"
     body._speos_client = None
-    body._parent_part = None
+    body._parent_part = parent_part
     body._body = ProtoBody(name="mesh")
     body.body_link = None
     body._geom_features = []
@@ -290,10 +291,25 @@ def test_face_and_unknown_feature_are_rejected():
 @pytest.mark.parametrize(
     ("value", "name", "error"),
     [
-        ("1,2,3", "direction", TypeError),
-        ([1, "2", 3], "point", TypeError),
-        ([1, 2, float("nan")], "reference_axis", ValueError),
-        ([1, 2, 3, 4], "axis", ValueError),
+        pytest.param("1,2,3", "direction", TypeError, id="wrong-vector-type"),
+        pytest.param([1, "2", 3], "point", TypeError, id="wrong-vector-values"),
+        pytest.param([1, float("nan"), 3], "point", ValueError, id="nan-vector"),
+        pytest.param([10**1000, 0, 0], "direction", ValueError, id="overflow-vector"),
+        pytest.param([1, 2, float("nan")], "reference_axis", ValueError, id="nan-axis-system"),
+        pytest.param([1, 2, 3, 4], "axis", ValueError, id="short-axis-system"),
+        pytest.param("axis", "reference_axis", TypeError, id="wrong-axis-system-type"),
+        pytest.param(
+            [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, "x"],
+            "reference_axis",
+            TypeError,
+            id="wrong-axis-system-values",
+        ),
+        pytest.param(
+            [10**1000, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            "reference_axis",
+            ValueError,
+            id="overflow-axis-system",
+        ),
     ],
 )
 def test_vector_and_axis_validators_reject_invalid_values(value, name, error):
@@ -303,7 +319,17 @@ def test_vector_and_axis_validators_reject_invalid_values(value, name, error):
         validator(value, name)
 
 
-@pytest.mark.parametrize("value", [None, True, "1", float("inf"), float("nan"), 10**1000])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(None, id="none"),
+        pytest.param(True, id="bool"),
+        pytest.param("1", id="string"),
+        pytest.param(float("inf"), id="infinity"),
+        pytest.param(float("nan"), id="nan"),
+        pytest.param(10**1000, id="overflow"),
+    ],
+)
 def test_scalar_validator_rejects_non_finite_or_non_numeric_values(value):
     """Reject scalar values that cannot safely represent a finite number."""
     expected_error = TypeError if value is None or isinstance(value, (bool, str)) else ValueError
@@ -322,8 +348,10 @@ def test_transform_math_rejects_zero_norm_and_builds_rotation():
     """Exercise normalized vectors and a basic Rodrigues rotation."""
     with pytest.raises(ValueError, match="zero vector"):
         _normalize(_validate_vector3([0, 0, 0], "vector"), "vector")
-    assert _rotation_matrix(_validate_vector3([0, 0, 2], "axis"), 90) == pytest.approx(
-        [[0, -1, 0], [1, 0, 0], [0, 0, 1]], abs=1e-12
+    np.testing.assert_allclose(
+        _rotation_matrix(_validate_vector3([0, 0, 2], "axis"), 90),
+        [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+        atol=1e-12,
     )
 
 
@@ -371,6 +399,7 @@ def test_copy_name_validation(name, expected_error):
     """Validate explicit copy names and exercise the unowned feature collection."""
     feature = _TestSource()
     assert _feature_siblings(feature) == []
+    assert _feature_siblings(object()) == []
     if expected_error is None:
         assert _copy_name(feature, name) == "test_source_copy"
     else:
@@ -464,7 +493,9 @@ def test_body_in_place_axis_to_axis_transforms_vertices_and_normals(monkeypatch)
 def test_body_copy_empty_mesh_and_metadata(monkeypatch):
     """Copy empty faces and preserve body metadata without changing topology."""
     monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
-    original, face = _make_body()
+    parent = SimpleNamespace(_geom_features=[])
+    original, face = _make_body(parent)
+    parent._geom_features.append(original)
     face._face.ClearField("vertices")
     face._face.ClearField("normals")
     original._body.description = "body description"
@@ -478,6 +509,7 @@ def test_body_copy_empty_mesh_and_metadata(monkeypatch):
     assert copied.faces[0].vertices == []
     assert copied.faces[0].normals == []
     assert copied.faces[0].facets == [0, 1, 2]
+    assert copied in parent._geom_features
     assert face.vertices == []
 
 

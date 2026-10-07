@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import math
 from typing import Union
 
@@ -67,7 +68,7 @@ def _validate_vector3(value: list[float], name: str) -> np.ndarray:
 
 def _validate_axis_system12(value: list[float], name: str) -> np.ndarray:
     """Validate and convert a twelve-value axis system."""
-    if not isinstance(value, (list, tuple)):
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
         raise TypeError(f"{name} must be a list or tuple of twelve finite numbers.")
     if len(value) != 12:
         raise ValueError(f"{name} must contain exactly twelve values.")
