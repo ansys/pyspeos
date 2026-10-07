@@ -181,6 +181,17 @@ def _make_subpart(parent, name="subpart"):
     return subpart
 
 
+def _make_surface_source(project, name, geopaths):
+    source_feature = object.__new__(source.SourceSurface)
+    source_feature._name = name
+    source_feature._project = project
+    source_feature._source_instance = ProtoScene.SourceInstance(name=name)
+    source_feature._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
+        ProtoScene.GeoPath(geo_path=geopath) for geopath in geopaths
+    )
+    return source_feature
+
+
 def _make_lightbox(parent, name="test_lightbox"):
     lightbox = object.__new__(component.LightBox)
     lightbox._name = name
@@ -511,6 +522,79 @@ def test_body_copy_empty_mesh_and_metadata(monkeypatch):
     assert copied.faces[0].facets == [0, 1, 2]
     assert copied in parent._geom_features
     assert face.vertices == []
+
+
+def test_full_surface_source_transforms_body_resolved_from_nested_geopath(monkeypatch):
+    """Resolve a nested full-surface source path to its body and transform its mesh."""
+    monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
+    root = object.__new__(part.Part)
+    root._geom_features = []
+    nested = _make_subpart(root)
+    root._geom_features.append(nested)
+    body, face = _make_body(nested)
+    nested._geom_features.append(body)
+    project = SimpleNamespace(root_part=root, sources=[])
+    surface_source = _make_surface_source(
+        project,
+        "full_surface",
+        ["subpart/mesh/triangle", "subpart/mesh"],
+    )
+    project.sources.append(surface_source)
+
+    result = move_feature(surface_source, [1, 0, 0], 2)
+
+    assert result is body
+    assert face.vertices == pytest.approx([2, 0, 0, 3, 0, 0, 2, 1, 0])
+
+
+@pytest.mark.parametrize(
+    "other_geopath", ["subpart", "subpart/mesh", "subpart/mesh/triangle"]
+)
+def test_full_surface_source_rejects_body_used_by_another_source(monkeypatch, other_geopath):
+    """Reject a body transform if another source targets the body or one of its faces."""
+    monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
+    root = object.__new__(part.Part)
+    root._geom_features = []
+    nested = _make_subpart(root)
+    root._geom_features.append(nested)
+    body, face = _make_body(nested)
+    nested._geom_features.append(body)
+    unrelated_body, _ = _make_body(root)
+    unrelated_body._name = "other_mesh"
+    project = SimpleNamespace(root_part=root, sources=[])
+    surface_source = _make_surface_source(
+        project, "full_surface", ["subpart/mesh/triangle"]
+    )
+    other_source = _make_surface_source(project, "other_surface", [other_geopath])
+    unrelated_source = _make_surface_source(project, "unrelated", ["other_mesh"])
+    project.sources.extend((surface_source, other_source, unrelated_source))
+
+    with pytest.raises(ValueError, match="another source is applied"):
+        move_feature(surface_source, [1, 0, 0], 2)
+
+    assert face.vertices == [0, 0, 0, 1, 0, 0, 0, 1, 0]
+
+
+def test_full_surface_source_rejects_paths_that_cannot_resolve_to_one_body():
+    """Reject missing, invalid, and multi-body full-surface source geometry paths."""
+    root = object.__new__(part.Part)
+    root._geom_features = []
+    body, _ = _make_body(root)
+    root._geom_features.append(body)
+    second_body, _ = _make_body(root)
+    second_body._name = "second_mesh"
+    root._geom_features.append(second_body)
+    project = SimpleNamespace(root_part=root, sources=[])
+
+    for geopaths, message in (
+        ([], "does not reference any geometry"),
+        (["missing/body"], "Cannot resolve"),
+        (["mesh", "second_mesh"], "exactly one body"),
+    ):
+        surface_source = _make_surface_source(project, "full_surface", geopaths)
+        project.sources = [surface_source]
+        with pytest.raises(ValueError, match=message):
+            move_feature(surface_source, [1, 0, 0], 2)
 
 
 def test_unsupported_source_without_axis_system_is_rejected():

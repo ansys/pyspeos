@@ -313,12 +313,100 @@ def _apply_transform(
     return feature
 
 
+def _iter_geopaths(message):
+    """Yield geometry paths from a protobuf message and its nested fields."""
+    if not hasattr(message, "ListFields"):
+        return
+    for field, value in message.ListFields():
+        if field.name == "geo_path":
+            if value:
+                yield value
+        elif field.name == "geo_paths":
+            if field.message_type is None:
+                yield from (path for path in value if path)
+            else:
+                for item in value:
+                    yield from _iter_geopaths(item)
+        elif field.message_type is not None:
+            values = value if field.is_repeated else (value,)
+            for item in values:
+                yield from _iter_geopaths(item)
+
+
+def _find_body_in_geometry_tree(parent, path_segments: list[str]) -> body_module.Body | None:
+    """Find the body named by a geometry path within a part hierarchy."""
+    if not path_segments:
+        return None
+    segment, *remaining = path_segments
+    for feature in parent._geom_features:
+        if feature._name != segment:
+            continue
+        if isinstance(feature, body_module.Body):
+            if not remaining:
+                return feature
+            if len(remaining) == 1 and any(
+                face._name == remaining[0] for face in feature.faces
+            ):
+                return feature
+        elif isinstance(feature, part.Part.SubPart):
+            result = _find_body_in_geometry_tree(feature, remaining)
+            if result is not None:
+                return result
+    return None
+
+
+def _paths_share_geometry(path: str, body_path: str) -> bool:
+    """Return whether a geometry path targets a body, its face, or an ancestor."""
+    path_parts = tuple(segment for segment in path.split("/") if segment)
+    body_parts = tuple(segment for segment in body_path.split("/") if segment)
+    common_length = min(len(path_parts), len(body_parts))
+    return path_parts[:common_length] == body_parts[:common_length]
+
+
+def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
+    """Resolve a full surface source to its single referenced body."""
+    project = feature._project
+    root_part = project.root_part
+    geometry_paths = list(_iter_geopaths(feature._source_instance))
+    if not geometry_paths:
+        raise ValueError("The surface source does not reference any geometry.")
+    if root_part is None:
+        raise ValueError("Cannot resolve the surface source geometry without a project root part.")
+
+    bodies = []
+    for geopath in geometry_paths:
+        segments = [segment for segment in geopath.split("/") if segment]
+        resolved_body = _find_body_in_geometry_tree(root_part, segments)
+        if resolved_body is None:
+            raise ValueError(f"Cannot resolve surface source geometry path {geopath!r}.")
+        if resolved_body not in bodies:
+            bodies.append(resolved_body)
+    if len(bodies) != 1:
+        raise ValueError("A full surface source must reference geometry from exactly one body.")
+
+    target_body = bodies[0]
+    body_path = target_body.geo_path.to_native_link()
+    for other_source in project.sources:
+        if other_source is feature:
+            continue
+        if any(
+            _paths_share_geometry(geopath, body_path)
+            for geopath in _iter_geopaths(other_source._source_instance)
+        ):
+            raise ValueError(
+                f"Cannot transform body {target_body._name!r}: another source is applied to it."
+            )
+    return target_body
+
+
 def _prepare_transform(
     feature: TransformableFeature, copy_feature: bool, name: str | None
 ) -> TransformableFeature:
     """Validate a target feature and optionally duplicate it."""
     if isinstance(feature, face_module.Face):
         raise ValueError("Transforming a standalone Face is not supported; transform its Body.")
+    if isinstance(feature, source.SourceSurface):
+        feature = _surface_source_body(feature)
     if not isinstance(
         feature,
         (
