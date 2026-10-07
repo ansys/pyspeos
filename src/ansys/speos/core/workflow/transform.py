@@ -344,9 +344,7 @@ def _find_body_in_geometry_tree(parent, path_segments: list[str]) -> body_module
         if isinstance(feature, body_module.Body):
             if not remaining:
                 return feature
-            if len(remaining) == 1 and any(
-                face._name == remaining[0] for face in feature.faces
-            ):
+            if len(remaining) == 1 and any(face._name == remaining[0] for face in feature.faces):
                 return feature
         elif isinstance(feature, part.Part.SubPart):
             result = _find_body_in_geometry_tree(feature, remaining)

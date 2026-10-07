@@ -529,17 +529,22 @@ def test_full_surface_source_transforms_body_resolved_from_nested_geopath(monkey
     monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
     root = object.__new__(part.Part)
     root._geom_features = []
-    nested = _make_subpart(root)
-    root._geom_features.append(nested)
+    outer_subpart = _make_subpart(root)
+    root._geom_features.append(outer_subpart)
+    nested = _make_subpart(outer_subpart, "inner")
+    outer_subpart._geom_features.append(nested)
     body, face = _make_body(nested)
     nested._geom_features.append(body)
+    unrelated_body, _ = _make_body(root)
+    unrelated_body._name = "other_mesh"
     project = SimpleNamespace(root_part=root, sources=[])
     surface_source = _make_surface_source(
         project,
         "full_surface",
-        ["subpart/mesh/triangle", "subpart/mesh"],
+        ["subpart/inner/mesh/triangle", "subpart/inner/mesh"],
     )
     project.sources.append(surface_source)
+    project.sources.append(_make_surface_source(project, "unrelated", ["other_mesh"]))
 
     result = move_feature(surface_source, [1, 0, 0], 2)
 
@@ -547,9 +552,7 @@ def test_full_surface_source_transforms_body_resolved_from_nested_geopath(monkey
     assert face.vertices == pytest.approx([2, 0, 0, 3, 0, 0, 2, 1, 0])
 
 
-@pytest.mark.parametrize(
-    "other_geopath", ["subpart", "subpart/mesh", "subpart/mesh/triangle"]
-)
+@pytest.mark.parametrize("other_geopath", ["subpart", "subpart/mesh", "subpart/mesh/triangle"])
 def test_full_surface_source_rejects_body_used_by_another_source(monkeypatch, other_geopath):
     """Reject a body transform if another source targets the body or one of its faces."""
     monkeypatch.setattr(body_module.Body, "commit", lambda self: self)
@@ -562,9 +565,7 @@ def test_full_surface_source_rejects_body_used_by_another_source(monkeypatch, ot
     unrelated_body, _ = _make_body(root)
     unrelated_body._name = "other_mesh"
     project = SimpleNamespace(root_part=root, sources=[])
-    surface_source = _make_surface_source(
-        project, "full_surface", ["subpart/mesh/triangle"]
-    )
+    surface_source = _make_surface_source(project, "full_surface", ["subpart/mesh/triangle"])
     other_source = _make_surface_source(project, "other_surface", [other_geopath])
     unrelated_source = _make_surface_source(project, "unrelated", ["other_mesh"])
     project.sources.extend((surface_source, other_source, unrelated_source))
