@@ -134,6 +134,10 @@ class BaseSensor(ABC):
     _sensor_mode_template_field_v2 = None
     """Field names of the sensor-template sub-message holding mode configuration."""
 
+    _sensor_mode_field_prefix_v1 = "sensor_type_"
+    _sensor_mode_field_prefix_v2 = "mode_"
+    """Field-name prefixes used to resolve mode sub-messages for each template version."""
+
     @classmethod
     def _use_sensor_template_v2(cls) -> bool:
         """Tell if a newly created sensor template has to use the v2 protobuf definition.
@@ -220,7 +224,7 @@ class BaseSensor(ABC):
         google.protobuf.message.Message
             Protobuf sub-message for the active sensor template version.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+        if self._is_template_v2:
             return getattr(self._sensor_template, field_v2)
         return getattr(self._sensor_template, field_v1)
 
@@ -273,9 +277,9 @@ class BaseSensor(ABC):
         str
             Name of the protobuf field for the sensor template version in use.
         """
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "sensor_type_" + mode
+        if self._is_template_v2:
+            return self._sensor_mode_field_prefix_v2 + mode
+        return self._sensor_mode_field_prefix_v1 + mode
 
     def _get_sensor_mode(self, mode: str) -> Any:
         """Get the protobuf sub-message corresponding to a sensor mode.
@@ -1271,7 +1275,7 @@ class BaseSensor(ABC):
     def _commit_template(self) -> None:
         # Save or Update the sensor template (depending on if it was already committed before)
         if self.sensor_template_link is None:
-            if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
+            if self._is_template_v2:
                 self.sensor_template_link = self._project.client.sensor_templates_v2().create(
                     message=self._sensor_template
                 )
@@ -3084,9 +3088,6 @@ class SensorIrradiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if self._sensor_dimensions._sensor_dimensions is not self._sensor_mode_template.dimensions:
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_mode_template.dimensions
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorIrradiance:
@@ -3115,7 +3116,7 @@ class SensorIrradiance(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
@@ -3157,7 +3158,7 @@ class SensorIrradiance(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=None,
@@ -3820,9 +3821,6 @@ class SensorRadiance(BaseSensor):
         ansys.speos.core.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if self._sensor_dimensions._sensor_dimensions is not self._sensor_mode_template.dimensions:
-            # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_mode_template.dimensions
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorRadiance:
@@ -3851,7 +3849,7 @@ class SensorRadiance(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
@@ -3893,7 +3891,7 @@ class SensorRadiance(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 default_parameters=None,
@@ -4105,7 +4103,17 @@ class Sensor3DIrradiance(BaseSensor):
     default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, optional
         If defined the values in the sensor instance will be overwritten by the values of the data
         class
+
+    Notes
+    -----
+    This feature supports both sensor template protobuf versions. Version 2 is used for newly
+    created sensors when the connected Speos server is 2027 R1 SP0 or above, version 1 otherwise.
     """
+
+    _supports_template_v2 = True
+    _sensor_mode_template_field_v1 = "irradiance_3d"
+    _sensor_mode_template_field_v2 = "irradiance_3d"
+    _sensor_mode_field_prefix_v1 = "type_"
 
     def __init__(
         self,
@@ -4147,20 +4155,25 @@ class Sensor3DIrradiance(BaseSensor):
 
         if default_parameters:
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
+                self._get_sensor_mode("colorimetric").SetInParent()
                 self._type = Sensor3DIrradiance.Colorimetric(
-                    sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
+                    sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
             elif default_parameters.sensor_type == SensorTypes.radiometric:
+                self._get_sensor_mode("radiometric").SetInParent()
                 self._type = Sensor3DIrradiance.Radiometric(
-                    sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
+                    sensor_type_radiometric=self._get_sensor_mode("radiometric"),
+                    irradiance_3d_template=self._sensor_mode_template,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
             elif default_parameters.sensor_type == SensorTypes.photometric:
+                self._get_sensor_mode("photometric").SetInParent()
                 self._type = Sensor3DIrradiance.Photometric(
-                    sensor_type_photometric=self._sensor_template.irradiance_3d.type_photometric,
+                    sensor_type_photometric=self._get_sensor_mode("photometric"),
+                    irradiance_3d_template=self._sensor_mode_template,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
@@ -4183,12 +4196,11 @@ class Sensor3DIrradiance(BaseSensor):
                     self.set_ray_file_type_tm25_no_polarization()
             return
 
-        template = self._sensor_template.irradiance_3d
-        if template.HasField("type_photometric"):
+        if self._has_sensor_mode("photometric"):
             self.set_type_photometric()
-        elif template.HasField("type_colorimetric"):
+        elif self._has_sensor_mode("colorimetric"):
             self.set_type_colorimetric()
-        elif template.HasField("type_radiometric"):
+        elif self._has_sensor_mode("radiometric"):
             self.set_type_radiometric()
         properties = self._sensor_instance.irradiance_3d_properties
         if properties.HasField("layer_type_none"):
@@ -4203,8 +4215,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_radiometric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModeRadiometric]
+            SensorTypeRadiometric protobuf object to modify.
+        irradiance_3d_template: Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
             Uses default values when True.
@@ -4219,7 +4237,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         def __init__(
             self,
-            sensor_type_radiometric: sensor_pb2.TypeRadiometric,
+            sensor_type_radiometric: Union[
+                sensor_pb2.TypeRadiometric,
+                sensor_v2_pb2.SensorTemplate.ModeRadiometric,
+            ],
+            irradiance_3d_template: Union[
+                sensor_pb2.SensorTemplate.Irradiance3D,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            ],
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
@@ -4227,8 +4252,44 @@ class Sensor3DIrradiance(BaseSensor):
                 raise RuntimeError("Radiometric class instantiated outside of class scope")
 
             self._sensor_type_radiometric = sensor_type_radiometric
+            self._irradiance_3d_template = irradiance_3d_template
             self._integration_type = None
             self._fill_parameters(default_parameters, stable_ctr)
+
+        def _uses_template_v2(self) -> bool:
+            """Tell whether the wrapped 3D irradiance template uses protobuf version 2."""
+            return isinstance(
+                self._irradiance_3d_template,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            )
+
+        def _planar_measures_target(self):
+            """Get the protobuf object holding planar measures fields."""
+            if self._uses_template_v2():
+                return self._irradiance_3d_template
+            return self._sensor_type_radiometric.integration_type_planar
+
+        def _set_integration_type(self, integration_type: str) -> None:
+            """Set the integration type on the underlying protobuf message."""
+            if self._uses_template_v2():
+                self._irradiance_3d_template.integration_type = getattr(
+                    sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+                    "INTEGRATION_TYPE_" + integration_type.upper(),
+                )
+            else:
+                getattr(
+                    self._sensor_type_radiometric,
+                    "integration_type_" + integration_type,
+                ).SetInParent()
+
+        def _has_integration_type(self, integration_type: str) -> bool:
+            """Tell if the wrapped protobuf object currently uses the given integration type."""
+            if self._uses_template_v2():
+                return self._irradiance_3d_template.integration_type == getattr(
+                    sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+                    "INTEGRATION_TYPE_" + integration_type.upper(),
+                )
+            return self._sensor_type_radiometric.HasField("integration_type_" + integration_type)
 
         def _fill_parameters(
             self,
@@ -4244,16 +4305,13 @@ class Sensor3DIrradiance(BaseSensor):
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
-                        self._integration_type = Sensor3DIrradiance.Measures(
-                            illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                            default_parameters=default_parameters.measures,
-                            stable_ctr=stable_ctr,
-                        )
+                        self._integration_type = self.set_integration_planar()
+                        self._integration_type._fill_parameters(default_parameters.measures)
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
                 return
 
-            if self._sensor_type_radiometric.HasField("integration_type_radial"):
+            if self._has_integration_type("radial"):
                 self.set_integration_radial()
             else:
                 self.set_integration_planar()
@@ -4267,28 +4325,31 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
-            if self._integration_type is None and self._sensor_type_radiometric.HasField(
-                "integration_type_planar"
-            ):
+            if self._integration_type is None and self._has_integration_type("planar"):
                 # Happens in case of project created via load of speos file, or after a reset.
                 self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    illuminance_type=self._planar_measures_target(),
                     default_parameters=None,
                     stable_ctr=True,
                 )
             elif not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 # if the _integration_type is not Measures then we create a new type.
                 self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    illuminance_type=self._planar_measures_target(),
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
+            self._set_integration_type("planar")
             return self._integration_type
 
         def set_integration_radial(self) -> None:
             """Set integration radial."""
+            if self._uses_template_v2():
+                self._irradiance_3d_template.ClearField("reflection")
+                self._irradiance_3d_template.ClearField("transmission")
+                self._irradiance_3d_template.ClearField("absorption")
+            self._set_integration_type("radial")
             self._integration_type = "Radial"
-            self._sensor_type_radiometric.integration_type_radial.SetInParent()
 
     class Photometric:
         """Class computing the luminous intensity (in cd).
@@ -4297,8 +4358,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_photometric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModePhotometric]
+            SensorTypePhotometric protobuf object to modify.
+        irradiance_3d_template: Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Irradiance3D,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Irradiance3D protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
             Uses default values when True.
@@ -4313,7 +4380,14 @@ class Sensor3DIrradiance(BaseSensor):
 
         def __init__(
             self,
-            sensor_type_photometric: sensor_pb2.TypePhotometric,
+            sensor_type_photometric: Union[
+                sensor_pb2.TypePhotometric,
+                sensor_v2_pb2.SensorTemplate.ModePhotometric,
+            ],
+            irradiance_3d_template: Union[
+                sensor_pb2.SensorTemplate.Irradiance3D,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            ],
             default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
@@ -4321,8 +4395,44 @@ class Sensor3DIrradiance(BaseSensor):
                 raise RuntimeError("Photometric class instantiated outside of class scope")
 
             self._sensor_type_photometric = sensor_type_photometric
+            self._irradiance_3d_template = irradiance_3d_template
             self._integration_type = None
             self._fill_parameters(default_parameters, stable_ctr)
+
+        def _uses_template_v2(self) -> bool:
+            """Tell whether the wrapped 3D irradiance template uses protobuf version 2."""
+            return isinstance(
+                self._irradiance_3d_template,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            )
+
+        def _planar_measures_target(self):
+            """Get the protobuf object holding planar measures fields."""
+            if self._uses_template_v2():
+                return self._irradiance_3d_template
+            return self._sensor_type_photometric.integration_type_planar
+
+        def _set_integration_type(self, integration_type: str) -> None:
+            """Set the integration type on the underlying protobuf message."""
+            if self._uses_template_v2():
+                self._irradiance_3d_template.integration_type = getattr(
+                    sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+                    "INTEGRATION_TYPE_" + integration_type.upper(),
+                )
+            else:
+                getattr(
+                    self._sensor_type_photometric,
+                    "integration_type_" + integration_type,
+                ).SetInParent()
+
+        def _has_integration_type(self, integration_type: str) -> bool:
+            """Tell if the wrapped protobuf object currently uses the given integration type."""
+            if self._uses_template_v2():
+                return self._irradiance_3d_template.integration_type == getattr(
+                    sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+                    "INTEGRATION_TYPE_" + integration_type.upper(),
+                )
+            return self._sensor_type_photometric.HasField("integration_type_" + integration_type)
 
         def _fill_parameters(
             self,
@@ -4338,16 +4448,13 @@ class Sensor3DIrradiance(BaseSensor):
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
-                        self._integration_type = Sensor3DIrradiance.Measures(
-                            illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                            default_parameters=default_parameters.measures,
-                            stable_ctr=stable_ctr,
-                        )
+                        self._integration_type = self.set_integration_planar()
+                        self._integration_type._fill_parameters(default_parameters.measures)
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
                 return
 
-            if self._sensor_type_photometric.HasField("integration_type_radial"):
+            if self._has_integration_type("radial"):
                 self.set_integration_radial()
             else:
                 self.set_integration_planar()
@@ -4361,29 +4468,30 @@ class Sensor3DIrradiance(BaseSensor):
                 measured defines transmission, reflection, absorption
 
             """
-            if self._integration_type is None and self._sensor_type_photometric.HasField(
-                "integration_type_planar"
-            ):
-                # Happens in case of project created via load of speos file, or after a reset.
+            if self._integration_type is None and self._has_integration_type("planar"):
                 self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    illuminance_type=self._planar_measures_target(),
                     default_parameters=None,
                     stable_ctr=True,
                 )
-            if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
+            elif not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 # if the _integration_type is not Measures then we create a new type.
                 self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    illuminance_type=self._planar_measures_target(),
                     default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
-
+            self._set_integration_type("planar")
             return self._integration_type
 
         def set_integration_radial(self) -> None:
             """Set integration radial."""
+            if self._uses_template_v2():
+                self._irradiance_3d_template.ClearField("reflection")
+                self._irradiance_3d_template.ClearField("transmission")
+                self._irradiance_3d_template.ClearField("absorption")
+            self._set_integration_type("radial")
             self._integration_type = "Radial"
-            self._sensor_type_photometric.integration_type_radial.SetInParent()
 
     class Measures:
         """Measures settings of 3D irradiance sensor : Additional Measures.
@@ -4394,8 +4502,10 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
-            SensorTypeColorimetric protobuf object to modify.
+        illuminance_type : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.Irradiance3D]
+            Protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.MeasuresParameters]] = None
             Uses default values when True.
@@ -4410,7 +4520,10 @@ class Sensor3DIrradiance(BaseSensor):
 
         def __init__(
             self,
-            illuminance_type: sensor_pb2.IntegrationTypePlanar,
+            illuminance_type: Union[
+                sensor_pb2.IntegrationTypePlanar,
+                sensor_v2_pb2.SensorTemplate.Irradiance3D,
+            ],
             default_parameters: Optional[MeasuresParameters] = None,
             stable_ctr: bool = False,
         ):
@@ -4494,7 +4607,9 @@ class Sensor3DIrradiance(BaseSensor):
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
+        sensor_type_colorimetric : Union[\
+        ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric,
+        ansys.api.speos.sensor.v2.sensor_v2_pb2.SensorTemplate.ModeColorimetric]
             SensorTypeColorimetric protobuf object to modify.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.ColorimetricParameters] = None
@@ -4510,7 +4625,10 @@ class Sensor3DIrradiance(BaseSensor):
 
         def __init__(
             self,
-            sensor_type_colorimetric: sensor_pb2.TypeColorimetric,
+            sensor_type_colorimetric: Union[
+                sensor_pb2.TypeColorimetric,
+                sensor_v2_pb2.SensorTemplate.ModeColorimetric,
+            ],
             default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -4522,12 +4640,18 @@ class Sensor3DIrradiance(BaseSensor):
             # Attribute to keep track of wavelength range object
 
             self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_colorimetric,
+                wavelengths_range=self._wavelengths_range_target(),
                 default_parameters=default_parameters.wavelength_range
                 if default_parameters
                 else None,
                 stable_ctr=stable_ctr,
             )
+
+        def _wavelengths_range_target(self):
+            """Get the protobuf object holding wavelength range fields."""
+            if "wavelengths_range" in self._sensor_type_colorimetric.DESCRIPTOR.fields_by_name:
+                return self._sensor_type_colorimetric.wavelengths_range
+            return self._sensor_type_colorimetric
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -4679,17 +4803,22 @@ class Sensor3DIrradiance(BaseSensor):
         ansys.speos.core.sensor.Sensor3DIrradiance.Photometric
             3D Irradiance sensor.
         """
-        if self._type is None and self._sensor_template.irradiance_3d.HasField("type_photometric"):
-            # Happens in case of project created via load of speos file, or after a reset.
+        had_type_photometric = self._has_sensor_mode("photometric")
+        if not had_type_photometric:
+            self._get_sensor_mode("photometric").SetInParent()
+        if self._type is None and had_type_photometric:
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = Sensor3DIrradiance.Photometric(
-                self._sensor_template.irradiance_3d.type_photometric,
+                sensor_type_photometric=self._get_sensor_mode("photometric"),
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Photometric):
             # if the _type is not Photometric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
-                self._sensor_template.irradiance_3d.type_photometric,
+                sensor_type_photometric=self._get_sensor_mode("photometric"),
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
@@ -4706,17 +4835,22 @@ class Sensor3DIrradiance(BaseSensor):
         ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric
             3D Irradiance sensor
         """
-        if self._type is None and self._sensor_template.irradiance_3d.HasField("type_radiometric"):
-            # Happens in case of project created via load of speos file, or after a reset.
+        had_type_radiometric = self._has_sensor_mode("radiometric")
+        if not had_type_radiometric:
+            self._get_sensor_mode("radiometric").SetInParent()
+        if self._type is None and had_type_radiometric:
+            # Happens in case of project created via load of speos file, or after reset
             self._type = Sensor3DIrradiance.Radiometric(
-                sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
+                sensor_type_radiometric=self._get_sensor_mode("radiometric"),
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Radiometric):
             # if the _type is not Radiometric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
-                sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
+                sensor_type_radiometric=self._get_sensor_mode("radiometric"),
+                irradiance_3d_template=self._sensor_mode_template,
                 default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
@@ -4734,17 +4868,24 @@ class Sensor3DIrradiance(BaseSensor):
         ansys.speos.core.sensor.Sensor3DIrradiance.Colorimetric
             Colorimetric type.
         """
-        if self._type is None and self._sensor_template.irradiance_3d.HasField("type_colorimetric"):
-            # Happens in case of project created via load of speos file, or after a reset.
+        had_type_colorimetric = self._has_sensor_mode("colorimetric")
+        if self._is_template_v2:
+            self._sensor_mode_template.ClearField("reflection")
+            self._sensor_mode_template.ClearField("transmission")
+            self._sensor_mode_template.ClearField("absorption")
+        if not had_type_colorimetric:
+            self._get_sensor_mode("colorimetric").SetInParent()
+        if self._type is None and had_type_colorimetric:
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = Sensor3DIrradiance.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=None,
                 stable_ctr=True,
             )
-        elif not isinstance(self._type, BaseSensor.Colorimetric):
+        elif not isinstance(self._type, Sensor3DIrradiance.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
+                sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
@@ -5713,7 +5854,7 @@ class SensorXMPIntensity(BaseSensor):
             Colorimetric type.
         """
         if self._type is None and self._has_sensor_mode("colorimetric"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._get_sensor_mode("colorimetric"),
                 stable_ctr=True,
@@ -5754,7 +5895,7 @@ class SensorXMPIntensity(BaseSensor):
             Spectral type.
         """
         if self._type is None and self._has_sensor_mode("spectral"):
-            # Happens in case of project created via load of speos file
+            # Happens in case of project created via load of speos file, or after reset.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._get_sensor_mode("spectral"),
                 stable_ctr=True,
