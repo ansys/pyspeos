@@ -110,7 +110,7 @@ def sensor_template_version(request, monkeypatch):
     """Test fixture which forces a test to run with 26R1 version to check sensor template V1."""
     version = request.param
     if "V1" == version:
-        monkeypatch.setattr(server_version_checker, "_version", "2026.1.0")
+        monkeypatch.setattr(server_version_checker, "_version", "2026.1.3")
     elif "V2" == version:
         if not server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
             pytest.skip("Template version V2 not yet supported")

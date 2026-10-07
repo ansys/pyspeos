@@ -80,6 +80,9 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
+from ansys.speos.core.generic.spectrum_reference import (
+    _SpectrumReference as GenericSpectrumReference,
+)
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
@@ -89,7 +92,6 @@ from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
-from ansys.speos.core.spectrum import Spectrum
 
 
 class BaseSensor(ABC):
@@ -1440,89 +1442,7 @@ class SensorCamera(BaseSensor):
     _supports_template_v2 = True
     _sensor_mode_template_field_v1 = "camera_sensor_template"
     _sensor_mode_template_field_v2 = "camera"
-
-    class _SpectrumReference:
-        """Internal helper storing a file-path API on top of a v2 spectrum GUID field."""
-
-        def __init__(
-            self,
-            project: project.Project,
-            name: str,
-            message_to_complete: Any,
-            field_name_to_complete: str,
-            stable_ctr: bool = False,
-        ) -> None:
-            if not stable_ctr:
-                msg = "_SpectrumReference class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._project = project
-            self._name = name
-            self._field_name_to_complete = field_name_to_complete
-            self._message_to_complete = message_to_complete
-            self._spectrum = None
-            self._file_uri = ""
-            self.bind(message_to_complete)
-
-        def _ensure_spectrum(self, key: str = "") -> Spectrum:
-            current_key = ""
-            if self._spectrum is not None and self._spectrum.spectrum_link is not None:
-                current_key = self._spectrum.spectrum_link.key
-
-            if self._spectrum is None or (key and current_key != key):
-                if key:
-                    self._spectrum = Spectrum(
-                        speos_client=self._project.client,
-                        name=self._name,
-                        key=key,
-                    )
-                else:
-                    self._spectrum = Spectrum(speos_client=self._project.client, name=self._name)
-            return self._spectrum
-
-        def bind(self, message_to_complete: Any) -> SensorCamera._SpectrumReference:
-            """Bind the helper to a protobuf field and refresh the local file-path cache."""
-            self._message_to_complete = message_to_complete
-            spectrum_guid = getattr(self._message_to_complete, self._field_name_to_complete)
-            if spectrum_guid:
-                spectrum = self._ensure_spectrum(key=spectrum_guid)
-                self._file_uri = spectrum._spectrum.library.file_uri
-            else:
-                self._file_uri = ""
-            return self
-
-        @property
-        def file_uri(self) -> str:
-            """User-facing file path for the referenced library spectrum."""
-            return self._file_uri
-
-        @file_uri.setter
-        def file_uri(self, file_uri: Union[str, Path]) -> None:
-            self._file_uri = str(Path(file_uri)) if file_uri else ""
-            if self._file_uri:
-                spectrum = self._ensure_spectrum()
-                spectrum.set_library().file_uri = self._file_uri
-
-        def clear(self) -> SensorCamera._SpectrumReference:
-            """Clear the local file path and referenced protobuf GUID field."""
-            self._file_uri = ""
-            self._message_to_complete.ClearField(self._field_name_to_complete)
-            return self
-
-        def commit(self) -> SensorCamera._SpectrumReference:
-            """Commit the referenced spectrum and write its GUID to the bound protobuf field."""
-            if not self._file_uri:
-                self._message_to_complete.ClearField(self._field_name_to_complete)
-                return self
-
-            spectrum = self._ensure_spectrum()
-            spectrum.set_library().file_uri = self._file_uri
-            spectrum.commit()
-            setattr(
-                self._message_to_complete,
-                self._field_name_to_complete,
-                spectrum.spectrum_link.key,
-            )
-            return self
+    _SpectrumReference = GenericSpectrumReference
 
     @staticmethod
     def _camera_color_mode_field(mode_photometric: Any, mode: str) -> str:
@@ -1792,7 +1712,6 @@ class SensorCamera(BaseSensor):
                         sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries,
                     ],
                 ) -> None:
-                    self._balance_mode_display = balance_mode_display
                     if hasattr(self._balance_mode_display, "red_display_spectrum_guid"):
                         if self._red_display_spectrum is None:
                             self._red_display_spectrum = SensorCamera._SpectrumReference(
@@ -1816,10 +1735,6 @@ class SensorCamera(BaseSensor):
                                 field_name_to_complete="blue_display_spectrum_guid",
                                 stable_ctr=True,
                             )
-                        else:
-                            self._red_display_spectrum.bind(self._balance_mode_display)
-                            self._green_display_spectrum.bind(self._balance_mode_display)
-                            self._blue_display_spectrum.bind(self._balance_mode_display)
 
                 def _fill_parameters(
                     self,
@@ -1952,7 +1867,6 @@ class SensorCamera(BaseSensor):
                     sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor,
                 ],
             ) -> None:
-                self._mode_color = mode_color
                 if hasattr(self._mode_color, "red_spectrum_guid"):
                     if self._red_spectrum is None:
                         self._red_spectrum = SensorCamera._SpectrumReference(
@@ -1976,10 +1890,6 @@ class SensorCamera(BaseSensor):
                             field_name_to_complete="blue_spectrum_guid",
                             stable_ctr=True,
                         )
-                    else:
-                        self._red_spectrum.bind(self._mode_color)
-                        self._green_spectrum.bind(self._mode_color)
-                        self._blue_spectrum.bind(self._mode_color)
 
             def _fill_parameters(
                 self, default_parameters: Optional[ColorParameters] = None
@@ -2243,15 +2153,16 @@ class SensorCamera(BaseSensor):
                 return self._mode
 
             def _commit_spectra(self) -> None:
-                if self._red_spectrum is not None:
-                    self._red_spectrum.commit()
-                    self._green_spectrum.commit()
-                    self._blue_spectrum.commit()
+                if self._red_spectrum is None:
+                    return
+                self._red_spectrum.commit()
+                self._green_spectrum.commit()
+                self._blue_spectrum.commit()
 
                 if self._mode_color.HasField(
                     SensorCamera._camera_white_balance_field(self._mode_color, "display_primaries")
                 ):
-                    self.set_balance_mode_display_primaries()._commit_spectra()
+                    self._mode._commit_spectra()
 
         def __init__(
             self,
@@ -2287,7 +2198,6 @@ class SensorCamera(BaseSensor):
             mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric
             | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric,
         ) -> None:
-            self._mode_photometric = mode_photometric
             if hasattr(self._mode_photometric, "transmittance_spectrum_guid"):
                 if self._transmittance_spectrum is None:
                     self._transmittance_spectrum = SensorCamera._SpectrumReference(
@@ -2297,8 +2207,6 @@ class SensorCamera(BaseSensor):
                         field_name_to_complete="transmittance_spectrum_guid",
                         stable_ctr=True,
                     )
-                else:
-                    self._transmittance_spectrum.bind(self._mode_photometric)
 
             monochromatic = getattr(
                 self._mode_photometric,
@@ -2313,8 +2221,6 @@ class SensorCamera(BaseSensor):
                         field_name_to_complete="spectrum_guid",
                         stable_ctr=True,
                     )
-                else:
-                    self._monochromatic_spectrum.bind(monochromatic)
 
         def _fill_parameters(
             self,
@@ -2621,19 +2527,16 @@ class SensorCamera(BaseSensor):
             return self._mode
 
         def _commit_spectra(self) -> None:
-            if self._transmittance_spectrum is not None:
-                self._transmittance_spectrum.commit()
+            if self._transmittance_spectrum is None:
+                return
 
-            monochromatic_field = SensorCamera._camera_color_mode_field(
-                self._mode_photometric, "monochromatic"
-            )
-            color_field = SensorCamera._camera_color_mode_field(self._mode_photometric, "color")
-
-            if self._mode_photometric.HasField(monochromatic_field):
-                if self._monochromatic_spectrum is not None:
-                    self._monochromatic_spectrum.commit()
-            elif self._mode_photometric.HasField(color_field):
-                self.set_mode_color()._commit_spectra()
+            self._transmittance_spectrum.commit()
+            if self._mode_photometric.HasField(
+                SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic")
+            ):
+                self._monochromatic_spectrum.commit()
+            elif isinstance(self._mode, SensorCamera.Photometric.Color):
+                self._mode._commit_spectra()
 
         def _clear_transmittance(self) -> None:
             if self._transmittance_spectrum is not None:

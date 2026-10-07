@@ -2788,7 +2788,7 @@ def test_immersive_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_camera_reset_internal_attributes(speos: Speos):
+def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of camera sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -4218,7 +4218,9 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_default(
+    speos: Speos, sensor_template_version
+):
     """Test default value of consider_diffraction_effects is False."""
     p = Project(speos=speos)
 
@@ -4230,7 +4232,9 @@ def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_setter(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects setter and getter."""
     p = Project(speos=speos)
 
@@ -4247,7 +4251,9 @@ def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_persistence(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects persists after commit and reset."""
     p = Project(speos=speos)
 
@@ -4287,7 +4293,9 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_from_parameters(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects from PhotometricCameraParameters."""
     p = Project(speos=speos)
 
