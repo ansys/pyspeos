@@ -216,6 +216,104 @@ def _sensor_mode_field(sensor_feature, mode: str) -> str:
     return "sensor_type_" + mode
 
 
+def camera_template(sensor_feature, local: bool = False):
+    """Get the camera part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.camera
+    return template.camera_sensor_template
+
+
+def has_camera_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds a camera definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("camera")
+    return template.HasField("camera_sensor_template")
+
+
+def _camera_mode_field(sensor_feature, mode: str) -> str:
+    """Get the protobuf field name of a camera mode for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "mode_" + mode
+    return "sensor_mode_" + mode
+
+
+def camera_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the camera mode sub-message of a camera template."""
+    return getattr(camera_template(sensor_feature, local), _camera_mode_field(sensor_feature, mode))
+
+
+def has_camera_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the camera template currently uses the given camera mode."""
+    return camera_template(sensor_feature, local).HasField(_camera_mode_field(sensor_feature, mode))
+
+
+def _camera_color_mode_field(mode_photometric) -> dict[str, str]:
+    """Get v1/v2 protobuf field names for camera color-mode branches."""
+    if isinstance(mode_photometric, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric):
+        return {"color": "mode_color", "monochromatic": "mode_monochromatic"}
+    return {"color": "color_mode_color", "monochromatic": "color_mode_monochromatic"}
+
+
+def camera_color_mode(mode_photometric, mode: str):
+    """Get the camera color-mode sub-message."""
+    return getattr(mode_photometric, _camera_color_mode_field(mode_photometric)[mode])
+
+
+def has_camera_color_mode(mode_photometric, mode: str) -> bool:
+    """Tell if the camera photometric mode currently uses the given color mode."""
+    return mode_photometric.HasField(_camera_color_mode_field(mode_photometric)[mode])
+
+
+def _camera_white_balance_field(mode_color) -> dict[str, str]:
+    """Get v1/v2 protobuf field names for camera white-balance branches."""
+    if isinstance(mode_color, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor):
+        return {
+            "none": "white_balance_mode_none",
+            "grey_world": "white_balance_mode_grey_world",
+            "user_white": "white_balance_mode_user",
+            "display_primaries": "white_balance_mode_display_primaries",
+        }
+    return {
+        "none": "balance_mode_none",
+        "grey_world": "balance_mode_greyworld",
+        "user_white": "balance_mode_userwhite",
+        "display_primaries": "balance_mode_display",
+    }
+
+
+def has_camera_white_balance_mode(mode_color, mode: str) -> bool:
+    """Tell if the camera color mode currently uses the given white-balance mode."""
+    return mode_color.HasField(_camera_white_balance_field(mode_color)[mode])
+
+
+def camera_white_balance_mode(mode_color, mode: str):
+    """Get the camera white-balance sub-message."""
+    return getattr(mode_color, _camera_white_balance_field(mode_color)[mode])
+
+
+def camera_png_bits(mode_photometric, bits: str) -> int:
+    """Get the protobuf enum value for a camera PNG bit depth."""
+    if isinstance(mode_photometric, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric):
+        return getattr(sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric, "PNG_BITS_" + bits)
+    return getattr(camera_sensor_pb2.EnumSensorCameraPNGBits, "PNG_" + bits)
+
+
+def camera_library_spectrum_uri(project: Project, message, file_field: str, guid_field: str) -> str:
+    """Resolve a v1 file field or a v2 spectrum GUID field to the user-facing file path."""
+    if hasattr(message, guid_field):
+        spectrum_guid = getattr(message, guid_field)
+        if not spectrum_guid:
+            return ""
+        return project.client[spectrum_guid].get().library.file_uri
+    return getattr(message, file_field)
+
+
 def sensor_mode(sensor_feature, mode: str, local: bool = False):
     """Get the sensor mode sub-message of an irradiance template.
 
@@ -611,7 +709,7 @@ def wavelength_range_end(wavelengths_range) -> float:
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_camera_sensor(speos: Speos):
+def test_create_camera_sensor(speos: Speos, sensor_template_version):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
 
@@ -631,8 +729,12 @@ def test_create_camera_sensor(speos: Speos):
 
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert has_camera_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.focal_length == sensor_parameters.focal_length
     assert camera_sensor_template.imager_distance == sensor_parameters.imager_distance
     assert camera_sensor_template.distortion_file_uri == ""
@@ -641,8 +743,8 @@ def test_create_camera_sensor(speos: Speos):
     assert camera_sensor_template.vert_pixel == sensor_parameters.vert_pixel
     assert camera_sensor_template.width == sensor_parameters.width
     assert camera_sensor_template.height == sensor_parameters.height
-    assert camera_sensor_template.HasField("sensor_mode_photometric")
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
+    assert has_camera_mode(sensor1, "photometric")
+    mode_photometric = camera_mode(sensor1, "photometric")
     assert (
         mode_photometric.acquisition_integration
         == sensor_parameters.sensor_type_parameters.acquisition_integration_time
@@ -652,7 +754,12 @@ def test_create_camera_sensor(speos: Speos):
         == sensor_parameters.sensor_type_parameters.acquisition_lag_time
     )
     assert (
-        mode_photometric.transmittance_file_uri
+        camera_library_spectrum_uri(
+            p,
+            mode_photometric,
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
         == sensor_parameters.sensor_type_parameters.transmittance_file_uri
     )
     assert math.isclose(
@@ -660,7 +767,7 @@ def test_create_camera_sensor(speos: Speos):
         b=sensor_parameters.sensor_type_parameters.gamma_correction,
         rel_tol=1.192092896e-07,
     )
-    assert mode_photometric.png_bits == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "16")
     assert mode_photometric.HasField("wavelengths_range")
     assert (
         mode_photometric.wavelengths_range.w_start
@@ -674,17 +781,27 @@ def test_create_camera_sensor(speos: Speos):
         mode_photometric.wavelengths_range.w_sampling
         == sensor_parameters.sensor_type_parameters.wavelength_range.sampling
     )
-    assert mode_photometric.HasField("color_mode_color")
-    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
-    assert mode_photometric.color_mode_color.HasField("balance_mode_none")
+    assert has_camera_color_mode(mode_photometric, "color")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "green_spectrum_file_uri",
+        "green_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "blue_spectrum_file_uri",
+        "blue_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
+    assert has_camera_white_balance_mode(color_mode, "none")
     assert sensor1._sensor_instance.camera_properties.axis_system == sensor_parameters.axis_system
     assert (
         sensor1._sensor_instance.camera_properties.trajectory_file_uri
@@ -698,21 +815,21 @@ def test_create_camera_sensor(speos: Speos):
     # focal_length
     sensor1.focal_length = 5.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.focal_length == 5.5
     assert sensor1.focal_length == 5.5
 
     # imager_distance
     sensor1.imager_distance = 10.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.imager_distance == 10.5
     assert sensor1.imager_distance == 10.5
 
     # f_number
     sensor1.f_number = 20.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.5
     assert sensor1.f_number == 20.5
 
@@ -721,43 +838,42 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.distortion_file_uri != ""
     assert sensor1.distortion_file_uri != ""
 
     # horz_pixel
     sensor1.horz_pixel = 680
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.horz_pixel == 680
     assert sensor1.horz_pixel == 680
 
     # vert_pixel
     sensor1.vert_pixel = 500
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.vert_pixel == 500
     assert sensor1.vert_pixel == 500
 
     # width
     sensor1.width = 5.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.width == 5.5
     assert sensor1.width == 5.5
 
     # height
     sensor1.height = 5.3
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.height == 5.3
     assert sensor1.height == 5.3
 
     # sensor_mode_geometric
     sensor1.set_mode_geometric()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.HasField("sensor_mode_geometric")
+    assert has_camera_mode(sensor1, "geometric")
 
     # sensor_mode_photometric
     sensor1.set_mode_photometric()
@@ -772,21 +888,20 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.HasField("sensor_mode_photometric")
+    assert has_camera_mode(sensor1, "photometric")
 
     # acquisition_integration
     sensor1.photometric.acquisition_integration = 0.03
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_integration == 0.03
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.acquisition_integration == 0.03
     assert sensor1.photometric.acquisition_integration == 0.03
 
     # acquisition_lag_time
     sensor1.photometric.acquisition_lag_time = 0.1
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_lag_time == 0.1
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.acquisition_lag_time == 0.1
     assert sensor1.photometric.acquisition_lag_time == 0.1
 
     # transmittance_file_uri
@@ -794,46 +909,42 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            mode_photometric,
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        != ""
+    )
     assert sensor1.photometric.transmittance_file_uri != ""
 
     # gamma_correction
     sensor1.photometric.gamma_correction = 2.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.gamma_correction == 2.5
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.gamma_correction == 2.5
     assert sensor1.photometric.gamma_correction == 2.5
 
     # png_bits
     sensor1.photometric.set_png_bits_08()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_08
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "08")
     sensor1.set_mode_photometric().set_png_bits_10()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_10
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "10")
     sensor1.set_mode_photometric().set_png_bits_12()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_12
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "12")
     sensor1.set_mode_photometric().set_png_bits_16()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "16")
 
     # color_mode_monochromatic
     sensor1.set_mode_photometric().set_mode_monochromatic(
@@ -842,10 +953,17 @@ def test_create_camera_sensor(speos: Speos):
         )
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.HasField("color_mode_monochromatic")
-    assert mode_photometric.color_mode_monochromatic.spectrum_file_uri != ""
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_color_mode(mode_photometric, "monochromatic")
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_color_mode(mode_photometric, "monochromatic"),
+            "spectrum_file_uri",
+            "spectrum_guid",
+        )
+        != ""
+    )
 
     # color_mode_color
     sensor1.set_mode_photometric()
@@ -860,19 +978,28 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_color_mode(mode_photometric, "color")
 
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "green_spectrum_file_uri",
+        "green_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "blue_spectrum_file_uri",
+        "blue_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
     assert color.red_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
     assert color.green_spectrum_file_uri.endswith("CameraSensitivityGreen.spectrum")
     assert color.blue_spectrum_file_uri.endswith("CameraSensitivityBlue.spectrum")
@@ -880,29 +1007,20 @@ def test_create_camera_sensor(speos: Speos):
     # balance_mode_greyworld
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_grey_world()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_greyworld")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_white_balance_mode(camera_color_mode(mode_photometric, "color"), "grey_world")
 
     # balance_mode_userwhite
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_userwhite")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert has_camera_white_balance_mode(color_mode, "user_white")
+    user_white_mode = camera_white_balance_mode(color_mode, "user_white")
     default_userwhites = BalanceModeUserWhiteParameters()
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.red_gain
-        == default_userwhites.red_gain
-    )
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.green_gain
-        == default_userwhites.green_gain
-    )
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
-        == default_userwhites.blue_gain
-    )
+    assert user_white_mode.red_gain == default_userwhites.red_gain
+    assert user_white_mode.green_gain == default_userwhites.green_gain
+    assert user_white_mode.blue_gain == default_userwhites.blue_gain
 
     balance_mode_user_white = (
         sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
@@ -911,11 +1029,13 @@ def test_create_camera_sensor(speos: Speos):
     balance_mode_user_white.green_gain = 3
     balance_mode_user_white.blue_gain = 4
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.red_gain == 2
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.green_gain == 3
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 4
+    mode_photometric = camera_mode(sensor1, "photometric")
+    user_white_mode = camera_white_balance_mode(
+        camera_color_mode(mode_photometric, "color"), "user_white"
+    )
+    assert user_white_mode.red_gain == 2
+    assert user_white_mode.green_gain == 3
+    assert user_white_mode.blue_gain == 4
     assert balance_mode_user_white.red_gain == 2
     assert balance_mode_user_white.green_gain == 3
     assert balance_mode_user_white.blue_gain == 4
@@ -934,18 +1054,28 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_display")
-    assert mode_photometric.color_mode_color.balance_mode_display.red_display_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.balance_mode_display.green_display_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert has_camera_white_balance_mode(color_mode, "display_primaries")
+    display_mode = camera_white_balance_mode(color_mode, "display_primaries")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "red_display_file_uri",
+        "red_display_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "green_display_file_uri",
+        "green_display_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "blue_display_file_uri",
+        "blue_display_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
     assert display_primaries.red_display_file_uri == str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -959,9 +1089,8 @@ def test_create_camera_sensor(speos: Speos):
     # balance_mode_none
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_none()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_none")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_white_balance_mode(camera_color_mode(mode_photometric, "color"), "none")
 
     # wavelengths_range
     wavelengths_range = sensor1.photometric.set_wavelengths_range()
@@ -969,8 +1098,7 @@ def test_create_camera_sensor(speos: Speos):
     wavelengths_range.end = 750
     wavelengths_range.sampling = 15
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
+    mode_photometric = camera_mode(sensor1, "photometric")
     assert mode_photometric.wavelengths_range.w_start == 430
     assert mode_photometric.wavelengths_range.w_end == 750
     assert mode_photometric.wavelengths_range.w_sampling == 15
@@ -1031,12 +1159,12 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.distortion_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2)
     )
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
@@ -1046,29 +1174,45 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.focal_length = 5.0
     sensor1.imager_distance = 10.0
     sensor1.f_number = 20.0
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
     sensor1.distortion_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(4)
     )
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_mode(sensor1, "photometric"),
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        != ""
+    )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri == ""
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_mode(sensor1, "photometric"),
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        == ""
+    )
 
     sensor1.delete()
 
@@ -2725,7 +2869,7 @@ def test_immersive_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_camera_reset_internal_attributes(speos: Speos):
+def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of camera sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2934,7 +3078,7 @@ def test_3dirradiance_modify_after_reset(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_camera_modify_after_reset(speos: Speos):
+def test_camera_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of camera sensor, and then modify."""
     p = Project(speos=speos)
     sensor_parameter = CameraSensorParameters()
@@ -2960,42 +3104,39 @@ def test_camera_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert (
-        sensor1._sensor_template.camera_sensor_template.focal_length
-        == sensor_parameter.focal_length
-    )
+    assert camera_template(sensor1, local=True).focal_length == sensor_parameter.focal_length
     sensor1.focal_length = 40
-    assert sensor1._sensor_template.camera_sensor_template.focal_length == 40
+    assert camera_template(sensor1, local=True).focal_length == 40
     # Intermediate class for mode : photometric + wavelengths
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
+        camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_start
         == sensor_parameter.sensor_type_parameters.wavelength_range.start
     )
     sensor1.set_mode_photometric().set_wavelengths_range().start = 500
+    assert camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_start == 500
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
-        == 500
-    )
-    assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
+        camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_end
         == sensor_parameter.sensor_type_parameters.wavelength_range.end
     )
     sensor1.set_mode_photometric().set_wavelengths_range().end = 800
-    assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
-        == 800
-    )
+    assert camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_end == 800
     # Intermediate class for color mode + balance mode
     user_white = BalanceModeUserWhiteParameters()
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
+        camera_white_balance_mode(
+            camera_color_mode(camera_mode(sensor1, "photometric", local=True), "color"),
+            "user_white",
+        ).blue_gain
         == user_white.blue_gain
     )
     color = sensor1.set_mode_photometric().set_mode_color()
     white_mode = color.set_balance_mode_user_white()
     white_mode.blue_gain = 0.5
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
+        camera_white_balance_mode(
+            camera_color_mode(camera_mode(sensor1, "photometric", local=True), "color"),
+            "user_white",
+        ).blue_gain
         == 0.5
     )
 
@@ -3958,7 +4099,7 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_ver
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_nested_modes(speos: Speos):
+def test_load_camera_hydrates_nested_modes(speos: Speos, sensor_template_version):
     """Ensure camera load path hydrates photometric and nested color balance helpers."""
     p = Project(speos=speos)
 
@@ -4053,7 +4194,7 @@ def test_load_irradiance_3d_hydrates_radial_integration_helpers(
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_geometric_mode(speos: Speos):
+def test_load_camera_hydrates_geometric_mode(speos: Speos, sensor_template_version):
     """Ensure camera load path hydrates geometric mode branch."""
     p = Project(speos=speos)
 
@@ -4073,7 +4214,7 @@ def test_load_camera_hydrates_geometric_mode(speos: Speos):
         default_parameters=None,
     )
 
-    assert loaded_sensor._sensor_template.camera_sensor_template.HasField("sensor_mode_geometric")
+    assert has_camera_mode(loaded_sensor, "geometric", local=True)
     assert loaded_sensor._type is None
 
     sensor_camera.delete()
@@ -4081,21 +4222,22 @@ def test_load_camera_hydrates_geometric_mode(speos: Speos):
 
 @pytest.mark.supported_speos_versions(min=252)
 @pytest.mark.parametrize(
-    ("balance_setter", "expected_field", "expected_mode_type"),
+    ("balance_setter", "expected_mode", "expected_mode_type"),
     [
         (
             "set_balance_mode_display_primaries",
-            "balance_mode_display",
+            "display_primaries",
             SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries,
         ),
-        ("set_balance_mode_grey_world", "balance_mode_greyworld", None),
-        ("set_balance_mode_none", "balance_mode_none", None),
+        ("set_balance_mode_grey_world", "grey_world", None),
+        ("set_balance_mode_none", "none", None),
     ],
 )
 def test_load_camera_hydrates_other_balance_modes(
     speos: Speos,
+    sensor_template_version,
     balance_setter: str,
-    expected_field: str,
+    expected_mode: str,
     expected_mode_type: type | None,
 ):
     """Ensure camera load path hydrates all color balance mode branches."""
@@ -4140,7 +4282,7 @@ def test_load_camera_hydrates_other_balance_modes(
     )
 
     loaded_color_mode = loaded_sensor.photometric._mode
-    assert loaded_color_mode._mode_color.HasField(expected_field)
+    assert has_camera_white_balance_mode(loaded_color_mode._mode_color, expected_mode)
     if expected_mode_type is None:
         assert loaded_color_mode._mode is None
     else:
@@ -4208,7 +4350,9 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_default(
+    speos: Speos, sensor_template_version
+):
     """Test default value of consider_diffraction_effects is False."""
     p = Project(speos=speos)
 
@@ -4220,7 +4364,9 @@ def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_setter(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects setter and getter."""
     p = Project(speos=speos)
 
@@ -4237,7 +4383,9 @@ def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_persistence(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects persists after commit and reset."""
     p = Project(speos=speos)
 
@@ -4277,7 +4425,9 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_from_parameters(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects from PhotometricCameraParameters."""
     p = Project(speos=speos)
 
