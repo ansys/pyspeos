@@ -34,11 +34,13 @@ import os
 from pathlib import Path
 import re
 
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
 import pytest
 
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
 from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel import SceneLink
 from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
 from ansys.speos.core.speos import Speos
 
@@ -108,9 +110,35 @@ SENSOR_TEMPLATE_VERSIONS = ["V1", "V2"]
 @pytest.fixture(params=SENSOR_TEMPLATE_VERSIONS)
 def sensor_template_version(request, monkeypatch):
     """Test fixture which forces a test to run with 26R1 version to check sensor template V1."""
+
+    def load_file_v1(scene: SceneLink, file_uri: Path | str, password: str | None = None) -> None:
+        """
+        Load speos file to fill the scene.
+
+        Parameters
+        ----------
+        scene : SceneLink
+            scene to load
+        file_uri : Path | str
+            File to be loaded.
+        password : str | None, optional
+            Password needed to open the speos lightbox file.
+            This is only necessary when the user protects the speos light box with a password.
+        """
+        # remove if to allow older API version but API version is forced by toml
+        scene._actions_stub.LoadFile(
+            messages.LoadFile_Request(
+                guid=scene.key,
+                file_uri=str(file_uri),
+                password=password,
+                force_version={"SensorTemplateVersion": 1},
+            )
+        )
+
     version = request.param
     if "V1" == version:
         monkeypatch.setattr(server_version_checker, "_version", "2026.1.3")
+        monkeypatch.setattr(SceneLink, "load_file", load_file_v1)
     elif "V2" == version:
         if not server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
             pytest.skip("Template version V2 not yet supported")
