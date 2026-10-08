@@ -20,29 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Backward-compatible imports for Speos BSDF functionality.
+"""Compatibility tests for BSDF import paths."""
 
-The implementation is available from :mod:`ansys.speos.core.input_files.bsdf`.
-"""
+from ansys.speos.core import bsdf, input_files
+from ansys.speos.core.input_files import bsdf as input_bsdf
 
-from ansys.speos.core.input_files.bsdf import (
-    AnisotropicBSDF,
-    BaseBSDF,
-    BxdfDatapoint,
-    InterpolationEnhancement,
-    SpectralBRDF,
-    create_anisotropic_bsdf,
-    create_bsdf180,
-    create_spectral_brdf,
-)
 
-__all__ = [
-    "AnisotropicBSDF",
-    "BaseBSDF",
-    "BxdfDatapoint",
-    "InterpolationEnhancement",
-    "SpectralBRDF",
-    "create_anisotropic_bsdf",
-    "create_bsdf180",
-    "create_spectral_brdf",
-]
+def test_bsdf_compatibility_exports():
+    """Legacy and input_files imports expose identical BSDF objects."""
+    public_names = (
+        "AnisotropicBSDF",
+        "BaseBSDF",
+        "BxdfDatapoint",
+        "InterpolationEnhancement",
+        "SpectralBRDF",
+        "create_anisotropic_bsdf",
+        "create_bsdf180",
+        "create_spectral_brdf",
+    )
+    for name in public_names:
+        implementation = getattr(input_bsdf, name)
+        assert getattr(bsdf, name) is implementation
+        assert getattr(input_files, name) is implementation

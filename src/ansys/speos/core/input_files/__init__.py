@@ -20,19 +20,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Speos input file formats: local, server-free read/write of Speos file formats.
+"""Speos input file formats and BSDF tools.
 
-Every class in this package describes a file that Speos reads as an input, so they are
-parsed and written locally and never require a connection to a Speos gRPC server. Each
-module covers a single file extension.
+Most file-format classes in this package read and write files locally without a Speos
+gRPC connection. The BSDF models and builders are an exception: importing, exporting,
+editing, interpolating, and generating BSDF data requires a live Speos gRPC connection.
+Each module covers a file format or a related set of input-file operations.
 
-Models use explicit constructors and properties that validate assignments before storing
-data. List properties return copied containers; nested model objects remain shared and
-editable through their setters. Empty collections support staged construction, while
-``validate()`` and ``save()`` require complete data.
+Local file-format models use explicit constructors and properties that validate assignments
+before storing data. List properties return copied containers; nested model objects remain
+shared and editable through their setters. Empty collections support staged construction,
+while ``validate()`` and ``save()`` require complete data.
 """
 
 from ansys.speos.core.input_files._base import SpeosFileFormat, SpeosTextFileFormat
+from ansys.speos.core.input_files.bsdf import (
+    AnisotropicBSDF,
+    BaseBSDF,
+    BxdfDatapoint,
+    InterpolationEnhancement,
+    SpectralBRDF,
+    create_anisotropic_bsdf,
+    create_bsdf180,
+    create_spectral_brdf,
+)
 from ansys.speos.core.input_files.coated_surface import CoatedSurfaceFile, CoatedSurfaceSample
 from ansys.speos.core.input_files.material import (
     MaterialBirefringentCurve,
@@ -59,8 +70,12 @@ from ansys.speos.core.input_files.spectrum_file import SpectrumFile
 from ansys.speos.core.input_files.texture_3d import Texture3DMappingFile, TexturePattern
 
 __all__ = [
+    "AnisotropicBSDF",
+    "BaseBSDF",
+    "BxdfDatapoint",
     "CoatedSurfaceFile",
     "CoatedSurfaceSample",
+    "InterpolationEnhancement",
     "MaterialBirefringentCurve",
     "MaterialBirefringentKettlerHelmholtz",
     "MaterialBirefringentSellmeier",
@@ -76,6 +91,7 @@ __all__ = [
     "ScatteringSurfaceSample",
     "SimpleScatteringSurfaceFile",
     "SpectrumFile",
+    "SpectralBRDF",
     "SpeosFileFormat",
     "SpeosTextFileFormat",
     "Texture3DMappingFile",
@@ -84,4 +100,7 @@ __all__ = [
     "VolumeScatteringGegenbauer",
     "VolumeScatteringHenyeyGreenstein",
     "VolumeScatteringUserDefined",
+    "create_anisotropic_bsdf",
+    "create_bsdf180",
+    "create_spectral_brdf",
 ]
