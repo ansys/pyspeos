@@ -156,7 +156,10 @@ class Ray(_ValueComparable):
 
     @energy.setter
     def energy(self, value: float) -> None:
-        self._energy = _finite_number(_property_name(Ray.energy), value)
+        value = _finite_number(_property_name(Ray.energy), value)
+        if not 0.0 <= value <= 1.0:
+            raise ValueError(f"energy must be between 0 and 1, got {value}.")
+        self._energy = value
 
     @property
     def polarization(self) -> Optional[Tuple[float, ...]]:
