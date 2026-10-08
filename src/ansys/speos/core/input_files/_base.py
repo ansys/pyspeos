@@ -287,7 +287,7 @@ class LineReader:
         """
         line = self.next_data_line()
         try:
-            return int(float(line))
+            return int(line)
         except ValueError:
             raise self.error(f"expected an integer, got {line!r}.") from None
 
