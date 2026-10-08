@@ -10,7 +10,7 @@
 # authored in the Speos editors, but they can also be generated from raw measurement data
 # or from another simulation tool.
 #
-# PySpeos models each of these formats with a dataclass exposing the same three methods:
+# PySpeos models each of these formats with a class exposing the same three methods:
 #
 # * `save(path)` writes the model to a file,
 # * `load(path)` reads a file back into a model,
