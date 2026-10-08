@@ -284,7 +284,7 @@ class Texture3DMappingFile(SpeosTextFileFormat):
 
     @classmethod
     def _from_lines(cls, reader: LineReader) -> Texture3DMappingFile:
-        pattern_count = reader.next_int()
+        pattern_count = reader.next_int(minimum=1)
         patterns, uniform_scale = [], False
         for _ in range(pattern_count):
             values = reader.next_floats()

@@ -34,6 +34,7 @@ import numpy as np
 from ansys.speos.core.input_files._base import (
     ENCODING,
     NEWLINE,
+    LineReader,
     SpeosFileFormat,
     _finite_number,
     _numeric_tuple,
@@ -223,6 +224,7 @@ class RayFile(SpeosFileFormat):
     The :attr:`rays` getter copies the container but keeps ray objects shared. Assign an
     edited list back to replace rays. An empty list permits a draft but cannot be saved.
     Polarization consistency across rays is required by :meth:`save_text` only.
+    Binary :meth:`save` rejects polarized rays; use :meth:`save_text` to retain polarization.
 
     Examples
     --------
@@ -314,6 +316,8 @@ class RayFile(SpeosFileFormat):
             ray.validate()
 
     def _encode(self, path: Path) -> None:
+        if any(ray.polarization is not None for ray in self._rays):
+            raise ValueError("Binary ray files do not support polarization; use save_text().")
         values = np.empty((len(self._rays), self._RAY_VALUE_COUNT), dtype="<f4")
         for index, ray in enumerate(self._rays):
             values[index] = (*ray.position, *ray.direction, ray.wavelength, ray.energy)
@@ -334,6 +338,8 @@ class RayFile(SpeosFileFormat):
             raise ValueError(f"{path} is not a binary Speos ray file.")
 
         header = struct.unpack(cls._HEADER_FORMAT, content[:header_size])
+        if header[1:6] != cls._HEADER_MARKERS:
+            raise ValueError(f"{path} is not a binary Speos ray file: invalid header markers.")
         values = np.frombuffer(payload, dtype="<f4").reshape(-1, cls._RAY_VALUE_COUNT)
         rays = [
             Ray(
@@ -404,33 +410,34 @@ class RayFile(SpeosFileFormat):
         FileNotFoundError
             If ``file_path`` does not point to an existing file.
         ValueError
-            If the declared ray count does not match the file content, or a ray line does
-            not hold 9 values, or 14 values when polarized.
+            If the count is not a positive integer, does not match the file content,
+            or a ray line is invalid or does not hold 9 values, or 14 when polarized.
         """
         path = Path(file_path)
         if not path.is_file():
             raise FileNotFoundError(f"No such file: {path}")
 
-        lines = [line for line in path.read_text(encoding=ENCODING).splitlines() if line.strip()]
-        if not lines:
+        lines = path.read_text(encoding=ENCODING).splitlines()
+        data_line_count = sum(bool(line.strip()) for line in lines)
+        if not data_line_count:
             raise ValueError(f"{path} is empty.")
 
-        ray_count = int(float(lines[0].strip()))
-        if len(lines) - 1 != ray_count:
+        reader = LineReader(lines, path)
+        ray_count = reader.next_int(minimum=1)
+        if data_line_count - 1 != ray_count:
             raise ValueError(
-                f"{path} declares {ray_count} rays but holds {len(lines) - 1} ray lines."
+                f"{path} declares {ray_count} rays but holds {data_line_count - 1} ray lines."
             )
 
         rays = []
-        for number, line in enumerate(lines[1:], start=1):
-            values = [float(token) for token in line.split()]
+        for number in range(1, ray_count + 1):
+            values = reader.next_floats()
             if len(values) not in (9, 14):
-                raise ValueError(
-                    f"{path}, ray {number}: expected 9 values, or 14 when polarized, got "
-                    f"{len(values)}."
+                raise reader.error(
+                    f"ray {number}: expected 9 values, or 14 when polarized, got {len(values)}."
                 )
-            rays.append(
-                Ray(
+            try:
+                ray = Ray(
                     position=(values[1], values[2], values[3]),
                     direction=(values[4], values[5], values[6]),
                     wavelength=values[7],
@@ -441,5 +448,9 @@ class RayFile(SpeosFileFormat):
                         else None
                     ),
                 )
-            )
-        return cls(rays=rays)
+            except ValueError as error:
+                raise reader.error(f"ray {number}: {error}") from None
+            rays.append(ray)
+        model = cls(rays=rays)
+        model.validate()
+        return model

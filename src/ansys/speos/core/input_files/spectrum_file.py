@@ -195,7 +195,7 @@ class SpectrumFile(SpeosTextFileFormat):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> SpectrumFile:
         description = reader.next_line()
-        sample_count = reader.next_int()
+        sample_count = reader.next_int(minimum=1)
         wavelengths, values = [], []
         for _ in range(sample_count):
             wavelength, value = reader.next_floats(count=2)

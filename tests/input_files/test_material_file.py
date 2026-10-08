@@ -228,6 +228,114 @@ def test_double_henyey_greenstein_round_trips(tmp_path):
     assert MaterialFile.load(path) == material
 
 
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("anisotropies_1", -1.001),
+        ("anisotropies_1", 1.001),
+        ("anisotropies_2", -1.001),
+        ("anisotropies_2", 1.001),
+        ("ratios", -0.001),
+        ("ratios", 1.001),
+        ("ratios", float("nan")),
+        ("anisotropies_1", float("inf")),
+    ],
+)
+def test_double_henyey_greenstein_bounds_are_atomic(name, value):
+    """Phase parameters reject invalid values without replacing the previous column."""
+    model = VolumeScatteringDoubleHenyeyGreenstein(
+        anisotropies_1=[0.5], anisotropies_2=[-0.5], ratios=[0.5]
+    )
+    previous = getattr(model, name)
+    with pytest.raises(ValueError):
+        setattr(model, name, [value])
+    assert getattr(model, name) == previous
+    with pytest.raises(ValueError):
+        VolumeScatteringDoubleHenyeyGreenstein(**{name: [value]})
+    setattr(model, "_" + name, [value])
+    with pytest.raises(ValueError):
+        model.validate()
+
+
+@pytest.mark.parametrize("ratio", [0.0, 1.0])
+def test_double_henyey_greenstein_bounds_include_endpoints(ratio, tmp_path):
+    """Valid boundary factors and weights survive a material round trip."""
+    material = MaterialFile(
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+        scattering_wavelengths=[550.0],
+        scattering_values=[0.1],
+        scattering=VolumeScatteringDoubleHenyeyGreenstein(
+            anisotropies_1=[-1.0], anisotropies_2=[1.0], ratios=[ratio]
+        ),
+    )
+    assert MaterialFile.load(material.save(tmp_path / "bounds.material")) == material
+
+
+@pytest.mark.parametrize("column", [0, 1, 2])
+def test_double_henyey_greenstein_load_rejects_invalid_parameters(column, tmp_path):
+    """The file reader cannot create a double-HG phase with invalid physical values."""
+    material = MaterialFile(
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+        scattering_wavelengths=[550.0],
+        scattering_values=[0.1],
+        scattering=VolumeScatteringDoubleHenyeyGreenstein(
+            anisotropies_1=[0.5], anisotropies_2=[-0.5], ratios=[0.5]
+        ),
+    )
+    path = material.save(tmp_path / "invalid.material")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    values = lines[-1].split()
+    values[column] = "1.001"
+    lines[-1] = " ".join(values)
+    path.write_text("\n".join(lines), encoding="utf-8")
+    with pytest.raises(ValueError, match="must be between"):
+        MaterialFile.load(path)
+
+
+@pytest.mark.parametrize(
+    "phase",
+    [
+        VolumeScatteringUserDefined(angles=[0.0], values=[[1.0]]),
+        VolumeScatteringHenyeyGreenstein(anisotropies=[0.5]),
+        VolumeScatteringDoubleHenyeyGreenstein(
+            anisotropies_1=[0.5], anisotropies_2=[-0.5], ratios=[0.5]
+        ),
+        VolumeScatteringGegenbauer(anisotropies=[0.5], alphas=[0.5]),
+    ],
+)
+@pytest.mark.parametrize("suffix", ["", ".0", ".1", "0", " junk", "wrong-version", "garbage"])
+def test_volumic_headers_match_the_selected_phase_model(phase, suffix, tmp_path):
+    """Only the selected model's exact header and its .0 variant are accepted."""
+    material = MaterialFile(
+        absorption_wavelengths=[550.0],
+        absorption_values=[0.0],
+        scattering_wavelengths=[550.0],
+        scattering_values=[0.1],
+        scattering=phase,
+    )
+    path = material.save(tmp_path / "header.material")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    header_index = lines.index(phase.VOLUMIC_HEADER)
+    header = phase.VOLUMIC_HEADER + suffix
+    if suffix == "wrong-version":
+        header = (
+            VolumeScatteringHenyeyGreenstein.VOLUMIC_HEADER
+            if isinstance(phase, VolumeScatteringGegenbauer)
+            else VolumeScatteringGegenbauer.VOLUMIC_HEADER
+        )
+    elif suffix == "garbage":
+        header = "Not a Speos scattering header"
+    lines[header_index] = header
+    path.write_text("\n".join(lines), encoding="utf-8")
+    if suffix in ("", ".0"):
+        assert MaterialFile.load(path) == material
+    else:
+        with pytest.raises(ValueError, match=f"line {header_index + 1}:.*volumic-scattering"):
+            MaterialFile.load(path)
+
+
 def test_user_defined_phase_function_round_trips(tmp_path):
     """The user defined phase function must be written and read back."""
     material = MaterialFile(

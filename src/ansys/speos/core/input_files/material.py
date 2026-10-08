@@ -231,7 +231,7 @@ class MaterialDispersionCurve(_ValueComparable):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> MaterialDispersionCurve:
         wavelengths, indices = [], []
-        for _ in range(reader.next_int()):
+        for _ in range(reader.next_int(minimum=1)):
             wavelength, index = reader.next_floats(count=2)
             wavelengths.append(wavelength)
             indices.append(index)
@@ -656,7 +656,7 @@ class MaterialMetallicCurve(_ValueComparable):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> MaterialMetallicCurve:
         wavelengths, indices, extinctions = [], [], []
-        for _ in range(reader.next_int()):
+        for _ in range(reader.next_int(minimum=1)):
             wavelength, index, extinction = reader.next_floats(count=3)
             wavelengths.append(wavelength)
             indices.append(index)
@@ -1249,8 +1249,8 @@ class VolumeScatteringUserDefined(_ValueComparable):
 
     @classmethod
     def _from_lines(cls, reader: LineReader) -> VolumeScatteringUserDefined:
-        wavelength_count = reader.next_int()
-        angle_count = reader.next_int()
+        wavelength_count = reader.next_int(minimum=0)
+        angle_count = reader.next_int(minimum=1)
         wavelengths = reader.next_floats(count=wavelength_count) if wavelength_count > 1 else []
         angles, values = [], []
         for _ in range(angle_count):
@@ -1359,12 +1359,12 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         Wavelengths the factors are given at, in nm. A single wavelength means that the
         phase function does not depend on the wavelength. By default, ``[]``.
     anisotropies_1 : List[float], optional
-        First anisotropy factor at each wavelength. By default, ``[]``.
+        First anisotropy factor at each wavelength, between -1 and 1. By default, ``[]``.
     anisotropies_2 : List[float], optional
-        Second anisotropy factor at each wavelength. By default, ``[]``.
+        Second anisotropy factor at each wavelength, between -1 and 1. By default, ``[]``.
     ratios : List[float], optional
         Weight between the first and the second anisotropy factor, at each wavelength.
-        By default, ``[]``.
+        Values must be between 0 and 1. By default, ``[]``.
     """
 
     def __init__(
@@ -1407,15 +1407,16 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         Returns
         -------
         List[float]
-            Finite factors.
+            Factors between -1 and 1.
         """
         return self._anisotropies_1.copy()
 
     @anisotropies_1.setter
     def anisotropies_1(self, values: List[float]) -> None:
-        self._anisotropies_1 = _phase_candidate(
-            self, _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_1), values
-        )
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_1)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, -1.0, 1.0)
+        self._anisotropies_1 = values
 
     @property
     def anisotropies_2(self) -> List[float]:
@@ -1424,15 +1425,16 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         Returns
         -------
         List[float]
-            Finite factors.
+            Factors between -1 and 1.
         """
         return self._anisotropies_2.copy()
 
     @anisotropies_2.setter
     def anisotropies_2(self, values: List[float]) -> None:
-        self._anisotropies_2 = _phase_candidate(
-            self, _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_2), values
-        )
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_2)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, -1.0, 1.0)
+        self._anisotropies_2 = values
 
     @property
     def ratios(self) -> List[float]:
@@ -1441,15 +1443,16 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         Returns
         -------
         List[float]
-            Finite mixture weights.
+            Mixture weights between 0 and 1.
         """
         return self._ratios.copy()
 
     @ratios.setter
     def ratios(self, values: List[float]) -> None:
-        self._ratios = _phase_candidate(
-            self, _property_name(VolumeScatteringDoubleHenyeyGreenstein.ratios), values
-        )
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.ratios)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, 0.0, 1.0)
+        self._ratios = values
 
     _COLUMN_NAMES: ClassVar[tuple[str, ...]] = (
         _property_name(anisotropies_1),
@@ -1470,9 +1473,13 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         Raises
         ------
         ValueError
-            If no factor is given or the lists do not match.
+            If no factor is given, the lists do not match, an anisotropy is outside
+            -1 to 1, or a mixture weight is outside 0 to 1.
         """
         _check_phase_function(self)
+        for name in self._COLUMN_NAMES:
+            minimum = 0.0 if name == _property_name(type(self).ratios) else -1.0
+            _check_phase_bounds(name, getattr(self, "_" + name), minimum, 1.0)
 
     def _to_lines(self) -> List[str]:
         return _phase_function_lines(self)
@@ -1614,6 +1621,14 @@ def _check_phase_function(model) -> None:
     _check_phase_data(model._wavelengths, columns, complete=True)
 
 
+def _check_phase_bounds(name: str, values: List[float], minimum: float, maximum: float) -> None:
+    """Check phase parameters against their model's physical bounds."""
+    if any(not minimum <= value <= maximum for value in values):
+        raise ValueError(
+            f"{name} must be between {format_number(minimum)} and {format_number(maximum)}."
+        )
+
+
 def _phase_candidate(model, name: str, values: List[float]) -> List[float]:
     """Check a candidate phase column without changing its current model."""
     values = _finite_values(name, values)
@@ -1668,7 +1683,7 @@ def _phase_function_lines(model) -> List[str]:
 def _read_phase_function(model_class, reader: LineReader):
     """Read a phase function written as a count followed by one line per wavelength."""
     names = model_class._COLUMN_NAMES
-    count = reader.next_int()
+    count = reader.next_int(minimum=1)
     if count == 1:
         values = reader.next_floats(count=len(names))
         return model_class(**{name: [value] for name, value in zip(names, values)})
@@ -2294,7 +2309,7 @@ class MaterialFile(SpeosTextFileFormat):
         axes = [reader.next_floats(count=3), reader.next_floats(count=3)] if birefringent else []
 
         absorption_wavelengths, absorption_values = [], []
-        for _ in range(reader.next_int()):
+        for _ in range(reader.next_int(minimum=1)):
             wavelength, value = reader.next_floats(count=2)
             absorption_wavelengths.append(wavelength)
             absorption_values.append(value)
@@ -2310,16 +2325,23 @@ class MaterialFile(SpeosTextFileFormat):
         scattering_wavelengths, scattering_values = [], []
         scattering = None
         if reader.next_int():
-            reader.next_data_line()
+            header = reader.next_data_line()
+            header_error = reader.error(
+                f"expected the volumic-scattering header for the selected phase model, "
+                f"got {header!r}."
+            )
             model_id = reader.next_int()
-            for _ in range(reader.next_int()):
-                wavelength, value = reader.next_floats(count=2)
-                scattering_wavelengths.append(wavelength)
-                scattering_values.append(value)
             models = {model.MODEL: model for model in cls.SCATTERINGS}
             if model_id not in models:
                 raise reader.error(f"unsupported scattering phase function {model_id}.")
-            scattering = models[model_id]._from_lines(reader)
+            model_class = models[model_id]
+            if header not in (model_class.VOLUMIC_HEADER, model_class.VOLUMIC_HEADER + ".0"):
+                raise header_error
+            for _ in range(reader.next_int(minimum=1)):
+                wavelength, value = reader.next_floats(count=2)
+                scattering_wavelengths.append(wavelength)
+                scattering_values.append(value)
+            scattering = model_class._from_lines(reader)
         return cls(
             description=description,
             material_type=material_type,

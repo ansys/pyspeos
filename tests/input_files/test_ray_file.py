@@ -23,6 +23,7 @@
 """Test the ray file formats."""
 
 import math
+import struct
 
 import pytest
 
@@ -233,3 +234,92 @@ def test_an_inconsistent_text_file_is_reported(tmp_path):
 
     with pytest.raises(ValueError, match="declares 3 rays but holds 1"):
         RayFile.load_text(path)
+
+
+@pytest.mark.parametrize("count", ["0", "-1", "1.5", "1.0", "1e0", "inf", "nan"])
+def test_text_ray_counts_are_positive_integers(count, tmp_path):
+    """Ray counts use the same strict integer rules as other local file formats."""
+    path = tmp_path / "invalid.txt"
+    path.write_text(f"\n{count}\n1 0 0 0 0 0 1 555 1\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"line 2: expected an integer"):
+        RayFile.load_text(path)
+
+
+def test_text_ray_blank_lines_preserve_error_locations(tmp_path):
+    """Blank lines remain accepted without changing physical line numbers in errors."""
+    path = tmp_path / "rays.txt"
+    path.write_text("\n1\n\n1 0 0 0 0 0 1 555 1\n\n", encoding="utf-8")
+    assert RayFile.load_text(path).rays == [Ray()]
+    for row, message in [
+        ("1 0 0 0 0 0 1 nan 1", "finite"),
+        ("1 0 0 0 0 0 1 555 2", "energy"),
+        ("1 0 0 0 0 0 0 555 1", "unit vector"),
+        ("1 0 0", "expected 9 values"),
+    ]:
+        path.write_text(f"\n1\n\n{row}\n", encoding="utf-8")
+        with pytest.raises(ValueError, match=f"line 4:.*{message}"):
+            RayFile.load_text(path)
+
+
+@pytest.mark.parametrize("content", ["", "\n\n", "1\n", "1\n" + "1 0 0 0 0 0 1 555 1\n" * 2])
+def test_text_ray_empty_or_mismatched_files_are_rejected(content, tmp_path):
+    """Missing and extra ray lines cannot produce a loaded draft."""
+    path = tmp_path / "invalid.txt"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(ValueError, match="empty|declares 1 rays"):
+        RayFile.load_text(path)
+
+
+@pytest.mark.parametrize("mixed", [False, True])
+@pytest.mark.parametrize("existing", [False, True])
+def test_binary_save_rejects_any_polarization_without_writing(mixed, existing, tmp_path):
+    """Neither fully nor partly polarized binary output can discard data or overwrite files."""
+    rays = [Ray(polarization=(1.0, 0.0, 0.0, 0.5, 1.0))]
+    if mixed:
+        rays.append(Ray())
+    path = tmp_path / "polarized.ray"
+    if existing:
+        path.write_bytes(b"original content")
+    with pytest.raises(ValueError, match=r"polarization; use save_text\(\)"):
+        RayFile(rays).save(path)
+    if existing:
+        assert path.read_bytes() == b"original content"
+    else:
+        assert not path.exists()
+
+
+@pytest.mark.parametrize("marker_index", range(1, 6))
+@pytest.mark.parametrize("value", [3.0, float("inf"), float("nan")])
+def test_binary_header_markers_are_validated(marker_index, value, tmp_path):
+    """Every marker in an otherwise valid binary ray file is checked."""
+    path = RayFile([Ray()]).save(tmp_path / "invalid.ray")
+    content = bytearray(path.read_bytes())
+    struct.pack_into("<f", content, marker_index * 4, value)
+    path.write_bytes(content)
+    with pytest.raises(ValueError, match="invalid header markers"):
+        RayFile.load(path)
+
+
+def test_header_only_binary_ray_file_is_rejected(tmp_path):
+    """The shared load validation rejects binary files without any rays."""
+    path = tmp_path / "empty.ray"
+    path.write_bytes(struct.pack("<7f", 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 683.0))
+    with pytest.raises(ValueError, match="at least one ray"):
+        RayFile.load(path)
+
+
+@pytest.mark.parametrize("value", [-0.001, 1.001])
+def test_ray_energy_bounds_are_atomic(value):
+    """Out-of-range energy is rejected during construction and mutation."""
+    ray = Ray(energy=0.5)
+    with pytest.raises(ValueError, match="energy must be between 0 and 1"):
+        ray.energy = value
+    assert ray.energy == 0.5
+    with pytest.raises(ValueError, match="energy must be between 0 and 1"):
+        Ray(energy=value)
+
+
+@pytest.mark.parametrize("value", [0.0, 1.0])
+def test_ray_energy_endpoints_are_valid(value):
+    """The closed energy interval includes both endpoints."""
+    assert Ray(energy=value).energy == value

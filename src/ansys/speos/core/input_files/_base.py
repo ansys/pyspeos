@@ -272,8 +272,13 @@ class LineReader:
             if line:
                 return line
 
-    def next_int(self) -> int:
+    def next_int(self, *, minimum: int | None = None) -> int:
         """Read the next non-blank line as a single integer.
+
+        Parameters
+        ----------
+        minimum : int, optional
+            Smallest accepted value. By default, no lower bound is imposed.
 
         Returns
         -------
@@ -283,13 +288,44 @@ class LineReader:
         Raises
         ------
         ValueError
-            If the line does not hold a single integer.
+            If the line does not hold a single integer or the value is below ``minimum``.
+        """
+        return self.next_ints(count=1, minimum=minimum)[0]
+
+    def next_ints(self, count: int = -1, *, minimum: int | None = None) -> List[int]:
+        """Read integer tokens without floating-point conversion.
+
+        Parameters
+        ----------
+        count : int, optional
+            Expected number of values. By default, ``-1`` accepts any number.
+        minimum : int, optional
+            Smallest accepted value for each token. By default, no lower bound is imposed.
+
+        Returns
+        -------
+        List[int]
+            Exact integer values. Decimal and exponent spellings are not accepted.
+
+        Raises
+        ------
+        ValueError
+            If a token is not an integer, the arity is wrong, or a value is below the bound.
         """
         line = self.next_data_line()
-        try:
-            return int(line)
-        except ValueError:
-            raise self.error(f"expected an integer, got {line!r}.") from None
+        tokens = line.split()
+        if count >= 0 and len(tokens) != count:
+            raise self.error(f"expected {count} values, got {len(tokens)}.")
+        values = []
+        for token in tokens:
+            try:
+                value = int(token)
+            except ValueError:
+                raise self.error(f"expected an integer, got {token!r}.") from None
+            if minimum is not None and value < minimum:
+                raise self.error(f"expected an integer at least {minimum}, got {token!r}.")
+            values.append(value)
+        return values
 
     def next_floats(self, count: int = -1) -> List[float]:
         """Read the next non-blank line as a list of floats.
@@ -307,7 +343,7 @@ class LineReader:
         Raises
         ------
         ValueError
-            If the line does not hold ``count`` floats.
+            If the line does not hold ``count`` finite floats.
         """
         line = self.next_data_line()
         try:
@@ -316,6 +352,8 @@ class LineReader:
             raise self.error(f"expected numbers, got {line!r}.") from None
         if count >= 0 and len(values) != count:
             raise self.error(f"expected {count} values, got {len(values)}.")
+        if any(not math.isfinite(value) for value in values):
+            raise self.error(f"expected finite numbers, got {line!r}.")
         return values
 
 

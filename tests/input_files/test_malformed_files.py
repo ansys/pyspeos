@@ -38,10 +38,12 @@ from ansys.speos.core import (
     MaterialFile,
     SimpleScatteringSurfaceFile,
     SpectrumFile,
+    Texture3DMappingFile,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
+from ansys.speos.core.input_files._base import LineReader
 from tests.input_files import ASSETS_DIR
 
 VALID_MATERIAL = """OPTIS - Material file v13
@@ -64,6 +66,69 @@ def write(tmp_path, name, content):
     path = tmp_path / name
     path.write_text(content, encoding="utf-8")
     return path
+
+
+@pytest.mark.parametrize("token", ["1.9", "2.0", "2e0", "nan", "inf", "-inf", "oops"])
+@pytest.mark.parametrize("paired", [False, True])
+def test_integer_readers_reject_non_integer_tokens(token, paired):
+    """Scalar and paired integer fields reject the same malformed spellings."""
+    reader = LineReader(["", f"1 {token}" if paired else token], "counts.txt")
+    with pytest.raises(ValueError, match=r"counts.txt, line 2: expected an integer"):
+        if paired:
+            reader.next_ints(count=2)
+        else:
+            reader.next_int()
+
+
+def test_integer_readers_keep_precision_and_enforce_count_limits():
+    """Integer parsing is exact and rejects invalid arity and count minima."""
+    assert LineReader(["9007199254740993"]).next_int() == 9007199254740993
+    assert LineReader(["+2 003"]).next_ints(count=2, minimum=1) == [2, 3]
+    assert LineReader(["0"]).next_int(minimum=0) == 0
+    for values in ("0", "-1"):
+        with pytest.raises(ValueError, match="at least 1"):
+            LineReader([values]).next_int(minimum=1)
+    with pytest.raises(ValueError, match="expected 2 values, got 1"):
+        LineReader(["2"]).next_ints(count=2)
+    with pytest.raises(ValueError, match="expected 1 values, got 2"):
+        LineReader(["2 3"]).next_int()
+
+
+@pytest.mark.parametrize("token", ["nan", "inf", "-inf", "1e999"])
+def test_float_reader_rejects_nonfinite_values_with_location(token):
+    """Nonfinite numeric data fails at the shared reader with a physical line number."""
+    with pytest.raises(ValueError, match=r"values.txt, line 2:.*finite"):
+        LineReader(["", f"1 {token}"], "values.txt").next_floats(count=2)
+
+
+def test_float_reader_retains_scientific_notation():
+    """Strict counts do not restrict genuine floating-point fields."""
+    assert LineReader(["2.0 2e-3"]).next_floats(count=2) == [2.0, 0.002]
+
+
+@pytest.mark.parametrize("token", ["0", "-1", "1.5", "1.0", "1e0", "inf"])
+@pytest.mark.parametrize("model_class", [MaterialFile, SpectrumFile, Texture3DMappingFile])
+def test_file_sample_counts_use_shared_integer_validation(model_class, token, tmp_path):
+    """Material, spectrum, and texture counts fail before their data rows are consumed."""
+    if model_class is MaterialFile:
+        content = VALID_MATERIAL.replace("\n1\n550 0.001", f"\n{token}\n550 0.001")
+    elif model_class is SpectrumFile:
+        content = f"{model_class.HEADER}\ndescription\n{token}\n"
+    else:
+        content = f"{model_class.HEADER}\n{token}\n"
+    path = write(tmp_path, "invalid" + model_class.EXTENSION, content)
+    with pytest.raises(ValueError, match=r"line \d+: expected an integer"):
+        model_class.load(path)
+
+
+@pytest.mark.parametrize("wavelength_count", [0, 1])
+def test_user_defined_phase_preserves_nonspectral_count_sentinels(wavelength_count):
+    """Zero and one wavelength counts still represent a nonspectral phase function."""
+    reader = LineReader([str(wavelength_count), "1", "0 1"])
+    model = VolumeScatteringUserDefined._from_lines(reader)
+    model.validate()
+    assert model.wavelengths == []
+    assert model.values == [[1.0]]
 
 
 def test_missing_file_is_reported_as_such(tmp_path):

@@ -41,6 +41,16 @@ from ansys.speos.core.input_files.scattering_surface import (
 from tests.input_files import ASSETS_DIR, read_lines
 
 
+@pytest.mark.parametrize("model_class", [CoatedSurfaceFile, ScatteringSurfaceFile])
+@pytest.mark.parametrize("counts", ["2.5 2", "2 2.5", "2.0 2", "2 2e0", "0 2", "2 -1", "inf 2"])
+def test_surface_count_headers_are_strict(model_class, counts, tmp_path):
+    """Both surface formats validate paired counts before consuming the grid."""
+    path = tmp_path / ("invalid" + model_class.EXTENSION)
+    path.write_text(f"{model_class.HEADER}\ndescription\n{counts}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"line 3: expected an integer"):
+        model_class.load(path)
+
+
 @pytest.fixture
 def documented_scattering_surface():
     """Build the scattering surface used as an example by the Speos documentation.

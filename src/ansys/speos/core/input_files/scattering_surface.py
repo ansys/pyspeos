@@ -586,7 +586,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> ScatteringSurfaceFile:
         description = reader.next_line()
-        angle_count, wavelength_count = (int(value) for value in reader.next_floats(count=2))
+        angle_count, wavelength_count = reader.next_ints(count=2, minimum=1)
         wavelengths = reader.next_floats(count=wavelength_count)
         blocks = _read_grid(reader, angle_count, row_count=5, value_count=2 * wavelength_count)
 
