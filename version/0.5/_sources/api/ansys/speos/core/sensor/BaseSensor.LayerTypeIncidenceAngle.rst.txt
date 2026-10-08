@@ -1,0 +1,122 @@
+
+
+
+
+
+
+:class:`LayerTypeIncidenceAngle`
+================================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle(layer_type_incidence_angle, default_values = True, stable_ctr = False)
+
+   
+   Type of layer : IncidenceAngle.
+
+   Includes in the result one layer per range of incident angles.
+   By default, a sampling of 9 is chosen.
+
+   :Parameters:
+
+       **layer_type_incidence_angle** :         :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle`
+           LayerTypeIncidenceAngle protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method
+   available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypeIncidenceAngle
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sampling`
+            - Set the sampling for incidence angles.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import LayerTypeIncidenceAngle
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sampling(value = 9)
+
+   
+   Set the sampling for incidence angles.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Sampling for incidence angles.
+           By default, ``9``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle`
+           LayerTypeIncidenceAngle.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

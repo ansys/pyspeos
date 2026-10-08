@@ -1,0 +1,503 @@
+
+
+
+
+
+
+:class:`SourceAmbientEnvironment`
+=================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientEnvironment(project, name, description = '', metadata = None, source_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   Environment ambient source.
+
+   By default [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientEnvironment
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_userdefined_color_space`
+            - Set the color space to user-defined.
+          * - :py:attr:`~set_predefined_color_space`
+            - Set the color space to use one of the presets.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction of the environment light source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Reverse zenith direction of the environment light source.
+          * - :py:attr:`~north_direction`
+            - North direction of the environment light source.
+          * - :py:attr:`~reverse_north_direction`
+            - Reverse north direction of the environment light source.
+          * - :py:attr:`~luminance`
+            - Luminance of the environment light source.
+          * - :py:attr:`~image_file_uri`
+            - Location of the environment image file.
+          * - :py:attr:`~color_space`
+            - Property containing all options in regard to the color space properties.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientEnvironment
+
+Property detail
+---------------
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Zenith direction of the environment light source.
+
+   This property get and set the zenith direction of the environment source.
+
+   :Parameters:
+
+       **direction: Optional[List[float]]**
+           direction defines the zenith direction of the environment light source.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the environment light source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Reverse zenith direction of the environment light source.
+
+   This property get and set if reverse zenith direction is True.
+
+   :Parameters:
+
+       **value: bool**
+           True to reverse zenith direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: north_direction
+   :type: List[float]
+
+
+   
+   North direction of the environment light source.
+
+   This property get and set the north direction of the environment source.
+
+   :Parameters:
+
+       **direction: List[float]**
+           direction defines the north direction, default value to be [0, 1, 0].
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the environment source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_north_direction
+   :type: bool
+
+
+   
+   Reverse north direction of the environment light source.
+
+   This property get and set if reverse north direction is True.
+
+   :Parameters:
+
+       **value: bool**
+           True to reverse north direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as reverse north direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: luminance
+   :type: float
+
+
+   
+   Luminance of the environment light source.
+
+   This property get and set the Luminance value of the source.
+
+   :Parameters:
+
+       **value: float**
+           set value of Luminance (cd/m^2).
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           value of Luminance setting (cd/m^2).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: image_file_uri
+   :type: str
+
+
+   
+   Location of the environment image file.
+
+   This property gets or sets the environment image file used by the
+   ambient environment source.
+
+   :Parameters:
+
+       **uri** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+
+
+
+   :Returns:
+
+       **uri** : :class:`python:str`
+           format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: color_space
+   :type: Union[None, SourceAmbientEnvironment, SourceAmbientEnvironment]
+
+
+   
+   Property containing all options in regard to the color space properties.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[
+           None,
+           ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,
+           ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
+           ]
+           Instance of Predefined Color Space class
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_userdefined_color_space()
+
+   
+   Set the color space to user-defined.
+
+
+
+
+
+   :Returns:
+
+       :obj:`SourceAmbientEnvironment.UserDefinedColorSpace`
+           Settings for user defined color space.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_predefined_color_space()
+
+   
+   Set the color space to use one of the presets.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace`
+           Environment source color space for sRGB or AdobeRGB
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment`
+           Ambient environment Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment`
+           Ambient environment Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceAmbientEnvironment`
+           Ambient environment Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

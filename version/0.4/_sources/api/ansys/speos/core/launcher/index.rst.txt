@@ -1,0 +1,205 @@
+
+
+
+
+
+
+The ``launcher.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.launcher
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: launcher
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~launch_speos`
+            - Start the Speos Service remotely using the product instance management API.
+
+
+          * - :py:obj:`~launch_remote_speos`
+            - Start the Speos Service remotely using the product instance management API.
+
+
+          * - :py:obj:`~launch_local_speos_rpc_server`
+            - Launch Speos RPC server locally.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module to start Speos RPC Server.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: launch_speos(version = None)
+
+   
+   Start the Speos Service remotely using the product instance management API.
+
+   Prerequisite : product instance management configured.
+
+   :Parameters:
+
+       **version** : :class:`python:str`, :obj:`optional`
+           The Speos Service version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen by the server.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.speos.Speos`
+           An instance of the Speos Service.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: launch_remote_speos(version = None)
+
+   
+   Start the Speos Service remotely using the product instance management API.
+
+   When calling this method, you need to ensure that you are in an
+   environment where PyPIM is configured. This can be verified with
+   :func:`pypim.is_configured <ansys.platform.instancemanagement.is_configured>`.
+
+   :Parameters:
+
+       **version** : :class:`python:str`, :obj:`optional`
+           The Speos Service version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen by the server.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.speos.Speos`
+           An instance of the Speos Service.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: launch_local_speos_rpc_server(version = DEFAULT_VERSION, port = DEFAULT_PORT, message_size = MAX_MESSAGE_LENGTH, logfile_loc = None, log_level = 20, speos_rpc_path = None)
+
+   
+   Launch Speos RPC server locally.
+
+   .. warning::
+       Do not execute this function with untrusted input parameters.
+
+   :Parameters:
+
+       **version** : :class:`python:str`
+           The Speos server version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen as
+           ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+
+       **port** : :obj:`Union`\[:class:`python:str`, :class:`python:int`], :obj:`optional`
+           Port number where the server is running.
+           By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
+
+       **message_size** : :class:`python:int`
+           Maximum message length value accepted by the Speos RPC server,
+           By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+
+       **logfile_loc** : :class:`python:str`
+           location for the logfile to be created in.
+
+       **log_level** : :class:`python:int`
+           The logging level to be applied to the server, integer values can be taken from logging
+           module.
+           By default, ``logging.WARNING`` = 20.
+
+       **speos_rpc_path** : :obj:`Optional`\[:class:`python:str`, :obj:`Path`]
+           location of Speos rpc executable
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.speos.Speos`
+           An instance of the Speos Service.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

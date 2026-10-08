@@ -1,0 +1,153 @@
+
+
+
+
+
+
+:class:`VopOptic`
+=================
+
+
+.. py:class:: ansys.speos.core.opt_prop.BaseVop.VopOptic(parent, default_parameters = None, stable_ctr=False)
+
+   
+   Optic parameters for a clear transparent volume.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VopOptic
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~index`
+            - Real part of refractive index.
+          * - :py:attr:`~absorption`
+            - Absorption coefficient.
+          * - :py:attr:`~constringence`
+            - Abbe Number.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.BaseVop import VopOptic
+
+Property detail
+---------------
+
+.. py:property:: index
+   :type: float
+
+
+   
+   Real part of refractive index.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption
+   :type: float
+
+
+   
+   Absorption coefficient.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: constringence
+   :type: Optional[float]
+
+
+   
+   Abbe Number.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,222 @@
+
+
+
+
+
+
+:class:`InteractiveSimulationParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.InteractiveSimulationParameters
+
+   
+   Interactive Simulation Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: InteractiveSimulationParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ambient_material_uri`
+            - Path to the ambient material file.
+          * - :py:attr:`~light_expoert`
+            - Whether light export is enabled.
+          * - :py:attr:`~impact_report`
+            - Whether impact reporting is enabled.
+          * - :py:attr:`~geom_distance_tolerance`
+            - 
+          * - :py:attr:`~max_impact`
+            - 
+          * - :py:attr:`~minimum_energy_percentage`
+            - Minimum energy percentage threshold for ray continuation.
+          * - :py:attr:`~colorimetric_standard`
+            - Colorimetric standard used for result computation.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import InteractiveSimulationParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: ambient_material_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the ambient material file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: light_expoert
+   :type:  bool
+   :value: False
+
+
+   
+   Whether light export is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: impact_report
+   :type:  bool
+   :value: False
+
+
+   
+   Whether impact reporting is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geom_distance_tolerance
+   :value: 0.01
+
+
+.. py:attribute:: max_impact
+   :value: 100
+
+
+.. py:attribute:: minimum_energy_percentage
+   :type:  float
+   :value: 0.005
+
+
+   
+   Minimum energy percentage threshold for ray continuation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: colorimetric_standard
+   :type:  ColorimetricStandardTypes
+
+   
+   Colorimetric standard used for result computation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

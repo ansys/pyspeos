@@ -1,0 +1,131 @@
+
+
+
+
+
+
+:class:`OptimizedPropagationRelativeParameters`
+===============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.OptimizedPropagationRelativeParameters
+
+   
+   Optimized Propagation Relative Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Requires Speos 2026 R1 SP3 or higher and is only compatible with radiance sensors.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: OptimizedPropagationRelativeParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~min_pass_number`
+            - Minimum number of passes computed without pass optimization.
+          * - :py:attr:`~stop_condition_relative_value`
+            - Relative pixel standard deviation threshold, in percent (from 0 to 100).
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import OptimizedPropagationRelativeParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: min_pass_number
+   :type:  int
+   :value: 300
+
+
+   
+   Minimum number of passes computed without pass optimization.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: stop_condition_relative_value
+   :type:  int
+   :value: 10
+
+
+   
+   Relative pixel standard deviation threshold, in percent (from 0 to 100).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

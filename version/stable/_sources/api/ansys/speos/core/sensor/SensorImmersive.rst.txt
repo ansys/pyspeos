@@ -1,0 +1,588 @@
+
+
+
+
+
+
+:class:`SensorImmersive`
+========================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorImmersive(project, name, description = '', metadata = None, sensor_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSensor`
+
+
+   
+   Sensor feature: Immersive.
+
+   An immersive sensor wraps the observer inside a cube and collects light from all six faces.
+   By default, a sampling of 600 pixels per face, an integration angle of 5 degrees, a spectral
+   range from 400 nm to 700 nm (sampling 13), no layer separation, and no face exclusions are
+   chosen.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not have to be created from scratch.
+           By default, ``None``, means that the feature is created from scratch.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.ImmersiveSensorParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           dataclass.
+           By default, ``None``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorImmersive
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_wavelengths_range`
+            - Configure the wavelength range of the sensor.
+          * - :py:attr:`~set_layer_type_none`
+            - Set layer separation to *None* (no layer separation).
+          * - :py:attr:`~set_layer_type_source`
+            - Set layer separation to *by source*.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sampling`
+            - Pixel count (horizontal and vertical) per cube face.
+          * - :py:attr:`~integration_angle`
+            - Integration angle in degrees for direct simulations.
+          * - :py:attr:`~stereo_interocular_distance`
+            - Stereo interocular distance in mm.
+          * - :py:attr:`~exclude_front`
+            - Whether the front face is excluded.
+          * - :py:attr:`~exclude_back`
+            - Whether the back face is excluded.
+          * - :py:attr:`~exclude_left`
+            - Whether the left face is excluded.
+          * - :py:attr:`~exclude_right`
+            - Whether the right face is excluded.
+          * - :py:attr:`~exclude_top`
+            - Whether the top face is excluded.
+          * - :py:attr:`~exclude_bottom`
+            - Whether the bottom face is excluded.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~layer`
+            - Current layer separation type.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import SensorImmersive
+
+Property detail
+---------------
+
+.. py:property:: sampling
+   :type: int
+
+
+   
+   Pixel count (horizontal and vertical) per cube face.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Pixel count per face. By default, ``600``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Current sampling value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: integration_angle
+   :type: float
+
+
+   
+   Integration angle in degrees for direct simulations.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Integration angle (degrees). By default, ``5.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current integration angle.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: stereo_interocular_distance
+   :type: float
+
+
+   
+   Stereo interocular distance in mm.
+
+
+   :Parameters:
+
+       **value** : :data:`python:None` | :class:`python:float`
+           Set stereo interocular distance in mm.
+           By default, None as deactivate the stereo setting.
+           Or, set value to stereo interocular distance value will activate
+           the stereo setting.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current stereo interocular distance in mm.
+           If stereo setting is not activated, distance will be 0 mm.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_front
+   :type: bool
+
+
+   
+   Whether the front face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_back
+   :type: bool
+
+
+   
+   Whether the back face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_left
+   :type: bool
+
+
+   
+   Whether the left face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_right
+   :type: bool
+
+
+   
+   Whether the right face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_top
+   :type: bool
+
+
+   
+   Whether the top face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: exclude_bottom
+   :type: bool
+
+
+   
+   Whether the bottom face is excluded.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list[float]
+
+
+   
+   Position of the sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:list`\[:class:`python:float`]
+           Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+           X is Front, Y is Top, Z is Right.
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Current axis system.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: layer
+   :type: Union[str, None]
+
+
+   
+   Current layer separation type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:str`, :data:`python:None`]
+           ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_wavelengths_range()
+
+   
+   Configure the wavelength range of the sensor.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           Wavelength range object.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_none()
+
+   
+   Set layer separation to *None* (no layer separation).
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorImmersive`
+           This immersive sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_source()
+
+   
+   Set layer separation to *by source*.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorImmersive`
+           This immersive sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

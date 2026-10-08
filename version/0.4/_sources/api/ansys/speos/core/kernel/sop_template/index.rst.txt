@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``sop_template.py`` module
+==============================
+
+.. py:module:: ansys.speos.core.kernel.sop_template
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: sop_template
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sop_template.SOPTemplateLink`
+            - Link object for Surface Optical Properties template in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sop_template.SOPTemplateStub`
+            - Database interactions for Surface Optical Properties templates.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoSOPTemplate`
+            - SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SOPTemplateLink</api/ansys/speos/core/kernel/sop_template/SOPTemplateLink>
+    <span class="nf nf-cod-symbol_class"></span> SOPTemplateStub</api/ansys/speos/core/kernel/sop_template/SOPTemplateStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoSOPTemplate
+
+   
+   SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

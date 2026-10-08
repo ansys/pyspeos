@@ -1,0 +1,263 @@
+
+
+
+
+
+
+:class:`RadianceSensorParameters`
+=================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.RadianceSensorParameters
+
+   
+   Radiance Sensor Constants.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: RadianceSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~dimensions`
+            - Dimensions of the sensor.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~sensor_type`
+            - Type of the sensor.
+          * - :py:attr:`~focal_length`
+            - Distance between observer point and sensor and axis-system,
+          * - :py:attr:`~integration_angle`
+            - Integration angle.
+          * - :py:attr:`~observer`
+            - The position of the observer point.
+          * - :py:attr:`~layer_type`
+            - Type of layer separation used by the sensor.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import RadianceSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: dimensions
+   :type:  DimensionsParameters
+
+   
+   Dimensions of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sensor_type
+   :type:  Union[SensorTypes, ColorimetricParameters, SpectralParameters, SensorTypes]
+
+   
+   Type of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: focal_length
+   :type:  float
+   :value: 250.0
+
+
+   
+   Distance between observer point and sensor and axis-system,
+   will be ignored if observer is used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_angle
+   :type:  float
+   :value: 5
+
+
+   
+   Integration angle.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: observer
+   :type:  Union[None, list[float]]
+   :value: None
+
+
+   
+   The position of the observer point.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  Union[LayerTypes, LayerTypes, LayerByFaceParameters, LayerBySequenceParameters]
+
+   
+   Type of layer separation used by the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,49 @@
+
+
+
+
+
+
+:class:`AnisotropicMap`
+=======================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.AnisotropicMap(parent, default_parameters = None, stable_ctr=False)
+
+   Bases: :py:obj:`BaseTextureMap`
+
+
+   
+   Anisotropy map texture mapping properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import AnisotropicMap
+
+
+
+
+

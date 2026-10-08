@@ -1,0 +1,382 @@
+
+
+
+
+
+
+:class:`SourceAmbientNaturalLight`
+==================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientNaturalLight(project, name, description = '', metadata = None, source_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   Natural light ambient source.
+
+   By default, turbidity is set to be 3 with Sky.
+   [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+   Sun type is set to be automatic type.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[    :obj:`ansys.speos.core.generic.parameters.AmbientNaturalLightParameters`] = :data:`python:None`
+           If defined the values in the SourceAmbientNaturalLight instance
+            will be overwritten by the values of the data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientNaturalLight
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sun_automatic`
+            - Set natural light sun type as automatic.
+          * - :py:attr:`~set_sun_manual`
+            - Set natural light sun type as manual.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~turbidity`
+            - Property turbidity of the natural light source.
+          * - :py:attr:`~with_sky`
+            - Bool Property of whether activated using sky in the natural light source.
+          * - :py:attr:`~zenith_direction`
+            - Property zenith direction of the natural light source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Property whether reverse zenith direction of the natural light source.
+          * - :py:attr:`~north_direction`
+            - Property north direction of the natural light source.
+          * - :py:attr:`~reverse_north_direction`
+            - Property whether reverse north direction of the natural light source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientNaturalLight
+
+Property detail
+---------------
+
+.. py:property:: turbidity
+   :type: float
+
+
+   
+   Property turbidity of the natural light source.
+
+       default value to be 3.
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           set value of Turbidity the measure of the fraction of scattering.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           value of Turbidity the measure of the fraction of scattering.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: with_sky
+   :type: bool
+
+
+   
+   Bool Property of whether activated using sky in the natural light source.
+
+       default value to be True.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True as using sky, while False as using natural light without the sky.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as using sky, while False as using natural light without the sky.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Property zenith direction of the natural light source.
+
+       default value to be [0, 0, 1]
+
+   :Parameters:
+
+       **direction** : :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the natural light.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the natural light.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Property whether reverse zenith direction of the natural light source.
+
+       default value to be False.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: north_direction
+   :type: List[float]
+
+
+   
+   Property north direction of the natural light source.
+
+       default value to be [0, 1, 0].
+
+   :Parameters:
+
+       **direction** : :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the natural light.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the natural light.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_north_direction
+   :type: bool
+
+
+   
+   Property whether reverse north direction of the natural light source.
+
+       default value to be False.
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           True to reverse north direction, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as reverse north direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sun_automatic()
+
+   
+   Set natural light sun type as automatic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.AutomaticSun`
+           Sun automatic type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sun_manual()
+
+   
+   Set natural light sun type as manual.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSourceAmbient.Manual`
+           Sun Manual type feature to complete.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

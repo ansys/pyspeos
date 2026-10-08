@@ -1,0 +1,353 @@
+
+
+
+
+
+
+:class:`GroundPlane`
+====================
+
+
+.. py:class:: ansys.speos.core.ground_plane.GroundPlane(project, ground = None)
+
+   
+   Speos feature: ground plane.
+
+   Only usable when there is at least one Ambient Environment Source in the project.
+
+   :Parameters:
+
+       **project** : :obj:`project.Project`
+           Project that will own the feature.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: GroundPlane
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the ground plane - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ground_origin`
+            - Ground origin.
+          * - :py:attr:`~ground_zenith`
+            - Zenith direction.
+          * - :py:attr:`~ground_height`
+            - Ground height.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the ground plane property.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.ground_plane import GroundPlane
+
+Property detail
+---------------
+
+.. py:property:: ground_origin
+   :type: List[float]
+
+
+   
+   Ground origin.
+
+   This property gets and sets the origin of the ground plane.
+   Default as [0, 0, 0]
+
+   :Parameters:
+
+       **value: List[float]**
+           Ground origin.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Ground origin.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: ground_zenith
+   :type: List[float]
+
+
+   
+   Zenith direction.
+
+   This property gets and sets the zenith direction of the ground plane.
+   Default as [0, 0, 1]
+
+   :Parameters:
+
+       **value: List[float]**
+           Zenith direction.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Zenith direction.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: ground_height
+   :type: float
+
+
+   
+   Ground height.
+
+   This property gets and sets the height of the ground plane.
+   Default as 1000.0
+
+   :Parameters:
+
+       **value: float**
+           Ground height.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Ground height.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the ground plane - read only.
+
+
+   :Parameters:
+
+       **key: str**
+           ..
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the ground plane property.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.ground_plane.GroundPlane`
+           Ground plane feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.ground_plane.GroundPlane`
+           Ground plane feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.ground_plane.GroundPlane`
+           Ground plane feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

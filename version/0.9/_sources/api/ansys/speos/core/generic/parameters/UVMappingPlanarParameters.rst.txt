@@ -1,0 +1,49 @@
+
+
+
+
+
+
+:class:`UVMappingPlanarParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UVMappingPlanarParameters
+
+   Bases: :py:obj:`CommonUVMappingParameters`
+
+
+   
+   Planar uv mapping parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UVMappingPlanarParameters
+
+
+
+
+

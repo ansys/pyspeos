@@ -1,0 +1,599 @@
+
+
+
+
+
+
+:class:`Project`
+================
+
+
+.. py:class:: ansys.speos.core.project.Project(speos, path = '')
+
+   
+   A project describes all Speos features.
+
+   This includes optical properties, sources, sensors, simulations that user can fill in.
+   Project provides functions to create new feature, find a feature.
+   It can be created from empty or loaded from a specific file.
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           Speos session (connected to gRPC server).
+
+       **path** : :class:`python:str`
+           The project will be loaded from this speos file.
+           By default, ``""``, means create from empty.
+
+   :Attributes:
+
+       **scene_link** : :obj:`ansys.speos.core.kernel.scene.SceneLink`
+           Link object for the scene in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Project
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_optical_property`
+            - Create a new Optical Property feature.
+          * - :py:attr:`~create_source`
+            - Create a new Source feature.
+          * - :py:attr:`~create_simulation`
+            - Create a new Simulation feature.
+          * - :py:attr:`~create_sensor`
+            - Create a new Sensor feature.
+          * - :py:attr:`~create_root_part`
+            - Create the project root part feature.
+          * - :py:attr:`~find`
+            - Find feature(s) by name (possibility to use regex) and by feature type.
+          * - :py:attr:`~delete`
+            - Delete project: erase scene data.
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the project - read only.
+          * - :py:attr:`~find_key`
+            - Get values corresponding to the key in project dictionary - read only.
+          * - :py:attr:`~preview`
+            - Preview cad bodies inside the project's scene.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~client`
+            - Speos instance client.
+          * - :py:attr:`~scene_link`
+            - Link object for the scene in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the project's scene.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.project import Project
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: client
+
+   
+   Speos instance client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: scene_link
+
+   
+   Link object for the scene in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_optical_property(name, description = '', metadata = None)
+
+   
+   Create a new Optical Property feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           OptProp feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_source(name, description = '', feature_type = SourceSurface, metadata = None)
+
+   
+   Create a new Source feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **feature_type: type**
+           Source type to be created.
+           By default, ``ansys.speos.core.source.SourceSurface``.
+           Allowed types:
+           Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,             ansys.speos.core.source.SourceLuminaire].
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,        :obj:`ansys.speos.core.source.SourceLuminaire`]
+           Source class instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_simulation(name, description = '', feature_type = SimulationDirect, metadata = None)
+
+   
+   Create a new Simulation feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **feature_type: type**
+           Simulation type to be created.
+           By default, ``ansys.speos.core.simulation.SimulationDirect``.
+           Allowed types: Union[ansys.speos.core.simulation.SimulationDirect,             ansys.speos.core.simulation.SimulationInteractive,             ansys.speos.core.simulation.SimulationInverse].
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.simulation.SimulationDirect`,        :obj:`ansys.speos.core.simulation.SimulationInteractive`,        :obj:`ansys.speos.core.simulation.SimulationInverse`]
+           Simulation class instance
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_sensor(name, description = '', feature_type = SensorIrradiance, metadata = None)
+
+   
+   Create a new Sensor feature.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **feature_type: type**
+           Sensor type to be created.
+           By default, ``ansys.speos.core.sensor.SensorIrradiance``.
+           Allowed types: Union[ansys.speos.core.sensor.SensorCamera,            ansys.speos.core.sensor.SensorRadiance,             ansys.speos.core.sensor.SensorIrradiance].
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.sensor.SensorCamera`,        :obj:`ansys.speos.core.sensor.SensorRadiance`, :obj:`ansys.speos.core.sensor.SensorIrradiance`]
+           Sensor class instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_root_part(description = '', metadata = None)
+
+   
+   Create the project root part feature.
+
+   If a root part is already created in the project, it is returned.
+
+   :Parameters:
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.part.Part`
+           Part feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: find(name, name_regex = False, feature_type = None)
+
+   
+   Find feature(s) by name (possibility to use regex) and by feature type.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **name_regex** : :ref:`bool <python:bltin-boolean-values>`
+           Allows to use regex for name parameter.
+           By default, ``False``, means that regex is not used for name parameter.
+
+       **feature_type** : :obj:`type`
+           Type of the wanted features.
+           Mandatory to fill for geometry features.
+           By default, ``None``, means that all features will be considered
+           (except geometry features).
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`Union`\[:obj:`ansys.speos.core.opt_prop.OptProp`, :obj:`ansys.speos.core.source.Surface`,         :obj:`ansys.speos.core.source.RayFile`, :obj:`ansys.speos.core.source.Luminaire`,         :obj:`ansys.speos.core.sensor.Camera`,         :obj:`ansys.speos.core.sensor.Radiance`, :obj:`ansys.speos.core.sensor.Irradiance`,         :obj:`ansys.speos.core.simulation.Direct`, :obj:`ansys.speos.core.simulation.Interactive`,         :obj:`ansys.speos.core.simulation.Inverse`, :obj:`ansys.speos.core.part.Part`,         :obj:`ansys.speos.core.body.Body`,         :obj:`ansys.speos.core.face.Face`, :obj:`ansys.speos.core.part.Part.SubPart`]]
+           Found features.
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> # From name only
+   >>> find(name="Camera.1")
+   >>> # Specify feature type
+   >>> find(name="Camera.1", feature_type=ansys.speos.core.sensor.SensorCamera)
+   >>> # Using regex
+   >>> find(
+   >>>     name="Camera.*",
+   >>>     name_regex=True,
+   >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
+   >>> )
+   Here some examples when looking for a geometry feature:
+   (always precise feature_type)
+
+   >>> # Root part
+   >>> find(name="", feature_type=ansys.speos.core.part.Part)
+   >>> # Body in root part
+   >>> find(name="BodyName", feature_type=ansys.speos.core.body.Body)
+   >>> # Face from body in root part
+   >>> find(name="BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+   >>> # Sub part in root part
+   >>> find(name="SubPartName", feature_type=ansys.speos.core.part.Part.SubPart)
+   >>> # Face in a body from sub part in root part :
+   >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
+   >>> # Regex can be use at each level separated by "/"
+   >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+   >>> # All faces of a specific body
+   >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
+   >>> # All geometry features at first level (whatever their type: body, face, sub part)
+   >>> find(name=".*", name_regex=True, feature_type=ansys.speos.core.part.Part)
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete project: erase scene data.
+
+   Delete all features contained in the project.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.project.Project`
+           Project feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get dictionary corresponding to the project - read only.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: find_key(key)
+
+   
+   Get values corresponding to the key in project dictionary - read only.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Key to search in the project dictionary.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:tuple`\[:class:`python:str`, :class:`python:dict`]]
+           List of matching objects containing for each its x_path and its value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the project's scene.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: preview(viz_args=None, screenshot = None)
+
+   
+   Preview cad bodies inside the project's scene.
+
+
+   :Parameters:
+
+       **viz_args** : :class:`python:dict`
+           contains arguments in dict format passed to add mesh function
+           e.g.
+           - {'style': 'wireframe'},
+           - {'style': 'surface', 'color':'white'},
+           - {'opacity': 0.7, 'color':'white', 'show_edges': False}.
+
+       **screenshot** : :class:`python:str` or :obj:`Path` or ``None``
+           Path to save a screenshot of the plotter. If defined Plotter will only create the
+           screenshot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

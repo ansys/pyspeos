@@ -1,0 +1,434 @@
+
+
+
+
+
+
+:class:`InverseSimulationParameters`
+====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.InverseSimulationParameters
+
+   
+   Inverse Simulation Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: InverseSimulationParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ambient_material_uri`
+            - Path to the ambient material file.
+          * - :py:attr:`~light_expoert`
+            - Whether light export is enabled.
+          * - :py:attr:`~stop_condition_passes_number`
+            - Maximum number of inverse passes before stopping.
+          * - :py:attr:`~stop_condition_duration`
+            - Optional simulation stop duration in seconds.
+          * - :py:attr:`~automatic_save_frequency`
+            - Auto-save interval in seconds.
+          * - :py:attr:`~colorimetric_standard`
+            - Colorimetric standard used for result computation.
+          * - :py:attr:`~dispersion`
+            - Whether wavelength dispersion is enabled.
+          * - :py:attr:`~geom_distance_tolerance`
+            - Geometry distance tolerance value.
+          * - :py:attr:`~max_impact`
+            - Maximum number of impacts considered per ray.
+          * - :py:attr:`~splitting`
+            - Whether ray splitting is enabled.
+          * - :py:attr:`~minimum_energy_percentage`
+            - Minimum energy percentage threshold for ray continuation.
+          * - :py:attr:`~number_of_gathering_rays_per_source`
+            - Number of gathering rays shot per source.
+          * - :py:attr:`~maximum_gathering_error`
+            - Maximum accepted gathering error.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import InverseSimulationParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: ambient_material_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the ambient material file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: light_expoert
+   :type:  bool
+   :value: False
+
+
+   
+   Whether light export is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: stop_condition_passes_number
+   :type:  int
+   :value: 5
+
+
+   
+   Maximum number of inverse passes before stopping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: stop_condition_duration
+   :type:  Optional[int]
+   :value: None
+
+
+   
+   Optional simulation stop duration in seconds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: automatic_save_frequency
+   :type:  int
+   :value: 1800
+
+
+   
+   Auto-save interval in seconds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: colorimetric_standard
+   :type:  ColorimetricStandardTypes
+
+   
+   Colorimetric standard used for result computation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: dispersion
+   :type:  bool
+   :value: False
+
+
+   
+   Whether wavelength dispersion is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geom_distance_tolerance
+   :type:  float
+   :value: 0.01
+
+
+   
+   Geometry distance tolerance value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: max_impact
+   :type:  int
+   :value: 100
+
+
+   
+   Maximum number of impacts considered per ray.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: splitting
+   :type:  bool
+   :value: False
+
+
+   
+   Whether ray splitting is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: minimum_energy_percentage
+   :type:  float
+   :value: 0.005
+
+
+   
+   Minimum energy percentage threshold for ray continuation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: number_of_gathering_rays_per_source
+   :type:  int
+   :value: 1
+
+
+   
+   Number of gathering rays shot per source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: maximum_gathering_error
+   :type:  int
+   :value: 0
+
+
+   
+   Maximum accepted gathering error.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,164 @@
+
+
+
+
+
+
+:class:`SpeosFileInstance`
+==========================
+
+.. py:class:: ansys.speos.core.workflow.combine_speos.SpeosFileInstance(speos_file, axis_system = None, name = '')
+
+   
+   Represents a SPEOS file containing geometries and materials.
+
+   Geometries are placed in the root part of a project, and oriented according to the axis_system argument.
+
+   :Parameters:
+
+       **speos_file** : :class:`python:str`
+           SPEOS file to be loaded.
+
+       **axis_system** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Location and orientation to define for the geometry of the SPEOS file, [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+       **name** : :class:`python:str`
+           Name chosen for the imported geometry. This name is used as subpart name under the root part of the project.
+           By default, "" (meaning user has not defined a name), then the name of the SPEOS file without extension is taken.
+           Note: Materials are named after the name. For instance name.material.1 representing the first material of the imported geometry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpeosFileInstance
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~speos_file`
+            - SPEOS file.
+          * - :py:attr:`~axis_system`
+            - Location and orientation to define for the geometry of the SPEOS file.
+          * - :py:attr:`~name`
+            - Name for the imported geometry, and used to name the materials.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.workflow.combine_speos import SpeosFileInstance
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: speos_file
+
+   
+   SPEOS file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :value: None
+
+
+   
+   Location and orientation to define for the geometry of the SPEOS file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: name
+   :value: ''
+
+
+   
+   Name for the imported geometry, and used to name the materials.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

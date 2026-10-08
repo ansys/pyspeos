@@ -1,0 +1,153 @@
+
+
+
+
+
+
+:class:`OptimizedPropagationRelative`
+=====================================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationRelative(propagation_relative, default_parameters = None, stable_ctr = False)
+
+   
+   Optimized propagation using a relative pixel standard deviation stop condition.
+
+   The algorithm adapts the number of passes per pixel to send the optimal number of rays
+   according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+   adequate in areas where pixels need more rays, thus giving a balanced image.
+
+   :Parameters:
+
+       **propagation_relative** : :obj:`ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationRelative`
+           Protobuf message filled by this class.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.OptimizedPropagationRelativeParameters`, :obj:`optional`
+           If defined, the protobuf message is initialized with the values of the data class.
+           By default, ``None``, means that the message is left untouched.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Internal safety flag. It must be set to ``True`` by the parent class.
+           By default, ``False``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Do not instantiate this class directly. Use
+   :meth:`SimulationInverse.set_optimized_propagation_relative` instead.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: OptimizedPropagationRelative
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~min_pass_number`
+            - Minimum number of passes computed without pass optimization.
+          * - :py:attr:`~relative_value`
+            - Relative pixel standard deviation threshold, in percent.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationInverse import OptimizedPropagationRelative
+
+Property detail
+---------------
+
+.. py:property:: min_pass_number
+   :type: int
+
+
+   
+   Minimum number of passes computed without pass optimization.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Minimum number of passes.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: relative_value
+   :type: int
+
+
+   
+   Relative pixel standard deviation threshold, in percent.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Relative threshold, expressed in percent, between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
