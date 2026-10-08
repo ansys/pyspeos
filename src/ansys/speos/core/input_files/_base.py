@@ -40,6 +40,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import math
 from pathlib import Path
+from types import FunctionType
 from typing import ClassVar, List, Mapping, Optional, Sequence, TypeVar, Union, cast
 
 NEWLINE = "\r\n"
@@ -322,9 +323,10 @@ def _property_name(attribute: property) -> str:
     """Retrieve the name of a property defined with a named getter."""
     if not isinstance(attribute, property):
         raise TypeError("Expected a property descriptor.")
-    if attribute.fget is None:
-        raise ValueError("The property must have a getter.")
-    return attribute.fget.__name__
+    getter = attribute.fget
+    if not isinstance(getter, FunctionType):
+        raise ValueError("The property must have a getter defined as a function.")
+    return getter.__name__
 
 
 class _ValueComparable:
