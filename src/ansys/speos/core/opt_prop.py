@@ -32,8 +32,8 @@ The public classes are:
 - `TextureLayer` for a single texture layer,
 - `OptProp` to represent a full material instance (SOP + VOP + geometries).
 
-It also exposes the models of the optical property files that Speos takes as inputs.
-Those are read and written locally and do not need a Speos server:
+The :mod:`ansys.speos.core` package also exposes models of the optical property files that
+Speos takes as inputs. These are read and written locally and do not need a Speos server:
 - `SimpleScatteringSurfaceFile` for `*.simplescattering` files,
 - `ScatteringSurfaceFile` for `*.scattering` files,
 - `CoatedSurfaceFile` for `*.coated` files,
