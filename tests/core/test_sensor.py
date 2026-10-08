@@ -2071,8 +2071,8 @@ def test_load_intensity_sensor(speos: Speos, sensor_template_version):
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # @Todo adjust when V2 is supported on load
         #  currently load forces version v1 can be changed when all sensors are migrated
-        # assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
-        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     assert sensor_color.x_start == -13
@@ -2120,8 +2120,8 @@ def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # currently load forces version v1 can be changed when all sensors are migrated
-        # assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
-        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     else:
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_3d.colorimetric, Sensor3DIrradiance.Colorimetric)
@@ -2152,8 +2152,8 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # @Todo adjust when V2 is supported on load
         #  currently load forces version v1 can be changed when all sensors are migrated
-        # assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
-        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     assert sensor_color.type == "Colorimetric"
@@ -2263,8 +2263,8 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
         # @Todo adjust when V2 is supported on load
         # currently load forces version v1 can be changed when all sensors are migrated
-        # assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
-        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
+        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     else:
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
@@ -2566,7 +2566,7 @@ def test_reset_sensor(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_irradiance_modify_after_reset(speos: Speos):
+def test_irradiance_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of irradiance sensor, and then modify."""
     p = Project(speos=speos)
     wl = WavelengthsRangeParameters()
@@ -2631,7 +2631,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_irradiance_reset_internal_attributes(speos: Speos):
+def test_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2685,7 +2685,7 @@ def test_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_radiance_reset_internal_attributes(speos: Speos):
+def test_radiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of radiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2739,7 +2739,7 @@ def test_radiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_3d_irradiance_reset_internal_attributes(speos: Speos):
+def test_3d_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2790,7 +2790,7 @@ def test_3d_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_xmp_intensity_reset_internal_attributes(speos: Speos):
+def test_xmp_intensity_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of xmp intensity sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2840,7 +2840,7 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_immersive_reset_internal_attributes(speos: Speos):
+def test_immersive_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of immersive sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2902,7 +2902,7 @@ def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version)
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_observer_reset_internal_attributes(speos: Speos):
+def test_observer_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of observer sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -4069,7 +4069,12 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_ver
     # Verify the sensor template link was populated on load
     assert sensor.sensor_template_link is not None
     assert has_immersive_template(sensor)
-
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        # currently load forces version v1 can be changed when all sensors are migrated
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplate)
     # Template-level settings
     assert sensor.sampling == 600
     assert sensor.integration_angle == 5.0
@@ -4797,11 +4802,16 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
     assert sensor_iesna_a.integration_angle == pytest.approx(
         sensor_iesna_a_params.integration_angle
     )
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        # @Todo adjust when V2 is supported on load
+        #  currently load forces version v1 can be changed when all sensors are migrated
+        assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
     # Check format from template
-    sensor_template_iesna_a = (
-        sensor_iesna_a.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_a.HasField("iesna_a")
+    sensor_template_iesna_a = polar_intensity_template(sensor_iesna_a)
+    assert has_polar_intensity_format(sensor_iesna_a, "iesna_a")
     # Verify adaptive sampling is used
     assert sensor_template_iesna_a.HasField("adaptive_sampling_uri")
 
@@ -4811,10 +4821,8 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
         sensor_iesna_b_params.integration_angle
     )
     # Check format from template
-    sensor_template_iesna_b = (
-        sensor_iesna_b.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_b.HasField("iesna_b")
+    sensor_template_iesna_b = polar_intensity_template(sensor_iesna_b)
+    assert has_polar_intensity_format(sensor_iesna_b, "iesna_b")
     # Verify adaptive sampling is used
     assert sensor_template_iesna_b.HasField("adaptive_sampling_uri")
     assert sensor_iesna_b.adaptive_sampling_file.suffix == ".txt"
@@ -4822,10 +4830,8 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
     # Verify Intensity.3 (IESNA_A with explicit dimensions and near-field)
     assert isinstance(sensor_iesna_c, SensorPolarIntensity)
     # Check format from template
-    sensor_template_iesna_c = (
-        sensor_iesna_c.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_c.HasField("iesna_c")
+    sensor_template_iesna_c = polar_intensity_template(sensor_iesna_c)
+    assert has_polar_intensity_format(sensor_iesna_c, "iesna_c")
     assert sensor_template_iesna_c.HasField("near_field")
     # Verify explicit dimensions
     assert sensor_template_iesna_c.HasField("dimensions")
@@ -4839,10 +4845,8 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
     assert isinstance(sensor_eulumdat, SensorPolarIntensity)
     assert sensor_eulumdat.cell_distance is None  # Far-field sensor (no near field)
     # Check format from template
-    sensor_template_eulumdat = (
-        sensor_eulumdat.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_eulumdat.HasField("eulumdat")
+    sensor_template_eulumdat = polar_intensity_template(sensor_eulumdat)
+    assert has_polar_intensity_format(sensor_eulumdat, "eulumdat")
     # Verify explicit dimensions
     assert sensor_template_eulumdat.HasField("dimensions")
     assert sensor_eulumdat.horizontal_sampling == 360
