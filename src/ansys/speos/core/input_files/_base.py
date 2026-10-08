@@ -379,7 +379,9 @@ class SpeosFileFormat(_ValueComparable, ABC):
         path = Path(file_path)
         if not path.is_file():
             raise FileNotFoundError(f"No such file: {path}")
-        return cast(_FileFormat, cls._decode(path))
+        model = cast(_FileFormat, cls._decode(path))
+        model.validate()
+        return model
 
     def save(self, file_path: Union[str, Path]) -> Path:
         """Write the model to a file, creating the parent directories if needed.
