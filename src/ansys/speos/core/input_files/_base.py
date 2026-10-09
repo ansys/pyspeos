@@ -96,8 +96,7 @@ def _check_text_file(path: Path) -> None:
         head = stream.read(_SNIFF_SIZE)
     if b"\x00" in head:
         raise ValueError(
-            f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input "
-            "files."
+            f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input files."
         )
 
 
