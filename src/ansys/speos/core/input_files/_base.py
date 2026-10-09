@@ -97,7 +97,7 @@ def _check_text_file(path: Path) -> None:
     if b"\x00" in head:
         raise ValueError(
             f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input "
-            "files, save the file without encryption from Speos and read it again."
+            "files."
         )
 
 
