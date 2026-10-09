@@ -42,6 +42,15 @@ import math
 from pathlib import Path
 from types import FunctionType
 from typing import ClassVar, List, Mapping, Optional, Sequence, TypeVar, Union, cast
+import warnings
+
+from ansys.speos.core.generic.validation import (
+    _finite_number as _finite_number,
+    _finite_values as _finite_values,
+    _numeric_tuple as _numeric_tuple,
+    _percentage as _percentage,
+    check_percentage as check_percentage,
+)
 
 NEWLINE = "\r\n"
 """Line separator used by the Speos text input files."""
@@ -96,58 +105,18 @@ def _check_text_file(path: Path) -> None:
         head = stream.read(_SNIFF_SIZE)
     if b"\x00" in head:
         raise ValueError(
-            f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input "
-            "files, save the file without encryption from Speos and read it again."
+            f"{path} is not a plain text file. PySpeos cannot read encrypted Speos input files."
         )
 
 
-def check_percentage(name: str, value: float) -> None:
-    """Check that a value is a percentage expressed between 0 and 100.
-
-    Parameters
-    ----------
-    name : str
-        Name of the checked value, used in the error message.
-    value : float
-        Value to check.
-
-    Raises
-    ------
-    ValueError
-        If ``value`` is not within ``[0, 100]``.
-    """
-    if not 0.0 <= value <= 100.0:
-        raise ValueError(f"{name} must be between 0 and 100, got {value}.")
-
-
-def _finite_number(name: str, value: float) -> float:
-    """Convert a numeric value without accepting nonfinite data."""
-    value = float(value)
-    if not math.isfinite(value):
-        raise ValueError(f"{name} must be finite, got {value}.")
-    return value
-
-
-def _percentage(name: str, value: float) -> float:
-    """Convert and validate a finite percentage before storing it."""
-    value = _finite_number(name, value)
-    check_percentage(name, value)
-    return value
-
-
-def _finite_values(name: str, values: Sequence[float]) -> List[float]:
-    """Copy a numeric column while validating its entries."""
-    if isinstance(values, (str, bytes)):
-        raise TypeError(f"{name} must be a numeric sequence, not text.")
-    return [_finite_number(name, value) for value in values]
-
-
-def _numeric_tuple(name: str, values: Sequence[float], count: int = 3) -> tuple[float, ...]:
-    """Validate a fixed-size numeric vector and store it immutably."""
-    values = tuple(_finite_values(name, values))
-    if len(values) != count:
-        raise ValueError(f"{name} must hold {count} coordinates, got {len(values)}.")
-    return values
+def _warn_negative_absorption(name: str, value: float, *, stacklevel: int = 3) -> None:
+    """Flag measured negative absorption without rejecting data or rounding noise."""
+    if value < 0.0 and not math.isclose(value, 0.0, rel_tol=0.0, abs_tol=1e-9):
+        warnings.warn(
+            f"{name} is negative ({value} percent); check the measured contributions.",
+            UserWarning,
+            stacklevel=stacklevel,
+        )
 
 
 def _single_line(value: str) -> str:
@@ -217,6 +186,10 @@ class LineReader:
         -------
         bool
             ``True`` when no line is left to read.
+
+        Notes
+        -----
+        This property is read-only.
         """
         return self._index >= len(self._lines)
 

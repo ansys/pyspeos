@@ -34,6 +34,7 @@ from ansys.speos.core.input_files._base import (
     _property_name,
     _read_grid,
     _ValueComparable,
+    _warn_negative_absorption,
     _wavelength_line,
     check_percentage,
 )
@@ -75,13 +76,17 @@ class ScatteringSurfaceSample(_ValueComparable):
     Raises
     ------
     ValueError
-        If a percentage is outside 0 to 100, the total contribution exceeds 100, or a
-        Gaussian width is outside 0 to 90 degrees.
+        If a percentage is outside 0 to 100 or a Gaussian width is outside 0 to 90 degrees.
+
+    Warns
+    -----
+    UserWarning
+        If computed absorption is negative, excluding rounding noise within 1e-9 percent.
 
     Notes
     -----
-    Construction and property assignments validate before storing a value. To redistribute
-    a fully allocated light budget, lower the outgoing contribution before raising another.
+    Construction and property assignments validate before storing a value. Negative
+    absorption from measurement or rounding errors is preserved with a warning.
     """
 
     def __init__(
@@ -124,11 +129,7 @@ class ScatteringSurfaceSample(_ValueComparable):
         absorption = 100.0 - sum(
             value if entry == name else getattr(self, entry) for entry in _CONTRIBUTIONS
         )
-        if absorption < 0.0:
-            raise ValueError(
-                "The reflection and transmission contributions must not sum to more than "
-                f"100, got an absorption of {absorption}."
-            )
+        _warn_negative_absorption("absorption", absorption, stacklevel=4)
         setattr(self, "_" + name, value)
 
     def _set_width(self, name: str, value: float) -> None:
@@ -141,10 +142,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def specular_reflection(self) -> float:
         """Specularly reflected part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New specularly reflected part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._specular_reflection
 
@@ -156,10 +162,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def specular_transmission(self) -> float:
         """Specularly transmitted part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New specularly transmitted part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._specular_transmission
 
@@ -171,10 +182,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def lambertian_reflection(self) -> float:
         """Lambertian reflected part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New lambertian reflected part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._lambertian_reflection
 
@@ -186,10 +202,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def lambertian_transmission(self) -> float:
         """Lambertian transmitted part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New lambertian transmitted part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._lambertian_transmission
 
@@ -203,10 +224,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def gaussian_reflection(self) -> float:
         """Gaussian reflected part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New gaussian reflected part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._gaussian_reflection
 
@@ -218,10 +244,15 @@ class ScatteringSurfaceSample(_ValueComparable):
     def gaussian_transmission(self) -> float:
         """Gaussian transmitted part, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New gaussian transmitted part, in percent.
+
         Returns
         -------
         float
-            Contribution between 0 and 100, within the total 100 percent budget.
+            Contribution between 0 and 100.
         """
         return self._gaussian_transmission
 
@@ -232,6 +263,12 @@ class ScatteringSurfaceSample(_ValueComparable):
     @property
     def gaussian_fwhm_incidence_reflection(self) -> float:
         """Reflected Gaussian FWHM in the incidence plane, in degrees.
+
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the reflected Gaussian lobe in the incidence
+            plane, in degrees.
 
         Returns
         -------
@@ -250,6 +287,12 @@ class ScatteringSurfaceSample(_ValueComparable):
     def gaussian_fwhm_incidence_transmission(self) -> float:
         """Transmitted Gaussian FWHM in the incidence plane, in degrees.
 
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the transmitted Gaussian lobe in the incidence
+            plane, in degrees.
+
         Returns
         -------
         float
@@ -267,6 +310,12 @@ class ScatteringSurfaceSample(_ValueComparable):
     def gaussian_fwhm_perpendicular_reflection(self) -> float:
         """Reflected Gaussian FWHM in the perpendicular plane, in degrees.
 
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the reflected Gaussian lobe in the perpendicular
+            plane, in degrees.
+
         Returns
         -------
         float
@@ -283,6 +332,12 @@ class ScatteringSurfaceSample(_ValueComparable):
     @property
     def gaussian_fwhm_perpendicular_transmission(self) -> float:
         """Transmitted Gaussian FWHM in the perpendicular plane, in degrees.
+
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the transmitted Gaussian lobe in the perpendicular
+            plane, in degrees.
 
         Returns
         -------
@@ -321,6 +376,10 @@ class ScatteringSurfaceSample(_ValueComparable):
         -------
         float
             Complement to 100 of the six reflection and transmission contributions.
+
+        Notes
+        -----
+        This property is read-only.
         """
         return 100.0 - sum(getattr(self, name) for name in _CONTRIBUTIONS)
 
@@ -331,7 +390,12 @@ class ScatteringSurfaceSample(_ValueComparable):
         ------
         ValueError
             If a contribution is outside the 0 to 100 range, a full width at half maximum
-            is outside the 0 to 90 degrees range, or :attr:`absorption` is negative.
+            is outside the 0 to 90 degrees range.
+
+        Warns
+        -----
+        UserWarning
+            If computed absorption is negative, excluding rounding noise within 1e-9 percent.
         """
         for name in _CONTRIBUTIONS:
             check_percentage(name, getattr(self, name))
@@ -339,11 +403,7 @@ class ScatteringSurfaceSample(_ValueComparable):
             angle = getattr(self, name)
             if not 0.0 <= angle <= 90.0:
                 raise ValueError(f"{name} must be between 0 and 90 degrees, got {angle}.")
-        if self.absorption < 0.0:
-            raise ValueError(
-                "The reflection and transmission contributions must not sum to more than "
-                f"100, got an absorption of {self.absorption}."
-            )
+        _warn_negative_absorption("absorption", self.absorption)
 
 
 _CONTRIBUTIONS = ScatteringSurfaceSample._CONTRIBUTIONS
@@ -414,6 +474,12 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     def wavelengths(self) -> List[float]:
         """Wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the samples, in nm, sorted in increasing order. At least two
+            wavelengths are required.
+
         Returns
         -------
         List[float]
@@ -433,6 +499,12 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     def incident_angles(self) -> List[float]:
         """Angles of incidence in degrees, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New angles of incidence of the samples, in degrees, sorted in increasing order.
+            ``0`` and ``90`` are required.
+
         Returns
         -------
         List[float]
@@ -451,6 +523,11 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def samples(self) -> List[List[ScatteringSurfaceSample]]:
         """Sample grid, returned with copied row containers.
+
+        Parameters
+        ----------
+        values : List[List[ScatteringSurfaceSample]]
+            New contributions, one row per angle of incidence and one column per wavelength.
 
         Returns
         -------
@@ -478,6 +555,11 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def description(self) -> str:
         """Free text written on the second line of the file.
+
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
 
         Returns
         -------

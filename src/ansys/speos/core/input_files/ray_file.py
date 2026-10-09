@@ -93,6 +93,11 @@ class Ray(_ValueComparable):
     def position(self) -> Tuple[float, ...]:
         """Starting coordinates in mm.
 
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New Cartesian coordinates the ray starts from, in mm.
+
         Returns
         -------
         Tuple[float, ...]
@@ -107,6 +112,12 @@ class Ray(_ValueComparable):
     @property
     def direction(self) -> Tuple[float, ...]:
         """Direction cosines of the ray.
+
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New direction cosines ``(l, m, n)`` of the ray, which must be a unit vector.
+            The norm must be within 1e-3 of one; the vector is not normalized automatically.
 
         Returns
         -------
@@ -133,6 +144,11 @@ class Ray(_ValueComparable):
     def wavelength(self) -> float:
         """Wavelength of the ray, in nm.
 
+        Parameters
+        ----------
+        value : float
+            New wavelength of the ray, in nm.
+
         Returns
         -------
         float
@@ -147,6 +163,12 @@ class Ray(_ValueComparable):
     @property
     def energy(self) -> float:
         """Relative radiometric energy.
+
+        Parameters
+        ----------
+        value : float
+            New relative radiometric energy of the ray, between 0 and 1. The absolute flux of
+            the ray is its share of the total flux of the file.
 
         Returns
         -------
@@ -165,6 +187,14 @@ class Ray(_ValueComparable):
     @property
     def polarization(self) -> Optional[Tuple[float, ...]]:
         """Polarization ellipse parameters.
+
+        Parameters
+        ----------
+        values : Optional[Tuple[float, float, float, float, float]]
+            New polarization ``(o, p, q, r, s)``, where ``(o, p, q)`` is the normalized big axis
+            of the polarization ellipse, ``r`` the ratio of its small axis over its big axis and
+            ``s`` the handedness, ``0`` for right and ``1`` for left.
+            Use ``None`` for an unpolarized ray.
 
         Returns
         -------
@@ -203,7 +233,8 @@ class RayFile(SpeosFileFormat):
 
     :meth:`save` and :meth:`load` handle the binary ``*.ray`` flavor, while
     :meth:`save_text` and :meth:`load_text` handle the text flavor that the Speos ray file
-    editors also accept.
+    editors also accept. :meth:`save_sdf` and :meth:`load_sdf` handle Zemax spectral
+    binary source files.
 
     Parameters
     ----------
@@ -244,6 +275,11 @@ class RayFile(SpeosFileFormat):
     def rays(self) -> List[Ray]:
         """Ray collection with a copied container and shared rays.
 
+        Parameters
+        ----------
+        values : List[Ray]
+            New rays of the file.
+
         Returns
         -------
         List[Ray]
@@ -264,6 +300,11 @@ class RayFile(SpeosFileFormat):
     def radiant_flux(self) -> float:
         """Total radiant flux, in W.
 
+        Parameters
+        ----------
+        value : float
+            New total radiant flux of the file, in W.
+
         Returns
         -------
         float
@@ -278,6 +319,11 @@ class RayFile(SpeosFileFormat):
     @property
     def luminous_flux(self) -> float:
         """Total luminous flux, in lm.
+
+        Parameters
+        ----------
+        value : float
+            New total luminous flux of the file, in lm.
 
         Returns
         -------
@@ -301,6 +347,7 @@ class RayFile(SpeosFileFormat):
     _HEADER_MARKERS: ClassVar[Tuple[float, ...]] = (2.0, 2.0, 2.0, 2.0, 2.0)
     _HEADER_FORMAT: ClassVar[str] = "<7f"
     _RAY_VALUE_COUNT: ClassVar[int] = 8
+    _SDF_HEADER: ClassVar[struct.Struct] = struct.Struct("<II100s7fI13f4I")
 
     def validate(self) -> None:
         """Check the rays against the constraints of the ray file formats.
@@ -351,6 +398,173 @@ class RayFile(SpeosFileFormat):
             for row in values
         ]
         return cls(rays=rays, radiant_flux=header[0], luminous_flux=header[6])
+
+    def save_sdf(self, file_path: Union[str, Path]) -> Path:
+        """Write an unpolarized Zemax spectral binary source file.
+
+        Parameters
+        ----------
+        file_path : Union[str, pathlib.Path]
+            Path of the file to write. An existing file is overwritten after validation.
+
+        Returns
+        -------
+        pathlib.Path
+            Path of the written file.
+
+        Raises
+        ------
+        ValueError
+            If the rays are invalid or polarized, the radiant flux is negative, wavelengths
+            are not positive, positive power has no nonzero weights, or data cannot be
+            represented by the format's 32-bit floats.
+
+        Notes
+        -----
+        The 208-byte little-endian header identifies spectral records in watts with
+        millimeter coordinates. Each 32-byte record holds ``x y z l m n flux wavelength``.
+        Wavelengths are converted from nm to micrometers. Ray energies are relative weights:
+        each output flux is ``radiant_flux * energy / sum(energies)``. Zero total power
+        writes zero ray fluxes. Neither the model nor its energy weights are modified.
+        Luminous flux and polarization are not stored; use :meth:`save_text` for polarization.
+
+        References
+        ----------
+        .. [1] `Speos and Zemax Source file converter
+           <https://optics.ansys.com/hc/en-us/articles/43071106808595>`_.
+        """
+        self.validate()
+        if any(ray.polarization is not None for ray in self._rays):
+            raise ValueError("SDF files do not support polarization; use save_text().")
+        flux = self.radiant_flux
+        if flux < 0.0:
+            raise ValueError("SDF radiant flux must be nonnegative.")
+        total_weight = math.fsum(ray.energy for ray in self._rays)
+        if flux > 0.0 and total_weight == 0.0:
+            raise ValueError("Positive SDF radiant flux requires nonzero ray energy weights.")
+        rows = []
+        for ray in self._rays:
+            if ray.wavelength <= 0.0:
+                raise ValueError("SDF wavelengths must be positive.")
+            ray_flux = flux * (ray.energy / total_weight) if total_weight else 0.0
+            rows.append((*ray.position, *ray.direction, ray_flux, ray.wavelength / 1000.0))
+        try:
+            with np.errstate(over="raise", invalid="raise"):
+                values = np.asarray(rows, dtype="<f4")
+            header = self._SDF_HEADER.pack(
+                1010,
+                len(self._rays),
+                b"Converted from Speos by PySpeos.".ljust(100, b" "),
+                flux,
+                flux,
+                *([0.0] * 5),
+                4,
+                *([0.0] * 13),
+                2,
+                0,
+                0,
+                0,
+            )
+        except (FloatingPointError, OverflowError, struct.error) as error:
+            raise ValueError("SDF data must fit finite 32-bit floats and ray counts.") from error
+        if np.any(values[:, 7] <= 0.0) or (flux > 0.0 and not np.any(values[:, 6] > 0.0)):
+            raise ValueError("SDF wavelengths and positive power must not underflow to zero.")
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("wb") as stream:
+            stream.write(header)
+            stream.write(values.tobytes())
+        return path
+
+    @classmethod
+    def load_sdf(cls, file_path: Union[str, Path], *, luminous_flux: float = 683.0) -> RayFile:
+        """Read a Zemax spectral binary source file in millimeter coordinates.
+
+        Parameters
+        ----------
+        file_path : Union[str, pathlib.Path]
+            Path of the file to read.
+        luminous_flux : float, optional
+            Known photometric flux in lm. By default, ``683.0``, the model's default,
+            not a value inferred from the SDF spectrum.
+
+        Returns
+        -------
+        ansys.speos.core.input_files.ray_file.RayFile
+            Unpolarized rays with wavelengths in nm, normalized relative energy weights,
+            and radiant flux from the header's ``RaySetFlux``.
+
+        Raises
+        ------
+        FileNotFoundError
+            If ``file_path`` does not point to an existing file.
+        ValueError
+            If the header, record count or ray data are invalid, coordinates are not in mm,
+            the source has a nonneutral transform, or the file is not spectral radiometric SDF.
+
+        Notes
+        -----
+        Identifiers ``1010`` and ``8675309`` are accepted. Monochromatic DAT and photometric
+        formats are not supported. Wavelengths in micrometers are converted to nm. Record
+        fluxes are normalized to relative weights; their sum need not equal ``RaySetFlux``.
+        Positive ray-set power requires a positive sum of record fluxes. An all-zero set
+        is represented by zero energies without dividing by zero.
+        Original luminous flux, description, angular limits and ``SourceFlux`` metadata
+        are not reconstructed. Re-export preserves the ray-set power and distribution,
+        not arbitrary original energy scaling or header-only metadata.
+
+        References
+        ----------
+        .. [1] `Converting a binary Source File into ASCII
+           <https://optics.ansys.com/hc/en-us/articles/43071069319443>`_.
+        """
+        path = Path(file_path)
+        content = path.read_bytes()
+        header_size = cls._SDF_HEADER.size
+        if len(content) < header_size:
+            raise ValueError(f"{path}: truncated SDF header.")
+        header = cls._SDF_HEADER.unpack_from(content)
+        identifier, count = header[:2]
+        if identifier not in (1010, 8675309):
+            raise ValueError(f"{path}: invalid SDF identifier {identifier}.")
+        if header[24:26] != (2, 0):
+            raise ValueError(f"{path}: only spectral SDF records in watts are supported.")
+        if header[10] != 4:
+            raise ValueError(f"{path}: SDF coordinates must be in millimeters.")
+        if not all(math.isfinite(value) for value in (*header[3:10], *header[11:24])):
+            raise ValueError(f"{path}: SDF header values must be finite.")
+        if any(header[11:17]) or header[17:20] not in ((0.0,) * 3, (1.0,) * 3):
+            raise ValueError(f"{path}: SDF source transforms are not supported.")
+        if count < 1 or len(content) != header_size + count * 32:
+            raise ValueError(f"{path}: SDF ray count must be positive and match the file size.")
+        if header[3] < 0.0 or header[4] < 0.0:
+            raise ValueError(f"{path}: SDF header fluxes must be nonnegative.")
+        values = np.frombuffer(content, dtype="<f4", offset=header_size).reshape(count, 8)
+        if not np.all(np.isfinite(values)):
+            raise ValueError(f"{path}: SDF ray values must be finite.")
+        if np.any(values[:, 6] < 0.0) or np.any(values[:, 7] <= 0.0):
+            raise ValueError(
+                f"{path}: SDF ray fluxes must be nonnegative and wavelengths positive."
+            )
+        total_weight = math.fsum(float(value) for value in values[:, 6])
+        if header[4] > 0.0 and total_weight == 0.0:
+            raise ValueError(f"{path}: positive SDF ray-set flux requires nonzero record fluxes.")
+        rays = []
+        for number, row in enumerate(values, start=1):
+            try:
+                rays.append(
+                    Ray(
+                        position=(float(row[0]), float(row[1]), float(row[2])),
+                        direction=(float(row[3]), float(row[4]), float(row[5])),
+                        wavelength=float(row[7]) * 1000.0,
+                        energy=float(row[6]) / total_weight if total_weight else 0.0,
+                    )
+                )
+            except ValueError as error:
+                raise ValueError(f"{path}, ray {number}: {error}") from None
+        model = cls(rays=rays, radiant_flux=header[4], luminous_flux=luminous_flux)
+        model.validate()
+        return model
 
     def save_text(self, file_path: Union[str, Path]) -> Path:
         """Write the rays to a text ray file.

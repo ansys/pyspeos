@@ -123,6 +123,12 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def mode(self) -> str:
         """Active sides of the surface.
 
+        Parameters
+        ----------
+        value : str
+            New sides of the surface that scatter the light: ``"Reflection"``,
+            ``"Transmission"`` or ``"Both"``.
+
         Returns
         -------
         str
@@ -144,6 +150,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def absorption(self) -> float:
         """Absorbed contribution, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New absorbed part of the incident light, in percent.
+
         Returns
         -------
         float
@@ -160,6 +171,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def lambertian(self) -> float:
         """Lambertian contribution of the first side, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New lambertian part in percent. In ``"Both"`` mode this is the reflection side.
 
         Returns
         -------
@@ -178,6 +194,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def gaussian(self) -> float:
         """Gaussian contribution of the first side, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New gaussian part in percent. In ``"Both"`` mode this is the reflection side.
+
         Returns
         -------
         float
@@ -195,6 +216,12 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def gaussian_fwhm(self) -> float:
         """Gaussian width of the first side, in degrees.
 
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the Gaussian lobe, in degrees. In ``"Both"`` mode
+            this is the reflection side.
+
         Returns
         -------
         float
@@ -211,6 +238,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def lambertian_transmission(self) -> float:
         """Lambertian contribution of the second side, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New lambertian part of the transmission side, in percent. ``"Both"`` mode only.
 
         Returns
         -------
@@ -232,6 +264,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def gaussian_transmission(self) -> float:
         """Gaussian contribution of the second side, in percent.
 
+        Parameters
+        ----------
+        value : float
+            New gaussian part of the transmission side, in percent. ``"Both"`` mode only.
+
         Returns
         -------
         float
@@ -252,6 +289,12 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     def gaussian_fwhm_transmission(self) -> float:
         """Gaussian width of the second side, in degrees.
 
+        Parameters
+        ----------
+        value : float
+            New full width at half maximum of the transmission Gaussian lobe, in degrees.
+            ``"Both"`` mode only.
+
         Returns
         -------
         float
@@ -268,6 +311,12 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def reflection(self) -> Optional[float]:
         """Explicit reflection share or Fresnel splitting.
+
+        Parameters
+        ----------
+        value : Optional[float]
+            New reflected part in percent, the transmitted part being its complement to 100.
+            ``"Both"`` mode only. Use ``None`` to follow the Fresnel laws.
 
         Returns
         -------
@@ -287,6 +336,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     @property
     def description(self) -> str:
         """Single-line description.
+
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
 
         Returns
         -------
@@ -327,6 +381,10 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         -------
         bool
             ``True`` when :attr:`reflection` is ``None``.
+
+        Notes
+        -----
+        This property is read-only.
         """
         return self.reflection is None
 

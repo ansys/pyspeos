@@ -208,6 +208,16 @@ print(rays_path, rays_path.stat().st_size, "bytes")
 text_path = rays.save_text(OUTPUT_DIR / "collimated.txt")
 print(text_path.read_text())
 
+# The Zemax spectral source format carries millimeter coordinates, wavelengths in
+# micrometers, and radiometric ray fluxes. PySpeos converts the units and distributes the
+# total radiant flux using the relative ray energies. SDF does not carry luminous flux,
+# so provide that value explicitly when it is known.
+
+sdf_path = rays.save_sdf(OUTPUT_DIR / "collimated.sdf")
+sdf_rays = RayFile.load_sdf(sdf_path, luminous_flux=rays.luminous_flux)
+print(sdf_path, len(sdf_rays.rays), "rays", sdf_rays.radiant_flux, "W")
+print([ray.energy for ray in sdf_rays.rays])
+
 # ## Create a 3D texture mapping file
 
 # A Speos 3D Texture is made of a mesh and of a `*.OPT3DMapping` file, which lays out

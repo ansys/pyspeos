@@ -90,6 +90,11 @@ class MaterialConstringence(_ValueComparable):
     def constringence(self) -> float:
         """Abbe number.
 
+        Parameters
+        ----------
+        value : float
+            New abbe number, measured with the refractive index at the 587.5618 nm helium line.
+
         Returns
         -------
         float
@@ -106,6 +111,11 @@ class MaterialConstringence(_ValueComparable):
     @property
     def index(self) -> float:
         """Refractive index at 587.6 nm.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index at 587.6 nm.
 
         Returns
         -------
@@ -170,6 +180,11 @@ class MaterialDispersionCurve(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Curve wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the curve, in nm.
+
         Returns
         -------
         List[float]
@@ -186,6 +201,11 @@ class MaterialDispersionCurve(_ValueComparable):
     @property
     def indices(self) -> List[float]:
         """Refractive index column, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New refractive index at each wavelength.
 
         Returns
         -------
@@ -269,6 +289,11 @@ class MaterialSellmeier(_ValueComparable):
     def b1(self) -> float:
         """First numerator coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
         Returns
         -------
         float
@@ -283,6 +308,11 @@ class MaterialSellmeier(_ValueComparable):
     @property
     def c1(self) -> float:
         """First denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
 
         Returns
         -------
@@ -299,6 +329,11 @@ class MaterialSellmeier(_ValueComparable):
     def b2(self) -> float:
         """Second numerator coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
         Returns
         -------
         float
@@ -313,6 +348,11 @@ class MaterialSellmeier(_ValueComparable):
     @property
     def c2(self) -> float:
         """Second denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
 
         Returns
         -------
@@ -329,6 +369,11 @@ class MaterialSellmeier(_ValueComparable):
     def b3(self) -> float:
         """Third numerator coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
         Returns
         -------
         float
@@ -343,6 +388,11 @@ class MaterialSellmeier(_ValueComparable):
     @property
     def c3(self) -> float:
         """Third denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
 
         Returns
         -------
@@ -417,6 +467,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     def a0(self) -> float:
         """Constant coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
         Returns
         -------
         float
@@ -431,6 +486,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     @property
     def a1(self) -> float:
         """First coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
 
         Returns
         -------
@@ -447,6 +507,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     def a2(self) -> float:
         """Second coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
         Returns
         -------
         float
@@ -461,6 +526,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     @property
     def a3(self) -> float:
         """Third coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
 
         Returns
         -------
@@ -477,6 +547,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     def a4(self) -> float:
         """Fourth coefficient.
 
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
         Returns
         -------
         float
@@ -491,6 +566,11 @@ class MaterialKettlerHelmholtz(_ValueComparable):
     @property
     def a5(self) -> float:
         """Fifth coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
 
         Returns
         -------
@@ -575,6 +655,11 @@ class MaterialMetallicCurve(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Curve wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the curve, in nm.
+
         Returns
         -------
         List[float]
@@ -592,6 +677,11 @@ class MaterialMetallicCurve(_ValueComparable):
     def indices(self) -> List[float]:
         """Real refractive indices, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New real part n of the refractive index at each wavelength.
+
         Returns
         -------
         List[float]
@@ -608,6 +698,11 @@ class MaterialMetallicCurve(_ValueComparable):
     @property
     def extinctions(self) -> List[float]:
         """Extinction coefficients, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New extinction coefficient k at each wavelength.
 
         Returns
         -------
@@ -703,6 +798,11 @@ class MaterialBirefringentCurve(_ValueComparable):
     def wavelength(self) -> float:
         """Wavelength of the indices, in nm.
 
+        Parameters
+        ----------
+        value : float
+            New wavelength the indices are given at, in nm.
+
         Returns
         -------
         float
@@ -720,6 +820,11 @@ class MaterialBirefringentCurve(_ValueComparable):
     def index_a(self) -> float:
         """Refractive index along the a axis.
 
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``a`` axis.
+
         Returns
         -------
         float
@@ -734,6 +839,11 @@ class MaterialBirefringentCurve(_ValueComparable):
     @property
     def index_b(self) -> float:
         """Refractive index along the b axis.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``b`` axis.
 
         Returns
         -------
@@ -750,6 +860,11 @@ class MaterialBirefringentCurve(_ValueComparable):
     def index_c(self) -> float:
         """Refractive index along the c axis.
 
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``c`` axis.
+
         Returns
         -------
         float
@@ -764,6 +879,12 @@ class MaterialBirefringentCurve(_ValueComparable):
     @property
     def optical_class(self) -> int:
         """Optical class of the material.
+
+        Parameters
+        ----------
+        value : int
+            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+            ``2`` for a biaxial one.
 
         Returns
         -------
@@ -857,6 +978,11 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     def a(self) -> MaterialSellmeier:
         """Coefficients along the a axis.
 
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
         Returns
         -------
         MaterialSellmeier
@@ -871,6 +997,11 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     @property
     def b(self) -> MaterialSellmeier:
         """Coefficients along the b axis.
+
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
 
         Returns
         -------
@@ -887,6 +1018,11 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     def c(self) -> MaterialSellmeier:
         """Coefficients along the c axis.
 
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
         Returns
         -------
         MaterialSellmeier
@@ -901,6 +1037,12 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     @property
     def optical_class(self) -> int:
         """Optical class of the material.
+
+        Parameters
+        ----------
+        value : int
+            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+            ``2`` for a biaxial one.
 
         Returns
         -------
@@ -975,6 +1117,11 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     def a(self) -> MaterialKettlerHelmholtz:
         """Coefficients along the a axis.
 
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
         Returns
         -------
         MaterialKettlerHelmholtz
@@ -989,6 +1136,11 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     @property
     def b(self) -> MaterialKettlerHelmholtz:
         """Coefficients along the b axis.
+
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
 
         Returns
         -------
@@ -1005,6 +1157,11 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     def c(self) -> MaterialKettlerHelmholtz:
         """Coefficients along the c axis.
 
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
         Returns
         -------
         MaterialKettlerHelmholtz
@@ -1019,6 +1176,12 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     @property
     def optical_class(self) -> int:
         """Optical class of the material.
+
+        Parameters
+        ----------
+        value : int
+            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
+            ``2`` for a biaxial one.
 
         Returns
         -------
@@ -1137,6 +1300,13 @@ class VolumeScatteringUserDefined(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Spectral wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+            function does not depend on the wavelength, in which case each row of ``values``
+            holds a single entry.
+
         Returns
         -------
         List[float]
@@ -1159,6 +1329,11 @@ class VolumeScatteringUserDefined(_ValueComparable):
     def angles(self) -> List[float]:
         """Scattering angles in degrees, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New scattering angles theta, in degrees.
+
         Returns
         -------
         List[float]
@@ -1175,6 +1350,11 @@ class VolumeScatteringUserDefined(_ValueComparable):
     @property
     def values(self) -> List[List[float]]:
         """Relative intensities, returned with copied row containers.
+
+        Parameters
+        ----------
+        values : List[List[float]]
+            New relative scattering intensity, one row per angle and one column per wavelength.
 
         Returns
         -------
@@ -1284,6 +1464,12 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Spectral wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+            that the phase function does not depend on the wavelength.
+
         Returns
         -------
         List[float]
@@ -1300,6 +1486,11 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
     @property
     def anisotropies(self) -> List[float]:
         """Anisotropy factors, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New anisotropy factor g at each wavelength, between -1 and 1.
 
         Returns
         -------
@@ -1387,6 +1578,12 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Spectral wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths the factors are given at, in nm. A single wavelength means that the
+            phase function does not depend on the wavelength.
+
         Returns
         -------
         List[float]
@@ -1403,6 +1600,11 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
     @property
     def anisotropies_1(self) -> List[float]:
         """First anisotropy column, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New first anisotropy factor at each wavelength, between -1 and 1.
 
         Returns
         -------
@@ -1422,6 +1624,11 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
     def anisotropies_2(self) -> List[float]:
         """Second anisotropy column, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New second anisotropy factor at each wavelength, between -1 and 1.
+
         Returns
         -------
         List[float]
@@ -1439,6 +1646,12 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
     @property
     def ratios(self) -> List[float]:
         """Mixture weights, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New weight between the first and the second anisotropy factor, at each wavelength.
+            Values must be between 0 and 1.
 
         Returns
         -------
@@ -1520,6 +1733,12 @@ class VolumeScatteringGegenbauer(_ValueComparable):
     def wavelengths(self) -> List[float]:
         """Spectral wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths the factors are given at, in nm. A single wavelength means that the
+            phase function does not depend on the wavelength.
+
         Returns
         -------
         List[float]
@@ -1537,6 +1756,11 @@ class VolumeScatteringGegenbauer(_ValueComparable):
     def anisotropies(self) -> List[float]:
         """Anisotropy factors, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New anisotropy factor at each wavelength.
+
         Returns
         -------
         List[float]
@@ -1553,6 +1777,11 @@ class VolumeScatteringGegenbauer(_ValueComparable):
     @property
     def alphas(self) -> List[float]:
         """Alpha coefficients, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New alpha coefficient at each wavelength.
 
         Returns
         -------
@@ -1825,6 +2054,11 @@ class MaterialFile(SpeosTextFileFormat):
     def description(self) -> str:
         """Single-line description.
 
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
+
         Returns
         -------
         str
@@ -1839,6 +2073,11 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def material_type(self) -> str:
         """Material flavor matching the dispersion model.
+
+        Parameters
+        ----------
+        value : str
+            New type of material, one of ``"Isotropic"``, ``"Metallic"`` or ``"Birefringent"``.
 
         Returns
         -------
@@ -1892,6 +2131,13 @@ class MaterialFile(SpeosTextFileFormat):
     def dispersion(self) -> Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]:
         """Dispersion model of this material flavor.
 
+        Parameters
+        ----------
+        value : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
+            New how the refractive index varies with the wavelength. A metallic material needs a
+            :class:`MaterialMetallicCurve` and a birefringent one needs one of the
+            :obj:`MaterialBirefringence` models.
+
         Returns
         -------
         Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
@@ -1936,6 +2182,12 @@ class MaterialFile(SpeosTextFileFormat):
     def absorption_wavelengths(self) -> List[float]:
         """Absorption wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+            whose extinction coefficient already holds the absorption.
+
         Returns
         -------
         List[float]
@@ -1952,6 +2204,12 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def absorption_values(self) -> List[float]:
         """Absorption coefficients in mm-1, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+            the absorption along the ``a`` axis.
 
         Returns
         -------
@@ -1970,6 +2228,11 @@ class MaterialFile(SpeosTextFileFormat):
     def measured_concentration(self) -> float:
         """Concentration at which absorption was measured.
 
+        Parameters
+        ----------
+        value : float
+            New concentration the absorption curve was measured at.
+
         Returns
         -------
         float
@@ -1986,6 +2249,11 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def user_concentration(self) -> float:
         """Concentration to which absorption is scaled.
+
+        Parameters
+        ----------
+        value : float
+            New concentration the absorption curve is scaled to.
 
         Returns
         -------
@@ -2004,6 +2272,11 @@ class MaterialFile(SpeosTextFileFormat):
     def scattering_wavelengths(self) -> List[float]:
         """Diffusion wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the diffusion curve, in nm.
+
         Returns
         -------
         List[float]
@@ -2021,6 +2294,11 @@ class MaterialFile(SpeosTextFileFormat):
     def scattering_values(self) -> List[float]:
         """Diffusion coefficients in mm-1, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New diffusion coefficient at each wavelength, in mm-1.
+
         Returns
         -------
         List[float]
@@ -2037,6 +2315,11 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def scattering(self) -> Optional[VolumeScattering]:
         """Volume scattering phase function.
+
+        Parameters
+        ----------
+        value : Optional[VolumeScattering]
+            New scattering phase function.
 
         Returns
         -------
@@ -2058,6 +2341,12 @@ class MaterialFile(SpeosTextFileFormat):
     def axis_j(self) -> List[float]:
         """Direction of the b axis, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New direction of the ``b`` axis of a birefringent material. Ignored by the other
+            flavors.
+
         Returns
         -------
         List[float]
@@ -2073,6 +2362,12 @@ class MaterialFile(SpeosTextFileFormat):
     def axis_k(self) -> List[float]:
         """Direction of the c axis, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New direction of the ``c`` axis of a birefringent material. Ignored by the other
+            flavors.
+
         Returns
         -------
         List[float]
@@ -2087,6 +2382,12 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def absorption_values_b(self) -> List[float]:
         """Absorption coefficients along b, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption of a birefringent material along its ``b`` axis, one value per
+            wavelength of the absorption curve.
 
         Returns
         -------
@@ -2104,6 +2405,12 @@ class MaterialFile(SpeosTextFileFormat):
     @property
     def absorption_values_c(self) -> List[float]:
         """Absorption coefficients along c, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption of a birefringent material along its ``c`` axis, one value per
+            wavelength of the absorption curve.
 
         Returns
         -------

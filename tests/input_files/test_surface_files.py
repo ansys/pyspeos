@@ -23,6 +23,7 @@
 """Test the surface optical property file formats."""
 
 from dataclasses import is_dataclass
+import warnings
 
 import pytest
 
@@ -145,11 +146,11 @@ def test_scattering_surface_needs_two_wavelengths():
         )
 
 
-def test_scattering_surface_rejects_an_over_unity_budget(documented_scattering_surface):
-    """The reflection and transmission contributions must not exceed 100%."""
-    with pytest.raises(ValueError, match="absorption of -40"):
+def test_scattering_surface_warns_for_an_over_unity_budget(documented_scattering_surface):
+    """Negative measured absorption warns without discarding the contribution."""
+    with pytest.warns(UserWarning, match="absorption is negative.*-40"):
         documented_scattering_surface.samples[0][0].lambertian_reflection = 80.0
-    assert documented_scattering_surface.samples[0][0].lambertian_reflection == 20.0
+    assert documented_scattering_surface.samples[0][0].lambertian_reflection == 80.0
 
 
 @pytest.mark.parametrize("name", CONTRIBUTIONS + WIDTHS)
@@ -169,14 +170,14 @@ def test_scattering_surface_sample_validated_properties(name):
 
 @pytest.mark.parametrize("name", CONTRIBUTIONS)
 def test_scattering_surface_sample_budget_is_validated_for_each_contribution(name):
-    """Each contribution setter checks the budget before replacing its previous value."""
+    """Each contribution accepts a negative measured absorption with a warning."""
     other = next(entry for entry in CONTRIBUTIONS if entry != name)
     sample = ScatteringSurfaceSample(**{other: 80.0, name: 20.0})
     assert sample.absorption == 0.0
-    with pytest.raises(ValueError, match="absorption"):
+    with pytest.warns(UserWarning, match="absorption"):
         setattr(sample, name, 21.0)
-    assert getattr(sample, name) == 20.0
-    with pytest.raises(ValueError, match="absorption"):
+    assert getattr(sample, name) == 21.0
+    with pytest.warns(UserWarning, match="absorption"):
         ScatteringSurfaceSample(**{other: 80.0, name: 21.0})
     setattr(sample, other, 70.0)
     setattr(sample, name, 30.0)
@@ -443,12 +444,57 @@ def test_simple_scattering_rejects_an_over_unity_budget(tmp_path):
 @pytest.mark.parametrize("name", _COATING_FIELDS)
 def test_coated_sample_setters_are_atomic(name):
     """Each coating contribution validates without imposing a polarization budget."""
-    sample = CoatedSurfaceSample(80.0, 80.0, 80.0, 80.0)
+    with pytest.warns(UserWarning, match="absorption_[ps]"):
+        sample = CoatedSurfaceSample(80.0, 80.0, 80.0, 80.0)
     assert sample.absorption_p == -60.0
     for value in (-1.0, 101.0, float("nan"), float("inf")):
         with pytest.raises(ValueError):
             setattr(sample, name, value)
         assert getattr(sample, name) == 80.0
+
+
+@pytest.mark.parametrize("excess", [0.01, 40.0])
+@pytest.mark.parametrize("polarization", ["p", "s", None])
+def test_negative_absorption_warns_and_round_trips(excess, polarization, tmp_path):
+    """Measured negative absorption survives construction, assignment, validation and I/O."""
+    if polarization is None:
+        sample_class = ScatteringSurfaceSample
+        file_class = ScatteringSurfaceFile
+        fields = {"specular_reflection": 60.0, "specular_transmission": 40.0 + excess}
+        absorption_name = "absorption"
+        changed_name = "specular_transmission"
+    else:
+        sample_class = CoatedSurfaceSample
+        file_class = CoatedSurfaceFile
+        fields = {f"reflection_{polarization}": 60.0, f"transmission_{polarization}": 40 + excess}
+        absorption_name = f"absorption_{polarization}"
+        changed_name = f"transmission_{polarization}"
+    with pytest.warns(UserWarning, match=absorption_name):
+        sample = sample_class(**fields)
+    with pytest.warns(UserWarning, match=absorption_name):
+        setattr(sample, changed_name, 40.0 + excess)
+    with pytest.warns(UserWarning, match=absorption_name):
+        sample.validate()
+    assert getattr(sample, absorption_name) == pytest.approx(-excess)
+    with pytest.warns(UserWarning, match=absorption_name):
+        surface = file_class([400.0, 700.0], [0.0, 90.0], [[sample, sample], [sample, sample]])
+    with pytest.warns(UserWarning, match=absorption_name):
+        path = surface.save(tmp_path / ("measured" + file_class.EXTENSION))
+    with pytest.warns(UserWarning, match=absorption_name):
+        assert file_class.load(path) == surface
+
+
+@pytest.mark.parametrize("total", [90.0, 100.0, 100.0 + 5e-10])
+@pytest.mark.parametrize("sample_class", [CoatedSurfaceSample, ScatteringSurfaceSample])
+def test_absorption_rounding_noise_does_not_warn(sample_class, total):
+    """Valid budgets and sub-tolerance rounding noise do not emit warnings."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        if sample_class is CoatedSurfaceSample:
+            sample = sample_class(60.0, total - 60.0, 60.0, total - 60.0)
+        else:
+            sample = sample_class(specular_reflection=60.0, specular_transmission=total - 60.0)
+        sample.validate()
 
 
 def test_coated_grid_setters_copy_and_validate():

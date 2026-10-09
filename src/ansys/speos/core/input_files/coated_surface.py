@@ -37,6 +37,7 @@ from ansys.speos.core.input_files._base import (
     _read_grid,
     _single_line,
     _ValueComparable,
+    _warn_negative_absorption,
     _wavelength_line,
     check_percentage,
 )
@@ -64,6 +65,10 @@ class CoatedSurfaceSample(_ValueComparable):
         reflection_s: float = 0.0,
         transmission_s: float = 0.0,
     ) -> None:
+        self._reflection_p = 0.0
+        self._transmission_p = 0.0
+        self._reflection_s = 0.0
+        self._transmission_s = 0.0
         self.reflection_p = reflection_p
         self.transmission_p = transmission_p
         self.reflection_s = reflection_s
@@ -72,6 +77,11 @@ class CoatedSurfaceSample(_ValueComparable):
     @property
     def reflection_p(self) -> float:
         """Reflected P polarization, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New reflected part of the P polarization, in percent.
 
         Returns
         -------
@@ -82,11 +92,18 @@ class CoatedSurfaceSample(_ValueComparable):
 
     @reflection_p.setter
     def reflection_p(self, value: float) -> None:
-        self._reflection_p = _percentage(_property_name(CoatedSurfaceSample.reflection_p), value)
+        value = _percentage(_property_name(CoatedSurfaceSample.reflection_p), value)
+        _warn_negative_absorption("absorption_p", 100.0 - value - self.transmission_p)
+        self._reflection_p = value
 
     @property
     def transmission_p(self) -> float:
         """Transmitted P polarization, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New transmitted part of the P polarization, in percent.
 
         Returns
         -------
@@ -97,13 +114,18 @@ class CoatedSurfaceSample(_ValueComparable):
 
     @transmission_p.setter
     def transmission_p(self, value: float) -> None:
-        self._transmission_p = _percentage(
-            _property_name(CoatedSurfaceSample.transmission_p), value
-        )
+        value = _percentage(_property_name(CoatedSurfaceSample.transmission_p), value)
+        _warn_negative_absorption("absorption_p", 100.0 - self.reflection_p - value)
+        self._transmission_p = value
 
     @property
     def reflection_s(self) -> float:
         """Reflected S polarization, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New reflected part of the S polarization, in percent.
 
         Returns
         -------
@@ -114,11 +136,18 @@ class CoatedSurfaceSample(_ValueComparable):
 
     @reflection_s.setter
     def reflection_s(self, value: float) -> None:
-        self._reflection_s = _percentage(_property_name(CoatedSurfaceSample.reflection_s), value)
+        value = _percentage(_property_name(CoatedSurfaceSample.reflection_s), value)
+        _warn_negative_absorption("absorption_s", 100.0 - value - self.transmission_s)
+        self._reflection_s = value
 
     @property
     def transmission_s(self) -> float:
         """Transmitted S polarization, in percent.
+
+        Parameters
+        ----------
+        value : float
+            New transmitted part of the S polarization, in percent.
 
         Returns
         -------
@@ -129,9 +158,9 @@ class CoatedSurfaceSample(_ValueComparable):
 
     @transmission_s.setter
     def transmission_s(self, value: float) -> None:
-        self._transmission_s = _percentage(
-            _property_name(CoatedSurfaceSample.transmission_s), value
-        )
+        value = _percentage(_property_name(CoatedSurfaceSample.transmission_s), value)
+        _warn_negative_absorption("absorption_s", 100.0 - self.reflection_s - value)
+        self._transmission_s = value
 
     _COATING_FIELDS: ClassVar[tuple[str, ...]] = (
         _property_name(reflection_p),
@@ -149,6 +178,10 @@ class CoatedSurfaceSample(_ValueComparable):
         -------
         float
             Complement to 100 of the P reflection and transmission.
+
+        Notes
+        -----
+        This property is read-only.
         """
         return 100.0 - self.reflection_p - self.transmission_p
 
@@ -160,6 +193,10 @@ class CoatedSurfaceSample(_ValueComparable):
         -------
         float
             Complement to 100 of the S reflection and transmission.
+
+        Notes
+        -----
+        This property is read-only.
         """
         return 100.0 - self.reflection_s - self.transmission_s
 
@@ -171,6 +208,11 @@ class CoatedSurfaceSample(_ValueComparable):
         ValueError
             If a value is outside the 0 to 100 range.
 
+        Warns
+        -----
+        UserWarning
+            If computed absorption is negative, excluding rounding noise within 1e-9 percent.
+
         Notes
         -----
         A negative :attr:`absorption_p` or :attr:`absorption_s` is not rejected: the
@@ -179,6 +221,8 @@ class CoatedSurfaceSample(_ValueComparable):
         """
         for name in self._COATING_FIELDS:
             check_percentage(name, getattr(self, name))
+        _warn_negative_absorption("absorption_p", self.absorption_p)
+        _warn_negative_absorption("absorption_s", self.absorption_s)
 
 
 _COATING_FIELDS = CoatedSurfaceSample._COATING_FIELDS
@@ -244,6 +288,11 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     def wavelengths(self) -> List[float]:
         """Sorted wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the samples, in nm, sorted in increasing order.
+
         Returns
         -------
         List[float]
@@ -262,6 +311,11 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     @property
     def incident_angles(self) -> List[float]:
         """Sorted incidence angles in degrees, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New angles of incidence of the samples, in degrees, sorted in increasing order.
 
         Returns
         -------
@@ -284,6 +338,11 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     def samples(self) -> List[List[CoatedSurfaceSample]]:
         """Sample grid with copied containers and shared samples.
 
+        Parameters
+        ----------
+        values : List[List[CoatedSurfaceSample]]
+            New coating responses, one row per angle of incidence and one column per wavelength.
+
         Returns
         -------
         List[List[CoatedSurfaceSample]]
@@ -305,6 +364,11 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     @property
     def description(self) -> str:
         """Single-line description.
+
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
 
         Returns
         -------

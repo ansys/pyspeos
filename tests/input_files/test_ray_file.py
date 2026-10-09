@@ -34,6 +34,140 @@ SPEOS_RAY_FILE = ASSETS_DIR / "Rays.ray"
 """Binary ray file produced by Speos, holding 45462 rays."""
 
 
+def _sdf_bytes(records, *, identifier=1010, source_flux=3.0, ray_set_flux=3.0):
+    """Pack an independent SDF fixture using the published field offsets."""
+    header = bytearray(208)
+    struct.pack_into("<II", header, 0, identifier, len(records))
+    header[8:108] = b"Independent SDF fixture".ljust(100, b" ")
+    struct.pack_into("<ff", header, 108, source_flux, ray_set_flux)
+    struct.pack_into("<I", header, 136, 4)
+    struct.pack_into("<II", header, 192, 2, 0)
+    return bytes(header) + b"".join(struct.pack("<8f", *row) for row in records)
+
+
+def test_sdf_export_matches_independent_binary_layout(tmp_path):
+    """SDF output converts wavelengths and allocates absolute watts from relative weights."""
+    model = RayFile(
+        [Ray(energy=1.0, wavelength=500.0), Ray(position=(1.0, 2.0, 3.0), energy=0.5)],
+        radiant_flux=3.0,
+    )
+    path = model.save_sdf(tmp_path / "source.sdf")
+    content = path.read_bytes()
+    assert len(content) == 208 + 2 * 32
+    assert struct.unpack_from("<II", content) == (1010, 2)
+    assert len(content[8:108]) == 100
+    assert content[8:108].decode("ascii").strip() == "Converted from Speos by PySpeos."
+    assert struct.unpack_from("<ff", content, 108) == (3.0, 3.0)
+    assert struct.unpack_from("<I", content, 136) == (4,)
+    assert struct.unpack_from("<II", content, 192) == (2, 0)
+    assert struct.unpack_from("<8f", content, 208) == pytest.approx((0, 0, 0, 0, 0, 1, 2, 0.5))
+    assert struct.unpack_from("<8f", content, 240) == pytest.approx((1, 2, 3, 0, 0, 1, 1, 0.555))
+    assert [ray.energy for ray in model.rays] == [1.0, 0.5]
+
+
+@pytest.mark.parametrize("identifier", [1010, 8675309])
+def test_sdf_import_normalizes_record_weights_and_retains_ray_set_power(identifier, tmp_path):
+    """SDF import handles unnormalized records and a partial source ray set."""
+    path = tmp_path / "independent.sdf"
+    records = [(1, 2, 3, 0, 0, 1, 4, 0.5), (4, 5, 6, 1, 0, 0, 2, 0.633)]
+    path.write_bytes(_sdf_bytes(records, identifier=identifier, source_flux=10.0))
+    model = RayFile.load_sdf(path)
+    assert model.radiant_flux == 3.0
+    assert model.luminous_flux == 683.0
+    assert model.rays[0].position == (1.0, 2.0, 3.0)
+    assert model.rays[1].direction == (1.0, 0.0, 0.0)
+    assert [ray.energy for ray in model.rays] == pytest.approx([2 / 3, 1 / 3])
+    assert [ray.wavelength for ray in model.rays] == pytest.approx([500.0, 633.0])
+    assert RayFile.load_sdf(path, luminous_flux=112.0).luminous_flux == 112.0
+    read_back = RayFile.load_sdf(model.save_sdf(tmp_path / "copy.sdf"))
+    assert [ray.energy for ray in read_back.rays] == pytest.approx([2 / 3, 1 / 3])
+    assert read_back.radiant_flux == model.radiant_flux
+
+
+@pytest.mark.parametrize("energies", [[1.0, 1.0], [0.0, 0.0]])
+def test_sdf_zero_power_round_trip(energies, tmp_path):
+    """A dark ray set retains geometry and wavelengths without dividing by zero."""
+    model = RayFile([Ray(energy=energy) for energy in energies], radiant_flux=0.0)
+    loaded = RayFile.load_sdf(model.save_sdf(tmp_path / "dark.sdf"))
+    assert loaded.radiant_flux == 0.0
+    assert [ray.energy for ray in loaded.rays] == [0.0, 0.0]
+    assert [ray.wavelength for ray in loaded.rays] == pytest.approx([555.0, 555.0])
+
+
+@pytest.mark.parametrize(
+    "model, message",
+    [
+        (RayFile(), "at least one ray"),
+        (RayFile([Ray(energy=0)], radiant_flux=1), "nonzero"),
+        (RayFile([Ray()], radiant_flux=-1), "nonnegative"),
+        (RayFile([Ray(wavelength=0)]), "positive"),
+        (RayFile([Ray(polarization=(1, 0, 0, 0, 1))]), "polarization"),
+        (RayFile([Ray(position=(1e100, 0, 0))]), "32-bit"),
+        (RayFile([Ray()], radiant_flux=1e100), "32-bit"),
+        (RayFile([Ray(wavelength=1e-100)]), "underflow"),
+        (RayFile([Ray()], radiant_flux=1e-100), "underflow"),
+    ],
+)
+def test_sdf_invalid_export_does_not_overwrite(model, message, tmp_path):
+    """Invalid SDF data is rejected before creating or truncating the output."""
+    path = tmp_path / "protected.sdf"
+    path.write_bytes(b"existing data")
+    with pytest.raises(ValueError, match=message):
+        model.save_sdf(path)
+    assert path.read_bytes() == b"existing data"
+    missing = tmp_path / "missing.sdf"
+    with pytest.raises(ValueError, match=message):
+        model.save_sdf(missing)
+    assert not missing.exists()
+
+
+@pytest.mark.parametrize(
+    "offset, format_code, value, message",
+    [
+        (0, "I", 42, "identifier"),
+        (4, "I", 0, "count"),
+        (4, "I", 2, "count"),
+        (136, "I", 0, "millimeters"),
+        (192, "I", 0, "spectral"),
+        (196, "I", 1, "spectral"),
+        (140, "f", 1.0, "transforms"),
+        (164, "f", 2.0, "transforms"),
+        (108, "f", -1.0, "nonnegative"),
+        (112, "f", -1.0, "nonnegative"),
+        (116, "f", float("nan"), "finite"),
+        (208, "f", float("inf"), "finite"),
+        (228, "f", 0.0, "unit vector"),
+        (232, "f", -1.0, "nonnegative"),
+        (232, "f", 0.0, "nonzero"),
+        (236, "f", 0.0, "positive"),
+    ],
+)
+def test_sdf_invalid_header_or_record_is_rejected(offset, format_code, value, message, tmp_path):
+    """Unsupported headers and invalid record values produce explicit errors."""
+    content = bytearray(_sdf_bytes([(0, 0, 0, 0, 0, 1, 3, 0.555)]))
+    struct.pack_into("<" + format_code, content, offset, value)
+    path = tmp_path / "invalid.sdf"
+    path.write_bytes(content)
+    with pytest.raises(ValueError, match=message):
+        RayFile.load_sdf(path)
+
+
+@pytest.mark.parametrize("size", [0, 100, 207, 209, 239, 241])
+def test_sdf_truncation_and_extra_bytes_are_rejected(size, tmp_path):
+    """The declared SDF ray count must match the complete binary payload exactly."""
+    content = _sdf_bytes([(0, 0, 0, 0, 0, 1, 3, 0.555)])
+    path = tmp_path / "truncated.sdf"
+    path.write_bytes(content[:size] if size <= len(content) else content + b"extra")
+    with pytest.raises(ValueError, match="header|file size"):
+        RayFile.load_sdf(path)
+
+
+def test_sdf_missing_file_raises_file_not_found(tmp_path):
+    """A missing SDF file raises the documented filesystem error."""
+    with pytest.raises(FileNotFoundError):
+        RayFile.load_sdf(tmp_path / "missing.sdf")
+
+
 @pytest.fixture
 def documented_rays():
     """Build the five rays used as an example by the Speos documentation."""

@@ -87,6 +87,11 @@ class SpectrumFile(SpeosTextFileFormat):
     def wavelengths(self) -> List[float]:
         """Wavelengths in nm, returned as a copy.
 
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the samples, in nm.
+
         Returns
         -------
         List[float]
@@ -103,6 +108,11 @@ class SpectrumFile(SpeosTextFileFormat):
     @property
     def values(self) -> List[float]:
         """Spectral values in percent, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New relative spectral values of the samples, in percent (0 to 100).
 
         Returns
         -------
@@ -123,6 +133,11 @@ class SpectrumFile(SpeosTextFileFormat):
     @property
     def description(self) -> str:
         """Single-line description.
+
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
 
         Returns
         -------

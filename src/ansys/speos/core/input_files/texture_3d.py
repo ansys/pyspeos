@@ -84,6 +84,11 @@ class TexturePattern(_ValueComparable):
     def position(self) -> Tuple[float, ...]:
         """Pattern origin.
 
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New origin of the pattern, in the axis system of the 3D Texture.
+
         Returns
         -------
         Tuple[float, ...]
@@ -98,6 +103,11 @@ class TexturePattern(_ValueComparable):
     @property
     def x_direction(self) -> Tuple[float, ...]:
         """Pattern X direction.
+
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New orientation of the pattern along the X direction of the axis system.
 
         Returns
         -------
@@ -114,6 +124,11 @@ class TexturePattern(_ValueComparable):
     def y_direction(self) -> Tuple[float, ...]:
         """Pattern Y direction.
 
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New orientation of the pattern along the Y direction of the axis system.
+
         Returns
         -------
         Tuple[float, ...]
@@ -128,6 +143,12 @@ class TexturePattern(_ValueComparable):
     @property
     def scale(self) -> Tuple[float, ...]:
         """Pattern scale factors.
+
+        Parameters
+        ----------
+        values : Tuple[float, float, float]
+            New scale factors along the X, Y and Z directions, ``1`` meaning 100 percent of the
+            original pattern size.
 
         Returns
         -------
@@ -204,6 +225,11 @@ class Texture3DMappingFile(SpeosTextFileFormat):
     def patterns(self) -> List[TexturePattern]:
         """Pattern collection with a copied container and shared patterns.
 
+        Parameters
+        ----------
+        values : List[TexturePattern]
+            New patterns of the texture.
+
         Returns
         -------
         List[TexturePattern]
@@ -224,6 +250,11 @@ class Texture3DMappingFile(SpeosTextFileFormat):
     @property
     def uniform_scale(self) -> bool:
         """Whether the mapping writes one scale factor per pattern.
+
+        Parameters
+        ----------
+        value : bool
+            New whether to write a single scale factor per pattern instead of one per direction.
 
         Returns
         -------
