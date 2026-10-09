@@ -31,6 +31,13 @@ The public classes are:
 - `BaseVop` for inheritance of VOP helpers,
 - `TextureLayer` for a single texture layer,
 - `OptProp` to represent a full material instance (SOP + VOP + geometries).
+
+The :mod:`ansys.speos.core` package also exposes models of the optical property files that
+Speos takes as inputs. These are read and written locally and do not need a Speos server:
+- `SimpleScatteringSurfaceFile` for `*.simplescattering` files,
+- `ScatteringSurfaceFile` for `*.scattering` files,
+- `CoatedSurfaceFile` for `*.coated` files,
+- `MaterialFile` for `*.material` files.
 """
 
 from __future__ import annotations

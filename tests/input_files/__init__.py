@@ -20,29 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Backward-compatible imports for Speos BSDF functionality.
+"""Tests of the Speos input file formats.
 
-The implementation is available from :mod:`ansys.speos.core.input_files.bsdf`.
+These tests only exercise local file parsing and writing, so unlike the rest of the test
+suite they do not need a running Speos server.
 """
 
-from ansys.speos.core.input_files.bsdf import (
-    AnisotropicBSDF,
-    BaseBSDF,
-    BxdfDatapoint,
-    InterpolationEnhancement,
-    SpectralBRDF,
-    create_anisotropic_bsdf,
-    create_bsdf180,
-    create_spectral_brdf,
-)
+from pathlib import Path
 
-__all__ = [
-    "AnisotropicBSDF",
-    "BaseBSDF",
-    "BxdfDatapoint",
-    "InterpolationEnhancement",
-    "SpectralBRDF",
-    "create_anisotropic_bsdf",
-    "create_bsdf180",
-    "create_spectral_brdf",
-]
+ASSETS_DIR = Path(__file__).parents[1] / "assets"
+"""Directory holding the reference files produced by Speos."""
+
+
+def read_lines(path):
+    """Read a Speos text file as a list of lines, without their line separator.
+
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path]
+        Path of the file to read.
+
+    Returns
+    -------
+    List[str]
+        Lines of the file.
+    """
+    return Path(path).read_text(encoding="utf-8").splitlines()

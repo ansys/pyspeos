@@ -1,3 +1,7 @@
 * text=auto !eol
 *.sh         eol=lf
 *.bat        eol=crlf
+
+# Speos input file format fixtures always use CRLF, on every platform, so keep their bytes
+# exactly as committed instead of letting git normalize line endings on checkout.
+tests/assets/input_files/** -text
