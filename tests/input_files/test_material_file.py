@@ -588,6 +588,31 @@ def test_each_axis_absorbs_at_every_wavelength(birefringent_material, tmp_path):
     assert birefringent_material.absorption_values_c == [0.7, 0.8, 0.9]
 
 
+@pytest.mark.parametrize("material_type", ["Isotropic", "Metallic"])
+@pytest.mark.parametrize("name", ["absorption_values_b", "absorption_values_c"])
+def test_non_birefringent_material_rejects_axis_absorption(material_type, name, metallic_material):
+    """Per-axis absorption cannot be assigned to isotropic or metallic materials."""
+    material = metallic_material if material_type == "Metallic" else MaterialFile()
+
+    with pytest.raises(ValueError, match="only supported for a birefringent material"):
+        setattr(material, name, [0.1])
+    assert getattr(material, name) == []
+
+    with pytest.raises(ValueError, match="only supported for a birefringent material"):
+        if name == "absorption_values_b":
+            MaterialFile(
+                material_type=material_type,
+                dispersion=material.dispersion,
+                absorption_values_b=[0.1],
+            )
+        else:
+            MaterialFile(
+                material_type=material_type,
+                dispersion=material.dispersion,
+                absorption_values_c=[0.1],
+            )
+
+
 def test_a_birefringent_index_curve_holds_a_single_wavelength(tmp_path):
     """Speos does not make the explicit indices of a birefringent material vary."""
     path = tmp_path / "two_wavelengths.material"

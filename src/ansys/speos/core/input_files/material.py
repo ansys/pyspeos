@@ -2154,6 +2154,8 @@ class MaterialFile(SpeosTextFileFormat):
 
     def _column(self, name: str, values: List[float]) -> List[float]:
         values = _finite_values(name, values)
+        if name in _AXIS_ABSORPTION_NAMES and not self._has_type(self.BIREFRINGENT) and values:
+            raise ValueError(f"{name} is only supported for a birefringent material.")
         if self._has_type(self.METALLIC) and values:
             if name in _ABSORPTION_NAMES:
                 raise ValueError(
@@ -2498,6 +2500,10 @@ class MaterialFile(SpeosTextFileFormat):
             set without a matching diffusion curve, or if a metallic material carries data
             the format cannot store.
         """
+        if not self._has_type(self.BIREFRINGENT):
+            for name in self._AXIS_ABSORPTION_NAMES:
+                if getattr(self, "_" + name):
+                    raise ValueError(f"{name} is only supported for a birefringent material.")
         if self._has_type(self.METALLIC):
             self._validate_metallic()
             return

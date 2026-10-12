@@ -182,6 +182,23 @@ def test_non_integer_count_is_reported(tmp_path):
         MaterialFile.load(path)
 
 
+def test_spectrum_rejects_trailing_sample_rows(tmp_path):
+    """A declared sample count cannot leave extra sample rows unread."""
+    content = f"{SpectrumFile.HEADER}\ndescription\n1\n550 1\n600 2\n"
+    path = write(tmp_path, "extra_sample.spectrum", content)
+
+    with pytest.raises(ValueError, match="unexpected trailing data"):
+        SpectrumFile.load(path)
+
+
+def test_spectrum_allows_trailing_blank_lines(tmp_path):
+    """Whitespace-only lines after the declared samples are harmless."""
+    content = f"{SpectrumFile.HEADER}\ndescription\n1\n550 1\n\n \t\n"
+    path = write(tmp_path, "trailing_blanks.spectrum", content)
+
+    assert SpectrumFile.load(path).wavelengths == [550.0]
+
+
 def test_error_message_names_the_file_and_the_line(tmp_path):
     """Every parsing error must point at the file and the line so it can be located."""
     content = VALID_MATERIAL.replace("57.2", "oops")
