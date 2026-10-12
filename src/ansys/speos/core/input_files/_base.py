@@ -460,7 +460,11 @@ class SpeosTextFileFormat(SpeosFileFormat, ABC):
             header = reader.next_line().strip()
             if not header.lower().startswith(cls.HEADER_PREFIX.lower()):
                 raise reader.error(f"expected a header starting with {cls.HEADER_PREFIX!r}.")
-        return cls._from_lines(reader)
+model = cls._from_lines(reader)
+        while not reader.exhausted:
+            if reader.next_line().strip():
+                raise reader.error("unexpected trailing data.")
+        return model
 
     def _encode(self, path: Path) -> None:
         lines = ([self.HEADER] if self.HEADER else []) + self._to_lines()
