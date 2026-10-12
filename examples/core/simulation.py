@@ -155,16 +155,18 @@ print(simulation2_direct)
 # The property returns the geo-paths of the selected geometries, or ``None`` when fast
 # transmission gathering is deactivated.
 #
-# Geometries can be given as ``Body``, ``Face``, ``SubPart``, ``GeoRef`` or geo-path strings.
+# Geometries can be given as ``Body``, ``GeoRef`` or geo-path strings.
 #
 # > **Note:** the geometries are stored at scene level, therefore they are shared by all the
 # > simulations of the project, and they are sent to the server at commit.
 
 if server_version_checker.is_version_supported(2027, 1, 0):
-    print(simulation2_direct.fast_transmission_gathering)  # None: deactivated by default
+    print(simulation2_direct.fast_transmission_gathering)  # False: deactivated by default
 
-    simulation2_direct.fast_transmission_gathering = [body_1]
-    simulation2_direct.commit()
+    ftg = p.create_fast_transmission_gathering()
+    ftg.geometries = [body_1]
+    ftg.commit()
+    simulation2_direct.fast_transmission_gathering = True
     print(simulation2_direct.fast_transmission_gathering)
 
 # Deactivate it: this also removes the geometries stored at scene level.
