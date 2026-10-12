@@ -23,7 +23,9 @@
 """Test basic client connection."""
 
 import platform
+import re
 
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     SpeosClient,
     default_docker_channel,
@@ -57,3 +59,13 @@ def test_client_through_channel():
     assert client.channel
     assert client.close()
     assert client.healthy is False
+
+
+def test_client_retrieves_server_version(speos: Speos):
+    """Test that the server version is retrieved when the client connects."""
+    assert speos._client.healthy is True
+    version = server_version_checker._version
+    assert version is not None
+    assert version.strip().lower() != "unknown"
+    assert re.match(r"^\d+\.\d+\.\d+(-.*)?$", version), f"Unexpected version: {version!r}"
+    assert server_version_checker.is_version_supported(0, 0, 0) is True
