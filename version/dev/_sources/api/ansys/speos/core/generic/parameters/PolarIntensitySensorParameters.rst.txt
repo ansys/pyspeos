@@ -1,0 +1,231 @@
+
+
+
+
+
+
+:class:`PolarIntensitySensorParameters`
+=======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.PolarIntensitySensorParameters
+
+   
+   Parameters for :class:`~ansys.speos.core.sensor.SensorPolarIntensity`.
+
+
+   :Parameters:
+
+       **format** : :obj:`PolarIntensityFormatTypes`, :obj:`optional`
+           Output file format. Accepted values: ``"iesna_a"``, ``"iesna_b"``,
+           ``"iesna_c"``, ``"eulumdat"``.
+           By default, ``PolarIntensityFormatTypes.iesna_c``.
+
+       **dimensions** : :obj:`Union`\[:obj:`PolarIntensityDimensionsParameters`, :class:`python:str`, :obj:`Path`], :obj:`optional`
+           Either explicit horizontal/vertical sampling (``PolarIntensityDimensionsParameters``)
+           or a path to an adaptive-sampling file (``str``).
+           By default, ``PolarIntensityDimensionsParameters()``.
+
+       **near_field** : :obj:`Optional`\[:obj:`NearfieldParameters`], :obj:`optional`
+           Near-field configuration. When ``None``, the sensor is in far-field mode.
+           By default, ``None``.
+
+       **integration_angle** : :class:`python:float`, :obj:`optional`
+           Far-field integration angle in degrees. Used only when ``near_field`` is ``None``.
+           By default, ``5.0``.
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Position of the sensor ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PolarIntensitySensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~format`
+            - Output file format.
+          * - :py:attr:`~dimensions`
+            - Sampling definition: explicit dimensions or adaptive-sampling file URI.
+          * - :py:attr:`~near_field`
+            - Near-field parameters. ``None`` means far-field mode.
+          * - :py:attr:`~integration_angle`
+            - Far-field integration angle in degrees.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import PolarIntensitySensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: format
+   :type:  PolarIntensityFormatTypes
+
+   
+   Output file format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: dimensions
+   :type:  Union[PolarIntensityDimensionsParameters, str, pathlib.Path]
+
+   
+   Sampling definition: explicit dimensions or adaptive-sampling file URI.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: near_field
+   :type:  Optional[NearfieldParameters]
+   :value: None
+
+
+   
+   Near-field parameters. ``None`` means far-field mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_angle
+   :type:  float
+   :value: 1.0
+
+
+   
+   Far-field integration angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

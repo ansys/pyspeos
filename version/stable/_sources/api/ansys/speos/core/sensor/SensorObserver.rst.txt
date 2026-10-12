@@ -1,0 +1,474 @@
+
+
+
+
+
+
+:class:`SensorObserver`
+=======================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorObserver(project, name, description = '', metadata = None, sensor_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSensor`
+
+
+   
+   Sensor feature: Observer.
+
+   An observer sensor places multiple sensor instances on a sphere around a focal point,
+   configured by angular ranges and optional stereo parameters.
+   By default, a focal length of 250mm, integration angle of 5 degrees, a spectral range
+   from 400nm to 700nm (sampling 13), sphere distance of 100mm, and horizontal angular range
+   from -45 to 45 degrees with 5 sampling, vertical range from -30 to 30 degrees with 3 sampling
+   are chosen.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not have to be created from scratch.
+           By default, ``None``, means that the feature is created from scratch.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.ObserverSensorParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           dataclass.
+           By default, ``None``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorObserver
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_wavelengths_range`
+            - Configure the wavelength range of the sensor.
+          * - :py:attr:`~set_dimensions`
+            - Set the dimensions of the sensor.
+          * - :py:attr:`~set_angular_range`
+            - Configure the angular range for sensor locations on the sphere.
+          * - :py:attr:`~set_layer_type_none`
+            - Define layer separation type as None.
+          * - :py:attr:`~set_layer_type_source`
+            - Define layer separation as by source.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~focal`
+            - Focal distance (distance between sensor radiance plan and observer point).
+          * - :py:attr:`~integration_angle`
+            - Integration angle in degrees for direct simulations.
+          * - :py:attr:`~distance`
+            - Distance (radius of sphere on which sensors are placed).
+          * - :py:attr:`~stereo_interocular_distance`
+            - Stereo interocular distance in mm.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~layer`
+            - Current layer separation type.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import SensorObserver
+
+Property detail
+---------------
+
+.. py:property:: focal
+   :type: float
+
+
+   
+   Focal distance (distance between sensor radiance plan and observer point).
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Focal length in mm. By default, ``250.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current focal distance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: integration_angle
+   :type: float
+
+
+   
+   Integration angle in degrees for direct simulations.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Integration angle (degrees). By default, ``5.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current integration angle.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: distance
+   :type: float
+
+
+   
+   Distance (radius of sphere on which sensors are placed).
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Sphere radius in mm. By default, ``100.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current distance value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: stereo_interocular_distance
+   :type: Union[float, None]
+
+
+   
+   Stereo interocular distance in mm.
+
+
+   :Parameters:
+
+       **value** : :data:`python:None` | :class:`python:float`
+           Set stereo interocular distance in mm.
+           By default, None as deactivate the stereo setting.
+           Or, set value to stereo interocular distance value will activate
+           the stereo setting.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:float`, :data:`python:None`]
+           Current stereo interocular distance in mm.
+           If stereo setting is not activated, None will be returned.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list[float]
+
+
+   
+   Position of the sensor.
+
+   Whereas Horizontal direction is represented by X-Component and vertical by Z-Component of
+   the axis-system
+
+   :Parameters:
+
+       **value** : :class:`python:list`\[:class:`python:float`]
+           Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Current axis system.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: layer
+   :type: Union[str, None]
+
+
+   
+   Current layer separation type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:str`, :data:`python:None`]
+           ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_wavelengths_range()
+
+   
+   Configure the wavelength range of the sensor.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           Wavelength range object.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_dimensions()
+
+   
+   Set the dimensions of the sensor.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimension class
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_angular_range()
+
+   
+   Configure the angular range for sensor locations on the sphere.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.AngularRange`
+           Angular range object.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_none()
+
+   
+   Define layer separation type as None.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorIrradiance`
+           irradiance class instance
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_source()
+
+   
+   Define layer separation as by source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorIrradiance`
+           irradiance class instance
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,268 @@
+
+
+
+
+
+
+The ``bsdf.py`` module
+======================
+
+.. py:module:: ansys.speos.core.bsdf
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: bsdf
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.BaseBSDF`
+            - Super class for all BSDF datamodels.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.InterpolationEnhancement`
+            - Class to facilitate Specular interpolation enhancement.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.AnisotropicBSDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.SpectralBRDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.BxdfDatapoint`
+            - Class to store a BxDF data point.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~create_bsdf180`
+            - Create a bsdf180 from 2 bsdf.
+
+
+          * - :py:obj:`~create_spectral_brdf`
+            - Create a brdf from multiple bsdf.
+
+
+          * - :py:obj:`~create_anisotropic_bsdf`
+            - Create an anisotropic bsdf from anisotropic bsdf files.
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BaseBSDF</api/ansys/speos/core/bsdf/BaseBSDF>
+    <span class="nf nf-cod-symbol_class"></span> InterpolationEnhancement</api/ansys/speos/core/bsdf/InterpolationEnhancement>
+    <span class="nf nf-cod-symbol_class"></span> AnisotropicBSDF</api/ansys/speos/core/bsdf/AnisotropicBSDF>
+    <span class="nf nf-cod-symbol_class"></span> SpectralBRDF</api/ansys/speos/core/bsdf/SpectralBRDF>
+    <span class="nf nf-cod-symbol_class"></span> BxdfDatapoint</api/ansys/speos/core/bsdf/BxdfDatapoint>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos BSDF file.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: create_bsdf180(speos, bsdf180_file_path, path_normal_bsdf, path_opposite_bsdf)
+
+   
+   Create a bsdf180 from 2 bsdf.
+
+   This function allows to create BSDF180 from 2 bsdf files
+   allowed files: *.coated *.brdf *.anisotropicbsdf *.scattering
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.Speos`
+           Speos Object to connect to RPC server
+
+       **bsdf180_file_path** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           File location of created bsdf180
+
+       **path_normal_bsdf** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           File location of first file, which represent normal direction
+           Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
+
+       **path_opposite_bsdf** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           File location of first file, which represent anti-normal direction
+           Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
+
+       **fix_disparity** : :ref:`bool <python:bltin-boolean-values>`
+           This allows to create a bsdf when the two files are not normalized to each other.
+           By default, ``False``
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           Returns where the file location of the bsdf180
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: create_spectral_brdf(speos, spectral_bsdf_file_path, wavelength_list, anisotropic_bsdf_file_list)
+
+   
+   Create a brdf from multiple bsdf.
+
+   This function allows to create BRDF from multiple bsdf files
+   allowed files: *.anisotropicbsdf
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.Speos`
+           Speos Object to connect to RPC server
+
+       **spectral_bsdf_file_path** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           File location of created BRDF file
+
+       **wavelength_list** : :class:`python:list`\[:class:`python:float`]
+           List of wavelength
+
+       **anisotropic_bsdf_file_list** :  :class:`python:list`\[:obj:`Union`\[:obj:`Path`, :class:`python:str`]]
+           list of bsdf file locations
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           Location of created BRDF
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: create_anisotropic_bsdf(speos, anisotropic_bsdf_file_path, anisotropy_list, anisotropic_bsdf_file_list, fix_disparity = False)
+
+   
+   Create an anisotropic bsdf from anisotropic bsdf files.
+
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.Speos`
+           Speos Object to connect to RPC server
+
+       **anisotropic_bsdf_file_path** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           File location of created Anisotropic BSDF file
+
+       **anisotropy_list** : :class:`python:list`\[:class:`python:float`]
+           ordered List of anisotropy value, in radian
+
+       **anisotropic_bsdf_file_list** : :class:`python:list`\[:obj:`Union`\[:obj:`Path`, :class:`python:str`]]
+           list of bsdf file locations
+
+       **fix_disparity** : :ref:`bool <python:bltin-boolean-values>`
+           Fixes normalization disparity between BSDF,
+           By default: ``False``
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           Location of created Anisotropic BSDF files
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Please note that the bsdf files from the bsdf list need to be isotropic.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`SequenceTypes`
+======================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SequenceTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Sequence types to separate the sequence data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SequenceTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~by_face`
+            - 
+          * - :py:attr:`~by_geometry`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SequenceTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: by_face
+   :value: 'by_face'
+
+
+.. py:attribute:: by_geometry
+   :value: 'by_geometry'
+
+
+
+
+
+

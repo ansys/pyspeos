@@ -1,0 +1,154 @@
+
+
+
+
+
+
+:class:`AmbientUsStandardParameters`
+====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientUsStandardParameters
+
+   
+   Ambient U.S. Standard Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientUsStandardParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~zenith_direction`
+            - Zenith direction vector.
+          * - :py:attr:`~north_direction`
+            - North direction vector.
+          * - :py:attr:`~sun_type`
+            - Sun definition, automatic or manual.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientUsStandardParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+   
+   Zenith direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: north_direction
+   :type:  list[float]
+   :value: [0, 1, 0]
+
+
+   
+   North direction vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sun_type
+   :type:  Union[AutomaticSunParameters, ManualSunParameters]
+
+   
+   Sun definition, automatic or manual.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

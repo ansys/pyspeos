@@ -1,0 +1,148 @@
+
+
+
+
+
+
+:class:`SourceGroup`
+====================
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.SourceGroup(simulation, source_group, stable_ctr = False)
+
+   
+   Source group for simulation source layering.
+
+
+   :Parameters:
+
+       **simulation** : :obj:`BaseSimulation`
+           Simulation owning the source group.
+
+       **source_group** : :obj:`messages.Scene.SimulationInstance.SourceGroup`
+           Source group message to wrap.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use ``add_source_group()`` or
+   ``source_groups`` on simulation classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceGroup
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - Name of the source group.
+          * - :py:attr:`~source_paths`
+            - Source paths assigned to the group.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation import SourceGroup
+
+Property detail
+---------------
+
+.. py:property:: name
+   :type: str
+
+
+   
+   Name of the source group.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Group name.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: source_paths
+   :type: List[str]
+
+
+   
+   Source paths assigned to the group.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:str`]
+           Grouped source paths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

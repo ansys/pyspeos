@@ -1,0 +1,126 @@
+
+
+
+
+
+
+The ``simulation_template.py`` module
+=====================================
+
+.. py:module:: ansys.speos.core.kernel.simulation_template
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: simulation_template
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.simulation_template.SimulationTemplateLink`
+            - Link object for simulation template in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.simulation_template.SimulationTemplateStub`
+            - Database interactions for simulation templates.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoSimulationTemplate`
+            - SimulationTemplate protobuf class.
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SimulationTemplateLink</api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink>
+    <span class="nf nf-cod-symbol_class"></span> SimulationTemplateStub</api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoSimulationTemplate
+
+   
+   SimulationTemplate protobuf class.
+
+   ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

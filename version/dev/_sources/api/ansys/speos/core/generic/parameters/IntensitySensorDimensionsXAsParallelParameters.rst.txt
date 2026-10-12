@@ -1,0 +1,240 @@
+
+
+
+
+
+
+:class:`IntensitySensorDimensionsXAsParallelParameters`
+=======================================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensitySensorDimensionsXAsParallelParameters
+
+   
+   Dataclass for Intensity Sensor dimension in case of x_as_parallel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensitySensorDimensionsXAsParallelParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_start`
+            - Lower bound x axis.
+          * - :py:attr:`~x_end`
+            - Upper bound x axis.
+          * - :py:attr:`~x_sampling`
+            - Sampling x axis.
+          * - :py:attr:`~y_start`
+            - Lower bound x axis.
+          * - :py:attr:`~y_end`
+            - Upper bound x axis.
+          * - :py:attr:`~y_sampling`
+            - Sampling x axis.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensitySensorDimensionsXAsParallelParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: x_start
+   :type:  float
+   :value: -30
+
+
+   
+   Lower bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_end
+   :type:  float
+   :value: 30
+
+
+   
+   Upper bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: x_sampling
+   :type:  int
+   :value: 120
+
+
+   
+   Sampling x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_start
+   :type:  float
+   :value: -45
+
+
+   
+   Lower bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_end
+   :type:  float
+   :value: 45
+
+
+   
+   Upper bound x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: y_sampling
+   :type:  int
+   :value: 180
+
+
+   
+   Sampling x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

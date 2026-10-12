@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`SCAFilteringTypes`
+==========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SCAFilteringTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Surface contribution analyser filtering types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SCAFilteringTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~intersected_one_time`
+            - 
+          * - :py:attr:`~last_impact`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SCAFilteringTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: intersected_one_time
+   :value: 'intersected_one_time'
+
+
+.. py:attribute:: last_impact
+   :value: 'last_impact'
+
+
+
+
+
+

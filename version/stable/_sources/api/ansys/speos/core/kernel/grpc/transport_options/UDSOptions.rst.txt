@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`UDSOptions`
+===================
+
+
+.. py:class:: ansys.speos.core.kernel.grpc.transport_options.UDSOptions
+
+   
+   Options for UDS transport mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UDSOptions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~uds_service`
+            - 
+          * - :py:attr:`~uds_dir`
+            - 
+          * - :py:attr:`~uds_id`
+            - 
+          * - :py:attr:`~uds_fullpath`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.grpc.transport_options import UDSOptions
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: uds_service
+   :type:  str | None
+   :value: None
+
+
+.. py:attribute:: uds_dir
+   :type:  str | pathlib.Path | None
+   :value: None
+
+
+.. py:attribute:: uds_id
+   :type:  str | None
+   :value: None
+
+
+.. py:attribute:: uds_fullpath
+   :type:  str | pathlib.Path | None
+   :value: None
+
+
+
+
+
+
