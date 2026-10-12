@@ -145,7 +145,7 @@ jobs:
     permissions:
       contents: read   # Required to read repository content for vulnerability scanning
     steps:
-      - uses: ansys/actions/check-vulnerabilities@a3b0d1cd136c029a3d5bf236d6bc5a709932bed1 # zizmor: ignore[stale-action-refs]
+      - uses: ansys/actions/check-vulnerabilities@ab294614ec4f901eb9d4b6459d864764c11444b6 # zizmor: ignore[stale-action-refs]
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           python-package-name: ${{ env.PACKAGE_NAME }}
@@ -170,7 +170,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
           prune-cache: true
