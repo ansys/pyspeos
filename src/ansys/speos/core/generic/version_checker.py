@@ -22,8 +22,10 @@
 
 """Module to ease version checks."""
 
+from typing import Optional
 
-def check_version(input_version: str, major: int, minor: int, patch: int) -> bool:
+
+def check_version(input_version: str, major: int, minor: int, patch: Optional[int] = None) -> bool:
     """Check that the input version is greater than or equal to the major.minor.patch.
 
     Parameters
@@ -51,8 +53,13 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
         if int(values[1]) > minor:
             return True
         elif int(values[1]) == minor:
-            if int(values[2]) >= patch:
+            if patch is None:
                 return True
+
+            if values[2].isdigit():
+                if int(values[2]) >= patch:
+                    return True
+            # A development patch (e.g. "dev0") is lower than any numbered patch.
 
     return False
 
