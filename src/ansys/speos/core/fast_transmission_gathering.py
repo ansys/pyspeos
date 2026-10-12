@@ -144,7 +144,7 @@ ansys.speos.core.body.Body]]]
 
         return out_dict
 
-    def get(self, key: str = "") -> str | dict:
+    def get(self, key: str = "") -> dict | None:
         """Get dictionary corresponding to the fast transmission gathering - read only.
 
         Parameters
@@ -155,7 +155,7 @@ ansys.speos.core.body.Body]]]
 
         Returns
         -------
-        str | dict
+        dict | None
             Value found for the given key, or the full dictionary when *key* is empty.
         """
         if key == "":
