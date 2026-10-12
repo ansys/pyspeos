@@ -192,12 +192,6 @@ def test_create_direct(speos: Speos):
     sim1.dispersion = False
     assert simulation_template.dispersion is False
 
-    # fast_transmission_gathering
-    assert sim1.fast_transmission_gathering is False
-    sim1.fast_transmission_gathering = True
-    assert simulation_template.fast_transmission_gathering is True
-    assert sim1.fast_transmission_gathering is True
-
     # ambient_material_uri
     sim1.ambient_material_file_uri = Path(test_path) / "AIR.material"
     assert simulation_template.ambient_material_uri.endswith("AIR.material")
@@ -401,12 +395,6 @@ def test_create_inverse(speos: Speos):
     # maximum_gathering_error
     sim1.maximum_gathering_error = 3
     assert simulation_template.maximum_gathering_error == 3
-
-    # fast_transmission_gathering
-    assert sim1.fast_transmission_gathering is False
-    sim1.fast_transmission_gathering = True
-    assert simulation_template.fast_transmission_gathering is True
-    assert sim1.fast_transmission_gathering is True
 
     # ambient_material_uri
     sim1.ambient_material_file_uri = Path(test_path) / "AIR.material"
