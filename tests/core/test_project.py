@@ -29,6 +29,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
+from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.parameters import (
     IrradianceSensorParameters,
     RadianceSensorParameters,
@@ -1070,7 +1071,8 @@ def test_change_loaded_mesh(speos: Speos):
 
     # load change model
     p = Project(
-        speos=speos, path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos")
+        speos=speos,
+        path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos"),
     )
     # remove portection
     p.remove_mesh_protection()
@@ -1117,3 +1119,122 @@ def test_change_loaded_mesh(speos: Speos):
         assert face_1._face != orig_value
     else:
         assert face_1._face != orig_value
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_fast_transmission_gathering(speos: Speos):
+    """Test creation of the fast transmission gathering feature."""
+    p = Project(speos=speos)
+    root_part = p.create_root_part()
+    body = root_part.create_body(name="TheBodyB")
+    face = body.create_face(name="TheFaceF")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    body2 = root_part.create_body(name="TheBodyC")
+    face = body2.create_face(name="TheFaceG")
+    face.vertices = [0, 0, 0, -1, 0, 0, 0, -1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    ftg = p.create_fast_transmission_gathering()
+    assert isinstance(ftg, FastTransmissionGathering)
+    assert ftg.geometries == []
+
+    # Only one fast transmission gathering feature per project
+    assert p.create_fast_transmission_gathering() is ftg
+    assert len(p.find(name="", feature_type=FastTransmissionGathering)) == 1
+
+    # Geometries can be given as GeoRef
+    ftg.geometries = [GeoRef.from_native_link("TheBodyB"), GeoRef.from_native_link("TheBodyC")]
+    assert ftg.geometries == ["TheBodyB", "TheBodyC"]
+
+    # Unsupported geometry input
+    with pytest.raises(TypeError, match="is not supported as fast transmission gathering"):
+        ftg.geometries = [42]
+
+    # Commit -> the scene is updated
+    ftg.commit()
+    scene_data = p.scene_link.get()
+    assert scene_data.HasField("fast_transmission_gathering")
+    assert scene_data.fast_transmission_gathering.geometries.geo_paths == [
+        "TheBodyB",
+        "TheBodyC",
+    ]
+
+    # Local modification then reset -> server data is retrieved back
+    ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
+    assert ftg.geometries == ["TheBodyB"]
+    ftg.reset()
+    assert ftg.geometries == ["TheBodyB", "TheBodyC"]
+
+    # get / __str__
+    assert ftg.get(key="geo_paths") == ["TheBodyB", "TheBodyC"]
+    assert isinstance(str(ftg), str)
+
+    # Delete -> the field is removed from the scene
+    ftg.delete()
+    assert p.scene_link.get().HasField("fast_transmission_gathering") is False
+
+    # Creation with geometries directly
+    ftg2 = p.create_fast_transmission_gathering()
+    ftg2.geometries = [GeoRef.from_native_link("TheBodyD")]
+    assert ftg2.geometries == ["TheBodyD"]
+
+    # Clearing the geometries
+    ftg2.geometries = None
+    assert ftg2.geometries == []
+
+    clean_all_dbs(speos.client)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_activate_in_simulation(speos: Speos):
+    """Test activation of the FTG in a direct and in an inverse simulation."""
+    p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body = root_part.create_body(name="TheBodyB")
+    face = body.create_face(name="TheFaceF")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    ftg = p.create_fast_transmission_gathering()
+    ftg.geometries = [body]
+    ftg.commit()
+
+    # A source and a sensor are mandatory to commit a simulation
+    source = p.create_source(name="Surface.FTG", feature_type=SourceSurface)
+    source.set_exitance_constant().geometries = [(face.geo_path, False)]
+    # A polychromatic spectrum is mandatory for the inverse simulation
+    source.spectrum.set_halogen()
+    source.commit()
+    sensor = p.create_sensor(name="Irradiance.FTG", feature_type=SensorIrradiance)
+    # A colorimetric sensor is mandatory for the inverse simulation
+    sensor.set_type_colorimetric()
+    sensor.commit()
+
+    sim = p.create_simulation(name="Simulation.FTG", feature_type=SimulationDirect)
+    sim.source_paths = [source._name]
+    sim.sensor_paths = [sensor._name]
+
+    # Deactivated by default
+    assert sim.fast_transmission_gathering is False
+
+    # Activate and commit
+    sim.fast_transmission_gathering = True
+    assert sim.fast_transmission_gathering is True
+    sim.commit()
+    direct_template = sim._simulation_template.direct_mc_simulation_template
+    assert direct_template.fast_transmission_gathering is True
+
+    # Deactivate and commit
+    sim.fast_transmission_gathering = False
+    sim.commit()
+    assert direct_template.fast_transmission_gathering is False
+
+    clean_all_dbs(speos.client)

@@ -1428,6 +1428,34 @@ class SimulationDirect(BaseSimulation):
         self._simulation_template.direct_mc_simulation_template.dispersion = value
 
     @property
+    def fast_transmission_gathering(self) -> bool:
+        """Activate/Deactivate the fast transmission gathering.
+
+        To accelerate the simulation by neglecting the light refraction that occurs when
+        the light is being transmitted through a transparent surface.
+
+        The geometries on which the fast transmission gathering is applied are defined at
+        project level with
+        :meth:`ansys.speos.core.project.Project.create_fast_transmission_gathering`.
+
+        Returns
+        -------
+        bool
+            ``True`` if the fast transmission gathering is activated.
+
+        Notes
+        -----
+        Activating this property has no effect if no geometry is selected in the
+        project fast transmission gathering feature.
+        """
+        return self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering
+
+    @fast_transmission_gathering.setter
+    def fast_transmission_gathering(self, value: bool) -> None:
+        template = self._simulation_template.direct_mc_simulation_template
+        template.fast_transmission_gathering = value
+
+    @property
     def ambient_material_file_uri(self) -> str:
         """The ambient material file URI.
 
@@ -1991,26 +2019,33 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
     def maximum_gathering_error(self, value: int) -> None:
         self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
 
-    # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
-    #     """Activate/Deactivate the fast transmission gathering.
-    #
-    #     To accelerate the simulation by neglecting the light refraction that occurs when the light
-    #     is being transmitted through a transparent surface.
-    #
-    #     Parameters
-    #     ----------
-    #     value : bool
-    #         Activate/Deactivate.
-    #         By default, ``False``, means deactivate
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.simulation.Inverse
-    #         Inverse simulation
-    #     """
-    #     template = self._simulation_template.inverse_mc_simulation_template
-    #     template.fast_transmission_gathering = value
-    #     return self
+    @property
+    def fast_transmission_gathering(self) -> bool:
+        """Activate/Deactivate the fast transmission gathering.
+
+        To accelerate the simulation by neglecting the light refraction that occurs when
+        the light is being transmitted through a transparent surface.
+
+        The geometries on which the fast transmission gathering is applied are defined at
+        project level with
+        :meth:`ansys.speos.core.project.Project.create_fast_transmission_gathering`.
+
+        Returns
+        -------
+        bool
+            ``True`` if the fast transmission gathering is activated.
+
+        Notes
+        -----
+        Activating this property has no effect if no geometry is selected in the
+        project fast transmission gathering feature.
+        """
+        return self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering
+
+    @fast_transmission_gathering.setter
+    def fast_transmission_gathering(self, value: bool) -> None:
+        template = self._simulation_template.inverse_mc_simulation_template
+        template.fast_transmission_gathering = value
 
     @property
     def ambient_material_file_uri(self) -> str:
