@@ -144,7 +144,7 @@ ansys.speos.core.body.Body]]]
 
         return out_dict
 
-    def get(self, key: str = "") -> Union[str, dict]:
+    def get(self, key: str = "") -> str | dict:
         """Get dictionary corresponding to the fast transmission gathering - read only.
 
         Parameters
