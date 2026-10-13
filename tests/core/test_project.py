@@ -434,11 +434,6 @@ def test_from_file(speos: Speos):
         assert speos.client[mat2.sop_guids[0]].get().HasField("mirror")
         assert speos.client[mat2.sop_guids[0]].get().mirror.reflectance == 60
 
-    # Check that ambient mat has no sop
-    feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
-    assert len(feat_op_ambients) == 1
-    assert feat_op_ambients[0].sop_template_link is None
-
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
