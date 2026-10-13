@@ -396,8 +396,16 @@ def test_from_file(speos: Speos):
     )
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 4
-    assert len(p.optical_properties) == 4
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert len(p.scene_link.get().materials) == 3
+        assert len(p.optical_properties) == 3
+    else:
+        assert len(p.scene_link.get().materials) == 4
+        assert len(p.optical_properties) == 4
+        # Check that ambient mat has no sop
+        feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
+        assert len(feat_op_ambients) == 1
+        assert feat_op_ambients[0].sop_template_link is None
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.sensors) == 1
     assert len(p.scene_link.get().sources) == 2
@@ -1121,9 +1129,17 @@ def test_change_loaded_mesh(speos: Speos):
         assert face_1._face != orig_value
 
 
+def _skip_if_fast_transmission_gathering_unsupported() -> None:
+    """Skip when the connected Speos server does not support fast transmission gathering."""
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Current Speos server is not supporting fast transmission gathering.")
+
+
 @pytest.mark.supported_speos_versions(min=271)
 def test_fast_transmission_gathering(speos: Speos):
     """Test creation of the fast transmission gathering feature."""
+    _skip_if_fast_transmission_gathering_unsupported()
+
     p = Project(speos=speos)
     root_part = p.create_root_part()
     body = root_part.create_body(name="TheBodyB")
@@ -1193,6 +1209,8 @@ def test_fast_transmission_gathering(speos: Speos):
 @pytest.mark.supported_speos_versions(min=271)
 def test_activate_in_simulation(speos: Speos):
     """Test activation of the FTG in a direct and in an inverse simulation."""
+    _skip_if_fast_transmission_gathering_unsupported()
+
     p = Project(speos=speos)
 
     root_part = p.create_root_part()
