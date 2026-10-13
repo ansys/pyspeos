@@ -1650,7 +1650,6 @@ class Project:
         # ground plane
         if scene_data.HasField("ground"):
             ground_feat = GroundPlane(project=self, ground=scene_data.ground)
-
             if ground_feat is not None:
                 self._features.append(ground_feat)
 
