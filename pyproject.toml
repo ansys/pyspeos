@@ -158,7 +158,7 @@ exclude = [
     "src/ansys/speos/core/body.py",
     "src/ansys/speos/core/component.py",
     "src/ansys/speos/core/face.py",
-    "src/ansys/speos/core/bsdf.py",
+    "src/ansys/speos/core/input_files/bsdf.py",
     "src/ansys/speos/core/launcher.py",
     "src/ansys/speos/core/intensity.py",
     "src/ansys/speos/core/ground_plane.py",
