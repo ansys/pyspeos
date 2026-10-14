@@ -44,7 +44,7 @@ class ScatteringSurfaceSample(_ValueComparable):
     """Scattering contributions of a surface at one angle of incidence and one wavelength.
 
     Every contribution is a percentage of the incident light. What is left once the six
-    contributions are summed is absorbed, see :attr:`absorption`.
+    contributions are summed is absorbed, see :attr:`ScatteringSurfaceSample.absorption`.
 
     Parameters
     ----------
@@ -414,8 +414,10 @@ _SAMPLE_FIELDS = ScatteringSurfaceSample._EQUALITY_FIELDS
 class ScatteringSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
 
-    The file holds one :class:`ScatteringSurfaceSample` per angle of incidence and per
-    wavelength, stored in ``samples[incidence_index][wavelength_index]``.
+    The file holds one
+    :class:`ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample` per
+    angle of incidence and per wavelength, stored in
+    ``samples[incidence_index][wavelength_index]``.
 
     Parameters
     ----------
@@ -434,9 +436,10 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
 
     Notes
     -----
-    Empty lists allow staged construction, but :meth:`validate` and :meth:`save` require
-    a complete surface. Nonempty assignments are checked against the configured axes
-    and grid. To resize a populated grid, clear :attr:`samples`, assign the new axes,
+    Empty lists allow staged construction, but :meth:`ScatteringSurfaceFile.validate` and
+    ``save()`` require a complete surface. Nonempty assignments are checked against the
+    configured axes and grid. To resize a populated grid, clear
+    :attr:`ScatteringSurfaceFile.samples`, assign the new axes,
     then assign the new grid. List getters return copies of the containers, while sample
     objects remain shared so their validated properties can be edited directly.
 

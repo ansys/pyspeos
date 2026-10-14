@@ -61,8 +61,9 @@ class SpectrumFile(SpeosTextFileFormat):
     -----
     Construction and setters validate numeric data before storing it. List getters return
     copies; assign an edited list back to change the model. Empty columns permit staged
-    construction, while :meth:`validate` and :meth:`save` require complete matching columns.
-    To resize a populated spectrum, clear :attr:`values`, replace :attr:`wavelengths`, then
+    construction, while :meth:`SpectrumFile.validate` and ``save()`` require complete
+    matching columns. To resize a populated spectrum, clear :attr:`SpectrumFile.values`,
+    replace :attr:`SpectrumFile.wavelengths`, then
     assign the new values.
 
     Examples
@@ -220,7 +221,9 @@ class SpectrumFile(SpeosTextFileFormat):
 
     @classmethod
     def from_sampled(cls, spectrum: Spectrum, description: str = "") -> SpectrumFile:
-        """Build a spectrum file from a sampled :class:`Spectrum` feature.
+        """Build a spectrum file from a sampled spectrum feature.
+
+        The feature is a :class:`ansys.speos.core.spectrum.Spectrum` object.
 
         Parameters
         ----------

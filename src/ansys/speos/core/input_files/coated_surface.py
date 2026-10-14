@@ -215,7 +215,8 @@ class CoatedSurfaceSample(_ValueComparable):
 
         Notes
         -----
-        A negative :attr:`absorption_p` or :attr:`absorption_s` is not rejected: the
+        A negative :attr:`CoatedSurfaceSample.absorption_p` or
+        :attr:`CoatedSurfaceSample.absorption_s` is not rejected: the
         coating samples published by Ansys do overrun 100 percent on a polarization, and
         the Coated Surface Editor only flags it.
         """
@@ -231,8 +232,9 @@ _COATING_FIELDS = CoatedSurfaceSample._COATING_FIELDS
 class CoatedSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
 
-    The file holds one :class:`CoatedSurfaceSample` per angle of incidence and per
-    wavelength, stored in ``samples[incidence_index][wavelength_index]``.
+    The file holds one
+    :class:`ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample` per angle of
+    incidence and per wavelength, stored in ``samples[incidence_index][wavelength_index]``.
 
     Parameters
     ----------
@@ -251,9 +253,9 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
     -----
     A Speos coating is only valid for the rays crossing the interface in one direction.
     List getters copy the containers, while sample objects remain shared and editable
-    through validated properties. To resize a populated grid, clear :attr:`samples`, set
-    the axes, then assign the new grid. Empty lists allow drafts; :meth:`save` requires
-    complete axes and samples.
+    through validated properties. To resize a populated grid, clear
+    :attr:`CoatedSurfaceFile.samples`, set the axes, then assign the new grid. Empty lists
+    allow drafts; ``save()`` requires complete axes and samples.
 
     Examples
     --------

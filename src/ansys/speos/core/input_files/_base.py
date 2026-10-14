@@ -30,9 +30,9 @@ connection to a Speos gRPC server.
 
 Every format class exposes the same three entry points:
 
-* :meth:`SpeosFileFormat.load` - build a model from an existing file.
-* :meth:`SpeosFileFormat.save` - write the model to a file.
-* :meth:`SpeosFileFormat.validate` - check the model against the format constraints.
+* ``SpeosFileFormat.load()`` - build a model from an existing file.
+* ``SpeosFileFormat.save()`` - write the model to a file.
+* ``SpeosFileFormat.validate()`` - check the model against the format constraints.
 """
 
 from __future__ import annotations
@@ -449,7 +449,7 @@ class SpeosTextFileFormat(SpeosFileFormat, ABC):
     """First line of the file. Empty when the format has no header line."""
 
     HEADER_PREFIX: ClassVar[str] = ""
-    """Version-agnostic start of :attr:`HEADER`, used to validate a file being read."""
+    """Version-agnostic start of ``HEADER``, used to validate a file being read."""
 
     @classmethod
     def _decode(cls, path: Path) -> "SpeosTextFileFormat":

@@ -201,7 +201,8 @@ class Texture3DMappingFile(SpeosTextFileFormat):
     -----
     The pattern list is copied on assignment and access, while pattern objects stay shared.
     Setters check the current uniform-scale constraint before storing values, and
-    :meth:`validate` rechecks it after child edits. Empty lists permit drafts, not saved files.
+    :meth:`Texture3DMappingFile.validate` rechecks
+    it after child edits. Empty lists permit drafts, not saved files.
 
     Examples
     --------
@@ -296,8 +297,9 @@ class Texture3DMappingFile(SpeosTextFileFormat):
         Raises
         ------
         ValueError
-            If the mapping holds no pattern, or if :attr:`uniform_scale` is set while a
-            pattern scales differently along X, Y and Z.
+            If the mapping holds no pattern, or if
+            :attr:`Texture3DMappingFile.uniform_scale`
+            is set while a pattern scales differently along X, Y and Z.
         """
         if not self._patterns:
             raise ValueError("A 3D Texture mapping must hold at least one pattern.")

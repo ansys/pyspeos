@@ -371,7 +371,7 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     HEADER_PREFIX = "OPTIS - Simple scattering surface file"
 
     MODES: ClassVar[tuple] = ("Reflection", "Transmission", "Both")
-    """Accepted values of :attr:`mode`."""
+    """Accepted values of :attr:`SimpleScatteringSurfaceFile.mode`."""
 
     @property
     def fresnel(self) -> bool:
@@ -380,7 +380,7 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         Returns
         -------
         bool
-            ``True`` when :attr:`reflection` is ``None``.
+            ``True`` when :attr:`SimpleScatteringSurfaceFile.reflection` is ``None``.
 
         Notes
         -----
@@ -394,7 +394,8 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         Raises
         ------
         ValueError
-            If :attr:`mode` is unknown, a percentage is outside the 0 to 100 range, or the
+            If :attr:`SimpleScatteringSurfaceFile.mode` is unknown, a percentage is outside
+            the 0 to 100 range, or the
             Lambertian and Gaussian parts of a side sum to more than 100 percent.
         """
         if self.mode not in self.MODES:

@@ -622,7 +622,7 @@ MaterialDispersion = Union[
     MaterialSellmeier,
     MaterialKettlerHelmholtz,
 ]
-"""Dispersion models accepted by :class:`MaterialFile`."""
+"""Dispersion models accepted by :class:`ansys.speos.core.input_files.material.MaterialFile`."""
 
 
 class MaterialMetallicCurve(_ValueComparable):
@@ -956,7 +956,8 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     ----------
     a, b, c : MaterialSellmeier, optional
         Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
-        :class:`MaterialSellmeier` model with null coefficients.
+        :class:`ansys.speos.core.input_files.material.MaterialSellmeier` model with null
+        coefficients.
     optical_class : int, optional
         ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
         ``2`` for a biaxial one. By default, ``0``.
@@ -1095,7 +1096,8 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     ----------
     a, b, c : MaterialKettlerHelmholtz, optional
         Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
-        :class:`MaterialKettlerHelmholtz` model with null coefficients.
+        :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz` model with
+        null coefficients.
     optical_class : int, optional
         ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
         ``2`` for a biaxial one. By default, ``0``.
@@ -1232,7 +1234,8 @@ MaterialBirefringence = Union[
     MaterialBirefringentSellmeier,
     MaterialBirefringentKettlerHelmholtz,
 ]
-"""Dispersion models accepted by a birefringent :class:`MaterialFile`."""
+"""Dispersion models accepted by a birefringent
+:class:`ansys.speos.core.input_files.material.MaterialFile`."""
 
 _COEFFICIENT_COUNT = 6
 """Number of coefficients an analytic dispersion model holds for a single axis."""
@@ -1832,7 +1835,8 @@ VolumeScattering = Union[
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringGegenbauer,
 ]
-"""Scattering phase functions accepted by :class:`MaterialFile`."""
+"""Scattering phase functions accepted by
+:class:`ansys.speos.core.input_files.material.MaterialFile`."""
 
 
 def _is_type(material_type: str, expected: str) -> bool:
@@ -1931,11 +1935,12 @@ class MaterialFile(SpeosTextFileFormat):
     """Speos ``*.material`` file, holding the volume optical properties of a body.
 
     The file always describes how the refractive index and the absorption vary with the
-    wavelength. Setting :attr:`scattering` adds a volume scattering block, which turns the
-    file into the scattering flavor of the format.
+    wavelength. Setting :attr:`MaterialFile.scattering` adds a volume scattering block,
+    which turns the file into the scattering flavor of the format.
 
-    :attr:`material_type` selects the flavor of the format, and with it the models
-    :attr:`dispersion` accepts. A metallic material holds nothing but the complex
+    :attr:`MaterialFile.material_type` selects the flavor of the format, and with it the
+    models :attr:`MaterialFile.dispersion` accepts. A metallic material holds nothing but
+    the complex
     refractive index of the metal, while a birefringent one holds an index per axis, the
     orientation of these axes and an absorption curve per axis.
 
@@ -1948,8 +1953,10 @@ class MaterialFile(SpeosTextFileFormat):
         By default, ``"Isotropic"``.
     dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
         How the refractive index varies with the wavelength. A metallic material needs a
-        :class:`MaterialMetallicCurve` and a birefringent one needs one of the
-        :obj:`MaterialBirefringence` models. By default, a :class:`MaterialConstringence`
+        :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+        birefringent one needs one of the
+        :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models. By
+        default, a :class:`ansys.speos.core.input_files.material.MaterialConstringence`
         model.
     absorption_wavelengths : List[float], optional
         Wavelengths of the absorption curve, in nm. Left empty by a metallic material,
@@ -1985,8 +1992,9 @@ class MaterialFile(SpeosTextFileFormat):
     -----
     Setters validate candidate data without partially updating the material. List getters
     return copies; dispersion and phase models remain shared with validated properties.
-    Empty columns permit staged construction, while :meth:`validate` and :meth:`save`
-    require complete data and recheck shared child models. To resize a curve, clear all
+    Empty columns permit staged construction, while :meth:`MaterialFile.validate` and
+    ``save()`` require complete data and recheck shared child models. To resize a curve,
+    clear all
     dependent value columns before changing its wavelengths, then repopulate the columns.
     Likewise, clear all phase parameter columns before changing phase wavelengths.
     To change between isotropic, metallic and birefringent flavors, construct a new
@@ -2135,8 +2143,9 @@ class MaterialFile(SpeosTextFileFormat):
         ----------
         value : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
             New how the refractive index varies with the wavelength. A metallic material needs a
-            :class:`MaterialMetallicCurve` and a birefringent one needs one of the
-            :obj:`MaterialBirefringence` models.
+            :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+            birefringent one needs one of the
+            :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models.
 
         Returns
         -------
@@ -2495,7 +2504,8 @@ class MaterialFile(SpeosTextFileFormat):
         Raises
         ------
         ValueError
-            If the dispersion model does not match :attr:`material_type`, if the
+            If the dispersion model does not match :attr:`MaterialFile.material_type`, if
+            the
             absorption curve is empty or inconsistent, if a scattering phase function is
             set without a matching diffusion curve, or if a metallic material carries data
             the format cannot store.

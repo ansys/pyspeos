@@ -231,10 +231,10 @@ class Ray(_ValueComparable):
 class RayFile(SpeosFileFormat):
     """Speos ray file, holding the rays emitted by a measured or simulated source.
 
-    :meth:`save` and :meth:`load` handle the binary ``*.ray`` flavor, while
-    :meth:`save_text` and :meth:`load_text` handle the text flavor that the Speos ray file
-    editors also accept. :meth:`save_sdf` and :meth:`load_sdf` handle Zemax spectral
-    binary source files.
+    ``save()`` and ``load()`` handle the binary ``*.ray`` flavor, while
+    :meth:`RayFile.save_text` and :meth:`RayFile.load_text` handle the text flavor
+    that the Speos ray file editors also accept. :meth:`RayFile.save_sdf` and
+    :meth:`RayFile.load_sdf` handle Zemax spectral binary source files.
 
     Parameters
     ----------
@@ -250,12 +250,13 @@ class RayFile(SpeosFileFormat):
     The binary layout is 7 little-endian 32-bit floats, the total radiant flux followed by
     5 format markers and the total luminous flux, then 8 floats per ray: the position, the
     direction cosines, the wavelength and the energy. The text flavor does not carry any
-    flux, so :meth:`load_text` leaves :attr:`radiant_flux` and :attr:`luminous_flux` at
-    their default.
-    The :attr:`rays` getter copies the container but keeps ray objects shared. Assign an
-    edited list back to replace rays. An empty list permits a draft but cannot be saved.
-    Polarization consistency across rays is required by :meth:`save_text` only.
-    Binary :meth:`save` rejects polarized rays; use :meth:`save_text` to retain polarization.
+    flux, so :meth:`RayFile.load_text` leaves :attr:`RayFile.radiant_flux` and
+    :attr:`RayFile.luminous_flux` at their default.
+    The :attr:`RayFile.rays` getter copies the container but keeps ray objects shared.
+    Assign an edited list back to replace rays. An empty list permits a draft but cannot
+    be saved. Polarization consistency across rays is required by
+    :meth:`RayFile.save_text` only. Binary ``save()`` rejects polarized rays; use
+    :meth:`RayFile.save_text` to retain polarization.
 
     Examples
     --------
@@ -426,7 +427,8 @@ class RayFile(SpeosFileFormat):
         Wavelengths are converted from nm to micrometers. Ray energies are relative weights:
         each output flux is ``radiant_flux * energy / sum(energies)``. Zero total power
         writes zero ray fluxes. Neither the model nor its energy weights are modified.
-        Luminous flux and polarization are not stored; use :meth:`save_text` for polarization.
+        Luminous flux and polarization are not stored; use :meth:`RayFile.save_text` for
+        polarization.
 
         References
         ----------
@@ -617,7 +619,8 @@ class RayFile(SpeosFileFormat):
         -------
         ansys.speos.core.input_files.ray_file.RayFile
             Ray file model. The flux is not carried by the text flavor, so
-            :attr:`radiant_flux` and :attr:`luminous_flux` keep their default value.
+            :attr:`RayFile.radiant_flux` and :attr:`RayFile.luminous_flux` keep their
+            default value.
 
         Raises
         ------
