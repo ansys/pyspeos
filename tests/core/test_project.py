@@ -396,7 +396,7 @@ def test_from_file(speos: Speos):
     )
 
     # Check that scene is filled
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(2027, 1, 0):
         assert len(p.scene_link.get().materials) == 3
         assert len(p.optical_properties) == 3
     else:

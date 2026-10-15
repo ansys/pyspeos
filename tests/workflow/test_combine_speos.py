@@ -209,7 +209,7 @@ def test_insert_speos(speos: Speos):
     )
 
     # Check that scene is filled
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(2027, 1, 0):
         assert len(p.scene_link.get().materials) == 6
         assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 6
     else:
@@ -260,7 +260,7 @@ def test_insert_speos(speos: Speos):
         ],
     )
 
-    if server_version_checker.is_version_supported(2027, 0, 0):
+    if server_version_checker.is_version_supported(2027, 1, 0):
         assert len(p.scene_link.get().materials) == 11  # 6 + 5
         assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 11
     else:

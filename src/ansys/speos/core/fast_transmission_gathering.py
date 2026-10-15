@@ -107,7 +107,7 @@ ansys.speos.core.body.Body]]]
     @geometries.setter
     def geometries(
         self,
-        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]],
+        geometries: Optional[List[Union[GeoRef, body.Body]]],
     ) -> None:
         if not geometries:
             self._fast_transmission_gathering.ClearField("geometries")

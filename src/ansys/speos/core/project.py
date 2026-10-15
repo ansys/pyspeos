@@ -1072,7 +1072,7 @@ class Project:
         """Create the fast transmission gathering feature.
 
         Only one fast transmission gathering feature per project. If the feature already
-        exists in the project, it is returned (and updated with *geometries* when given).
+        exists in the project, it is returned.
 
         Returns
         -------

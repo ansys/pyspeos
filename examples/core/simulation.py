@@ -149,11 +149,9 @@ print(simulation2_direct)
 # Fast transmission gathering accelerates the simulation by neglecting the light refraction that
 # occurs when the light is transmitted through a transparent surface.
 #
-# Starting with Speos 2027 R1, the geometries on which it is applied can be selected with the
-# ``fast_transmission_gathering`` property. Assigning a list of geometries activates it on those
-# geometries, while assigning ``None`` removes all of them and deactivates it.
-# The property returns the geo-paths of the selected geometries, or ``None`` when fast
-# transmission gathering is deactivated.
+# Starting with Speos 2027 R1, the geometries on which it is applied are selected with the
+# project feature created by ``create_fast_transmission_gathering()``, while the boolean
+# ``fast_transmission_gathering`` property of the simulation activates or deactivates it.
 #
 # Geometries can be given as ``Body``, ``GeoRef`` or geo-path strings.
 #
@@ -167,6 +165,7 @@ if server_version_checker.is_version_supported(2027, 1, 0):
     ftg.geometries = [body_1]
     ftg.commit()
     simulation2_direct.fast_transmission_gathering = True
+    simulation2_direct.commit()
     print(simulation2_direct.fast_transmission_gathering)
 
 # Deactivate it: this also removes the geometries stored at scene level.
