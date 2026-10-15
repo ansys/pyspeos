@@ -168,10 +168,11 @@ if server_version_checker.is_version_supported(2027, 1, 0):
     simulation2_direct.commit()
     print(simulation2_direct.fast_transmission_gathering)
 
-# Deactivate it: this also removes the geometries stored at scene level.
+# Deactivate it: this will not delete the geometries, but will deactivate the feature for
+# this simulation.
 
 if server_version_checker.is_version_supported(2027, 1, 0):
-    simulation2_direct.fast_transmission_gathering = None
+    simulation2_direct.fast_transmission_gathering = False
     simulation2_direct.commit()
     print(simulation2_direct.fast_transmission_gathering)
 
