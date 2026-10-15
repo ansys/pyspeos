@@ -2738,8 +2738,8 @@ def test_radiance_reset_internal_attributes(speos: Speos, sensor_template_versio
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_3d_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
+@pytest.mark.supported_speos_versions(min=252)
+def test_3d_irradiance_reset_internal_attributes(speos: Speos):
     """Test reset of 3D irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2789,8 +2789,8 @@ def test_3d_irradiance_reset_internal_attributes(speos: Speos, sensor_template_v
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_xmp_intensity_reset_internal_attributes(speos: Speos, sensor_template_version):
+@pytest.mark.supported_speos_versions(min=252)
+def test_xmp_intensity_reset_internal_attributes(speos: Speos):
     """Test reset of xmp intensity sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2839,8 +2839,8 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos, sensor_template_v
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_immersive_reset_internal_attributes(speos: Speos, sensor_template_version):
+@pytest.mark.supported_speos_versions(min=261)
+def test_immersive_reset_internal_attributes(speos: Speos):
     """Test reset of immersive sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2901,8 +2901,8 @@ def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version)
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_observer_reset_internal_attributes(speos: Speos, sensor_template_version):
+@pytest.mark.supported_speos_versions(min=261)
+def test_observer_reset_internal_attributes(speos: Speos):
     """Test reset of observer sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
