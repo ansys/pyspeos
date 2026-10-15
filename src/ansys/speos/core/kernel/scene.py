@@ -103,7 +103,6 @@ class SceneLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
-    # Actions
     def load_file(self, file_uri: Path | str, password: str | None = None) -> None:
         """
         Load speos file to fill the scene.
@@ -116,8 +115,13 @@ class SceneLink(CrudItem):
             Password needed to open the speos lightbox file.
             This is only necessary when the user protects the speos light box with a password.
         """
+        # remove if to allow older API version but API version is forced by toml
         self._actions_stub.LoadFile(
-            messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
+            messages.LoadFile_Request(
+                guid=self.key,
+                file_uri=str(file_uri),
+                password=password,
+            )
         )
 
     # Actions

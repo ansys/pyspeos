@@ -74,11 +74,11 @@ from ansys.speos.core.generic.parameters import (
     VariableExitanceParameters,
     WhitePointType,
 )
+from ansys.speos.core.generic.spectrum_reference import _SpectrumReference
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 import ansys.speos.core.intensity as intensity
 from ansys.speos.core.intensity import Intensity
-from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.opt_prop import BaseSop
@@ -109,6 +109,8 @@ class BaseSource:
     -----
     This is a Super class, **Do not instantiate this class yourself**
     """
+
+    _Spectrum = _SpectrumReference
 
     class UserDefinedColorSpace:
         """Type of color space is user defined.
@@ -706,66 +708,6 @@ class BaseSource:
                 self._flux.luminous_intensity_flux.luminous_intensity_value = value
             else:
                 raise ValueError(f"Unsupported flux type: {self._flux.__name__}")
-
-    class _Spectrum:
-        def __init__(
-            self,
-            speos_client: SpeosClient,
-            name: str,
-            message_to_complete: Union[
-                ProtoSourceTemplate.RayFile,
-                ProtoSourceTemplate.Surface,
-                ProtoSourceTemplate.Luminaire,
-            ],
-            field_name_to_complete="",
-            spectrum_guid: str = "",
-        ) -> None:
-            self._message_to_complete = message_to_complete
-            self._field_name_to_complete = field_name_to_complete
-            if spectrum_guid != "":
-                self._spectrum = Spectrum(
-                    speos_client=speos_client,
-                    name=name + ".Spectrum",
-                    key=spectrum_guid,
-                )
-            else:
-                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
-
-            self._no_spectrum = None  # None means never committed, or deleted
-            self._no_spectrum_local = False
-
-        def __str__(self) -> str:
-            if self._no_spectrum is None:
-                if self._no_spectrum_local is False:
-                    return str(self._spectrum)
-            else:
-                if self._no_spectrum is False:
-                    return str(self._spectrum)
-            return ""
-
-        def _commit(self) -> BaseSource._Spectrum:
-            if not self._no_spectrum_local:
-                self._spectrum.commit()
-                if self._field_name_to_complete == "":
-                    self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
-                elif self._field_name_to_complete == "red_spectrum_guid":
-                    self._message_to_complete.red_spectrum_guid = self._spectrum.spectrum_link.key
-                elif self._field_name_to_complete == "green_spectrum_guid":
-                    self._message_to_complete.green_spectrum_guid = self._spectrum.spectrum_link.key
-                elif self._field_name_to_complete == "blue_spectrum_guid":
-                    self._message_to_complete.blue_spectrum_guid = self._spectrum.spectrum_link.key
-                self._no_spectrum = self._no_spectrum_local
-            return self
-
-        def _reset(self) -> BaseSource._Spectrum:
-            self._spectrum.reset()
-            if self._no_spectrum is not None:
-                self._no_spectrum_local = self._no_spectrum
-            return self
-
-        def _delete(self) -> BaseSource._Spectrum:
-            self._no_spectrum = None
-            return self
 
     def _to_dict(self) -> dict:
         out_dict = {}
