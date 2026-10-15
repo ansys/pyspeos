@@ -1078,12 +1078,6 @@ class Project:
         -------
         ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering
             Fast transmission gathering feature.
-
-        Notes
-        -----
-        The geometries selected here are only taken into account if the fast transmission
-        gathering is activated at simulation level, via the ``fast_transmission_gathering``
-        property of the direct or inverse simulation features.
         """
         existing_features = self.find(name="", feature_type=FastTransmissionGathering)
         if len(existing_features) != 0:

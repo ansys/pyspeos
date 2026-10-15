@@ -1428,6 +1428,7 @@ class SimulationDirect(BaseSimulation):
         self._simulation_template.direct_mc_simulation_template.dispersion = value
 
     @property
+    @min_speos_version(27, 1, 0)
     def fast_transmission_gathering(self) -> bool:
         """Activate/Deactivate the fast transmission gathering.
 
@@ -1451,6 +1452,7 @@ class SimulationDirect(BaseSimulation):
         return self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering
 
     @fast_transmission_gathering.setter
+    @min_speos_version(27, 1, 0)
     def fast_transmission_gathering(self, value: bool) -> None:
         template = self._simulation_template.direct_mc_simulation_template
         template.fast_transmission_gathering = value
@@ -2020,6 +2022,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
 
     @property
+    @min_speos_version(27, 1, 0)
     def fast_transmission_gathering(self) -> bool:
         """Activate/Deactivate the fast transmission gathering.
 
@@ -2043,6 +2046,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         return self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering
 
     @fast_transmission_gathering.setter
+    @min_speos_version(27, 1, 0)
     def fast_transmission_gathering(self, value: bool) -> None:
         template = self._simulation_template.inverse_mc_simulation_template
         template.fast_transmission_gathering = value
@@ -3621,7 +3625,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         return self._sensor_sampling_mode
 
     def set_sensor_sampling_automatic(self) -> SimulationVirtualBSDF:
-        """Set sensor sampling       g automatic.
+        """Set sensor sampling automatic.
 
         Returns
         -------

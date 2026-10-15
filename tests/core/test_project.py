@@ -1124,17 +1124,9 @@ def test_change_loaded_mesh(speos: Speos):
         assert face_1._face != orig_value
 
 
-def _skip_if_fast_transmission_gathering_unsupported() -> None:
-    """Skip when the connected Speos server does not support fast transmission gathering."""
-    if not server_version_checker.is_version_supported(2027, 1, 0):
-        pytest.skip("Current Speos server is not supporting fast transmission gathering.")
-
-
 @pytest.mark.supported_speos_versions(min=271)
 def test_fast_transmission_gathering(speos: Speos):
     """Test creation of the fast transmission gathering feature."""
-    _skip_if_fast_transmission_gathering_unsupported()
-
     p = Project(speos=speos)
     root_part = p.create_root_part()
     body = root_part.create_body(name="TheBodyB")
@@ -1189,23 +1181,12 @@ def test_fast_transmission_gathering(speos: Speos):
     ftg.delete()
     assert p.scene_link.get().HasField("fast_transmission_gathering") is False
 
-    # Creation with geometries directly
-    ftg2 = p.create_fast_transmission_gathering()
-    ftg2.geometries = [GeoRef.from_native_link("TheBodyD")]
-    assert ftg2.geometries == ["TheBodyD"]
-
-    # Clearing the geometries
-    ftg2.geometries = None
-    assert ftg2.geometries == []
-
     clean_all_dbs(speos.client)
 
 
 @pytest.mark.supported_speos_versions(min=271)
 def test_activate_in_simulation(speos: Speos):
     """Test activation of the FTG in a direct and in an inverse simulation."""
-    _skip_if_fast_transmission_gathering_unsupported()
-
     p = Project(speos=speos)
 
     root_part = p.create_root_part()

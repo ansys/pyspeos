@@ -81,7 +81,7 @@ ansys.api.speos.scene.v2.scene_pb2.Scene.FastTransmissionGathering, optional
             self._fast_transmission_gathering = fast_transmission_gathering
 
     @property
-    def geometries(self) -> List[str]:
+    def geometries(self) -> Optional[List[str]]:
         """Geometries with fast transmission gathering applied.
 
         This property gets and sets the geo paths on which the fast transmission gathering
@@ -97,10 +97,18 @@ ansys.speos.core.body.Body]]]
 
         Returns
         -------
-        List[str]
+        Optional[List[str]]
             Geo paths with fast transmission gathering applied.
+
+        Notes
+        -----
+        The geometries selected here are only taken into account if the fast transmission
+        gathering is activated at simulation level, via the ``fast_transmission_gathering``
+        property of the direct or inverse simulation features.
         """
-        return list(self._fast_transmission_gathering.geometries.geo_paths)
+        if self._fast_transmission_gathering.HasField("geometries"):
+            return list(self._fast_transmission_gathering.geometries.geo_paths)
+        return None
 
     @geometries.setter
     def geometries(
