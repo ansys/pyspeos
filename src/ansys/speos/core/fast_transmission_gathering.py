@@ -28,11 +28,9 @@ from difflib import SequenceMatcher
 from typing import List, Optional, Union
 
 import ansys.speos.core.body as body
-import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
-import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
