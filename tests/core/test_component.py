@@ -548,6 +548,15 @@ def test_create_3d_texture(speos: Speos):
     """Test creation of a 3D texture with default values."""
     p = Project(speos=speos)
     support_body, pattern_body = _create_geometry(p)
+    opt_prop = p.create_optical_property(
+        name="OptProp.1",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    opt_prop.geometries = [support_body]
+    opt_prop.commit()
 
     texture = p.create_3d_texture(name="Texture3D.1")
     assert isinstance(texture, Texture3D)
@@ -566,7 +575,7 @@ def test_create_3d_texture(speos: Speos):
 
     # Fill the 3D texture and commit it
     texture.axis_system = [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    texture.support_body = "SupportBody"
+    texture.support_body = support_body
     texture.pattern_body = pattern_body
     texture.pattern_operation = Texture3DPatternOperations.add_in
     texture.global_scale = 2.5
@@ -580,7 +589,7 @@ def test_create_3d_texture(speos: Speos):
             sop_parameters=SopTypes.optical_polished,
         ),
     )
-    texture_opt.geometries = [support_body, pattern_body]
+    texture_opt.geometries = [pattern_body]
     texture_opt.commit()
     texture.commit()
 
@@ -593,7 +602,9 @@ def test_create_3d_texture(speos: Speos):
     assert textures_3d[0].pattern.body_guid == pattern_body.body_link.key
     assert textures_3d[0].pattern_operation == Texture3DPatternOperations.add_in.value
     assert textures_3d[0].global_scale == 2.5
-    assert textures_3d[0].mapping_3d_file_uri == "Mapping.OPT3DMapping"
+    assert textures_3d[0].mapping_3d_file_uri == str(
+        Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+    )
 
     # Read only access
     assert texture.get(key="support_body_geo_path") == "SupportBody"
