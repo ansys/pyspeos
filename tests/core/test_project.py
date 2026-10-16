@@ -29,6 +29,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.parameters import (
     IrradianceSensorParameters,
@@ -957,8 +958,6 @@ def test_create_speos_feature_preview_lightbox(speos: Speos):
     - When ``data.data`` is a PolyData mesh → mesh is plotted with edge/color kwargs.
     The coordinate system (3-axis) is then drawn from the first visual_data entry.
     """
-    from ansys.speos.core.component import LightBox
-
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
@@ -983,8 +982,6 @@ def test_create_speos_feature_preview_lightbox_ray_data(speos: Speos):
     Uses the second lightbox in Direct.1.speos which contains a ray-file source,
     exercising the ``isinstance(data.data, list)`` inner branch.
     """
-    from ansys.speos.core.component import LightBox
-
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
@@ -1180,6 +1177,65 @@ def test_fast_transmission_gathering(speos: Speos):
     # Delete -> the field is removed from the scene
     ftg.delete()
     assert p.scene_link.get().HasField("fast_transmission_gathering") is False
+
+    clean_all_dbs(speos.client)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_load_fast_transmission_gathering(speos: Speos):
+    """Test loading of the FTG feature from a speos file or lightbox file."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "simulations" / "Direct_FTG.speos",
+    )
+    ftg = p.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(ftg, FastTransmissionGathering)
+    assert len(ftg.geometries) == 1
+    assert ftg.geometries == ["Solid:3801360539"]
+    direct_sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    assert direct_sim.fast_transmission_gathering is True
+
+    p2 = Project(
+        speos=speos,
+        path=Path(test_path) / "simulations" / "Inverse_FTG.speos",
+    )
+    ftg2 = p2.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(ftg2, FastTransmissionGathering)
+    assert len(ftg2.geometries) == 1
+    assert ftg2.geometries == ["Solid:3801360539"]
+    inverse_sim = p2.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    assert inverse_sim.fast_transmission_gathering is True
+
+    p3 = Project(
+        speos=speos,
+    )
+    lb = p3.create_lightbox(
+        name="Lightbox.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "simulations" / "Lightbox_FTG.SpeosLightBox",
+        ),
+    )
+    lb.commit()
+    lb_ftg = lb.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb_ftg, FastTransmissionGathering)
+    assert len(lb_ftg.geometries) == 1
+    assert lb_ftg.geometries == ["Solid:3801360539"]
+
+    p4 = Project(
+        speos=speos,
+    )
+    lb2 = p4.create_lightbox(
+        name="Lightbox_password.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "simulations" / "Lightbox_FTG_123456.SpeosLightBox",
+            password="123456",
+        ),
+    )
+    lb2.commit()
+    lb2_ftg = lb2.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb2_ftg, FastTransmissionGathering)
+    assert len(lb2_ftg.geometries) == 1
+    assert lb2_ftg.geometries == ["Solid:3801360539"]
 
     clean_all_dbs(speos.client)
 
