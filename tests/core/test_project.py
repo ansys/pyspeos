@@ -1164,6 +1164,11 @@ def test_fast_transmission_gathering(speos: Speos):
         "TheBodyC",
     ]
 
+    # Clean the geometries -> the geometry field is removed
+    ftg.geometries = None
+    assert not ftg._fast_transmission_gathering.HasField("geometries")
+    assert ftg.geometries is None
+
     # Local modification then reset -> server data is retrieved back
     ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
     assert ftg.geometries == ["TheBodyB"]
@@ -1234,12 +1239,15 @@ def test_load_fast_transmission_gathering(speos: Speos):
         speos=speos,
         path=Path(test_path) / "simulations" / "Inverse_FTG.speos",
     )
-    ftg2 = p2.find(name="", feature_type=FastTransmissionGathering)[0]
+    ftg2 = p2.create_fast_transmission_gathering()
     assert isinstance(ftg2, FastTransmissionGathering)
     assert len(ftg2.geometries) == 1
     assert ftg2.geometries == ["Solid:3801360539"]
     inverse_sim = p2.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
     assert inverse_sim.fast_transmission_gathering is True
+    inverse_sim.fast_transmission_gathering = False
+    inverse_sim.commit()
+    assert inverse_sim.fast_transmission_gathering is False
 
     p3 = Project(
         speos=speos,
