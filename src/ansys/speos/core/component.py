@@ -558,14 +558,9 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
         ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering
             Fast Transmission Gathering feature.
         """
-        existing_features = self.find(name="", feature_type=FastTransmissionGathering)
-        if len(existing_features) != 0:
-            feature = existing_features[0]
-        else:
-            feature = FastTransmissionGathering(project=self.project)
-            self.project._features.append(feature)
-
-        return feature
+        if self._is_black:
+            raise ValueError("A black lightbox does not allow creating features.")
+        return self.project.create_fast_transmission_gathering()
 
     def _update_scene_data(self, parent_scene_data: ProtoScene.Scene) -> bool:
         # Look if an element corresponds to the _unique_id
