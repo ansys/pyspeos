@@ -1193,7 +1193,7 @@ def test_fast_transmission_gathering(speos: Speos):
     lb_ftg = lb.create_fast_transmission_gathering()
     lb_ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
     lb_ftg.commit()
-    lb.export(Path(test_path) / "simulations" / "Lightbox_FTG_export.SpeosLightBox")
+    lb.export(Path(test_path) / "simulations" / "Lightbox_FTG_export.SPEOSLightBox")
 
     p2 = Project(
         speos=speos,
@@ -1203,8 +1203,8 @@ def test_fast_transmission_gathering(speos: Speos):
         lightbox=LightBoxFileInstance(
             file=Path(test_path)
             / "simulations"
-            / "Lightbox_FTG_export.SpeosLightBox"
-            / "Lightbox_FTG_export.SpeosLightBox"
+            / "Lightbox_FTG_export.SPEOSLightBox"
+            / "Lightbox_FTG_export.SPEOSLightBox"
         ),
     )
     lb2.commit()
@@ -1247,7 +1247,7 @@ def test_load_fast_transmission_gathering(speos: Speos):
     lb = p3.create_lightbox(
         name="Lightbox.FTG",
         lightbox=LightBoxFileInstance(
-            file=Path(test_path) / "simulations" / "Lightbox_FTG.SpeosLightBox",
+            file=Path(test_path) / "simulations" / "Lightbox_FTG.SPEOSLightBox",
         ),
     )
     lb.commit()
@@ -1262,7 +1262,7 @@ def test_load_fast_transmission_gathering(speos: Speos):
     lb2 = p4.create_lightbox(
         name="Lightbox_password.FTG",
         lightbox=LightBoxFileInstance(
-            file=Path(test_path) / "simulations" / "Lightbox_FTG_123456.SpeosLightBox",
+            file=Path(test_path) / "simulations" / "Lightbox_FTG_123456.SPEOSLightBox",
             password="123456",
         ),
     )
