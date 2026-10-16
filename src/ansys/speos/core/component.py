@@ -34,6 +34,7 @@ import uuid
 import numpy as np
 
 from ansys.speos.core import body, face, opt_prop, part
+from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.constants import ORIGIN
 from ansys.speos.core.generic.file_transfer import FileTransfer
 import ansys.speos.core.generic.general_methods as general_methods
@@ -543,6 +544,28 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
         return self.project.create_optical_property(
             name=name, description=description, metadata=metadata, parameters=parameters
         )
+
+    def create_fast_transmission_gathering(
+        self,
+    ) -> FastTransmissionGathering:
+        """Create a Fast Transmission Gathering feature.
+
+        Only one fast transmission gathering feature per project. If the feature already
+        exists in the project, it is returned.
+
+        Returns
+        -------
+        ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering
+            Fast Transmission Gathering feature.
+        """
+        existing_features = self.find(name="", feature_type=FastTransmissionGathering)
+        if len(existing_features) != 0:
+            feature = existing_features[0]
+        else:
+            feature = FastTransmissionGathering(project=self.project)
+            self.project._features.append(feature)
+
+        return feature
 
     def _update_scene_data(self, parent_scene_data: ProtoScene.Scene) -> bool:
         # Look if an element corresponds to the _unique_id

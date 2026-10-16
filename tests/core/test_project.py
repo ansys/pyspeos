@@ -1178,6 +1178,41 @@ def test_fast_transmission_gathering(speos: Speos):
     ftg.delete()
     assert p.scene_link.get().HasField("fast_transmission_gathering") is False
 
+    # Test export and verify import of a lightbox with fast transmission gathering
+    lb = p.create_lightbox(name="Lightbox.FTG")
+    lb_root = lb.create_root_part()
+    lb_body = lb_root.create_body(name="TheBodyB")
+    lb_face = lb_body.create_face(name="TheFaceF")
+    lb_face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    lb_face.facets = [0, 1, 2]
+    lb_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    lb_root.commit()
+    lb_opt = lb.create_optical_property(name="TheOpticalProperty_lightbox")
+    lb_opt.geometries = [GeoRef.from_native_link("TheBodyB")]
+
+    lb_ftg = lb.create_fast_transmission_gathering()
+    lb_ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
+    lb_ftg.commit()
+    lb.export(Path(test_path) / "simulations" / "Lightbox_FTG_export.SpeosLightBox")
+
+    p2 = Project(
+        speos=speos,
+    )
+    lb2 = p2.create_lightbox(
+        name="Lightbox.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path)
+            / "simulations"
+            / "Lightbox_FTG_export.SpeosLightBox"
+            / "Lightbox_FTG_export.SpeosLightBox"
+        ),
+    )
+    lb2.commit()
+    lb2_ftg = lb2.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb2_ftg, FastTransmissionGathering)
+    assert len(lb2_ftg.geometries) == 1
+    assert "TheBodyB" in str(lb2_ftg.geometries[0])
+
     clean_all_dbs(speos.client)
 
 
