@@ -116,8 +116,14 @@ class SceneLink(CrudItem):
             Password needed to open the speos lightbox file.
             This is only necessary when the user protects the speos light box with a password.
         """
+        # remove if to allow older API version but API version is forced by toml
         self._actions_stub.LoadFile(
-            messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
+            messages.LoadFile_Request(
+                guid=self.key,
+                file_uri=str(file_uri),
+                password=password,
+                force_version={"SensorTemplateVersion": 1},
+            )
         )
 
     # Actions
