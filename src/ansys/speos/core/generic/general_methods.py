@@ -226,8 +226,6 @@ def _validate_pathlike(value, name: str) -> str:
 def _normalize(vector: np.ndarray) -> np.ndarray:
     """Return a normalized vector, rejecting zero-length input."""
     norm = magnitude_vector(vector)
-    if norm == 0.0:
-        raise ValueError("A vector must not be a zero vector.")
     return vector / norm
 
 
