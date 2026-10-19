@@ -1217,6 +1217,38 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_camera_spectra_persist_with_project_commit(speos: Speos, sensor_template_version):
+    """Test v2 camera spectra are persisted when committing the project."""
+    if not server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        pytest.skip("Spectrum GUIDs require sensor template version V2")
+
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.ProjectCommit", feature_type=SensorCamera)
+    color = sensor.set_mode_photometric().set_mode_color()
+    color.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+
+    p.commit()
+
+    mode_color = camera_color_mode(camera_mode(sensor, "photometric"), "color")
+    assert camera_library_spectrum_uri(
+        p, mode_color, "red_spectrum_file_uri", "red_spectrum_guid"
+    ).endswith("CameraSensitivityRed.spectrum")
+
+    color.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    p.commit()
+
+    mode_color = camera_color_mode(camera_mode(sensor, "photometric"), "color")
+    assert camera_library_spectrum_uri(
+        p, mode_color, "red_spectrum_file_uri", "red_spectrum_guid"
+    ).endswith("CameraSensitivityGreen.spectrum")
+    sensor.delete()
+
+
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""

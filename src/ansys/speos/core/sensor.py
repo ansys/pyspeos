@@ -3045,6 +3045,10 @@ class SensorCamera(BaseSensor):
         if isinstance(self._type, SensorCamera.Photometric):
             self._type._commit_spectra()
 
+    def _commit_template(self) -> None:
+        self._commit_guid_backed_spectra()
+        super()._commit_template()
+
     def commit(self) -> SensorCamera:
         """Save feature: send the local data to the speos server database.
 
@@ -3059,7 +3063,6 @@ class SensorCamera(BaseSensor):
         )
         values_v2 = ["focal_length", "imager_distance", "f_number"]
         values_v4 = ["focal_length", "imager_distance", "f_number", "Transmittance Spectrum"]
-        self._commit_guid_backed_spectra()
         try:
             super().commit()
         except grpc.RpcError:
