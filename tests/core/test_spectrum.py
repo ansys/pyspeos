@@ -23,16 +23,40 @@
 """Test basic using spectrums."""
 
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
 from ansys.speos.core import Spectrum, Speos
+from ansys.speos.core.generic import spectrum_reference
 from ansys.speos.core.generic.parameters import (
     SpectrumBlackBodyParameters,
     SpectrumMonochromaticParameters,
     SpectrumSampledParameters,
 )
 from tests.conftest import test_path
+
+
+def test_spectrum_reference_preserves_non_library_guid_unless_cleared(monkeypatch):
+    """Test that unchanged non-library spectrum references are not cleared."""
+    message = Mock()
+    message.spectrum_guid = "existing-guid"
+    spectrum = Mock()
+    spectrum.spectrum_link.key = "existing-guid"
+    spectrum._spectrum.HasField.return_value = False
+    monkeypatch.setattr(spectrum_reference, "Spectrum", Mock(return_value=spectrum))
+
+    reference = spectrum_reference._SpectrumReference(
+        name="Spectrum",
+        message_to_complete=message,
+        speos_client=Mock(),
+    ).bind(message)
+    reference.commit()
+
+    message.ClearField.assert_not_called()
+    reference.file_uri = ""
+    reference.commit()
+    message.ClearField.assert_called_once_with("spectrum_guid")
 
 
 def test_create_spectrum(speos: Speos):

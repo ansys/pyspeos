@@ -80,6 +80,7 @@ class _SpectrumReference:
         self._message_to_complete = message_to_complete
         self._field_name_to_complete = field_name_to_complete or "spectrum_guid"
         self._file_uri = ""
+        self._file_uri_changed = False
         self._no_spectrum = None
         self._no_spectrum_local = False
 
@@ -126,6 +127,7 @@ class _SpectrumReference:
     def bind(self, message_to_complete: Any) -> _SpectrumReference:
         """Bind the helper to a protobuf message and refresh the cached file URI."""
         self._message_to_complete = message_to_complete
+        self._file_uri_changed = False
         spectrum_guid = getattr(self._message_to_complete, self._field_name_to_complete, "")
         if spectrum_guid:
             spectrum = self._ensure_spectrum(key=spectrum_guid)
@@ -145,6 +147,7 @@ class _SpectrumReference:
     @file_uri.setter
     def file_uri(self, file_uri: Union[str, Path]) -> None:
         self._file_uri = str(Path(file_uri)) if file_uri else ""
+        self._file_uri_changed = True
         if self._file_uri:
             spectrum = self._ensure_spectrum()
             spectrum.set_library().file_uri = self._file_uri
@@ -152,13 +155,16 @@ class _SpectrumReference:
     def clear(self) -> _SpectrumReference:
         """Clear the cached file URI and referenced protobuf GUID field."""
         self._file_uri = ""
+        self._file_uri_changed = True
         self._message_to_complete.ClearField(self._field_name_to_complete)
         return self
 
     def commit(self) -> _SpectrumReference:
         """Commit the current library spectrum and write its GUID to the bound field."""
         if not self._file_uri:
-            self._message_to_complete.ClearField(self._field_name_to_complete)
+            if self._file_uri_changed:
+                self._message_to_complete.ClearField(self._field_name_to_complete)
+            self._file_uri_changed = False
             return self
 
         spectrum = self._ensure_spectrum()
@@ -169,6 +175,7 @@ class _SpectrumReference:
             self._field_name_to_complete,
             spectrum.spectrum_link.key,
         )
+        self._file_uri_changed = False
         return self
 
     def _commit(self) -> _SpectrumReference:
