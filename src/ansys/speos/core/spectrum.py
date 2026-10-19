@@ -27,7 +27,6 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 from typing import List, Mapping, Optional, Union
-import warnings
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
 
