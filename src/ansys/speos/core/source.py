@@ -191,7 +191,9 @@ class BaseSource:
 
             @white_point.setter
             def white_point(self, value: List[float]):
-                self._userdefined_white_point.white_point[:] = value
+                self._userdefined_white_point.white_point[:] = (
+                    general_methods._validate_numeric_sequence(value, 2, "white point").tolist()
+                )
 
         def __init__(
             self,
@@ -1224,7 +1226,9 @@ class SourceLuminaire(BaseSource):
 
     @intensity_file_uri.setter
     def intensity_file_uri(self, uri: Union[str, Path]) -> None:
-        self._source_template.luminaire.intensity_file_uri = str(uri)
+        self._source_template.luminaire.intensity_file_uri = general_methods._validate_pathlike(
+            uri, "intensity_file_uri"
+        )
 
     @property
     def spectrum(self) -> Spectrum:
@@ -1260,7 +1264,9 @@ class SourceLuminaire(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._source_instance.luminaire_properties.axis_system[:] = axis_system
+        self._source_instance.luminaire_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
 
 class SourceRayFile(BaseSource):
@@ -1505,7 +1511,9 @@ class SourceRayFile(BaseSource):
 
     @ray_file_uri.setter
     def ray_file_uri(self, uri: Union[Path, str]) -> None:
-        self._source_template.rayfile.ray_file_uri = str(uri)
+        self._source_template.rayfile.ray_file_uri = general_methods._validate_pathlike(
+            uri, "ray_file_uri"
+        )
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
@@ -1601,7 +1609,9 @@ class SourceRayFile(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._source_instance.rayfile_properties.axis_system[:] = axis_system
+        self._source_instance.rayfile_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
         """Set exit geometries.
@@ -1861,7 +1871,9 @@ class SourceSurface(BaseSource):
 
         @xmp_file_uri.setter
         def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
-            self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
+            self._exitance_variable.exitance_xmp_file_uri = general_methods._validate_pathlike(
+                xmp_file_uri, "xmp_file_uri"
+            )
 
         @property
         def axis_plane(self) -> List[float]:
@@ -1884,7 +1896,9 @@ class SourceSurface(BaseSource):
 
         @axis_plane.setter
         def axis_plane(self, axis_plane: List[float]) -> None:
-            self._exitance_variable_props.axis_plane[:] = axis_plane
+            self._exitance_variable_props.axis_plane[:] = (
+                general_methods._validate_numeric_sequence(axis_plane, 9, "axis plane").tolist()
+            )
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -2617,7 +2631,9 @@ class SourceThermic(BaseSource):
 
         @temperature_field_uri.setter
         def temperature_field_uri(self, temperature_field_uri: Union[str, Path]) -> None:
-            self._temperature_field.temperature_field_uri = str(temperature_field_uri)
+            self._temperature_field.temperature_field_uri = general_methods._validate_pathlike(
+                temperature_field_uri, "temperature_field_uri"
+            )
 
         @property
         def sop(self) -> BaseSop:
@@ -2659,7 +2675,9 @@ class SourceThermic(BaseSource):
             None
 
             """
-            self._temperature_field_props.axis_plane[:] = axis_plane
+            self._temperature_field_props.axis_plane[:] = (
+                general_methods._validate_numeric_sequence(axis_plane, 9, "axis plane").tolist()
+            )
             return
 
     def __init__(

@@ -27,6 +27,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from typing import List, Optional
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -80,7 +81,7 @@ class GroundPlane:
 
     @ground_origin.setter
     def ground_origin(self, value: List[float]) -> None:
-        self._ground.ground_origin[:] = value
+        self._ground.ground_origin[:] = general_methods._validate_vector3(value).tolist()
 
     @property
     def ground_zenith(self) -> List[float]:
@@ -103,7 +104,7 @@ class GroundPlane:
 
     @ground_zenith.setter
     def ground_zenith(self, value: List[float]) -> None:
-        self._ground.zenith_direction[:] = value
+        self._ground.zenith_direction[:] = general_methods._validate_vector3(value).tolist()
 
     @property
     def ground_height(self) -> float:
@@ -126,6 +127,9 @@ class GroundPlane:
 
     @ground_height.setter
     def ground_height(self, value: float) -> None:
+        value = general_methods._validate_scalar(value)
+        if value <= 0:
+            raise ValueError("ground_height must be greater than 0.")
         self._ground.ground_height = value
 
     def _to_dict(self) -> dict:

@@ -229,9 +229,13 @@ class Face:
         value : list[ansys.speos.core.generic.parameters.MeshData]
             List of MeshData for the face.
         """
+        if not isinstance(value, (list, tuple)):
+            raise TypeError("vertices_data must be a list or tuple of MeshData objects.")
         for i in value:
             if not isinstance(i, MeshData):
-                raise TypeError("wrong type")
+                raise TypeError("vertices_data items must be MeshData instances.")
+            if not isinstance(i.name, str) or not i.name:
+                raise ValueError("vertices_data item names must be non-empty strings.")
         self._face.ClearField("vertices_data")
         self._face.vertices_data.extend(
             [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
