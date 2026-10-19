@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 from typing import List, Mapping, Optional, Union
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
@@ -40,11 +39,6 @@ from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.proto_message_utils import dict_to_str
-
-if sys.version_info >= (3, 13):
-    from warnings import deprecated
-else:
-    from typing_extensions import deprecated
 
 
 class Spectrum:
@@ -480,20 +474,6 @@ class Spectrum:
         """
         self._spectrum.predefined.daylightfluorescent.SetInParent()
         return self
-
-    @deprecated("`set_whiteLED` is deprecated. Use `set_white_led` method instead.")
-    def set_whiteLED(self) -> Spectrum:
-        """Set the spectrum as white led (predefined spectrum).
-
-        .. deprecated:: 0.2.2
-            Use `set_white_led` method instead.
-
-        Returns
-        -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
-        """
-        return self.set_white_led()
 
     def set_white_led(self) -> Spectrum:
         """Set the spectrum as white led (predefined spectrum).
