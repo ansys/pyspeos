@@ -24,8 +24,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-import math
 from typing import Union
 
 import numpy as np
@@ -38,6 +36,14 @@ from ansys.speos.core import (
     sensor,
     source,
 )
+from ansys.speos.core.generic.general_methods import (
+    _axis_frame,
+    _normalize,
+    _rotation_matrix,
+    _validate_axis_system12,
+    _validate_scalar,
+    _validate_vector3,
+)
 from ansys.speos.core.kernel.scene import ProtoScene
 
 TransformableFeature = Union[
@@ -47,99 +53,6 @@ TransformableFeature = Union[
     part.Part.SubPart,
     body_module.Body,
 ]
-
-
-def _validate_vector3(value: list[float], name: str) -> np.ndarray:
-    """Validate and convert a three-dimensional vector."""
-    if not isinstance(value, (list, tuple)):
-        raise TypeError(f"{name} must be a list or tuple of three finite numbers.")
-    if len(value) != 3:
-        raise ValueError(f"{name} must contain exactly three values.")
-    if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
-        raise TypeError(f"{name} values must be numeric.")
-    try:
-        vector = np.asarray(value, dtype=float)
-    except OverflowError as error:
-        raise ValueError(f"{name} values must be finite.") from error
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} values must be finite.")
-    return vector
-
-
-def _validate_axis_system12(value: list[float], name: str) -> np.ndarray:
-    """Validate and convert a twelve-value axis system."""
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-        raise TypeError(f"{name} must be a list or tuple of twelve finite numbers.")
-    if len(value) != 12:
-        raise ValueError(f"{name} must contain exactly twelve values.")
-    if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
-        raise TypeError(f"{name} values must be numeric.")
-    try:
-        axis_system = np.asarray(value, dtype=float)
-    except OverflowError as error:
-        raise ValueError(f"{name} values must be finite.") from error
-    if not np.all(np.isfinite(axis_system)):
-        raise ValueError(f"{name} values must be finite.")
-    return axis_system
-
-
-def _validate_scalar(value: float, name: str) -> float:
-    """Validate and convert a finite scalar."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError(f"{name} must be a finite number.")
-    try:
-        scalar = float(value)
-    except OverflowError as error:
-        raise ValueError(f"{name} must be finite.") from error
-    if not math.isfinite(scalar):
-        raise ValueError(f"{name} must be finite.")
-    return scalar
-
-
-def _normalize(vector: np.ndarray, name: str) -> np.ndarray:
-    """Return a normalized vector, rejecting zero-length input."""
-    norm = float(np.linalg.norm(vector))
-    if norm == 0.0:
-        raise ValueError(f"{name} must not be a zero vector.")
-    return vector / norm
-
-
-def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
-    """Return the rotation matrix for a right-handed rotation in degrees."""
-    x, y, z = _normalize(axis, "axis")
-    angle = math.radians(angle_deg)
-    cosine = math.cos(angle)
-    sine = math.sin(angle)
-    return np.array(
-        [
-            [
-                cosine + x * x * (1 - cosine),
-                x * y * (1 - cosine) - z * sine,
-                x * z * (1 - cosine) + y * sine,
-            ],
-            [
-                y * x * (1 - cosine) + z * sine,
-                cosine + y * y * (1 - cosine),
-                y * z * (1 - cosine) - x * sine,
-            ],
-            [
-                z * x * (1 - cosine) - y * sine,
-                z * y * (1 - cosine) + x * sine,
-                cosine + z * z * (1 - cosine),
-            ],
-        ]
-    )
-
-
-def _axis_frame(axis_system: np.ndarray, name: str) -> tuple[np.ndarray, np.ndarray]:
-    """Return origin and rotation matrix from a rigid axis system."""
-    origin = axis_system[:3]
-    rotation = axis_system[3:].reshape(3, 3).T
-    if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-6) or not np.isclose(
-        np.linalg.det(rotation), 1.0, atol=1e-6
-    ):
-        raise ValueError(f"{name} must contain an orthonormal, right-handed coordinate frame.")
-    return origin, rotation
 
 
 def _get_parent(feature: TransformableFeature):
@@ -305,7 +218,7 @@ def _apply_transform(
     if isinstance(feature, body_module.Body):
         _transform_mesh(feature, rotation, translation)
     else:
-        axis_system = _validate_axis_system12(feature.axis_system, "feature.axis_system")
+        axis_system = _validate_axis_system12(feature.axis_system)
         origin = rotation @ axis_system[:3] + translation
         axes = (rotation @ axis_system[3:].reshape(3, 3).T).T.reshape(-1)
         feature.axis_system = np.concatenate((origin, axes)).tolist()
@@ -463,8 +376,8 @@ def move_feature(
     ValueError
         If an input is invalid or a standalone Face is provided.
     """
-    unit_direction = _normalize(_validate_vector3(direction, "direction"), "direction")
-    displacement = unit_direction * _validate_scalar(distance, "distance")
+    unit_direction = _normalize(_validate_vector3(direction))
+    displacement = unit_direction * _validate_scalar(distance)
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, np.eye(3), displacement)
 
@@ -507,8 +420,8 @@ def rotate_feature(
     ValueError
         If an input is invalid or a standalone Face is provided.
     """
-    rotation_point = _validate_vector3(point, "point")
-    rotation = _rotation_matrix(_validate_vector3(axis, "axis"), _validate_scalar(angle, "angle"))
+    rotation_point = _validate_vector3(point)
+    rotation = _rotation_matrix(_validate_vector3(axis), _validate_scalar(angle))
     translation = rotation_point - rotation @ rotation_point
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, rotation, translation)
@@ -549,12 +462,8 @@ def axis_to_axis_feature(
     ValueError
         If an axis system is invalid or a standalone Face is provided.
     """
-    reference_origin, reference_rotation = _axis_frame(
-        _validate_axis_system12(reference_axis, "reference_axis"), "reference_axis"
-    )
-    target_origin, target_rotation = _axis_frame(
-        _validate_axis_system12(target_axis, "target_axis"), "target_axis"
-    )
+    reference_origin, reference_rotation = _axis_frame(_validate_axis_system12(reference_axis))
+    target_origin, target_rotation = _axis_frame(_validate_axis_system12(target_axis))
     rotation = target_rotation @ reference_rotation.T
     translation = target_origin - rotation @ reference_origin
     target = _prepare_transform(feature, copy, name)
