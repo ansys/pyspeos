@@ -22,8 +22,9 @@
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
-from typing import List
+from typing import List, Optional
 
+from ansys.api.speos.experimental.sop.v1 import sop_pb2 as exp_messages, sop_pb2_grpc as exp_service
 from ansys.api.speos.sop.v1 import sop_pb2 as messages, sop_pb2_grpc as service
 
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
@@ -32,6 +33,19 @@ from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 ProtoSOPTemplate = messages.SOPTemplate
 """SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate"""
 ProtoSOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+
+# Experimental API message classes
+ProtoMetricsConfig = exp_messages.MetricsConfig
+"""MetricsConfig protobuf class
+: ansys.api.speos.experimental.sop.v1.sop_pb2.MetricsConfig"""
+
+ProtoEvaluateMetrics_Request = exp_messages.EvaluateMetrics_Request
+"""EvaluateMetrics_Request protobuf class
+: ansys.api.speos.experimental.sop.v1.sop_pb2.EvaluateMetrics_Request"""
+
+ProtoEvaluateMetrics_Response = exp_messages.EvaluateMetrics_Response
+"""EvaluateMetrics_Response protobuf class
+: ansys.api.speos.experimental.sop.v1.sop_pb2.EvaluateMetrics_Response"""
 
 
 class SOPTemplateLink(CrudItem):
@@ -88,6 +102,52 @@ class SOPTemplateLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
+    def evaluate_metrics(
+        self,
+        vop_before_guid: str,
+        vop_after_guid: str,
+        config: Optional[ProtoMetricsConfig] = None,
+    ) -> ProtoEvaluateMetrics_Response:
+        """Evaluate metrics on the SOP template.
+
+        Evaluates custom selection of metrics with optional per-metric parameters.
+        If config is not provided, all metrics are evaluated with default parameters.
+
+        Parameters
+        ----------
+        vop_before_guid : str
+            VOP (Vector Optical Properties) before surface interaction.
+        vop_after_guid : str
+            VOP after surface interaction.
+        config : Optional[MetricsConfig]
+            Configuration for which metrics to evaluate (optional).
+            If not provided, all metrics are evaluated with default parameters.
+
+        Returns
+        -------
+        ProtoEvaluateMetrics_Response
+            Response containing evaluation results for:
+            - global_rta: Global RTA results
+            - directional_rta: Directional RTA results
+            - bsdf_slices: BSDF slice results
+
+        Examples
+        --------
+        >>> from ansys.speos.core.speos import Speos
+        >>> from ansys.speos.core.kernel.sop_template import (
+        ...     ProtoMetricsConfig,
+        ...     ProtoEvaluateMetrics_Request,
+        ... )
+        >>> speos = Speos()
+        >>> sop_t_db = speos.client.sop_templates()
+        >>> sop_t_link = sop_t_db.list()[0]
+        >>> result = sop_t_link.evaluate_metrics(
+        ...     vop_before_guid="vop_before_id", vop_after_guid="vop_after_id"
+        ... )
+
+        """
+        return self._stub.evaluate_metrics(self.key, vop_before_guid, vop_after_guid, config)
+
 
 class SOPTemplateStub(CrudStub):
     """
@@ -111,6 +171,7 @@ class SOPTemplateStub(CrudStub):
 
     def __init__(self, channel):
         super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
+        self._exp_stub = exp_service.SOPTemplateActionsStub(channel=channel)
 
     def create(self, message: ProtoSOPTemplate) -> SOPTemplateLink:
         """Create a new entry.
@@ -182,3 +243,39 @@ class SOPTemplateStub(CrudStub):
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SOPTemplateLink(self, x), guids))
+
+    def evaluate_metrics(
+        self,
+        sop_guid: str,
+        vop_before_guid: str,
+        vop_after_guid: str,
+        config: Optional[ProtoMetricsConfig] = None,
+    ) -> ProtoEvaluateMetrics_Response:
+        """Evaluate metrics on a SOP template.
+
+        Evaluates custom selection of metrics with optional per-metric parameters.
+        If config is not provided, all metrics are evaluated with default parameters.
+
+        Parameters
+        ----------
+        sop_guid : str
+            SOPTemplate guid.
+        vop_before_guid : str
+            VOP before surface interaction.
+        vop_after_guid : str
+            VOP after surface interaction.
+        config : Optional[MetricsConfig]
+            Configuration for which metrics to evaluate (optional).
+
+        Returns
+        -------
+        ProtoEvaluateMetrics_Response
+            Response containing global RTA, directional RTA, and BSDF slice results.
+        """
+        request = ProtoEvaluateMetrics_Request(
+            sop_guid=sop_guid,
+            vop_before_guid=vop_before_guid,
+            vop_after_guid=vop_after_guid,
+            config=config,
+        )
+        return self._exp_stub.EvaluateMetrics(request)

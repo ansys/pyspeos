@@ -49,6 +49,8 @@ Examples
         examples/kernel/object-link
         examples/kernel/scene-job
         examples/kernel/modify-scene
+        examples/kernel/sop-metrics
+        examples/kernel/sop-metrics-visualization
 
     {% else %}
 

@@ -151,6 +151,7 @@ if BUILD_EXAMPLES:
         "examples/kernel/object-link": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/scene-job": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/modify-scene": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/kernel/sop-metrics": "_static/thumbnails/pySpeos_520x520.png",
         "examples/workflow/open-result": "_static/thumbnails/workflow_open_result.png",
         "examples/workflow/export-vtp": "_static/thumbnails/vtp_520x520.png",
         "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
