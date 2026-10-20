@@ -36,6 +36,7 @@ import numpy as np
 import ansys.speos.core.body as body
 from ansys.speos.core.component import LightBox, LightBoxFileInstance
 import ansys.speos.core.face as face
+from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
@@ -1065,6 +1066,28 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_fast_transmission_gathering(
+        self,
+    ) -> FastTransmissionGathering:
+        """Create the fast transmission gathering feature.
+
+        Only one fast transmission gathering feature per project. If the feature already
+        exists in the project, it is returned.
+
+        Returns
+        -------
+        ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering
+            Fast transmission gathering feature.
+        """
+        existing_features = self.find(name="", feature_type=FastTransmissionGathering)
+        if len(existing_features) != 0:
+            feature = existing_features[0]
+        else:
+            feature = FastTransmissionGathering(project=self)
+            self._features.append(feature)
+
+        return feature
+
     def create_lightbox(
         self,
         name: str,
@@ -1129,6 +1152,7 @@ class Project:
             face.Face,
             part.Part.SubPart,
             GroundPlane,
+            FastTransmissionGathering,
         ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
@@ -1166,7 +1190,8 @@ class Project:
         ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
-        ansys.speos.core.ground_plane.GroundPlane]]
+        ansys.speos.core.ground_plane.GroundPlane, \
+        ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering]]
             Found features.
 
         Examples
@@ -1619,9 +1644,16 @@ class Project:
         # ground plane
         if scene_data.HasField("ground"):
             ground_feat = GroundPlane(project=self, ground=scene_data.ground)
-
             if ground_feat is not None:
                 self._features.append(ground_feat)
+
+        # fast transmission gathering
+        if scene_data.HasField("fast_transmission_gathering"):
+            ftg_feat = FastTransmissionGathering(
+                project=self,
+                fast_transmission_gathering=scene_data.fast_transmission_gathering,
+            )
+            self._features.append(ftg_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.name in [_._name for _ in self._features]:

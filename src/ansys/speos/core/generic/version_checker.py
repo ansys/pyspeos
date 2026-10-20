@@ -22,8 +22,10 @@
 
 """Module to ease version checks."""
 
+from typing import Optional
 
-def check_version(input_version: str, major: int, minor: int, patch: int) -> bool:
+
+def check_version(input_version: str, major: int, minor: int, patch: Optional[int] = None) -> bool:
     """Check that the input version is greater than or equal to the major.minor.patch.
 
     Parameters
@@ -34,25 +36,43 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
         Major release version, e.g. 2025
     minor : int
         Minor release version e.g. 2
-    patch : int
-        Service Pack version e.g. 3
+    patch : Optional[int]
+        Service Pack version e.g. 3.
+        If not provided, the patch is not considered in the comparison.
 
     Returns
     -------
     bool
         True if the input version is >= to the major.minor.patch
+
+    Notes
+    -----
+    The patch part of *input_version* can carry a suffix, e.g. ``"3-suffix"``.
+    In that case only the leading number (``3``) is used for the comparison.
+    The patch part can also be a development marker, e.g. ``"dev0"``, ``"dev1"``.
+    A development patch is always considered lower than any numbered patch,
+    including ``0``.
+    A version that cannot be parsed, e.g. ``""`` or ``"2026"``, is considered
+    lower than any requested version, so ``False`` is returned.
     """
     values = input_version.split(".")
-    if "-" in values[2]:
-        values[2] = values[2].split("-")[0]
+    if len(values) < 2 or not values[0].isdigit() or not values[1].isdigit():
+        return False
     if int(values[0]) > major:
         return True
     elif int(values[0]) == major:
         if int(values[1]) > minor:
             return True
         elif int(values[1]) == minor:
-            if int(values[2]) >= patch:
+            if patch is None:
                 return True
+            if len(values) < 3:
+                return False
+            patch_value = values[2].split("-")[0]
+            if patch_value.isdigit():
+                if int(patch_value) >= patch:
+                    return True
+            # A development patch (e.g. "dev0") is lower than any numbered patch.
 
     return False
 
