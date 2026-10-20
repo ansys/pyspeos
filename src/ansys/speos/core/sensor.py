@@ -1459,6 +1459,9 @@ class SensorCamera(BaseSensor):
     _sensor_mode_template_field_v2 = "camera"
     _SpectrumReference = GenericSpectrumReference
 
+    _DISTORTION_DRIVEN_VALUES = ["focal_length", "imager_distance", "f_number"]
+    """Template values a distortion file can provide itself, depending on its version."""
+
     @staticmethod
     def _camera_color_mode_field(mode_photometric: Any, mode: str) -> str:
         """Get the v1/v2 protobuf field name for a camera color mode."""
@@ -3056,41 +3059,48 @@ class SensorCamera(BaseSensor):
         if isinstance(self._type, SensorCamera.Photometric):
             self._type._commit_spectra()
 
+    def _clear_distortion_driven_values(self) -> None:
+        """Clear the template values that a distortion file can provide itself."""
+        for value in self._DISTORTION_DRIVEN_VALUES:
+            self._sensor_mode_template.ClearField(value)
+
+    def _clear_transmittance_spectrum(self) -> None:
+        """Clear the transmittance that a distortion file can provide itself."""
+        if self.photometric is not None:
+            self.photometric._clear_transmittance()
+
     def _commit_template(self) -> None:
+        # Spectra live in their own database: a failure there is not a distortion-file
+        # conflict, so it must not trigger the fallbacks below.
         self._commit_guid_backed_spectra()
-        super()._commit_template()
 
-    def commit(self) -> SensorCamera:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Sensor feature.
-        """
-        msg = (
-            "Please note that the following values {} were over written by the values"
-            " stored in the distortion file"
-        )
-        values_v2 = ["focal_length", "imager_distance", "f_number"]
-        values_v4 = ["focal_length", "imager_distance", "f_number", "Transmittance Spectrum"]
-        try:
-            super().commit()
-        except grpc.RpcError:
-            for value in values_v2:
-                self._sensor_mode_template.ClearField(value)
+        fallbacks = [
+            (
+                self._clear_distortion_driven_values,
+                self._DISTORTION_DRIVEN_VALUES,
+            ),  # >= V2 distortion-driven values
+            (
+                self._clear_transmittance_spectrum,
+                ["Transmittance Spectrum"],
+            ),  # >= V4 distortion-driven values
+        ]
+        cleared = []
+        while True:
             try:
-                super().commit()
-                warnings.warn(msg.format(str(values_v2)), stacklevel=2)
+                super()._commit_template()
+                break
             except grpc.RpcError:
-                if self.photometric is not None:
-                    self.photometric._clear_transmittance()
-                try:
-                    super().commit()
-                    warnings.warn(msg.format(str(values_v4)), stacklevel=2)
-                except grpc.RpcError as e:
-                    raise e
-        return self
+                if not fallbacks:
+                    raise
+                clear_values, names = fallbacks.pop(0)
+                clear_values()
+                cleared += names
+        if cleared:
+            msg = (
+                "Please note that the following values {} were over written by the values"
+                " stored in the distortion file"
+            )
+            warnings.warn(msg.format(str(cleared)), stacklevel=2)
 
 
 class SensorIrradiance(BaseSensor):

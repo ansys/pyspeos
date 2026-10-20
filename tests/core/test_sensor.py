@@ -24,9 +24,11 @@
 
 import math
 from pathlib import Path
+import warnings
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v2 import sensor_pb2 as sensor_v2_pb2
+import grpc
 import numpy as np
 import pytest
 
@@ -1249,6 +1251,63 @@ def test_camera_spectra_persist_with_project_commit(speos: Speos):
     assert camera_library_spectrum_uri(
         p, mode_color, "red_spectrum_file_uri", "red_spectrum_guid"
     ).endswith("CameraSensitivityGreen.spectrum")
+    sensor.delete()
+
+
+def _setup_camera_spectra(photometric) -> None:
+    """Fill a camera photometric mode with the spectra a v2 template requires."""
+    camera_files = Path(test_path) / "CameraInputFiles"
+    photometric.transmittance_file_uri = str(camera_files / "CameraTransmittance.spectrum")
+    color = photometric.set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectrum_error_is_not_a_distortion_conflict(speos: Speos):
+    """Test a failing spectrum does not trigger the distortion file fallbacks."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.BadSpectrum", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    _setup_camera_spectra(photometric)
+    photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "DoesNotExist.spectrum"
+    )
+    sensor.focal_length = 5.0
+    sensor.imager_distance = 10.0
+    sensor.f_number = 20.0
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(grpc.RpcError):
+            sensor.commit()
+
+    assert sensor.focal_length == 5.0
+    assert sensor.imager_distance == 10.0
+    assert sensor.f_number == 20.0
+    assert photometric.transmittance_file_uri.endswith("DoesNotExist.spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_template_version):
+    """Test the distortion file fallback also applies when committing the project."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.ProjectDistortion", feature_type=SensorCamera)
+    _setup_camera_spectra(sensor.set_mode_photometric())
+    sensor.focal_length = 5.0
+    sensor.imager_distance = 10.0
+    sensor.f_number = 20.0
+    sensor.distortion_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "distortionV2.OPTDistortion"
+    )
+
+    with pytest.warns(UserWarning, match="over written"):
+        p.commit()
+
+    assert sensor.focal_length == 0
+    assert sensor.imager_distance == 0
+    assert sensor.f_number == 0
     sensor.delete()
 
 
