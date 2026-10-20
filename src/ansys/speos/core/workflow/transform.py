@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from typing import Union
+import uuid
 
 import numpy as np
 
@@ -44,6 +45,7 @@ from ansys.speos.core.generic.general_methods import (
     _validate_vector3,
     normalize_vector,
 )
+from ansys.speos.core.kernel import ProtoScene
 
 TransformableFeature = Union[
     source.BaseSource,
@@ -103,26 +105,26 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
     """Duplicate an axis-system feature and add it to its owning project."""
     if isinstance(feature, source.BaseSource):
         p = feature._project
-        copied = p.create_source(
-            name=name, description=feature._source_instance.description, feature_type=type(feature)
+        new_instance = ProtoScene.SourceInstance(name=name, description="")
+        new_instance.CopyFrom(feature._source_instance)
+        new_instance.metadata["UniqueId"] = str(uuid.uuid4())
+        new_instance.name = name
+        copied = type(feature)(
+            project=p,
+            name=name,
+            source_instance=new_instance,
+            default_parameters=None,
         )
-        copied._source_template.CopyFrom(feature._source_template)
-        copied._source_template.name = name
-        copied._source_instance.CopyFrom(feature._source_instance)
-        copied._source_instance.name = name
-        copied._unique_id = None
-        copied._fill_parameters(default_parameters=None)
+        p._features.append(copied)
     elif isinstance(feature, sensor.BaseSensor):
         p = feature._project
-        copied = p.create_sensor(
-            name=name, description=feature._source_instance.description, feature_type=type(feature)
+        copied = type(feature)(
+            project=p,
+            name=name,
+            sensor_instance=feature._sensor_instance,
+            default_parameters=None,
         )
-        copied._sensor_instance.CopyFrom(feature._sensor_instance)
-        copied._sensor_instance.name = name
-        copied._sensor_template.CopyFrom(feature._sensor_template)
-        copied._sensor_template.name = name
-        copied._unique_id = None
-        copied._fill_parameters(default_parameters=None)
+        p._features.append(copied)
     elif isinstance(feature, part.Part.SubPart):
         parent = feature._parent_part
         copied = parent.create_sub_part(name=name, description=feature._part_instance.description)
@@ -304,7 +306,7 @@ def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
     """Resolve a full surface source to its single referenced body."""
     project = feature._project
     root_part = project.root_part
-    geometry_paths = list(_iter_geopaths(feature._source_instance))
+    geometry_paths = tuple(_iter_geopaths(feature._source_instance))
     if not geometry_paths:
         raise ValueError("The surface source does not reference any geometry.")
     if root_part is None:
@@ -326,10 +328,10 @@ def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
     for other_source in project.sources:
         if other_source is feature:
             continue
-        if any(
-            _paths_share_geometry(geopath, body_path)
-            for geopath in _iter_geopaths(other_source._source_instance)
-        ):
+        other_paths = tuple(_iter_geopaths(other_source._source_instance))
+        if set(other_paths) == set(geometry_paths):
+            continue
+        if any(_paths_share_geometry(geopath, body_path) for geopath in other_paths):
             raise ValueError(
                 f"Cannot transform body {target_body._name!r}:another source is applied to it."
             )

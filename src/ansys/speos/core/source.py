@@ -570,6 +570,7 @@ class BaseSource:
                 name=name, description=description, metadata=metadata
             )
         else:
+            self._source_instance = source_instance
             self._unique_id = source_instance.metadata["UniqueId"]
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()

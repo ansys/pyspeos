@@ -230,3 +230,4 @@ def test_move_surface_source(speos: Speos):
 
     assert moved is not source1
     assert isinstance(moved, source.SourceSurface)
+    project.preview()

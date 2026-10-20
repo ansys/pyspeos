@@ -145,6 +145,7 @@ class BaseSensor(ABC):
             )
             self.lxp_path_number = None
         else:
+            self._sensor_instance = sensor_instance
             self._unique_id = sensor_instance.metadata["UniqueId"]
             self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
             # reset will fill _sensor_instance and _sensor_template from respectively project
