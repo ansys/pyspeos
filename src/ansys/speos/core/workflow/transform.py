@@ -215,6 +215,12 @@ def _apply_transform(
     feature: TransformableFeature, rotation: np.ndarray, translation: np.ndarray
 ) -> TransformableFeature:
     """Apply a rigid transform to a feature and commit it."""
+    if isinstance(feature, source.SourceSurface):
+        target_body = _surface_source_body(feature)
+        _transform_mesh(target_body, rotation, translation)
+        target_body.commit()
+        feature.commit()
+        return feature
     if isinstance(feature, body_module.Body):
         _transform_mesh(feature, rotation, translation)
     else:
@@ -244,6 +250,30 @@ def _iter_geopaths(message):
             values = value if field.is_repeated else (value,)
             for item in values:
                 yield from _iter_geopaths(item)
+
+
+def _iter_geo_path_links(message):
+    """Yield ``(geo_path, reverse_normal)`` tuples from a protobuf geometry reference tree."""
+    if not hasattr(message, "ListFields"):
+        return
+    for field, value in message.ListFields():
+        if field.name == "geo_path":
+            if hasattr(value, "geo_path"):
+                yield value.geo_path, bool(getattr(value, "reverse_normal", False))
+            elif value:
+                yield value, False
+        elif field.name == "geo_paths":
+            if field.message_type is None:
+                for path in value:
+                    if path:
+                        yield path, False
+            else:
+                for item in value:
+                    yield from _iter_geo_path_links(item)
+        elif field.message_type is not None:
+            values = value if field.is_repeated else (value,)
+            for item in values:
+                yield from _iter_geo_path_links(item)
 
 
 def _find_body_in_geometry_tree(parent, path_segments: list[str]) -> body_module.Body | None:
@@ -296,18 +326,40 @@ def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
         raise ValueError("A full surface source must reference geometry from exactly one body.")
 
     target_body = bodies[0]
-    body_path = target_body.geo_path.to_native_link()
-    for other_source in project.sources:
-        if other_source is feature:
-            continue
-        if any(
-            _paths_share_geometry(geopath, body_path)
-            for geopath in _iter_geopaths(other_source._source_instance)
-        ):
-            raise ValueError(
-                f"Cannot transform body {target_body._name!r}: another source is applied to it."
-            )
+
     return target_body
+
+
+def _copy_surface_geometry(feature: source.SourceSurface, body_copy: body_module.Body):
+    """Map a copied surface source back to the corresponding copied face(s)."""
+    target_body = _surface_source_body(feature)
+    geometry_links = list(_iter_geo_path_links(feature._source_instance))
+    if not geometry_links:
+        return [(body_copy, False)]
+
+    copied_geometries = []
+    for geopath, reverse_normal in geometry_links:
+        if not geopath:
+            continue
+        final_segment = next((segment for segment in reversed(geopath.split("/")) if segment), None)
+        if final_segment == target_body._name:
+            copied_target = body_copy
+        else:
+            copied_target = next(
+                (face for face in body_copy.faces if face._name == final_segment),
+                body_copy,
+            )
+        copied_geometries.append((copied_target, reverse_normal))
+    return copied_geometries or [(body_copy, False)]
+
+
+def _copy_surface_source(feature: source.SourceSurface, name: str) -> source.SourceSurface:
+    """Duplicate a surface source and its referenced body for a transform copy."""
+    body_target = _surface_source_body(feature)
+    body_copy = _copy_body(body_target, _copy_name(body_target, None))
+    source_copy = _copy_axis_feature(feature, name)
+    source_copy.set_exitance_constant().geometries = _copy_surface_geometry(feature, body_copy)
+    return source_copy
 
 
 def _prepare_transform(
@@ -317,7 +369,10 @@ def _prepare_transform(
     if isinstance(feature, face_module.Face):
         raise ValueError("Transforming a standalone Face is not supported; transform its Body.")
     if isinstance(feature, source.SourceSurface):
-        feature = _surface_source_body(feature)
+        if copy_feature:
+            copied_name = _copy_name(feature, name)
+            return _copy_surface_source(feature, copied_name)
+        return _surface_source_body(feature)
     if not isinstance(
         feature,
         (
@@ -376,8 +431,8 @@ def move_feature(
     ValueError
         If an input is invalid or a standalone Face is provided.
     """
-    unit_direction = normalize_vector(_validate_vector3(direction))
-    displacement = np.array(unit_direction) * _validate_scalar(distance)
+    unit_direction = np.asarray(normalize_vector(_validate_vector3(direction)), dtype=float)
+    displacement = unit_direction * _validate_scalar(distance)
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, np.eye(3), displacement)
 
