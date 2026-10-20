@@ -164,6 +164,8 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
         raise ValueError("Input vector must be either 2D or 3D")
 
     magnitude = magnitude_vector(cast(List[float], vector_np.tolist()))
+    if magnitude == 0:
+        raise ValueError("A vector must not be a zero vector.")
     return cast(List[float], (vector_np / magnitude).tolist())
 
 

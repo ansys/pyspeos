@@ -38,13 +38,12 @@ from ansys.speos.core import (
 )
 from ansys.speos.core.generic.general_methods import (
     _axis_frame,
-    _normalize,
     _rotation_matrix,
     _validate_axis_system12,
     _validate_scalar,
     _validate_vector3,
+    normalize_vector,
 )
-from ansys.speos.core.kernel.scene import ProtoScene
 
 TransformableFeature = Union[
     source.BaseSource,
@@ -103,44 +102,27 @@ def _copy_name(feature: TransformableFeature, name: str | None) -> str:
 def _copy_axis_feature(feature: TransformableFeature, name: str) -> TransformableFeature:
     """Duplicate an axis-system feature and add it to its owning project."""
     if isinstance(feature, source.BaseSource):
-        metadata = dict(feature._source_instance.metadata)
-        metadata.pop("UniqueId", None)
-        copied = type(feature)(
-            project=feature._project,
-            name=name,
-            description=feature._source_instance.description,
-            metadata=metadata,
+        p = feature._project
+        copied = p.create_source(
+            name=name, description=feature._source_instance.description, feature_type=type(feature)
         )
-        copied._source_instance.CopyFrom(feature._source_instance)
-        copied._source_instance.name = name
-        copied._source_instance.metadata.pop("UniqueId", None)
-        copied._source_instance.source_guid = ""
         copied._source_template.CopyFrom(feature._source_template)
         copied._source_template.name = name
-        copied.source_template_link = None
+        copied._source_instance.CopyFrom(feature._source_instance)
+        copied._source_instance.name = name
         copied._unique_id = None
-        copied._source_path = name
         copied._fill_parameters(default_parameters=None)
-        feature._project._features.append(copied)
     elif isinstance(feature, sensor.BaseSensor):
-        metadata = dict(feature._sensor_instance.metadata)
-        metadata.pop("UniqueId", None)
-        copied = type(feature)(
-            project=feature._project,
-            name=name,
-            description=feature._sensor_instance.description,
-            metadata=metadata,
+        p = feature._project
+        copied = p.create_sensor(
+            name=name, description=feature._source_instance.description, feature_type=type(feature)
         )
         copied._sensor_instance.CopyFrom(feature._sensor_instance)
         copied._sensor_instance.name = name
-        copied._sensor_instance.metadata.pop("UniqueId", None)
-        copied._sensor_instance.sensor_guid = ""
         copied._sensor_template.CopyFrom(feature._sensor_template)
         copied._sensor_template.name = name
-        copied.sensor_template_link = None
         copied._unique_id = None
         copied._fill_parameters(default_parameters=None)
-        feature._project._features.append(copied)
     elif isinstance(feature, part.Part.SubPart):
         parent = feature._parent_part
         copied = parent.create_sub_part(name=name, description=feature._part_instance.description)
@@ -150,37 +132,50 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
             copied._part_instance.part_guid = feature.part_link.key
         copied._part_instance.CopyFrom(feature._part_instance)
         copied._part_instance.name = name
-        copied._part_instance.description = ""
-        copied._part_instance.metadata.pop("UniqueId", None)
         copied._unique_id = None
     elif isinstance(feature, component.LightBox):
-        instance = ProtoScene.SceneInstance()
-        instance.CopyFrom(feature._scene_instance)
-        instance.name = name
-        instance.metadata.pop("UniqueId", None)
-        instance.metadata["UniqueId"] = "pending"
-        copied = component.LightBox(
-            name=name, parent_project=feature._parent_project, instance=instance
-        )
+        p = feature.project
+        copied = p.create_light_box(name=name, description=feature._scene_instance.description)
+        copied._scene_instance.CopyFrom(feature._scene_instance)
         copied._scene_instance.name = name
         copied._scene_instance.metadata.pop("UniqueId", None)
         copied._unique_id = None
-        feature._parent_project._features.append(copied)
+        copied.project._fill_features(context=copied._scene_instance.name + "/")
     return copied
+
+
+def _copy_body_material_assignments(original: body_module.Body, copied: body_module.Body) -> None:
+    """Reuse the original body material assignments on the copied body.
+
+    The copied body receives a new geometry path, so any material instances that apply
+    to the original body must also include the new path. This keeps the same material
+    assignments without creating a fresh material instance.
+    """
+    parent = original._parent_part
+    while parent is not None and not hasattr(parent, "_project"):
+        parent = getattr(parent, "_parent_part", None)
+    project = getattr(parent, "_project", None)
+    if project is None or project.scene_link is None:
+        return
+
+    original_path = original.geo_path.to_native_link()
+    copied_path = copied.geo_path.to_native_link()
+    scene_data = project.scene_link.get()
+    for material in scene_data.materials:
+        if not material.HasField("geometries"):
+            continue
+        paths = list(material.geometries.geo_paths)
+        if original_path not in paths or copied_path in paths:
+            continue
+        paths.append(copied_path)
+        material.geometries.geo_paths[:] = paths
+    project.scene_link.set(data=scene_data)
 
 
 def _copy_body(feature: body_module.Body, name: str) -> body_module.Body:
     """Duplicate a body and its faces."""
     parent = feature._parent_part
-    copied = body_module.Body(
-        speos_client=feature._speos_client,
-        name=name,
-        description=feature._body.description,
-        metadata=feature._body.metadata,
-        parent_part=parent,
-    )
-    if parent is not None:
-        parent._geom_features.append(copied)
+    copied = parent.create_body(name=name, description=feature._body.description)
     for face in feature.faces:
         face_copy = copied.create_face(
             name=face._name,
@@ -188,6 +183,7 @@ def _copy_body(feature: body_module.Body, name: str) -> body_module.Body:
             metadata=face._face.metadata,
         )
         face_copy._face.CopyFrom(face._face)
+    _copy_body_material_assignments(feature, copied)
     return copied
 
 
@@ -215,6 +211,12 @@ def _apply_transform(
     feature: TransformableFeature, rotation: np.ndarray, translation: np.ndarray
 ) -> TransformableFeature:
     """Apply a rigid transform to a feature and commit it."""
+    if isinstance(feature, source.SourceSurface):
+        target_body = _surface_source_body(feature)
+        _transform_mesh(target_body, rotation, translation)
+        target_body.commit()
+        feature.commit()
+        return feature
     if isinstance(feature, body_module.Body):
         _transform_mesh(feature, rotation, translation)
     else:
@@ -246,6 +248,30 @@ def _iter_geopaths(message):
                 yield from _iter_geopaths(item)
 
 
+def _iter_geo_path_links(message):
+    """Yield ``(geo_path, reverse_normal)`` tuples from a protobuf geometry reference tree."""
+    if not hasattr(message, "ListFields"):
+        return
+    for field, value in message.ListFields():
+        if field.name == "geo_path":
+            if hasattr(value, "geo_path"):
+                yield value.geo_path, bool(getattr(value, "reverse_normal", False))
+            elif value:
+                yield value, False
+        elif field.name == "geo_paths":
+            if field.message_type is None:
+                for path in value:
+                    if path:
+                        yield path, False
+            else:
+                for item in value:
+                    yield from _iter_geo_path_links(item)
+        elif field.message_type is not None:
+            values = value if field.is_repeated else (value,)
+            for item in values:
+                yield from _iter_geo_path_links(item)
+
+
 def _find_body_in_geometry_tree(parent, path_segments: list[str]) -> body_module.Body | None:
     """Find the body named by a geometry path within a part hierarchy."""
     if not path_segments:
@@ -274,7 +300,7 @@ def _paths_share_geometry(path: str, body_path: str) -> bool:
     return path_parts[:common_length] == body_parts[:common_length]
 
 
-def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
+def _surface_source_body(feature: source.SourceSurface, unsafe=False) -> body_module.Body:
     """Resolve a full surface source to its single referenced body."""
     project = feature._project
     root_part = project.root_part
@@ -296,18 +322,52 @@ def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
         raise ValueError("A full surface source must reference geometry from exactly one body.")
 
     target_body = bodies[0]
-    body_path = target_body.geo_path.to_native_link()
-    for other_source in project.sources:
-        if other_source is feature:
-            continue
-        if any(
-            _paths_share_geometry(geopath, body_path)
-            for geopath in _iter_geopaths(other_source._source_instance)
-        ):
-            raise ValueError(
-                f"Cannot transform body {target_body._name!r}: another source is applied to it."
-            )
+    # if not unsafe:
+    #     body_path = target_body.geo_path.to_native_link()
+    #     for other_source in project.sources:
+    #         if other_source is feature:
+    #             continue
+    #         if any(
+    #             _paths_share_geometry(geopath, body_path)
+    #             for geopath in _iter_geopaths(other_source._source_instance)
+    #         ):
+    #             raise ValueError(
+    #                 f"Cannot transform body {target_body._name!r}:
+    #                 another source is applied to it."
+    #             )
     return target_body
+
+
+def _copy_surface_geometry(feature: source.SourceSurface, body_copy: body_module.Body):
+    """Map a copied surface source back to the corresponding copied face(s)."""
+    target_body = _surface_source_body(feature, True)
+    geometry_links = list(_iter_geo_path_links(feature._source_instance))
+    if not geometry_links:
+        return [(body_copy, False)]
+
+    copied_geometries = []
+    for geopath, reverse_normal in geometry_links:
+        if not geopath:
+            continue
+        final_segment = next((segment for segment in reversed(geopath.split("/")) if segment), None)
+        if final_segment == target_body._name:
+            copied_target = body_copy
+        else:
+            copied_target = next(
+                (face for face in body_copy.faces if face._name == final_segment),
+                body_copy,
+            )
+        copied_geometries.append((copied_target, reverse_normal))
+    return copied_geometries or [(body_copy, False)]
+
+
+def _copy_surface_source(feature: source.SourceSurface, name: str) -> source.SourceSurface:
+    """Duplicate a surface source and its referenced body for a transform copy."""
+    body_target = _surface_source_body(feature)
+    body_copy = _copy_body(body_target, _copy_name(body_target, None))
+    source_copy = _copy_axis_feature(feature, name)
+    source_copy.set_exitance_constant().geometries = _copy_surface_geometry(feature, body_copy)
+    return source_copy
 
 
 def _prepare_transform(
@@ -317,7 +377,10 @@ def _prepare_transform(
     if isinstance(feature, face_module.Face):
         raise ValueError("Transforming a standalone Face is not supported; transform its Body.")
     if isinstance(feature, source.SourceSurface):
-        feature = _surface_source_body(feature)
+        if copy_feature:
+            copied_name = _copy_name(feature, name)
+            return _copy_surface_source(feature, copied_name)
+        return _surface_source_body(feature)
     if not isinstance(
         feature,
         (
@@ -376,7 +439,7 @@ def move_feature(
     ValueError
         If an input is invalid or a standalone Face is provided.
     """
-    unit_direction = _normalize(_validate_vector3(direction))
+    unit_direction = np.asarray(normalize_vector(_validate_vector3(direction)), dtype=float)
     displacement = unit_direction * _validate_scalar(distance)
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, np.eye(3), displacement)
