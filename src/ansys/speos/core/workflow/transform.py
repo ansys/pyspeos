@@ -38,11 +38,11 @@ from ansys.speos.core import (
 )
 from ansys.speos.core.generic.general_methods import (
     _axis_frame,
-    _normalize,
     _rotation_matrix,
     _validate_axis_system12,
     _validate_scalar,
     _validate_vector3,
+    normalize_vector,
 )
 from ansys.speos.core.kernel.scene import ProtoScene
 
@@ -376,8 +376,8 @@ def move_feature(
     ValueError
         If an input is invalid or a standalone Face is provided.
     """
-    unit_direction = _normalize(_validate_vector3(direction))
-    displacement = unit_direction * _validate_scalar(distance)
+    unit_direction = normalize_vector(_validate_vector3(direction))
+    displacement = np.array(unit_direction) * _validate_scalar(distance)
     target = _prepare_transform(feature, copy, name)
     return _apply_transform(target, np.eye(3), displacement)
 
