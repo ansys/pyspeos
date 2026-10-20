@@ -256,10 +256,21 @@ def test_sensor_setters_validate_inputs(speos: Speos) -> None:
         camera.lxp_path_number = cast(Any, 1.5)
     with pytest.raises(ValueError, match="lxp_path_number must be greater than or equal to 0."):
         camera.lxp_path_number = cast(Any, -1)
-
+    with pytest.raises(TypeError, match="lxp_path_number must be a non-negative integer or None."):
+        camera.lxp_path_number = cast(Any, True)
     wavelengths_range = camera.set_mode_photometric().set_wavelengths_range()
     with pytest.raises(ValueError, match="A scalar must be finite."):
         wavelengths_range.start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="start must be greater than 0."):
+        wavelengths_range.start = cast(Any, -1.0)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.end = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="end must be greater than 0."):
+        wavelengths_range.end = cast(Any, -1.0)
+    with pytest.raises(TypeError, match="sampling must be an integer."):
+        wavelengths_range.sampling = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="sampling must be greater than 0."):
+        wavelengths_range.sampling = cast(Any, -1)
 
     irradiance = cast(
         SensorIrradiance,
@@ -273,6 +284,28 @@ def test_sensor_setters_validate_inputs(speos: Speos) -> None:
         dimensions.x_start = cast(Any, float("inf"))
     with pytest.raises(TypeError, match="x_sampling must be an integer."):
         dimensions.x_sampling = cast(Any, True)
+    with pytest.raises(ValueError, match="x_sampling must be greater than 0."):
+        dimensions.x_sampling = cast(Any, -1)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        dimensions.y_start = cast(Any, float("inf"))
+    with pytest.raises(TypeError, match="y_sampling must be an integer."):
+        dimensions.y_sampling = cast(Any, True)
+    with pytest.raises(ValueError, match="y_sampling must be greater than 0."):
+        dimensions.y_sampling = cast(Any, -1)
+
+    wavelengths_range = irradiance.set_type_spectral().set_wavelengths_range()
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="start must be greater than 0."):
+        wavelengths_range.start = cast(Any, -1.0)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.end = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="end must be greater than 0."):
+        wavelengths_range.end = cast(Any, -1.0)
+    with pytest.raises(TypeError, match="sampling must be an integer."):
+        wavelengths_range.sampling = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="sampling must be greater than 0."):
+        wavelengths_range.sampling = cast(Any, -1)
 
 
 @pytest.mark.supported_speos_versions(min=261)
@@ -286,12 +319,20 @@ def test_observer_sensor_setters_validate_inputs(speos: Speos) -> None:
             project.create_sensor(name="Validation.Observer", feature_type=SensorObserver),
         ),
     )
-    angular_range = observer.set_angular_range()
+    dimensions = observer.set_angular_range()
 
     with pytest.raises(ValueError, match="A scalar must be finite."):
-        angular_range.x_start = cast(Any, float("inf"))
+        dimensions.x_start = cast(Any, float("inf"))
+    with pytest.raises(TypeError, match="x_sampling must be an integer."):
+        dimensions.x_sampling = cast(Any, True)
+    with pytest.raises(ValueError, match="x_sampling must be greater than 0."):
+        dimensions.x_sampling = cast(Any, -1)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        dimensions.y_start = cast(Any, float("inf"))
+    with pytest.raises(TypeError, match="y_sampling must be an integer."):
+        dimensions.y_sampling = cast(Any, True)
     with pytest.raises(ValueError, match="y_sampling must be greater than 0."):
-        angular_range.y_sampling = cast(Any, 0)
+        dimensions.y_sampling = cast(Any, -1)
 
 
 @pytest.mark.supported_speos_versions(min=251)
