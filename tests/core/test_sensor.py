@@ -5539,3 +5539,31 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=False)
     assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
     sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_3dirradiance_colorimetric_has_no_wavelengths_sampling(
+    speos: Speos, sensor_template_version
+):
+    """Test 3D irradiance colorimetric exposes no sampling, whatever the template version."""
+    p = Project(speos=speos)
+    sensor_3d = p.create_sensor(name="3D.NoSampling", feature_type=Sensor3DIrradiance)
+    wavelengths_range = sensor_3d.set_type_colorimetric().set_wavelengths_range()
+
+    assert wavelengths_range.sampling is None
+    with pytest.raises(
+        AttributeError, match="Wavelength sampling is not supported for this sensor."
+    ):
+        wavelengths_range.sampling = 42
+    assert wavelengths_range.sampling is None
+
+    wavelengths_range.start = 380
+    wavelengths_range.end = 720
+    assert wavelengths_range.start == 380
+    assert wavelengths_range.end == 720
+
+    # Other sensors keep their wavelengths sampling.
+    irradiance = p.create_sensor(name="Irradiance.Sampling", feature_type=SensorIrradiance)
+    irradiance_range = irradiance.set_type_colorimetric().set_wavelengths_range()
+    irradiance_range.sampling = 25
+    assert irradiance_range.sampling == 25

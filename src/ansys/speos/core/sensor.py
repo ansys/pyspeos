@@ -470,6 +470,9 @@ class BaseSensor(ABC):
         ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
+        supports_sampling : bool, optional
+            Whether the owning sensor mode exposes a wavelength sampling.
+            By default, ``True``.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -491,12 +494,16 @@ class BaseSensor(ABC):
                 sensor_v2_pb2.SensorTemplate.WavelengthsRange,
             ],
             default_parameters: Optional[WavelengthsRangeParameters] = None,
+            supports_sampling: bool = True,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "WavelengthsRange class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._wavelengths_range = wavelengths_range
+            fields = wavelengths_range.DESCRIPTOR.fields_by_name
+            self._uses_w_prefix = "w_start" in fields
+            self._supports_sampling = supports_sampling and "w_sampling" in fields
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(
@@ -506,7 +513,8 @@ class BaseSensor(ABC):
                 return
             self.start = default_parameters.start
             self.end = default_parameters.end
-            self.sampling = default_parameters.sampling
+            if self._supports_sampling:
+                self.sampling = default_parameters.sampling
 
         @property
         def start(self) -> float:
@@ -522,14 +530,14 @@ class BaseSensor(ABC):
             float
                 Lower Bound of the wavelength range.
             """
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._uses_w_prefix:
                 return self._wavelengths_range.w_start
             else:
                 return self._wavelengths_range.wavelength_start
 
         @start.setter
         def start(self, value: float):
-            if "w_start" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._uses_w_prefix:
                 self._wavelengths_range.w_start = value
             else:
                 self._wavelengths_range.wavelength_start = value
@@ -548,20 +556,20 @@ class BaseSensor(ABC):
             float
                 Upper Bound of the wavelength range.
             """
-            if "w_end" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._uses_w_prefix:
                 return self._wavelengths_range.w_end
             else:
                 return self._wavelengths_range.wavelength_end
 
         @end.setter
         def end(self, value: float):
-            if "w_end" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._uses_w_prefix:
                 self._wavelengths_range.w_end = value
             else:
                 self._wavelengths_range.wavelength_end = value
 
         @property
-        def sampling(self) -> int:
+        def sampling(self) -> Union[None, int]:
             """Wavelength sampling of between start and end value.
 
             Parameters
@@ -574,14 +582,17 @@ class BaseSensor(ABC):
             -------
             Union[None, int]:
                 Number of Samples used to split the wavelength range.
+                ``None`` when the sensor mode has no wavelength sampling.
             """
-            if "w_sampling" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._supports_sampling:
                 return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value):
-            if "w_sampling" in self._wavelengths_range.DESCRIPTOR.fields_by_name:
+            if self._supports_sampling:
                 self._wavelengths_range.w_sampling = value
+            else:
+                raise AttributeError("Wavelength sampling is not supported for this sensor.")
 
     class Dimensions:
         """Dimensions of the sensor.
@@ -4993,11 +5004,14 @@ class Sensor3DIrradiance(BaseSensor):
 
             # Attribute to keep track of wavelength range object
 
+            # A 3D irradiance colorimetric sensor has no wavelength sampling, whatever the
+            # template version exposes.
             self._wavelengths_range = BaseSensor.WavelengthsRange(
                 wavelengths_range=self._wavelengths_range_target(),
                 default_parameters=default_parameters.wavelength_range
                 if default_parameters
                 else None,
+                supports_sampling=False,
                 stable_ctr=stable_ctr,
             )
 
