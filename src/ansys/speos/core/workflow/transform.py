@@ -300,7 +300,7 @@ def _paths_share_geometry(path: str, body_path: str) -> bool:
     return path_parts[:common_length] == body_parts[:common_length]
 
 
-def _surface_source_body(feature: source.SourceSurface, unsafe=False) -> body_module.Body:
+def _surface_source_body(feature: source.SourceSurface) -> body_module.Body:
     """Resolve a full surface source to its single referenced body."""
     project = feature._project
     root_part = project.root_part
@@ -322,25 +322,23 @@ def _surface_source_body(feature: source.SourceSurface, unsafe=False) -> body_mo
         raise ValueError("A full surface source must reference geometry from exactly one body.")
 
     target_body = bodies[0]
-    # if not unsafe:
-    #     body_path = target_body.geo_path.to_native_link()
-    #     for other_source in project.sources:
-    #         if other_source is feature:
-    #             continue
-    #         if any(
-    #             _paths_share_geometry(geopath, body_path)
-    #             for geopath in _iter_geopaths(other_source._source_instance)
-    #         ):
-    #             raise ValueError(
-    #                 f"Cannot transform body {target_body._name!r}:
-    #                 another source is applied to it."
-    #             )
+    body_path = target_body.geo_path.to_native_link()
+    for other_source in project.sources:
+        if other_source is feature:
+            continue
+        if any(
+            _paths_share_geometry(geopath, body_path)
+            for geopath in _iter_geopaths(other_source._source_instance)
+        ):
+            raise ValueError(
+                f"Cannot transform body {target_body._name!r}:another source is applied to it."
+            )
     return target_body
 
 
 def _copy_surface_geometry(feature: source.SourceSurface, body_copy: body_module.Body):
     """Map a copied surface source back to the corresponding copied face(s)."""
-    target_body = _surface_source_body(feature, True)
+    target_body = _surface_source_body(feature)
     geometry_links = list(_iter_geo_path_links(feature._source_instance))
     if not geometry_links:
         return [(body_copy, False)]
