@@ -330,6 +330,7 @@ def min_speos_version(major: int, minor: int, service_pack: int):
     version = f"20{major} R{minor} SP{service_pack}"
 
     def decorator(function):
+        @wraps(function)
         def wrapper(*args, **kwargs):
             if function.__qualname__.endswith("__init__"):
                 name = function.__qualname__[:-9]
