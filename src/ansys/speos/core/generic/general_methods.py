@@ -164,9 +164,6 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
         raise ValueError("Input vector must be either 2D or 3D")
 
     magnitude = magnitude_vector(cast(List[float], vector_np.tolist()))
-    if magnitude == 0:
-        raise ValueError("Cannot normalize the zero vector")
-
     return cast(List[float], (vector_np / magnitude).tolist())
 
 
@@ -223,15 +220,9 @@ def _validate_pathlike(value, name: str) -> str:
     return str(value)
 
 
-def _normalize(vector: np.ndarray) -> np.ndarray:
-    """Return a normalized vector, rejecting zero-length input."""
-    norm = magnitude_vector(vector)
-    return vector / norm
-
-
 def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
     """Return the rotation matrix for a right-handed rotation in degrees."""
-    x, y, z = _normalize(axis)
+    x, y, z = normalize_vector(axis)
     angle = math.radians(angle_deg)
     cosine = math.cos(angle)
     sine = math.sin(angle)
