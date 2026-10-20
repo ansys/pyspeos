@@ -139,6 +139,8 @@ def test_intensity_setters_validate_inputs() -> None:
     )
     with pytest.raises(ValueError, match="fwhm_angle_x must be greater than or equal to 0."):
         gaussian.fwhm_angle_x = -1
+    with pytest.raises(ValueError, match="fwhm_angle_y must be greater than or equal to 0."):
+        gaussian.fwhm_angle_y = -1
     with pytest.raises(ValueError, match="total_angle must be in the interval ]0, 360]."):
         gaussian.total_angle = 0
 
@@ -307,6 +309,20 @@ def test_sensor_setters_validate_inputs(speos: Speos) -> None:
     with pytest.raises(ValueError, match="sampling must be greater than 0."):
         wavelengths_range.sampling = cast(Any, -1)
 
+    wavelengths_range = irradiance.set_type_colorimetric().set_wavelengths_range()
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="start must be greater than 0."):
+        wavelengths_range.start = cast(Any, -1.0)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.end = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="end must be greater than 0."):
+        wavelengths_range.end = cast(Any, -1.0)
+    with pytest.raises(TypeError, match="sampling must be an integer."):
+        wavelengths_range.sampling = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="sampling must be greater than 0."):
+        wavelengths_range.sampling = cast(Any, -1)
+
 
 @pytest.mark.supported_speos_versions(min=261)
 def test_observer_sensor_setters_validate_inputs(speos: Speos) -> None:
@@ -375,6 +391,8 @@ def test_virtual_bsdf_sampling_setters_validate_inputs(speos: Speos) -> None:
 
     with pytest.raises(ValueError, match="theta_sampling must be greater than 0."):
         adaptive.set_uniform().theta_sampling = cast(Any, 0)
+    with pytest.raises(TypeError, match="theta_sampling must be an integer."):
+        adaptive.set_uniform().theta_sampling = cast(Any, 89.5)
 
 
 def test_opt_prop_setters_validate_inputs(speos: Speos) -> None:
@@ -403,3 +421,18 @@ def test_opt_prop_setters_validate_inputs(speos: Speos) -> None:
         match="An axis system must contain exactly twelve values.",
     ):
         mapping.axis_system = [1.0, 0.0, 0.0]
+
+
+def test_vector_normalize_rejects_higher_dimensional_inputs() -> None:
+    """Vector normalization should reject inputs with more than three dimensions."""
+    with pytest.raises(ValueError, match="Input vector must be either 2D or 3D"):
+        general_methods.normalize_vector([1.0, 0.0, 0.0, 0.0])
+
+
+def test_rotation_matrix_contruction() -> None:
+    """Test that a valid rotation matrix for right-handed rotation in degrees is created."""
+    matrix_rot_60_x = general_methods._rotation_matrix([1.0, 0.0, 0.0], 60.0)
+    assert np.allclose(np.linalg.det(matrix_rot_60_x), 1.0)
+    assert np.array([[1, 0, 0], [0, 0.5, -0.8660254], [0, 0.8660254, 0.5]]) == pytest.approx(
+        matrix_rot_60_x
+    )
