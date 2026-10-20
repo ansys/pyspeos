@@ -171,6 +171,8 @@ def test_spectrum_setters_validate_inputs() -> None:
         sampled.wavelengths = [400.0, -1.0]
     with pytest.raises(ValueError, match=r"values must be within \[0, 100\]."):
         sampled.values = [10.0, 150.0]
+    with pytest.raises(TypeError, match="values must be a list or tuple of finite numbers."):
+        sampled.values = "bad"
 
     library = Spectrum.Library(library=spectrum_pb2.Spectrum.Library(), stable_ctr=True)
     with pytest.raises(TypeError, match="file_uri must be a string or Path."):
