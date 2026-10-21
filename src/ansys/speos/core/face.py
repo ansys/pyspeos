@@ -236,6 +236,12 @@ class Face:
                 raise TypeError("vertices_data items must be MeshData instances.")
             if not isinstance(i.name, str) or not i.name:
                 raise ValueError("vertices_data item names must be non-empty strings.")
+            if (
+                not isinstance(i.data, list)
+                or not all(isinstance(x, float) for x in i.data)
+                or not i.data
+            ):
+                raise ValueError("vertices_data item data must be non-empty lists of floats.")
         self._face.ClearField("vertices_data")
         self._face.vertices_data.extend(
             [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
