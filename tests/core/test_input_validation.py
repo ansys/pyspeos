@@ -61,6 +61,12 @@ def test_validate_numeric_sequence_rejects_invalid_inputs(value, error_type, mes
         general_methods._validate_numeric_sequence(cast(Any, value), 2, "white point")
 
 
+def test_validate_normalized_vector_rejects_invalid_inputs() -> None:
+    """Normalized vector validator should reject non-finite and zero-length vectors."""
+    with pytest.raises(ValueError, match="Cannot normalize a zero vector"):
+        general_methods.normalize_vector([0.0, 0.0, 0.0])
+
+
 @pytest.mark.parametrize(
     ("value", "error_type", "message"),
     [

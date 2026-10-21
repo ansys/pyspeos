@@ -162,8 +162,9 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
     vector_np = np.array(vector, dtype=float)
     if vector_np.size not in (2, 3):
         raise ValueError("Input vector must be either 2D or 3D")
-
     magnitude = magnitude_vector(cast(List[float], vector_np.tolist()))
+    if magnitude == 0:
+        raise ValueError("Cannot normalize a zero vector")
     return cast(List[float], (vector_np / magnitude).tolist())
 
 
