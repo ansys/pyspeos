@@ -118,7 +118,7 @@ class SpectrumFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths of the samples, in nm.
 
         Returns
@@ -129,7 +129,7 @@ class SpectrumFile(SpeosTextFileFormat):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         values = _finite_values(_property_name(SpectrumFile.wavelengths), values)
         self._check_columns(values, self._values)
         self._wavelengths = values
@@ -140,7 +140,7 @@ class SpectrumFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New relative spectral values of the samples, in percent (0 to 100).
 
         Returns
@@ -151,7 +151,7 @@ class SpectrumFile(SpeosTextFileFormat):
         return self._values.copy()
 
     @values.setter
-    def values(self, values: List[float]) -> None:
+    def values(self, values: Sequence[float]) -> None:
         name = _property_name(SpectrumFile.values)
         values = _finite_values(name, values)
         for value in values:

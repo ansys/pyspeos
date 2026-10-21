@@ -318,7 +318,7 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths of the samples, in nm, sorted in increasing order.
 
         Returns
@@ -329,7 +329,7 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         values = _finite_values(_property_name(CoatedSurfaceFile.wavelengths), values)
         if sorted(values) != values:
             raise ValueError("wavelengths must be sorted in increasing order.")
@@ -342,7 +342,7 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New angles of incidence of the samples, in degrees, sorted in increasing order.
 
         Returns
@@ -353,7 +353,7 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
         return self._incident_angles.copy()
 
     @incident_angles.setter
-    def incident_angles(self, values: List[float]) -> None:
+    def incident_angles(self, values: Sequence[float]) -> None:
         values = _finite_values(_property_name(CoatedSurfaceFile.incident_angles), values)
         if sorted(values) != values:
             raise ValueError("incident_angles must be sorted in increasing order.")

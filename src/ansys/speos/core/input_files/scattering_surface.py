@@ -506,7 +506,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths of the samples, in nm, sorted in increasing order. At least two
             wavelengths are required.
 
@@ -518,7 +518,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         values = [float(value) for value in values]
         if values:
             self._check_wavelengths(values)
@@ -531,7 +531,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New angles of incidence of the samples, in degrees, sorted in increasing order.
             ``0`` and ``90`` are required.
 
@@ -543,7 +543,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
         return self._incident_angles.copy()
 
     @incident_angles.setter
-    def incident_angles(self, values: List[float]) -> None:
+    def incident_angles(self, values: Sequence[float]) -> None:
         values = [float(value) for value in values]
         if values:
             self._check_angles(values)

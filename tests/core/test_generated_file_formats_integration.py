@@ -151,10 +151,13 @@ SURFACE_MATERIALS = {
     "scattering": ScatteringSurfaceFile(
         wavelengths=[400.0, 700.0],
         incident_angles=[0.0, 90.0],
-        samples=[[ScatteringSurfaceSample(lambertian_reflection=50.0)] * 2 for _ in range(2)],
+        samples=[
+            [ScatteringSurfaceSample(specular_reflection=0.0, lambertian_reflection=50.0)] * 2
+            for _ in range(2)
+        ],
     ),
     "simple_scattering": SimpleScatteringSurfaceFile(
-        mode=SimpleScatteringMode.reflection, lambertian=100.0
+        mode=SimpleScatteringMode.reflection, lambertian=100.0, gaussian=0.0
     ),
 }
 """One surface property file per Speos surface property format."""
@@ -173,6 +176,13 @@ _TEST_CASES = [
     ("metallic", "simple_scattering"),
     ("birefringent", None),
 ]
+
+
+@pytest.mark.parametrize("asset", [*VOLUME_MATERIALS.values(), *SURFACE_MATERIALS.values()])
+def test_generated_material_round_trip(asset, tmp_path):
+    """Generated integration materials are valid without a running Speos server."""
+    path = asset.save(tmp_path / ("integration" + asset.EXTENSION))
+    assert type(asset).load(path) == asset
 
 
 @pytest.fixture

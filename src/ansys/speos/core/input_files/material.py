@@ -81,7 +81,7 @@ _DEFAULT_AXIS_K = (0.0, 1.0, 0.0)
 """Default direction of the c axis of a birefringent material."""
 
 
-def _curve_column(model, name: str, values: List[float], names: tuple[str, ...]) -> List[float]:
+def _curve_column(model, name: str, values: Sequence[float], names: tuple[str, ...]) -> List[float]:
     """Validate a candidate column against the populated columns of a curve."""
     values = _finite_values(name, values)
     columns = {entry: values if entry == name else getattr(model, "_" + entry) for entry in names}
@@ -234,7 +234,7 @@ class MaterialDispersionCurve(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths of the curve, in nm.
 
         Returns
@@ -245,7 +245,7 @@ class MaterialDispersionCurve(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         self._wavelengths = _curve_column(
             self, _property_name(MaterialDispersionCurve.wavelengths), values, _CURVE_FIELDS
         )
@@ -256,7 +256,7 @@ class MaterialDispersionCurve(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New refractive index at each wavelength.
 
         Returns
@@ -267,7 +267,7 @@ class MaterialDispersionCurve(_ValueComparable):
         return self._indices.copy()
 
     @indices.setter
-    def indices(self, values: List[float]) -> None:
+    def indices(self, values: Sequence[float]) -> None:
         self._indices = _curve_column(
             self, _property_name(MaterialDispersionCurve.indices), values, _CURVE_FIELDS
         )
@@ -721,7 +721,7 @@ class MaterialMetallicCurve(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths of the curve, in nm.
 
         Returns
@@ -732,7 +732,7 @@ class MaterialMetallicCurve(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         self._wavelengths = _curve_column(
             self, _property_name(MaterialMetallicCurve.wavelengths), values, _METALLIC_FIELDS
         )
@@ -743,7 +743,7 @@ class MaterialMetallicCurve(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New real part n of the refractive index at each wavelength.
 
         Returns
@@ -754,7 +754,7 @@ class MaterialMetallicCurve(_ValueComparable):
         return self._indices.copy()
 
     @indices.setter
-    def indices(self, values: List[float]) -> None:
+    def indices(self, values: Sequence[float]) -> None:
         self._indices = _curve_column(
             self, _property_name(MaterialMetallicCurve.indices), values, _METALLIC_FIELDS
         )
@@ -765,7 +765,7 @@ class MaterialMetallicCurve(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New extinction coefficient k at each wavelength.
 
         Returns
@@ -776,7 +776,7 @@ class MaterialMetallicCurve(_ValueComparable):
         return self._extinctions.copy()
 
     @extinctions.setter
-    def extinctions(self, values: List[float]) -> None:
+    def extinctions(self, values: Sequence[float]) -> None:
         self._extinctions = _curve_column(
             self, _property_name(MaterialMetallicCurve.extinctions), values, _METALLIC_FIELDS
         )
@@ -1363,7 +1363,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths the efficiency is given at, in nm. Leave it empty when the phase
             function does not depend on the wavelength, in which case each row of ``values``
             holds a single entry.
@@ -1376,7 +1376,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         values = _finite_values(_property_name(VolumeScatteringUserDefined.wavelengths), values)
         if len(values) == 1:
             raise ValueError(
@@ -1392,7 +1392,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New scattering angles theta, in degrees.
 
         Returns
@@ -1403,7 +1403,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
         return self._angles.copy()
 
     @angles.setter
-    def angles(self, values: List[float]) -> None:
+    def angles(self, values: Sequence[float]) -> None:
         values = _finite_values(_property_name(VolumeScatteringUserDefined.angles), values)
         self._check_grid(values, self._values, self._wavelengths)
         self._angles = values
@@ -1414,7 +1414,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
 
         Parameters
         ----------
-        values : List[List[float]]
+        values : Sequence[Sequence[float]]
             New relative scattering intensity, one row per angle and one column per wavelength.
 
         Returns
@@ -1425,7 +1425,7 @@ class VolumeScatteringUserDefined(_ValueComparable):
         return [row.copy() for row in self._values]
 
     @values.setter
-    def values(self, values: List[List[float]]) -> None:
+    def values(self, values: Sequence[Sequence[float]]) -> None:
         values = [
             _finite_values(_property_name(VolumeScatteringUserDefined.values), row)
             for row in values
@@ -1529,7 +1529,7 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths the anisotropy factor is given at, in nm. A single wavelength means
             that the phase function does not depend on the wavelength.
 
@@ -1541,7 +1541,7 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         self._wavelengths = _phase_candidate(
             self, _property_name(VolumeScatteringHenyeyGreenstein.wavelengths), values
         )
@@ -1552,7 +1552,7 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New anisotropy factor g at each wavelength, between -1 and 1.
 
         Returns
@@ -1563,7 +1563,7 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
         return self._anisotropies.copy()
 
     @anisotropies.setter
-    def anisotropies(self, values: List[float]) -> None:
+    def anisotropies(self, values: Sequence[float]) -> None:
         values = _finite_values(
             _property_name(VolumeScatteringHenyeyGreenstein.anisotropies), values
         )
@@ -1645,7 +1645,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths the factors are given at, in nm. A single wavelength means that the
             phase function does not depend on the wavelength.
 
@@ -1657,7 +1657,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         self._wavelengths = _phase_candidate(
             self, _property_name(VolumeScatteringDoubleHenyeyGreenstein.wavelengths), values
         )
@@ -1668,7 +1668,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New first anisotropy factor at each wavelength, between -1 and 1.
 
         Returns
@@ -1679,7 +1679,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         return self._anisotropies_1.copy()
 
     @anisotropies_1.setter
-    def anisotropies_1(self, values: List[float]) -> None:
+    def anisotropies_1(self, values: Sequence[float]) -> None:
         name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_1)
         values = _phase_candidate(self, name, values)
         _check_phase_bounds(name, values, -1.0, 1.0)
@@ -1691,7 +1691,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New second anisotropy factor at each wavelength, between -1 and 1.
 
         Returns
@@ -1702,7 +1702,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         return self._anisotropies_2.copy()
 
     @anisotropies_2.setter
-    def anisotropies_2(self, values: List[float]) -> None:
+    def anisotropies_2(self, values: Sequence[float]) -> None:
         name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_2)
         values = _phase_candidate(self, name, values)
         _check_phase_bounds(name, values, -1.0, 1.0)
@@ -1714,7 +1714,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New weight between the first and the second anisotropy factor, at each wavelength.
             Values must be between 0 and 1.
 
@@ -1726,7 +1726,7 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
         return self._ratios.copy()
 
     @ratios.setter
-    def ratios(self, values: List[float]) -> None:
+    def ratios(self, values: Sequence[float]) -> None:
         name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.ratios)
         values = _phase_candidate(self, name, values)
         _check_phase_bounds(name, values, 0.0, 1.0)
@@ -1800,7 +1800,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New wavelengths the factors are given at, in nm. A single wavelength means that the
             phase function does not depend on the wavelength.
 
@@ -1812,7 +1812,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
         return self._wavelengths.copy()
 
     @wavelengths.setter
-    def wavelengths(self, values: List[float]) -> None:
+    def wavelengths(self, values: Sequence[float]) -> None:
         self._wavelengths = _phase_candidate(
             self, _property_name(VolumeScatteringGegenbauer.wavelengths), values
         )
@@ -1823,7 +1823,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New anisotropy factor at each wavelength.
 
         Returns
@@ -1834,7 +1834,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
         return self._anisotropies.copy()
 
     @anisotropies.setter
-    def anisotropies(self, values: List[float]) -> None:
+    def anisotropies(self, values: Sequence[float]) -> None:
         self._anisotropies = _phase_candidate(
             self, _property_name(VolumeScatteringGegenbauer.anisotropies), values
         )
@@ -1845,7 +1845,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New alpha coefficient at each wavelength.
 
         Returns
@@ -1856,7 +1856,7 @@ class VolumeScatteringGegenbauer(_ValueComparable):
         return self._alphas.copy()
 
     @alphas.setter
-    def alphas(self, values: List[float]) -> None:
+    def alphas(self, values: Sequence[float]) -> None:
         self._alphas = _phase_candidate(
             self, _property_name(VolumeScatteringGegenbauer.alphas), values
         )
@@ -1919,7 +1919,7 @@ def _check_phase_bounds(name: str, values: List[float], minimum: float, maximum:
         )
 
 
-def _phase_candidate(model, name: str, values: List[float]) -> List[float]:
+def _phase_candidate(model, name: str, values: Sequence[float]) -> List[float]:
     """Check a candidate phase column without changing its current model."""
     values = _finite_values(name, values)
     wavelengths = values if name == _property_name(type(model).wavelengths) else model._wavelengths
@@ -2436,7 +2436,7 @@ class MaterialFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New direction of the ``b`` axis of a birefringent material. Ignored by the other
             flavors.
 
@@ -2448,7 +2448,7 @@ class MaterialFile(SpeosTextFileFormat):
         return list(self._axis_j)
 
     @axis_j.setter
-    def axis_j(self, values: List[float]) -> None:
+    def axis_j(self, values: Sequence[float]) -> None:
         self._axis_j = _numeric_tuple(_property_name(MaterialFile.axis_j), values)
 
     @property
@@ -2457,7 +2457,7 @@ class MaterialFile(SpeosTextFileFormat):
 
         Parameters
         ----------
-        values : List[float]
+        values : Sequence[float]
             New direction of the ``c`` axis of a birefringent material. Ignored by the other
             flavors.
 
@@ -2469,7 +2469,7 @@ class MaterialFile(SpeosTextFileFormat):
         return list(self._axis_k)
 
     @axis_k.setter
-    def axis_k(self, values: List[float]) -> None:
+    def axis_k(self, values: Sequence[float]) -> None:
         self._axis_k = _numeric_tuple(_property_name(MaterialFile.axis_k), values)
 
     @property
