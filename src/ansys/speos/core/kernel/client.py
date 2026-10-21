@@ -519,7 +519,7 @@ List[ansys.speos.core.kernel.spectrum.SpectrumLink], \
 List[ansys.speos.core.kernel.intensity_template.IntensityTemplateLink], \
 List[ansys.speos.core.kernel.source_template.SourceTemplateLink], \
 List[ansys.speos.core.kernel.sensor_template.SensorTemplateLink], \
-List[ansys.speos.core.kernel.sensor_template.SensorTemplateLinkV2], \
+List[ansys.speos.core.kernel.sensor_template_v2.SensorTemplateLinkV2], \
 List[ansys.speos.core.kernel.simulation_template.SimulationTemplateLink], \
 List[ansys.speos.core.kernel.scene.SceneLink], \
 List[ansys.speos.core.kernel.job.JobLink], \
