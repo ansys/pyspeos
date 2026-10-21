@@ -854,13 +854,18 @@ def test_create_speos_feature_preview_sensor_camera(speos: Speos):
     """Test _create_speos_feature_preview for SensorCamera (case _: branch, 3-axis coords)."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Camera.Preview", feature_type=SensorCamera)
-    sensor.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    mode_photometric = sensor.set_mode_photometric()
+    mode_photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    mode_color = mode_photometric.set_mode_color()
+    mode_color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
-    sensor.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    mode_color.green_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
-    sensor.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    mode_color.blue_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor.commit()
