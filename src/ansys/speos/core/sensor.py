@@ -271,7 +271,8 @@ class BaseSensor(ABC):
         Parameters
         ----------
         mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+            Sensor mode, for example ``"photometric"``, ``"colorimetric"``, ``"radiometric"``,
+            ``"spectral"`` or, for a camera, ``"geometric"``.
 
         Returns
         -------
@@ -288,7 +289,8 @@ class BaseSensor(ABC):
         Parameters
         ----------
         mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+            Sensor mode, for example ``"photometric"``, ``"colorimetric"``, ``"radiometric"``,
+            ``"spectral"`` or, for a camera, ``"geometric"``.
 
         Returns
         -------
@@ -303,7 +305,8 @@ class BaseSensor(ABC):
         Parameters
         ----------
         mode : str
-            One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+            Sensor mode, for example ``"photometric"``, ``"colorimetric"``, ``"radiometric"``,
+            ``"spectral"`` or, for a camera, ``"geometric"``.
 
         Returns
         -------
@@ -1455,6 +1458,7 @@ class SensorCamera(BaseSensor):
     _supports_template_v2 = True
     _sensor_mode_template_field_v1 = "camera_sensor_template"
     _sensor_mode_template_field_v2 = "camera"
+    _sensor_mode_field_prefix_v1 = "sensor_mode_"
 
     _DISTORTION_DRIVEN_VALUES = ["focal_length", "imager_distance", "f_number"]
     """Template values a distortion file can provide itself, depending on its version."""
@@ -2683,12 +2687,6 @@ class SensorCamera(BaseSensor):
 
         self._fill_parameters(default_parameters)
 
-    def _camera_mode_field(self, mode: str) -> str:
-        """Get the v1/v2 protobuf field name for a camera sensor mode."""
-        if isinstance(self._sensor_template, sensor_v2_pb2.SensorTemplate):
-            return "mode_" + mode
-        return "sensor_mode_" + mode
-
     def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
         # _fill_parameters resets class local attributes.
         # Important because _fill_parameters can be called from different places:
@@ -2697,20 +2695,16 @@ class SensorCamera(BaseSensor):
         self._type = None
 
         if not default_parameters:
-            template = self._sensor_mode_template
-            if template.HasField(self._camera_mode_field("photometric")):
+            if self._has_sensor_mode("photometric"):
                 self.set_mode_photometric()
-            elif template.HasField(self._camera_mode_field("geometric")):
+            elif self._has_sensor_mode("geometric"):
                 self.set_mode_geometric()
             return
         if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
             self._type = SensorCamera.Photometric(
                 project=self._project,
                 name=self._name,
-                mode_photometric=getattr(
-                    self._sensor_mode_template,
-                    self._camera_mode_field("photometric"),
-                ),
+                mode_photometric=self._get_sensor_mode("photometric"),
                 camera_props=self._sensor_instance.camera_properties,
                 default_parameters=default_parameters.sensor_type_parameters,
                 stable_ctr=True,
@@ -3068,7 +3062,7 @@ class SensorCamera(BaseSensor):
             Geometric Camera feature
         """
         self._type = None
-        getattr(self._sensor_mode_template, self._camera_mode_field("geometric")).SetInParent()
+        self._get_sensor_mode("geometric").SetInParent()
         return self
 
     def set_mode_photometric(self) -> SensorCamera.Photometric:
@@ -3082,13 +3076,12 @@ class SensorCamera(BaseSensor):
         ansys.speos.core.sensor.SensorCamera.Photometric
             Photometric Camera Sensor feature
         """
-        field_name = self._camera_mode_field("photometric")
-        if self._type is None and self._sensor_mode_template.HasField(field_name):
+        if self._type is None and self._has_sensor_mode("photometric"):
             # Happens in case of project created via load of speos file, or after a reset.
             self._type = SensorCamera.Photometric(
                 project=self._project,
                 name=self._name,
-                mode_photometric=getattr(self._sensor_mode_template, field_name),
+                mode_photometric=self._get_sensor_mode("photometric"),
                 camera_props=self._sensor_instance.camera_properties,
                 default_parameters=None,
                 stable_ctr=True,
@@ -3098,7 +3091,7 @@ class SensorCamera(BaseSensor):
             self._type = SensorCamera.Photometric(
                 project=self._project,
                 name=self._name,
-                mode_photometric=getattr(self._sensor_mode_template, field_name),
+                mode_photometric=self._get_sensor_mode("photometric"),
                 camera_props=self._sensor_instance.camera_properties,
                 default_parameters=PhotometricCameraParameters(),
                 stable_ctr=True,
