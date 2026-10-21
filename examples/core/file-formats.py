@@ -33,10 +33,12 @@ from ansys.speos.core import (
     CoatedSurfaceSample,
     MaterialConstringence,
     MaterialFile,
+    MaterialType,
     Ray,
     RayFile,
     ScatteringSurfaceFile,
     ScatteringSurfaceSample,
+    SimpleScatteringMode,
     SimpleScatteringSurfaceFile,
     SpectrumFile,
     Texture3DMappingFile,
@@ -89,9 +91,11 @@ print(default_spectrum.description, default_spectrum.wavelengths)
 # A `*.material` file describes how light travels inside a body. It always holds a
 # dispersion model and an absorption curve. Here the dispersion is given by the refractive
 # index at 587.6 nm and the Abbe number, which is how most data sheets report it.
+# Use a MaterialType member to select the material model.
 
 pmma = MaterialFile(
     description="PMMA",
+    material_type=MaterialType.isotropic,
     dispersion=MaterialConstringence(constringence=57.2, index=1.49),
     absorption_wavelengths=[486.0, 532.0, 643.0],
     absorption_values=[0.0001, 0.00015, 0.0005],
@@ -134,7 +138,7 @@ print(diffuser_path.read_text())
 # within the 100% budget.
 
 white = SimpleScatteringSurfaceFile(
-    mode="Reflection", absorption=0.0, lambertian=100.0, gaussian=0.0
+    mode=SimpleScatteringMode.reflection, absorption=0.0, lambertian=100.0, gaussian=0.0
 )
 white_path = white.save(OUTPUT_DIR / "white_diffuser.simplescattering")
 print(white_path.read_text())

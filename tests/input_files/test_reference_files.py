@@ -53,7 +53,9 @@ from ansys.speos.core import (
     MaterialDispersionCurve,
     MaterialFile,
     MaterialMetallicCurve,
+    MaterialOpticalClass,
     MaterialSellmeier,
+    MaterialType,
     Ray,
     RayFile,
     ScatteringSurfaceFile,
@@ -135,7 +137,7 @@ def test_non_scattering_material():
 
     assert material == material_with()
     assert material.scattering is None
-    assert material.material_type == "Isotropic"
+    assert material.material_type is MaterialType.isotropic
     assert material.measured_concentration == 1.0
     assert material.user_concentration == 1.0
 
@@ -210,7 +212,7 @@ def test_metallic_material():
     material = MaterialFile.load(REFERENCE_DIR / "Gold.material")
     dispersion = material.dispersion
 
-    assert material.material_type == "Metallic"
+    assert material.material_type is MaterialType.metallic
     assert isinstance(dispersion, MaterialMetallicCurve)
     assert len(dispersion.wavelengths) == 74
     assert (dispersion.wavelengths[0], dispersion.indices[0], dispersion.extinctions[0]) == (
@@ -232,9 +234,12 @@ def test_birefringent_material():
     material = MaterialFile.load(REFERENCE_DIR / "Birefringent SellMeier.material")
     coefficients = MaterialSellmeier(1.03961, 0.0060007, 0.231792, 0.0200179, 1.01047, 103.561)
 
-    assert material.material_type == "Birefringent"
+    assert material.material_type is MaterialType.birefringent
     assert material.dispersion == MaterialBirefringentSellmeier(
-        a=coefficients, b=coefficients, c=coefficients, optical_class=2
+        a=coefficients,
+        b=coefficients,
+        c=coefficients,
+        optical_class=MaterialOpticalClass.biaxial,
     )
     assert material.axis_j == [1.0, 0.0, 0.0]
     assert material.axis_k == [0.0, 1.0, 0.0]

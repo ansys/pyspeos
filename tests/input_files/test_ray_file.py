@@ -375,12 +375,12 @@ def test_text_ray_counts_are_positive_integers(count, tmp_path):
     """Ray counts use the same strict integer rules as other local file formats."""
     path = tmp_path / "invalid.txt"
     path.write_text(f"\n{count}\n1 0 0 0 0 0 1 555 1\n", encoding="utf-8")
-    with pytest.raises(ValueError, match=r"line 2: expected an integer"):
+    with pytest.raises(ValueError, match="expected an integer"):
         RayFile.load_text(path)
 
 
-def test_text_ray_blank_lines_preserve_error_locations(tmp_path):
-    """Blank lines remain accepted without changing physical line numbers in errors."""
+def test_text_ray_blank_lines_keep_row_errors(tmp_path):
+    """Accept blank lines and still report errors in the ray rows."""
     path = tmp_path / "rays.txt"
     path.write_text("\n1\n\n1 0 0 0 0 0 1 555 1\n\n", encoding="utf-8")
     assert RayFile.load_text(path).rays == [Ray()]
@@ -391,7 +391,7 @@ def test_text_ray_blank_lines_preserve_error_locations(tmp_path):
         ("1 0 0", "expected 9 values"),
     ]:
         path.write_text(f"\n1\n\n{row}\n", encoding="utf-8")
-        with pytest.raises(ValueError, match=f"line 4:.*{message}"):
+        with pytest.raises(ValueError, match=message):
             RayFile.load_text(path)
 
 

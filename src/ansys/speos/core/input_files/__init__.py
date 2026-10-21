@@ -31,6 +31,11 @@ Local file-format models use explicit constructors and properties that validate 
 before storing data. List properties return copied containers; nested model objects remain
 shared and editable through their setters. Empty collections support staged construction,
 while ``validate()`` and ``save()`` require complete data.
+
+Use ``MaterialType`` to select the volume material model. Use ``MaterialOpticalClass``
+to classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+Use ``SimpleScatteringMode`` to select which side of a surface scatters light.
+
 """
 
 from ansys.speos.core.input_files._base import SpeosFileFormat, SpeosTextFileFormat
@@ -54,7 +59,9 @@ from ansys.speos.core.input_files.material import (
     MaterialFile,
     MaterialKettlerHelmholtz,
     MaterialMetallicCurve,
+    MaterialOpticalClass,
     MaterialSellmeier,
+    MaterialType,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringGegenbauer,
     VolumeScatteringHenyeyGreenstein,
@@ -65,7 +72,10 @@ from ansys.speos.core.input_files.scattering_surface import (
     ScatteringSurfaceFile,
     ScatteringSurfaceSample,
 )
-from ansys.speos.core.input_files.simple_scattering_surface import SimpleScatteringSurfaceFile
+from ansys.speos.core.input_files.simple_scattering_surface import (
+    SimpleScatteringMode,
+    SimpleScatteringSurfaceFile,
+)
 from ansys.speos.core.input_files.spectrum_file import SpectrumFile
 from ansys.speos.core.input_files.texture_3d import Texture3DMappingFile, TexturePattern
 
@@ -84,11 +94,14 @@ __all__ = [
     "MaterialFile",
     "MaterialKettlerHelmholtz",
     "MaterialMetallicCurve",
+    "MaterialOpticalClass",
     "MaterialSellmeier",
+    "MaterialType",
     "Ray",
     "RayFile",
     "ScatteringSurfaceFile",
     "ScatteringSurfaceSample",
+    "SimpleScatteringMode",
     "SimpleScatteringSurfaceFile",
     "SpectrumFile",
     "SpectralBRDF",

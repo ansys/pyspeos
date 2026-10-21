@@ -31,8 +31,10 @@ import pytest
 from ansys.speos.core import (
     CoatedSurfaceFile,
     CoatedSurfaceSample,
+    MaterialType,
     ScatteringSurfaceFile,
     ScatteringSurfaceSample,
+    SimpleScatteringMode,
     SimpleScatteringSurfaceFile,
 )
 from ansys.speos.core.input_files.coated_surface import (
@@ -52,6 +54,37 @@ from tests.input_files import ASSETS_DIR, read_lines
 
 DEFAULT_SURFACE_WAVELENGTHS = [400.0, 550.0, 700.0]
 DEFAULT_SURFACE_ANGLES = [0.0, 60.0, 90.0]
+
+
+@pytest.mark.parametrize("mode", list(SimpleScatteringMode))
+def test_simple_scattering_mode_enum_round_trip(mode, tmp_path):
+    """Every surface mode writes its file value and loads as an enum member."""
+    surface = SimpleScatteringSurfaceFile(mode=mode)
+    surface.mode = mode
+    path = surface.save(tmp_path / "enum.simplescattering")
+    assert read_lines(path)[2] == mode.value
+    assert SimpleScatteringSurfaceFile.load(path).mode is mode
+
+
+@pytest.mark.parametrize(
+    "value", ["Reflection", "Transmission", "Both", "Diffuse", 0, None, MaterialType.isotropic]
+)
+def test_simple_scattering_mode_requires_an_enum_member(value):
+    """Raw modes fail at construction and assignment without changing the surface."""
+    surface = SimpleScatteringSurfaceFile()
+    with pytest.raises(TypeError, match="mode must be a SimpleScatteringMode member"):
+        SimpleScatteringSurfaceFile(mode=value)
+    with pytest.raises(TypeError, match="mode must be a SimpleScatteringMode member"):
+        surface.mode = value
+    assert surface.mode is SimpleScatteringMode.reflection
+
+
+def test_simple_scattering_mode_signature_default():
+    """The constructor exposes the reflection enum member as its default."""
+    assert (
+        inspect.signature(SimpleScatteringSurfaceFile).parameters["mode"].default
+        is SimpleScatteringMode.reflection
+    )
 
 
 @pytest.mark.parametrize(
@@ -75,7 +108,7 @@ def test_simple_scattering_defaults(tmp_path):
     """A default simple scattering surface has the documented contributions."""
     surface = SimpleScatteringSurfaceFile()
 
-    assert surface.mode == "Reflection"
+    assert surface.mode is SimpleScatteringMode.reflection
     assert surface.absorption == 10.0
     assert surface.lambertian == 10.0
     assert surface.gaussian == 80.0
@@ -141,7 +174,7 @@ def test_surface_count_headers_are_strict(model_class, counts, tmp_path):
     """Both surface formats validate paired counts before consuming the grid."""
     path = tmp_path / ("invalid" + model_class.EXTENSION)
     path.write_text(f"{model_class.HEADER}\ndescription\n{counts}\n", encoding="utf-8")
-    with pytest.raises(ValueError, match=r"line 3: expected an integer"):
+    with pytest.raises(ValueError, match="expected an integer"):
         model_class.load(path)
 
 
@@ -436,15 +469,25 @@ def test_coated_surface_rejects_an_out_of_range_value(documented_coated_surface,
 @pytest.mark.parametrize(
     ("file_name", "mode", "lambertian", "gaussian_fwhm"),
     [
-        ("L100 2.simplescattering", "Reflection", 100.0, 5.0),
-        ("Texture.1.speos/100% transparent.simplescattering", "Transmission", 0.0, 25.0),
+        (
+            "L100 2.simplescattering",
+            SimpleScatteringMode.reflection,
+            100.0,
+            5.0,
+        ),
+        (
+            "Texture.1.speos/100% transparent.simplescattering",
+            SimpleScatteringMode.transmission,
+            0.0,
+            25.0,
+        ),
     ],
 )
 def test_simple_scattering_read_files_produced_by_speos(file_name, mode, lambertian, gaussian_fwhm):
     """A file produced by Speos must be read back into an equivalent model."""
     surface = SimpleScatteringSurfaceFile.load(ASSETS_DIR / file_name)
 
-    assert surface.mode == mode
+    assert surface.mode is mode
     assert surface.absorption == 0.0
     assert surface.lambertian == lambertian
     assert surface.gaussian == 0.0
@@ -464,7 +507,7 @@ def test_simple_scattering_round_trip_a_file_produced_by_speos(tmp_path):
 def test_simple_scattering_both_sides_with_a_fresnel_split(tmp_path):
     """The two-sided flavor must leave line 4 empty and flag the Fresnel split."""
     surface = SimpleScatteringSurfaceFile(
-        mode="Both",
+        mode=SimpleScatteringMode.both,
         absorption=10.0,
         lambertian=20.0,
         gaussian=30.0,
@@ -491,7 +534,10 @@ def test_simple_scattering_both_sides_with_a_fresnel_split(tmp_path):
 def test_simple_scattering_both_sides_with_an_explicit_split(tmp_path):
     """Setting a reflection share must replace the Fresnel split by that value."""
     surface = SimpleScatteringSurfaceFile(
-        mode="Both", lambertian=10.0, lambertian_transmission=20.0, reflection=35.0
+        mode=SimpleScatteringMode.both,
+        lambertian=10.0,
+        lambertian_transmission=20.0,
+        reflection=35.0,
     )
     path = surface.save(tmp_path / "both.simplescattering")
 
@@ -525,7 +571,7 @@ def test_simple_scattering_shared_equality_contract():
 
 def test_simple_scattering_rejects_an_unknown_mode_at_construction():
     """An unknown simple-scattering mode must be rejected during construction."""
-    with pytest.raises(ValueError, match="mode must be one of"):
+    with pytest.raises(TypeError, match="mode must be a SimpleScatteringMode member"):
         SimpleScatteringSurfaceFile(mode="Diffuse")
 
 
@@ -643,10 +689,10 @@ def test_simple_scattering_mode_switch_validates_candidate_budget():
     """An inactive second side is checked when enabling Both mode without losing state."""
     surface = SimpleScatteringSurfaceFile(lambertian_transmission=80.0, gaussian_transmission=80.0)
     with pytest.raises(ValueError, match="sum"):
-        surface.mode = "Both"
-    assert surface.mode == "Reflection"
+        surface.mode = SimpleScatteringMode.both
+    assert surface.mode is SimpleScatteringMode.reflection
     surface.gaussian_transmission = 20.0
-    surface.mode = "Both"
+    surface.mode = SimpleScatteringMode.both
     with pytest.raises(ValueError, match="sum"):
         surface.gaussian_transmission = 21.0
     assert surface.gaussian_transmission == 20.0

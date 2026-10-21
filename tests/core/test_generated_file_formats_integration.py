@@ -38,12 +38,15 @@ from ansys.speos.core import (
     MaterialFile,
     MaterialKettlerHelmholtz,
     MaterialMetallicCurve,
+    MaterialOpticalClass,
     MaterialSellmeier,
+    MaterialType,
     Project,
     Ray,
     RayFile,
     ScatteringSurfaceFile,
     ScatteringSurfaceSample,
+    SimpleScatteringMode,
     SimpleScatteringSurfaceFile,
     Spectrum,
     SpectrumFile,
@@ -116,7 +119,7 @@ VOLUME_MATERIALS = {
     ),
     # The metallic and the birefringent flavors of the format, which lay out differently.
     "metallic": MaterialFile(
-        material_type="Metallic",
+        material_type=MaterialType.metallic,
         dispersion=MaterialMetallicCurve(
             wavelengths=[486.0, 532.0, 643.0],
             indices=[1.0821, 0.55731, 0.18664],
@@ -124,12 +127,12 @@ VOLUME_MATERIALS = {
         ),
     ),
     "birefringent": MaterialFile(
-        material_type="Birefringent",
+        material_type=MaterialType.birefringent,
         dispersion=MaterialBirefringentSellmeier(
             a=MaterialSellmeier(b1=1.03, c1=0.0060, b2=0.23, c2=0.02, b3=1.01, c3=103.56),
             b=MaterialSellmeier(b1=1.04, c1=0.0061, b2=0.24, c2=0.021, b3=1.02, c3=103.57),
             c=MaterialSellmeier(b1=1.05, c1=0.0062, b2=0.25, c2=0.022, b3=1.03, c3=103.58),
-            optical_class=2,
+            optical_class=MaterialOpticalClass.biaxial,
         ),
         absorption_wavelengths=_ABSORPTION_WAVELENGTHS,
         absorption_values=_ABSORPTION_VALUES,
@@ -150,7 +153,9 @@ SURFACE_MATERIALS = {
         incident_angles=[0.0, 90.0],
         samples=[[ScatteringSurfaceSample(lambertian_reflection=50.0)] * 2 for _ in range(2)],
     ),
-    "simple_scattering": SimpleScatteringSurfaceFile(mode="Reflection", lambertian=100.0),
+    "simple_scattering": SimpleScatteringSurfaceFile(
+        mode=SimpleScatteringMode.reflection, lambertian=100.0
+    ),
 }
 """One surface property file per Speos surface property format."""
 

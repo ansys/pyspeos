@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import ClassVar, List, Optional
 
 from ansys.speos.core.input_files._base import (
@@ -38,6 +39,14 @@ from ansys.speos.core.input_files._base import (
 )
 
 
+class SimpleScatteringMode(str, Enum):
+    """Selects whether the surface scatters reflected light, transmitted light, or both."""
+
+    reflection = "Reflection"
+    transmission = "Transmission"
+    both = "Both"
+
+
 class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
 
@@ -47,9 +56,9 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
 
     Parameters
     ----------
-    mode : str, optional
-        Sides of the surface that scatter the light: ``"Reflection"``,
-        ``"Transmission"`` or ``"Both"``. By default, ``"Reflection"``.
+    mode : SimpleScatteringMode, optional
+        Sides of the surface that scatter light. By default,
+        ``SimpleScatteringMode.reflection``.
     absorption : float, optional
         Absorbed part of the incident light, in percent. By default, ``10.0``.
     lambertian : float, optional
@@ -91,15 +100,18 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     Examples
     --------
     >>> from ansys.speos.core.input_files.simple_scattering_surface import (
+    ...     SimpleScatteringMode,
     ...     SimpleScatteringSurfaceFile,
     ... )
-    >>> diffuser = SimpleScatteringSurfaceFile(mode="Reflection", lambertian=100.0, gaussian=0.0)
+    >>> diffuser = SimpleScatteringSurfaceFile(
+    ...     mode=SimpleScatteringMode.reflection, lambertian=100.0, gaussian=0.0
+    ... )
     >>> diffuser.save("white_diffuser.simplescattering")
     """
 
     def __init__(
         self,
-        mode: str = "Reflection",
+        mode: SimpleScatteringMode = SimpleScatteringMode.reflection,
         absorption: float = 10.0,
         lambertian: float = 10.0,
         gaussian: float = 80.0,
@@ -124,27 +136,26 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         self.description = description
 
     @property
-    def mode(self) -> str:
+    def mode(self) -> SimpleScatteringMode:
         """Active sides of the surface.
 
         Parameters
         ----------
-        value : str
-            New sides of the surface that scatter the light: ``"Reflection"``,
-            ``"Transmission"`` or ``"Both"``.
+        value : SimpleScatteringMode
+            New sides of the surface that scatter light.
 
         Returns
         -------
-        str
+        SimpleScatteringMode
             Reflection, Transmission, or Both.
         """
         return self._mode
 
     @mode.setter
-    def mode(self, value: str) -> None:
-        if value not in self.MODES:
-            raise ValueError(f"mode must be one of {self.MODES}, got {value!r}.")
-        if value == "Both":
+    def mode(self, value: SimpleScatteringMode) -> None:
+        if not isinstance(value, SimpleScatteringMode):
+            raise TypeError("mode must be a SimpleScatteringMode member.")
+        if value is SimpleScatteringMode.both:
             self._check_side(
                 "_transmission", self._lambertian_transmission, self._gaussian_transmission
             )
@@ -260,7 +271,7 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         value = _percentage(
             _property_name(SimpleScatteringSurfaceFile.lambertian_transmission), value
         )
-        if self._mode == "Both":
+        if self._mode is SimpleScatteringMode.both:
             self._check_side("_transmission", value, self._gaussian_transmission)
         self._lambertian_transmission = value
 
@@ -285,7 +296,7 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         value = _percentage(
             _property_name(SimpleScatteringSurfaceFile.gaussian_transmission), value
         )
-        if self._mode == "Both":
+        if self._mode is SimpleScatteringMode.both:
             self._check_side("_transmission", self._lambertian_transmission, value)
         self._gaussian_transmission = value
 
@@ -374,7 +385,7 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     HEADER = "OPTIS - Simple scattering surface file v2.0"
     HEADER_PREFIX = "OPTIS - Simple scattering surface file"
 
-    MODES: ClassVar[tuple] = ("Reflection", "Transmission", "Both")
+    MODES: ClassVar[tuple[SimpleScatteringMode, ...]] = tuple(SimpleScatteringMode)
     """Accepted values of :attr:`SimpleScatteringSurfaceFile.mode`."""
 
     @property
@@ -402,11 +413,11 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
             the 0 to 100 range, or the
             Lambertian and Gaussian parts of a side sum to more than 100 percent.
         """
-        if self.mode not in self.MODES:
-            raise ValueError(f"mode must be one of {self.MODES}, got {self.mode!r}.")
+        if not isinstance(self.mode, SimpleScatteringMode):
+            raise TypeError("mode must be a SimpleScatteringMode member.")
         check_percentage("absorption", self.absorption)
         self._check_side("", self.lambertian, self.gaussian)
-        if self.mode != "Both":
+        if self.mode is not SimpleScatteringMode.both:
             return
         self._check_side("_transmission", self.lambertian_transmission, self.gaussian_transmission)
         if self.reflection is not None:
@@ -423,8 +434,8 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
             )
 
     def _to_lines(self) -> List[str]:
-        lines = [self.description, self.mode]
-        if self.mode != "Both":
+        lines = [self.description, self.mode.value]
+        if self.mode is not SimpleScatteringMode.both:
             lines.append(
                 " ".join(
                     format_number(value)
@@ -464,11 +475,15 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> SimpleScatteringSurfaceFile:
         description = reader.next_line()
-        mode = reader.next_data_line()
-        if mode not in cls.MODES:
-            raise reader.error(f"expected one of {cls.MODES}, got {mode!r}.")
+        mode_name = reader.next_data_line()
+        try:
+            mode = SimpleScatteringMode(mode_name)
+        except ValueError as error:
+            raise reader.error(
+                f"expected one of {tuple(mode.value for mode in cls.MODES)}, got {mode_name!r}."
+            ) from error
 
-        if mode != "Both":
+        if mode is not SimpleScatteringMode.both:
             absorption, lambertian, gaussian, fwhm = reader.next_floats(count=4)
             return cls(
                 mode=mode,

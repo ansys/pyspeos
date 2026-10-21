@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+from enum import Enum, IntEnum
 from typing import ClassVar, List, Optional, Sequence, Union
 
 from ansys.speos.core.input_files._base import (
@@ -88,13 +89,26 @@ def _curve_column(model, name: str, values: List[float], names: tuple[str, ...])
     return values
 
 
-def _optical_class(value: int) -> int:
-    """Validate the optical class without truncating a numeric value."""
-    if not isinstance(value, int) or isinstance(value, bool) or value not in (0, 1, 2):
-        raise ValueError(
-            "optical_class must be 0 for a negative uniaxial material, 1 for a positive "
-            f"uniaxial one or 2 for a biaxial one, got {value}."
-        )
+class MaterialType(str, Enum):
+    """Select the refractive-index model for a volume material."""
+
+    isotropic = "Isotropic"
+    metallic = "Metallic"
+    birefringent = "Birefringent"
+
+
+class MaterialOpticalClass(IntEnum):
+    """Classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial."""
+
+    negative_uniaxial = 0
+    positive_uniaxial = 1
+    biaxial = 2
+
+
+def _optical_class(value: MaterialOpticalClass) -> MaterialOpticalClass:
+    """Validate that an optical class is an enum member."""
+    if not isinstance(value, MaterialOpticalClass):
+        raise TypeError("optical_class must be a MaterialOpticalClass member.")
     return value
 
 
@@ -825,9 +839,8 @@ class MaterialBirefringentCurve(_ValueComparable):
         Refractive index along the ``b`` axis. By default, ``1.51``.
     index_c : float, optional
         Refractive index along the ``c`` axis. By default, ``1.65``.
-    optical_class : int, optional
-        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-        ``2`` for a biaxial one. By default, ``0``.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
     """
 
     def __init__(
@@ -836,7 +849,7 @@ class MaterialBirefringentCurve(_ValueComparable):
         index_a: float = 1.5,
         index_b: float = 1.51,
         index_c: float = 1.65,
-        optical_class: int = 0,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
     ) -> None:
         self.wavelength = wavelength
         self.index_a = index_a
@@ -927,24 +940,23 @@ class MaterialBirefringentCurve(_ValueComparable):
         self._index_c = _finite_number(_property_name(MaterialBirefringentCurve.index_c), value)
 
     @property
-    def optical_class(self) -> int:
+    def optical_class(self) -> MaterialOpticalClass:
         """Optical class of the material.
 
         Parameters
         ----------
-        value : int
-            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-            ``2`` for a biaxial one.
+        value : MaterialOpticalClass
+            New optical class.
 
         Returns
         -------
-        int
-            0 for negative uniaxial, 1 for positive uniaxial, or 2 for biaxial.
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
         """
         return self._optical_class
 
     @optical_class.setter
-    def optical_class(self, value: int) -> None:
+    def optical_class(self, value: MaterialOpticalClass) -> None:
         self._optical_class = _optical_class(value)
 
     _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
@@ -975,7 +987,7 @@ class MaterialBirefringentCurve(_ValueComparable):
             self.KEYWORD,
             "1",
             f"{format_number(self.wavelength)} {format_number(self.index_a)}",
-            str(self.optical_class),
+            str(self.optical_class.value),
             f"{format_number(self.index_b)} {format_number(self.index_c)}",
         ]
 
@@ -988,7 +1000,7 @@ class MaterialBirefringentCurve(_ValueComparable):
                 f"expected a single wavelength, got {count}."
             )
         wavelength, index_a = reader.next_floats(count=2)
-        optical_class = reader.next_int()
+        optical_class = MaterialOpticalClass(reader.next_int())
         index_b, index_c = reader.next_floats(count=2)
         return cls(
             wavelength=wavelength,
@@ -1008,9 +1020,8 @@ class MaterialBirefringentSellmeier(_ValueComparable):
         Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
         independent :class:`ansys.speos.core.input_files.material.MaterialSellmeier` model
         with its default coefficients per axis.
-    optical_class : int, optional
-        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-        ``2`` for a biaxial one. By default, ``0``.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
     """
 
     def __init__(
@@ -1018,7 +1029,7 @@ class MaterialBirefringentSellmeier(_ValueComparable):
         a: MaterialSellmeier | None = None,
         b: MaterialSellmeier | None = None,
         c: MaterialSellmeier | None = None,
-        optical_class: int = 0,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
     ) -> None:
         self.a = a if a is not None else MaterialSellmeier()
         self.b = b if b is not None else MaterialSellmeier()
@@ -1086,24 +1097,23 @@ class MaterialBirefringentSellmeier(_ValueComparable):
         self._c = _axis_model(value, MaterialSellmeier)
 
     @property
-    def optical_class(self) -> int:
+    def optical_class(self) -> MaterialOpticalClass:
         """Optical class of the material.
 
         Parameters
         ----------
-        value : int
-            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-            ``2`` for a biaxial one.
+        value : MaterialOpticalClass
+            New optical class.
 
         Returns
         -------
-        int
-            0, 1, or 2.
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
         """
         return self._optical_class
 
     @optical_class.setter
-    def optical_class(self, value: int) -> None:
+    def optical_class(self, value: MaterialOpticalClass) -> None:
         self._optical_class = _optical_class(value)
 
     _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
@@ -1148,9 +1158,8 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
         Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
         independent :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz`
         model with its default coefficients per axis.
-    optical_class : int, optional
-        ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-        ``2`` for a biaxial one. By default, ``0``.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
     """
 
     def __init__(
@@ -1158,7 +1167,7 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
         a: MaterialKettlerHelmholtz | None = None,
         b: MaterialKettlerHelmholtz | None = None,
         c: MaterialKettlerHelmholtz | None = None,
-        optical_class: int = 0,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
     ) -> None:
         self.a = a if a is not None else MaterialKettlerHelmholtz()
         self.b = b if b is not None else MaterialKettlerHelmholtz()
@@ -1226,24 +1235,23 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
         self._c = _axis_model(value, MaterialKettlerHelmholtz)
 
     @property
-    def optical_class(self) -> int:
+    def optical_class(self) -> MaterialOpticalClass:
         """Optical class of the material.
 
         Parameters
         ----------
-        value : int
-            New ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
-            ``2`` for a biaxial one.
+        value : MaterialOpticalClass
+            New optical class.
 
         Returns
         -------
-        int
-            0, 1, or 2.
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
         """
         return self._optical_class
 
     @optical_class.setter
-    def optical_class(self, value: int) -> None:
+    def optical_class(self, value: MaterialOpticalClass) -> None:
         self._optical_class = _optical_class(value)
 
     _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
@@ -1300,7 +1308,7 @@ def _birefringent_coefficient_lines(model) -> List[str]:
     lines = [model.KEYWORD]
     names = model.COEFFICIENTS._FIELD_NAMES
     lines.extend(format_number(getattr(model.a, name)) for name in names)
-    lines.append(str(model.optical_class))
+    lines.append(str(model.optical_class.value))
     for name in names:
         lines.extend((format_number(getattr(model.b, name)), format_number(getattr(model.c, name))))
     return lines
@@ -1310,7 +1318,7 @@ def _read_birefringent_coefficients(model_class, reader: LineReader):
     """Read the coefficients of the three axes of a birefringent material."""
     coefficients = model_class.COEFFICIENTS
     axis_a = coefficients(*(reader.next_floats(count=1)[0] for _ in range(_COEFFICIENT_COUNT)))
-    optical_class = reader.next_int()
+    optical_class = MaterialOpticalClass(reader.next_int())
     interleaved = [reader.next_floats(count=1)[0] for _ in range(2 * _COEFFICIENT_COUNT)]
     return model_class(
         a=axis_a,
@@ -1893,11 +1901,6 @@ VolumeScattering = Union[
 :class:`ansys.speos.core.input_files.material.MaterialFile`."""
 
 
-def _is_type(material_type: str, expected: str) -> bool:
-    """Tell whether a material type line names the expected flavor of the format."""
-    return material_type.strip().lower() == expected.lower()
-
-
 def _check_phase_function(model) -> None:
     """Check the columns of a phase function against its optional wavelength list.
 
@@ -2002,9 +2005,8 @@ class MaterialFile(SpeosTextFileFormat):
     ----------
     description : str, optional
         Free text written on the second line of the file. By default, ``"Optical Glass"``.
-    material_type : str, optional
-        Type of material, one of ``"Isotropic"``, ``"Metallic"`` or ``"Birefringent"``.
-        By default, ``"Isotropic"``.
+    material_type : MaterialType, optional
+        Type of material. By default, ``MaterialType.isotropic``.
     dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
         How the refractive index varies with the wavelength. A metallic material needs a
         :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
@@ -2080,7 +2082,7 @@ class MaterialFile(SpeosTextFileFormat):
     def __init__(
         self,
         description: str = "Optical Glass",
-        material_type: str = "Isotropic",
+        material_type: MaterialType = MaterialType.isotropic,
         dispersion: Union[
             MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve, None
         ] = None,
@@ -2107,8 +2109,8 @@ class MaterialFile(SpeosTextFileFormat):
         self._absorption_values_c: List[float] = []
         self._scattering_wavelengths: List[float] = []
         self._scattering_values: List[float] = []
-        metallic = _is_type(material_type, self.METALLIC)
-        birefringent = _is_type(material_type, self.BIREFRINGENT)
+        metallic = material_type is MaterialType.metallic
+        birefringent = material_type is MaterialType.birefringent
         default_absorption = [] if metallic else list(_DEFAULT_WAVELENGTHS)
         default_diffusion = [] if scattering is None else list(_DEFAULT_WAVELENGTHS)
         self.description = description
@@ -2164,18 +2166,18 @@ class MaterialFile(SpeosTextFileFormat):
         self._description = _single_line(value)
 
     @property
-    def material_type(self) -> str:
+    def material_type(self) -> MaterialType:
         """Material flavor matching the dispersion model.
 
         Parameters
         ----------
-        value : str
-            New type of material, one of ``"Isotropic"``, ``"Metallic"`` or ``"Birefringent"``.
+        value : MaterialType
+            New type of material.
 
         Returns
         -------
-        str
-            Isotropic, Metallic, or Birefringent, preserving the supplied spelling.
+        MaterialType
+            Isotropic, metallic, or birefringent.
 
         Notes
         -----
@@ -2184,25 +2186,20 @@ class MaterialFile(SpeosTextFileFormat):
         return self._material_type
 
     @material_type.setter
-    def material_type(self, value: str) -> None:
+    def material_type(self, value: MaterialType) -> None:
         value = self._checked_type(value)
         self._check_dispersion(value, self._dispersion)
         self._material_type = value
 
     @classmethod
-    def _checked_type(cls, value: str) -> str:
-        if not isinstance(value, str):
-            raise TypeError("material_type must be a string.")
-        if not any(
-            _is_type(value, expected)
-            for expected in (cls.ISOTROPIC, cls.METALLIC, cls.BIREFRINGENT)
-        ):
-            raise ValueError("material_type must be Isotropic, Metallic, or Birefringent.")
+    def _checked_type(cls, value: MaterialType) -> MaterialType:
+        if not isinstance(value, MaterialType):
+            raise TypeError("material_type must be a MaterialType member.")
         return value
 
     @classmethod
-    def _check_dispersion(cls, material_type: str, value) -> None:
-        if _is_type(material_type, cls.METALLIC):
+    def _check_dispersion(cls, material_type: MaterialType, value) -> None:
+        if material_type is MaterialType.metallic:
             if not isinstance(value, MaterialMetallicCurve):
                 raise ValueError(
                     "A metallic material needs a MaterialMetallicCurve, got "
@@ -2211,7 +2208,7 @@ class MaterialFile(SpeosTextFileFormat):
             return
         expected = (
             cls.BIREFRINGENT_DISPERSIONS
-            if _is_type(material_type, cls.BIREFRINGENT)
+            if material_type is MaterialType.birefringent
             else cls.DISPERSIONS
         )
         if not isinstance(value, expected):
@@ -2551,13 +2548,13 @@ class MaterialFile(SpeosTextFileFormat):
     HEADER = "OPTIS - Material file v13"
     HEADER_PREFIX = "OPTIS - Material file"
 
-    ISOTROPIC: ClassVar[str] = "Isotropic"
+    ISOTROPIC: ClassVar[MaterialType] = MaterialType.isotropic
     """Material type of the default flavor of the format."""
 
-    METALLIC: ClassVar[str] = "Metallic"
+    METALLIC: ClassVar[MaterialType] = MaterialType.metallic
     """Material type of the metallic flavor of the format."""
 
-    BIREFRINGENT: ClassVar[str] = "Birefringent"
+    BIREFRINGENT: ClassVar[MaterialType] = MaterialType.birefringent
     """Material type of the birefringent flavor of the format."""
 
     DISPERSIONS: ClassVar[tuple] = (
@@ -2616,8 +2613,8 @@ class MaterialFile(SpeosTextFileFormat):
         )
         self.scattering.validate()
 
-    def _has_type(self, material_type: str) -> bool:
-        return _is_type(self.material_type, material_type)
+    def _has_type(self, material_type: MaterialType) -> bool:
+        return self.material_type is material_type
 
     def _validate_dispersion(self) -> None:
         """Check that the dispersion model belongs to the flavor of the material type."""
@@ -2652,7 +2649,7 @@ class MaterialFile(SpeosTextFileFormat):
                 )
 
     def _to_lines(self) -> List[str]:
-        lines = [self.description, self.material_type]
+        lines = [self.description, self.material_type.value]
         lines.extend(self.dispersion._to_lines())
         if self._has_type(self.METALLIC):
             return lines
@@ -2691,9 +2688,13 @@ class MaterialFile(SpeosTextFileFormat):
     @classmethod
     def _from_lines(cls, reader: LineReader) -> MaterialFile:
         description = reader.next_line()
-        material_type = reader.next_data_line()
-        metallic = _is_type(material_type, cls.METALLIC)
-        birefringent = _is_type(material_type, cls.BIREFRINGENT)
+        type_name = reader.next_data_line()
+        types: dict[str, MaterialType] = {member.value.lower(): member for member in MaterialType}
+        if type_name.lower() not in types:
+            raise reader.error(f"unknown material_type {type_name!r}.")
+        material_type = types[type_name.lower()]
+        metallic = material_type is MaterialType.metallic
+        birefringent = material_type is MaterialType.birefringent
 
         keyword = reader.next_data_line()
         if metallic:

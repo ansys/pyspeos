@@ -35,7 +35,9 @@ from ansys.speos.core import (
     MaterialFile,
     MaterialKettlerHelmholtz,
     MaterialMetallicCurve,
+    MaterialOpticalClass,
     MaterialSellmeier,
+    MaterialType,
     VolumeScatteringDoubleHenyeyGreenstein,
     VolumeScatteringGegenbauer,
     VolumeScatteringHenyeyGreenstein,
@@ -67,6 +69,86 @@ DEFAULT_MATERIAL_WAVELENGTHS = [486.0, 532.0, 643.0]
 
 
 @pytest.mark.parametrize(
+    ("material_type", "dispersion"),
+    [
+        (MaterialType.isotropic, MaterialDispersionCurve()),
+        (MaterialType.metallic, MaterialMetallicCurve()),
+        (MaterialType.birefringent, MaterialBirefringentCurve()),
+    ],
+)
+def test_material_type_enum_round_trip(material_type, dispersion, tmp_path):
+    """Material flavors serialize their values and load as enum members."""
+    material = MaterialFile(material_type=material_type, dispersion=dispersion)
+    material.material_type = material_type
+    path = material.save(tmp_path / "enum.material")
+    assert read_lines(path)[2] == material_type.value
+    assert MaterialFile.load(path).material_type is material_type
+
+
+@pytest.mark.parametrize("value", ["Isotropic", " isotropic ", "Unknown", 0, None])
+def test_material_type_requires_an_enum_member(value):
+    """Raw values fail at construction and assignment without changing the material."""
+    material = MaterialFile()
+    with pytest.raises(TypeError, match="material_type must be a MaterialType member"):
+        MaterialFile(material_type=value)
+    with pytest.raises(TypeError, match="material_type must be a MaterialType member"):
+        material.material_type = value
+    assert material.material_type is MaterialType.isotropic
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        MaterialBirefringentCurve,
+        MaterialBirefringentSellmeier,
+        MaterialBirefringentKettlerHelmholtz,
+    ],
+)
+@pytest.mark.parametrize("optical_class", list(MaterialOpticalClass))
+def test_optical_class_enum_round_trip(model_class, optical_class, tmp_path):
+    """Save each birefringent model and load the same optical class member."""
+    model = model_class(optical_class=optical_class)
+    model.optical_class = optical_class
+    material = MaterialFile(material_type=MaterialType.birefringent, dispersion=model)
+    path = material.save(tmp_path / "optical_class.material")
+    assert MaterialFile.load(path).dispersion.optical_class is optical_class
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        MaterialBirefringentCurve,
+        MaterialBirefringentSellmeier,
+        MaterialBirefringentKettlerHelmholtz,
+    ],
+)
+@pytest.mark.parametrize("value", [0, 1, 2, 3, 1.0, True, "0", None, MaterialType.isotropic])
+def test_optical_class_requires_an_enum_member(model_class, value):
+    """Only optical-class members are accepted, including for valid raw numeric codes."""
+    model = model_class()
+    with pytest.raises(TypeError, match="optical_class must be a MaterialOpticalClass member"):
+        model_class(optical_class=value)
+    with pytest.raises(TypeError, match="optical_class must be a MaterialOpticalClass member"):
+        model.optical_class = value
+    assert model.optical_class is MaterialOpticalClass.negative_uniaxial
+
+
+def test_material_reader_normalizes_type_spelling(tmp_path):
+    """File parsing retains case-insensitive material-type support."""
+    path = MaterialFile().save(tmp_path / "lowercase.material")
+    path.write_text(path.read_text().replace("Isotropic", " isotropic "), encoding="utf-8")
+    assert MaterialFile.load(path).material_type is MaterialType.isotropic
+
+
+def test_material_reader_rejects_an_unknown_type(tmp_path):
+    """Unknown serialized material types report a file and line error."""
+    path = MaterialFile().save(tmp_path / "unknown.material")
+    path.write_text(path.read_text().replace("Isotropic", "Unknown"), encoding="utf-8")
+    with pytest.raises(ValueError, match="unknown material_type"):
+        MaterialFile.load(path)
+
+
+@pytest.mark.parametrize(
     ("model_class", "parameter", "default"),
     [
         (MaterialDispersionCurve, "wavelengths", _DEFAULT_WAVELENGTHS),
@@ -92,12 +174,30 @@ def test_material_defaults_are_signature_defaults(model_class, parameter, defaul
     assert isinstance(default, tuple)
 
 
+@pytest.mark.parametrize(
+    ("model_class", "parameter", "default"),
+    [
+        (MaterialFile, "material_type", MaterialType.isotropic),
+        (MaterialBirefringentCurve, "optical_class", MaterialOpticalClass.negative_uniaxial),
+        (MaterialBirefringentSellmeier, "optical_class", MaterialOpticalClass.negative_uniaxial),
+        (
+            MaterialBirefringentKettlerHelmholtz,
+            "optical_class",
+            MaterialOpticalClass.negative_uniaxial,
+        ),
+    ],
+)
+def test_material_enum_signature_defaults(model_class, parameter, default):
+    """Constructor defaults expose enum members rather than raw values."""
+    assert inspect.signature(model_class).parameters[parameter].default is default
+
+
 def test_material_defaults_to_optical_glass(tmp_path):
     """A default material is non-absorbing isotropic optical glass."""
     material = MaterialFile()
 
     assert material.description == "Optical Glass"
-    assert material.material_type == "Isotropic"
+    assert material.material_type is MaterialType.isotropic
     assert material.dispersion == MaterialDispersionCurve(
         wavelengths=DEFAULT_MATERIAL_WAVELENGTHS, indices=[1.5, 1.5, 1.5]
     )
@@ -169,7 +269,7 @@ def test_birefringent_dispersion_defaults():
     curve = MaterialBirefringentCurve()
     assert curve.wavelength == 550.0
     assert (curve.index_a, curve.index_b, curve.index_c) == (1.5, 1.51, 1.65)
-    assert curve.optical_class == 0
+    assert curve.optical_class is MaterialOpticalClass.negative_uniaxial
 
     for model, coefficients in (
         (MaterialBirefringentSellmeier(), MaterialSellmeier()),
@@ -177,12 +277,14 @@ def test_birefringent_dispersion_defaults():
     ):
         assert model.a == model.b == model.c == coefficients
         assert len({id(model.a), id(model.b), id(model.c)}) == 3
-        assert model.optical_class == 0
+        assert model.optical_class is MaterialOpticalClass.negative_uniaxial
 
 
 def test_birefringent_material_defaults_absorb_nothing_on_each_axis(tmp_path):
     """A default birefringent material gets a null absorption curve on each axis."""
-    material = MaterialFile(material_type="Birefringent", dispersion=MaterialBirefringentCurve())
+    material = MaterialFile(
+        material_type=MaterialType.birefringent, dispersion=MaterialBirefringentCurve()
+    )
 
     assert material.absorption_wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
     assert material.absorption_values == [0.0, 0.0, 0.0]
@@ -196,7 +298,7 @@ def test_birefringent_material_defaults_absorb_nothing_on_each_axis(tmp_path):
 
 def test_metallic_material_defaults_have_no_absorption_curve(tmp_path):
     """A metallic material stores no absorption curve, so none is set by default."""
-    material = MaterialFile(material_type="Metallic", dispersion=MaterialMetallicCurve())
+    material = MaterialFile(material_type=MaterialType.metallic, dispersion=MaterialMetallicCurve())
 
     assert material.absorption_wavelengths == material.absorption_values == []
     path = material.save(tmp_path / "metallic.material")
@@ -241,7 +343,7 @@ def metallic_material():
     """Build a metallic material, which holds nothing but its complex refractive index."""
     return MaterialFile(
         description="Gold",
-        material_type="Metallic",
+        material_type=MaterialType.metallic,
         dispersion=MaterialMetallicCurve(
             wavelengths=[486.0, 532.0, 643.0],
             indices=[1.0821, 0.55731, 0.18664],
@@ -255,9 +357,13 @@ def birefringent_material():
     """Build a birefringent material with an absorption curve along its three axes."""
     return MaterialFile(
         description="Calcite",
-        material_type="Birefringent",
+        material_type=MaterialType.birefringent,
         dispersion=MaterialBirefringentCurve(
-            wavelength=550.0, index_a=1.5, index_b=1.51, index_c=1.65, optical_class=2
+            wavelength=550.0,
+            index_a=1.5,
+            index_b=1.51,
+            index_c=1.65,
+            optical_class=MaterialOpticalClass.biaxial,
         ),
         absorption_wavelengths=[486.0, 532.0, 643.0],
         absorption_values=[0.1, 0.2, 0.3],
@@ -613,7 +719,7 @@ def test_metallic_write_matches_the_speos_layout(metallic_material, tmp_path):
 def test_a_metallic_material_needs_an_index_curve(tmp_path):
     """A metallic material without its complex index cannot be written."""
     material = MaterialFile(
-        material_type="Metallic",
+        material_type=MaterialType.metallic,
         dispersion=MaterialMetallicCurve(wavelengths=[], indices=[], extinctions=[]),
     )
 
@@ -624,7 +730,7 @@ def test_a_metallic_material_needs_an_index_curve(tmp_path):
 def test_a_metallic_material_rejects_another_dispersion_model(tmp_path):
     """Speos only describes a metal by its complex refractive index."""
     with pytest.raises(ValueError, match="needs a MaterialMetallicCurve"):
-        MaterialFile(material_type="Metallic", dispersion=MaterialConstringence())
+        MaterialFile(material_type=MaterialType.metallic, dispersion=MaterialConstringence())
 
 
 def test_a_metallic_material_rejects_an_absorption_curve(tmp_path, metallic_material):
@@ -685,7 +791,7 @@ def test_birefringent_sellmeier_interleaves_the_two_last_axes(birefringent_mater
         a=MaterialSellmeier(1.0, 2.0, 3.0, 4.0, 5.0, 6.0),
         b=MaterialSellmeier(10.0, 20.0, 30.0, 40.0, 50.0, 60.0),
         c=MaterialSellmeier(11.0, 21.0, 31.0, 41.0, 51.0, 61.0),
-        optical_class=1,
+        optical_class=MaterialOpticalClass.positive_uniaxial,
     )
     path = birefringent_material.save(tmp_path / "sellmeier.material")
 
@@ -748,7 +854,7 @@ def test_a_birefringent_material_can_scatter(birefringent_material, tmp_path):
 def test_a_birefringent_material_rejects_an_isotropic_dispersion(tmp_path):
     """An isotropic model cannot describe the three axes of a birefringent material."""
     with pytest.raises(ValueError, match="MaterialBirefringentCurve"):
-        MaterialFile(material_type="Birefringent", dispersion=MaterialConstringence())
+        MaterialFile(material_type=MaterialType.birefringent, dispersion=MaterialConstringence())
 
 
 def test_an_isotropic_material_rejects_a_birefringent_dispersion(tmp_path):
@@ -759,9 +865,9 @@ def test_an_isotropic_material_rejects_a_birefringent_dispersion(tmp_path):
 
 def test_an_unknown_optical_class_is_rejected(birefringent_material, tmp_path):
     """Speos only knows the negative uniaxial, positive uniaxial and biaxial classes."""
-    with pytest.raises(ValueError, match="optical_class must be 0"):
+    with pytest.raises(TypeError, match="optical_class must be a MaterialOpticalClass member"):
         birefringent_material.dispersion.optical_class = 3
-    assert birefringent_material.dispersion.optical_class == 2
+    assert birefringent_material.dispersion.optical_class is MaterialOpticalClass.biaxial
 
 
 def test_an_axis_needs_three_coordinates(birefringent_material, tmp_path):
@@ -778,11 +884,11 @@ def test_each_axis_absorbs_at_every_wavelength(birefringent_material, tmp_path):
     assert birefringent_material.absorption_values_c == [0.7, 0.8, 0.9]
 
 
-@pytest.mark.parametrize("material_type", ["Isotropic", "Metallic"])
+@pytest.mark.parametrize("material_type", [MaterialType.isotropic, MaterialType.metallic])
 @pytest.mark.parametrize("name", ["absorption_values_b", "absorption_values_c"])
 def test_non_birefringent_material_rejects_axis_absorption(material_type, name, metallic_material):
     """Per-axis absorption cannot be assigned to isotropic or metallic materials."""
-    material = metallic_material if material_type == "Metallic" else MaterialFile()
+    material = metallic_material if material_type is MaterialType.metallic else MaterialFile()
 
     with pytest.raises(ValueError, match="only supported for a birefringent material"):
         setattr(material, name, [0.1])
@@ -866,9 +972,9 @@ def test_birefringent_defaults_are_independent_and_typed(model_class):
         model.a = MaterialConstringence()
     assert model.a is previous
     for value in (3, 1.5, True):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             model.optical_class = value
-        assert model.optical_class == 0
+        assert model.optical_class is MaterialOpticalClass.negative_uniaxial
 
 
 @pytest.mark.parametrize(
@@ -949,15 +1055,15 @@ def test_user_defined_grid_copies_and_validates():
 def test_material_flavor_changes_require_a_new_material(documented_material):
     """Flavor and dispersion setters reject incompatible changes without partial updates."""
     previous = documented_material.dispersion
-    for material_type in ("Metallic", "Birefringent", "Unknown"):
+    for material_type in (MaterialType.metallic, MaterialType.birefringent):
         with pytest.raises(ValueError):
             documented_material.material_type = material_type
-        assert documented_material.material_type == "Isotropic"
+        assert documented_material.material_type is MaterialType.isotropic
     with pytest.raises(ValueError):
         documented_material.dispersion = MaterialMetallicCurve()
     assert documented_material.dispersion is previous
-    documented_material.material_type = " isotropic "
-    assert documented_material.material_type == " isotropic "
+    documented_material.material_type = MaterialType.isotropic
+    assert documented_material.material_type is MaterialType.isotropic
 
 
 @pytest.mark.parametrize(
