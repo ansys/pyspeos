@@ -1464,6 +1464,51 @@ class SensorCamera(BaseSensor):
     """Template values a distortion file can provide itself, depending on its version."""
 
     @staticmethod
+    def _library_file_uri(spectrum: Spectrum) -> str:
+        """Read the library file URI of a spectrum without mutating it.
+
+        Parameters
+        ----------
+        spectrum : ansys.speos.core.spectrum.Spectrum
+            Spectrum to read.
+
+        Returns
+        -------
+        str
+            File URI, or ``""`` when the spectrum is not a library spectrum.
+
+        Notes
+        -----
+        ``spectrum.set_library()`` must not be used here: it would turn a spectrum that the
+        user never configured into an empty library spectrum.
+        """
+        return spectrum._spectrum.library.file_uri
+
+    @staticmethod
+    def _commit_library_spectrum(spectrum: Spectrum, message: Any, field_name: str) -> None:
+        """Commit a library spectrum and store its GUID, or clear the GUID when no file is set.
+
+        Parameters
+        ----------
+        spectrum : ansys.speos.core.spectrum.Spectrum
+            Spectrum to commit.
+        message : google.protobuf.message.Message
+            Protobuf message holding the GUID field.
+        field_name : str
+            Name of the spectrum GUID field in *message*.
+
+        Notes
+        -----
+        These sensor template v2 fields only accept library spectra, and a spectrum the user
+        never gave a file to is still the default monochromatic one.
+        """
+        if not SensorCamera._library_file_uri(spectrum):
+            message.ClearField(field_name)
+            return
+        spectrum.commit()
+        setattr(message, field_name, spectrum.spectrum_link.key)
+
+    @staticmethod
     def _camera_color_mode_field(mode_photometric: Any, mode: str) -> str:
         """Get the v1/v2 protobuf field name for a camera color mode."""
         if hasattr(mode_photometric, "mode_color"):
@@ -1773,7 +1818,7 @@ class SensorCamera(BaseSensor):
                         Red display file.
                     """
                     if self._red_display_spectrum is not None:
-                        return self._red_display_spectrum.set_library().file_uri
+                        return SensorCamera._library_file_uri(self._red_display_spectrum)
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
@@ -1799,7 +1844,7 @@ class SensorCamera(BaseSensor):
                         green display file.
                     """
                     if self._green_display_spectrum is not None:
-                        return self._green_display_spectrum.set_library().file_uri
+                        return SensorCamera._library_file_uri(self._green_display_spectrum)
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
@@ -1825,7 +1870,7 @@ class SensorCamera(BaseSensor):
                         blue display file.
                     """
                     if self._blue_display_spectrum is not None:
-                        return self._blue_display_spectrum.set_library().file_uri
+                        return SensorCamera._library_file_uri(self._blue_display_spectrum)
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
@@ -1838,17 +1883,20 @@ class SensorCamera(BaseSensor):
 
                 def _commit_spectra(self) -> None:
                     if self._red_display_spectrum is not None:
-                        self._red_display_spectrum.commit()
-                        self._balance_mode_display.red_display_spectrum_guid = (
-                            self._red_display_spectrum.spectrum_link.key
+                        SensorCamera._commit_library_spectrum(
+                            self._red_display_spectrum,
+                            self._balance_mode_display,
+                            "red_display_spectrum_guid",
                         )
-                        self._green_display_spectrum.commit()
-                        self._balance_mode_display.green_display_spectrum_guid = (
-                            self._green_display_spectrum.spectrum_link.key
+                        SensorCamera._commit_library_spectrum(
+                            self._green_display_spectrum,
+                            self._balance_mode_display,
+                            "green_display_spectrum_guid",
                         )
-                        self._blue_display_spectrum.commit()
-                        self._balance_mode_display.blue_display_spectrum_guid = (
-                            self._blue_display_spectrum.spectrum_link.key
+                        SensorCamera._commit_library_spectrum(
+                            self._blue_display_spectrum,
+                            self._balance_mode_display,
+                            "blue_display_spectrum_guid",
                         )
 
                 def _reset_spectra(self) -> None:
@@ -1992,7 +2040,7 @@ class SensorCamera(BaseSensor):
                     Red spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._red_spectrum is not None:
-                    return self._red_spectrum.set_library().file_uri
+                    return SensorCamera._library_file_uri(self._red_spectrum)
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
@@ -2018,7 +2066,7 @@ class SensorCamera(BaseSensor):
                     blue spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._blue_spectrum is not None:
-                    return self._blue_spectrum.set_library().file_uri
+                    return SensorCamera._library_file_uri(self._blue_spectrum)
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
@@ -2044,7 +2092,7 @@ class SensorCamera(BaseSensor):
                     green spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._green_spectrum is not None:
-                    return self._green_spectrum.set_library().file_uri
+                    return SensorCamera._library_file_uri(self._green_spectrum)
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
@@ -2175,12 +2223,15 @@ class SensorCamera(BaseSensor):
             def _commit_spectra(self) -> None:
                 if self._red_spectrum is None:
                     return
-                self._red_spectrum.commit()
-                self._mode_color.red_spectrum_guid = self._red_spectrum.spectrum_link.key
-                self._green_spectrum.commit()
-                self._mode_color.green_spectrum_guid = self._green_spectrum.spectrum_link.key
-                self._blue_spectrum.commit()
-                self._mode_color.blue_spectrum_guid = self._blue_spectrum.spectrum_link.key
+                SensorCamera._commit_library_spectrum(
+                    self._red_spectrum, self._mode_color, "red_spectrum_guid"
+                )
+                SensorCamera._commit_library_spectrum(
+                    self._green_spectrum, self._mode_color, "green_spectrum_guid"
+                )
+                SensorCamera._commit_library_spectrum(
+                    self._blue_spectrum, self._mode_color, "blue_spectrum_guid"
+                )
 
                 if self._mode_color.HasField(
                     SensorCamera._camera_white_balance_field(self._mode_color, "display_primaries")
@@ -2376,7 +2427,7 @@ class SensorCamera(BaseSensor):
                 Amount of light of the source that passes through the lens and reaches the sensor.
             """
             if self._transmittance_spectrum is not None:
-                return self._transmittance_spectrum.set_library().file_uri
+                return SensorCamera._library_file_uri(self._transmittance_spectrum)
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
@@ -2566,17 +2617,19 @@ class SensorCamera(BaseSensor):
             if self._transmittance_spectrum is None:
                 return
 
-            self._transmittance_spectrum.commit()
-            self._mode_photometric.transmittance_spectrum_guid = (
-                self._transmittance_spectrum.spectrum_link.key
+            SensorCamera._commit_library_spectrum(
+                self._transmittance_spectrum,
+                self._mode_photometric,
+                "transmittance_spectrum_guid",
             )
 
             if self._mode_photometric.HasField(
                 SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic")
             ):
-                self._monochromatic_spectrum.commit()
-                self._mode_photometric.mode_monochromatic.spectrum_guid = (
-                    self._monochromatic_spectrum.spectrum_link.key
+                SensorCamera._commit_library_spectrum(
+                    self._monochromatic_spectrum,
+                    self._mode_photometric.mode_monochromatic,
+                    "spectrum_guid",
                 )
             elif isinstance(self._mode, SensorCamera.Photometric.Color):
                 self._mode._commit_spectra()

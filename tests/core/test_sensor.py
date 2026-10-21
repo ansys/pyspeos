@@ -1265,32 +1265,18 @@ def test_camera_spectrum_error_is_not_a_distortion_conflict(speos: Speos):
     """Test a failing spectrum does not trigger the distortion file fallbacks."""
     camera_files = Path(test_path) / "CameraInputFiles"
 
-    # First an error due to transmittance file not specified
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Camera.BadSpectrum", feature_type=SensorCamera)
-    color = sensor.set_mode_photometric().set_mode_color()
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
     color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
     color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
     color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+    photometric.transmittance_file_uri = str(camera_files / "DoesNotExist.spectrum")
 
     sensor.focal_length = 5.0
     sensor.imager_distance = 10.0
     sensor.f_number = 20.0
-
-    with pytest.raises(grpc.RpcError) as exc_info:
-        sensor.commit()
-    error_details = json.loads(exc_info.value.details())
-    assert error_details["ErrorName"] == "SpectrumNotFromFile"
-
-    assert sensor.focal_length == 5.0
-    assert sensor.imager_distance == 10.0
-    assert sensor.f_number == 20.0
-
-    # Second an error due to the spectrum file not existing
-    photometric = sensor.set_mode_photometric()
-    photometric.transmittance_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "DoesNotExist.spectrum"
-    )
 
     with pytest.raises(grpc.RpcError) as exc_info:
         sensor.commit()
@@ -1331,6 +1317,45 @@ def test_camera_spectra_are_released_on_delete(speos: Speos):
 
     sensor.delete()
     assert len(speos.client.spectrums().list()) == before
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_without_transmittance_commits(speos: Speos):
+    """Test a camera with no transmittance file commits, as it does with sensor template v1."""
+    p = Project(speos=speos)
+    camera_files = Path(test_path) / "CameraInputFiles"
+    before = len(speos.client.spectrums().list())
+
+    sensor = p.create_sensor(name="Camera.NoTransmittance", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+    assert photometric.transmittance_file_uri == ""
+
+    sensor.commit()
+
+    # Only the three sensitivity spectra are created, and the unused GUID stays empty.
+    assert len(speos.client.spectrums().list()) == before + 3
+    assert camera_mode(sensor, "photometric").transmittance_spectrum_guid == ""
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectrum_file_uri_getter_has_no_side_effect(speos: Speos):
+    """Test reading a spectrum file URI does not turn the spectrum into an empty library."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.GetterSideEffect", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
+
+    assert photometric.transmittance_file_uri == ""
+    assert color.red_spectrum_file_uri == ""
+
+    assert not photometric._transmittance_spectrum._spectrum.HasField("library")
+    assert not color._red_spectrum._spectrum.HasField("library")
 
 
 @pytest.mark.supported_speos_versions(min=251)
