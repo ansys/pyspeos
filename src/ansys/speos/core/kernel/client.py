@@ -543,7 +543,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return [x for x in self.source_templates().list() if x.key in keys]
         elif item_type == SensorTemplateLink:
             return [x for x in self.sensor_templates().list() if x.key in keys]
-        elif item_type == SensorTemplateLinkV2:
+        elif item_type == SensorTemplateLinkV2 and server_version_checker.is_version_supported(
+            2027, 1, 0
+        ):
             return [x for x in self.sensor_templates_v2().list() if x.key in keys]
         elif item_type == SimulationTemplateLink:
             return [x for x in self.simulation_templates().list() if x.key in keys]
