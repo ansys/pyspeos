@@ -26,7 +26,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import List, Mapping, Optional, Union
-import warnings
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
 
@@ -475,25 +474,6 @@ class Spectrum:
         """
         self._spectrum.predefined.daylightfluorescent.SetInParent()
         return self
-
-    def set_whiteLED(self) -> Spectrum:
-        """Set the spectrum as white led (predefined spectrum).
-
-        .. deprecated:: 0.2.2
-            `set_whiteLed` will be removed with 0.3.0
-            `set_white_led` shall be used to comply with PEP8 naming convention
-
-        Returns
-        -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
-        """
-        warnings.warn(
-            "`set_whiteLED` is deprecated. Use `set_white_led` method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.set_white_led()
 
     def set_white_led(self) -> Spectrum:
         """Set the spectrum as white led (predefined spectrum).
