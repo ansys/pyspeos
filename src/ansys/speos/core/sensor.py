@@ -80,9 +80,6 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
-from ansys.speos.core.generic.spectrum_reference import (
-    _SpectrumReference as GenericSpectrumReference,
-)
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
@@ -92,6 +89,7 @@ from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2
 import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
+from ansys.speos.core.spectrum import Spectrum
 
 
 class BaseSensor(ABC):
@@ -1457,7 +1455,6 @@ class SensorCamera(BaseSensor):
     _supports_template_v2 = True
     _sensor_mode_template_field_v1 = "camera_sensor_template"
     _sensor_mode_template_field_v2 = "camera"
-    _SpectrumReference = GenericSpectrumReference
 
     _DISTORTION_DRIVEN_VALUES = ["focal_length", "imager_distance", "f_number"]
     """Template values a distortion file can provide itself, depending on its version."""
@@ -1717,42 +1714,31 @@ class SensorCamera(BaseSensor):
                     self._project = project
                     self._name = name
                     self._balance_mode_display = balance_mode_display
-                    self._red_display_spectrum = None
-                    self._green_display_spectrum = None
-                    self._blue_display_spectrum = None
-                    self._bind_balance_mode_display(balance_mode_display)
-                    self._fill_parameters(default_parameters)
 
-                def _bind_balance_mode_display(
-                    self,
-                    balance_mode_display: Union[
-                        camera_sensor_pb2.SensorCameraBalanceModeDisplay,
-                        sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor.WhiteBalanceModeDisplayPrimaries,
-                    ],
-                ) -> None:
+                    # In sensor template v2, spectrums are represented by GUIDs
                     if hasattr(self._balance_mode_display, "red_display_spectrum_guid"):
-                        if self._red_display_spectrum is None:
-                            self._red_display_spectrum = SensorCamera._SpectrumReference(
-                                project=self._project,
-                                name=self._name + ".RedDisplaySpectrum",
-                                message_to_complete=self._balance_mode_display,
-                                field_name_to_complete="red_display_spectrum_guid",
-                                stable_ctr=True,
-                            )
-                            self._green_display_spectrum = SensorCamera._SpectrumReference(
-                                project=self._project,
-                                name=self._name + ".GreenDisplaySpectrum",
-                                message_to_complete=self._balance_mode_display,
-                                field_name_to_complete="green_display_spectrum_guid",
-                                stable_ctr=True,
-                            )
-                            self._blue_display_spectrum = SensorCamera._SpectrumReference(
-                                project=self._project,
-                                name=self._name + ".BlueDisplaySpectrum",
-                                message_to_complete=self._balance_mode_display,
-                                field_name_to_complete="blue_display_spectrum_guid",
-                                stable_ctr=True,
-                            )
+                        self._red_display_spectrum = Spectrum(
+                            speos_client=self._project.client,
+                            name=self._name + ".RedDisplaySpectrum",
+                            key=self._balance_mode_display.red_display_spectrum_guid,
+                        )
+                        self._green_display_spectrum = Spectrum(
+                            speos_client=self._project.client,
+                            name=self._name + ".GreenDisplaySpectrum",
+                            key=self._balance_mode_display.green_display_spectrum_guid,
+                        )
+                        self._blue_display_spectrum = Spectrum(
+                            speos_client=self._project.client,
+                            name=self._name + ".BlueDisplaySpectrum",
+                            key=self._balance_mode_display.blue_display_spectrum_guid,
+                        )
+                    else:
+                        # If we are using sensor template v1, those members are useless
+                        self._red_display_spectrum = None
+                        self._green_display_spectrum = None
+                        self._blue_display_spectrum = None
+
+                    self._fill_parameters(default_parameters)
 
                 def _fill_parameters(
                     self,
@@ -1783,14 +1769,14 @@ class SensorCamera(BaseSensor):
                         Red display file.
                     """
                     if self._red_display_spectrum is not None:
-                        return self._red_display_spectrum.file_uri
+                        return self._red_display_spectrum.set_library().file_uri
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
                 def red_display_file_uri(self, uri: Union[str, Path]) -> None:
                     if self._red_display_spectrum is not None:
                         self._balance_mode_display.SetInParent()
-                        self._red_display_spectrum.file_uri = uri
+                        self._red_display_spectrum.set_library().file_uri = uri
                     else:
                         self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
@@ -1809,14 +1795,14 @@ class SensorCamera(BaseSensor):
                         green display file.
                     """
                     if self._green_display_spectrum is not None:
-                        return self._green_display_spectrum.file_uri
+                        return self._green_display_spectrum.set_library().file_uri
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
                 def green_display_file_uri(self, uri: Union[str, Path]) -> None:
                     if self._green_display_spectrum is not None:
                         self._balance_mode_display.SetInParent()
-                        self._green_display_spectrum.file_uri = uri
+                        self._green_display_spectrum.set_library().file_uri = uri
                     else:
                         self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
@@ -1835,22 +1821,46 @@ class SensorCamera(BaseSensor):
                         blue display file.
                     """
                     if self._blue_display_spectrum is not None:
-                        return self._blue_display_spectrum.file_uri
+                        return self._blue_display_spectrum.set_library().file_uri
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
                 def blue_display_file_uri(self, uri: Union[str, Path]) -> None:
                     if self._blue_display_spectrum is not None:
                         self._balance_mode_display.SetInParent()
-                        self._blue_display_spectrum.file_uri = uri
+                        self._blue_display_spectrum.set_library().file_uri = uri
                     else:
                         self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
                 def _commit_spectra(self) -> None:
                     if self._red_display_spectrum is not None:
                         self._red_display_spectrum.commit()
+                        self._balance_mode_display.red_display_spectrum_guid = (
+                            self._red_display_spectrum.spectrum_link.key
+                        )
                         self._green_display_spectrum.commit()
+                        self._balance_mode_display.green_display_spectrum_guid = (
+                            self._green_display_spectrum.spectrum_link.key
+                        )
                         self._blue_display_spectrum.commit()
+                        self._balance_mode_display.blue_display_spectrum_guid = (
+                            self._blue_display_spectrum.spectrum_link.key
+                        )
+
+                def _reset_spectra(self) -> None:
+                    if self._red_display_spectrum is not None:
+                        self._red_display_spectrum.reset()
+                        self._green_display_spectrum.reset()
+                        self._blue_display_spectrum.reset()
+
+                def _delete_spectra(self) -> None:
+                    if self._red_display_spectrum is not None:
+                        self._red_display_spectrum.delete()
+                        self._balance_mode_display.red_display_spectrum_guid = ""
+                        self._green_display_spectrum.delete()
+                        self._balance_mode_display.green_display_spectrum_guid = ""
+                        self._blue_display_spectrum.delete()
+                        self._balance_mode_display.blue_display_spectrum_guid = ""
 
             def __init__(
                 self,
@@ -1869,45 +1879,33 @@ class SensorCamera(BaseSensor):
                 self._project = project
                 self._name = name
                 self._mode_color = mode_color
-                self._red_spectrum = None
-                self._green_spectrum = None
-                self._blue_spectrum = None
-                self._bind_mode_color(mode_color)
+
+                # In sensor template v2, spectrums are represented by GUIDs
+                if hasattr(self._mode_color, "red_spectrum_guid"):
+                    self._red_spectrum = Spectrum(
+                        speos_client=self._project.client,
+                        name=self._name + ".RedSpectrum",
+                        key=self._mode_color.red_spectrum_guid,
+                    )
+                    self._green_spectrum = Spectrum(
+                        speos_client=self._project.client,
+                        name=self._name + ".GreenSpectrum",
+                        key=self._mode_color.green_spectrum_guid,
+                    )
+                    self._blue_spectrum = Spectrum(
+                        speos_client=self._project.client,
+                        name=self._name + ".BlueSpectrum",
+                        key=self._mode_color.blue_spectrum_guid,
+                    )
+                else:
+                    # If we are using sensor template v1, those members are useless
+                    self._red_spectrum = None
+                    self._green_spectrum = None
+                    self._blue_spectrum = None
 
                 # Attribute gathering more complex camera balance mode
                 self._mode = None
                 self._fill_parameters(default_parameters)
-
-            def _bind_mode_color(
-                self,
-                mode_color: Union[
-                    camera_sensor_pb2.SensorCameraColorModeColor,
-                    sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor,
-                ],
-            ) -> None:
-                if hasattr(self._mode_color, "red_spectrum_guid"):
-                    if self._red_spectrum is None:
-                        self._red_spectrum = SensorCamera._SpectrumReference(
-                            project=self._project,
-                            name=self._name + ".RedSpectrum",
-                            message_to_complete=self._mode_color,
-                            field_name_to_complete="red_spectrum_guid",
-                            stable_ctr=True,
-                        )
-                        self._green_spectrum = SensorCamera._SpectrumReference(
-                            project=self._project,
-                            name=self._name + ".GreenSpectrum",
-                            message_to_complete=self._mode_color,
-                            field_name_to_complete="green_spectrum_guid",
-                            stable_ctr=True,
-                        )
-                        self._blue_spectrum = SensorCamera._SpectrumReference(
-                            project=self._project,
-                            name=self._name + ".BlueSpectrum",
-                            message_to_complete=self._mode_color,
-                            field_name_to_complete="blue_spectrum_guid",
-                            stable_ctr=True,
-                        )
 
             def _fill_parameters(
                 self, default_parameters: Optional[ColorParameters] = None
@@ -1990,14 +1988,14 @@ class SensorCamera(BaseSensor):
                     Red spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._red_spectrum is not None:
-                    return self._red_spectrum.file_uri
+                    return self._red_spectrum.set_library().file_uri
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
             def red_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 if self._red_spectrum is not None:
                     self._mode_color.SetInParent()
-                    self._red_spectrum.file_uri = uri
+                    self._red_spectrum.set_library().file_uri = uri
                 else:
                     self._mode_color.red_spectrum_file_uri = str(Path(uri))
 
@@ -2016,14 +2014,14 @@ class SensorCamera(BaseSensor):
                     blue spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._blue_spectrum is not None:
-                    return self._blue_spectrum.file_uri
+                    return self._blue_spectrum.set_library().file_uri
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
             def blue_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 if self._blue_spectrum is not None:
                     self._mode_color.SetInParent()
-                    self._blue_spectrum.file_uri = uri
+                    self._blue_spectrum.set_library().file_uri = uri
                 else:
                     self._mode_color.blue_spectrum_file_uri = str(Path(uri))
 
@@ -2042,14 +2040,14 @@ class SensorCamera(BaseSensor):
                     green spectrum file. It is expressed in a .spectrum file.
                 """
                 if self._green_spectrum is not None:
-                    return self._green_spectrum.file_uri
+                    return self._green_spectrum.set_library().file_uri
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
             def green_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 if self._green_spectrum is not None:
                     self._mode_color.SetInParent()
-                    self._green_spectrum.file_uri = uri
+                    self._green_spectrum.set_library().file_uri = uri
                 else:
                     self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
@@ -2174,13 +2172,43 @@ class SensorCamera(BaseSensor):
                 if self._red_spectrum is None:
                     return
                 self._red_spectrum.commit()
+                self._mode_color.red_spectrum_guid = self._red_spectrum.spectrum_link.key
                 self._green_spectrum.commit()
+                self._mode_color.green_spectrum_guid = self._green_spectrum.spectrum_link.key
                 self._blue_spectrum.commit()
+                self._mode_color.blue_spectrum_guid = self._blue_spectrum.spectrum_link.key
 
                 if self._mode_color.HasField(
                     SensorCamera._camera_white_balance_field(self._mode_color, "display_primaries")
                 ):
                     self._mode._commit_spectra()
+
+            def _reset_spectra(self) -> None:
+                if self._red_spectrum is None:
+                    return
+                self._red_spectrum.reset()
+                self._green_spectrum.reset()
+                self._blue_spectrum.reset()
+
+                if self._mode_color.HasField(
+                    SensorCamera._camera_white_balance_field(self._mode_color, "display_primaries")
+                ):
+                    self._mode._reset_spectra()
+
+            def _delete_spectra(self) -> None:
+                if self._red_spectrum is None:
+                    return
+                self._red_spectrum.delete()
+                self._mode_color.red_spectrum_guid = ""
+                self._green_spectrum.delete()
+                self._mode_color.green_spectrum_guid = ""
+                self._blue_spectrum.delete()
+                self._mode_color.blue_spectrum_guid = ""
+
+                if self._mode_color.HasField(
+                    SensorCamera._camera_white_balance_field(self._mode_color, "display_primaries")
+                ):
+                    self._mode._delete_spectra()
 
         def __init__(
             self,
@@ -2201,44 +2229,27 @@ class SensorCamera(BaseSensor):
             self._name = name
             self._mode_photometric = mode_photometric
             self._camera_props = camera_props
+
             self._transmittance_spectrum = None
             self._monochromatic_spectrum = None
-            self._bind_mode_photometric(mode_photometric)
+            if hasattr(self._mode_photometric, "transmittance_spectrum_guid"):
+                self._transmittance_spectrum = Spectrum(
+                    speos_client=self._project.client,
+                    name=self._name + ".TransmittanceSpectrum",
+                    key=self._mode_photometric.transmittance_spectrum_guid,
+                )
+
+                self._monochromatic_spectrum = Spectrum(
+                    speos_client=self._project.client,
+                    name=self._name + ".MonochromaticSpectrum",
+                    key=self._mode_photometric.mode_monochromatic.spectrum_guid,
+                )
 
             # Attribute gathering more complex camera color mode
             self._mode = None
 
             # Attribute to keep track of wavelength range object
             self._fill_parameters(default_parameters, stable_ctr)
-
-        def _bind_mode_photometric(
-            self,
-            mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric
-            | sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric,
-        ) -> None:
-            if hasattr(self._mode_photometric, "transmittance_spectrum_guid"):
-                if self._transmittance_spectrum is None:
-                    self._transmittance_spectrum = SensorCamera._SpectrumReference(
-                        project=self._project,
-                        name=self._name + ".TransmittanceSpectrum",
-                        message_to_complete=self._mode_photometric,
-                        field_name_to_complete="transmittance_spectrum_guid",
-                        stable_ctr=True,
-                    )
-
-            monochromatic = getattr(
-                self._mode_photometric,
-                SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic"),
-            )
-            if hasattr(monochromatic, "spectrum_guid"):
-                if self._monochromatic_spectrum is None:
-                    self._monochromatic_spectrum = SensorCamera._SpectrumReference(
-                        project=self._project,
-                        name=self._name + ".MonochromaticSpectrum",
-                        message_to_complete=monochromatic,
-                        field_name_to_complete="spectrum_guid",
-                        stable_ctr=True,
-                    )
 
         def _fill_parameters(
             self,
@@ -2361,13 +2372,13 @@ class SensorCamera(BaseSensor):
                 Amount of light of the source that passes through the lens and reaches the sensor.
             """
             if self._transmittance_spectrum is not None:
-                return self._transmittance_spectrum.file_uri
+                return self._transmittance_spectrum.set_library().file_uri
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
         def transmittance_file_uri(self, uri: Union[str, Path]) -> None:
             if self._transmittance_spectrum is not None:
-                self._transmittance_spectrum.file_uri = uri
+                self._transmittance_spectrum.set_library().file_uri = uri
             else:
                 self._mode_photometric.transmittance_file_uri = str(Path(uri))
 
@@ -2504,10 +2515,10 @@ class SensorCamera(BaseSensor):
                 self._mode_photometric,
                 SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic"),
             )
-            if self._monochromatic_spectrum is not None:
-                monochromatic.SetInParent()
-                self._monochromatic_spectrum.bind(monochromatic)
-                self._monochromatic_spectrum.file_uri = spectrum_file_uri
+            monochromatic.SetInParent()
+
+            if hasattr(monochromatic, "spectrum_guid"):
+                self._monochromatic_spectrum.set_library().file_uri = spectrum_file_uri
             else:
                 monochromatic.spectrum_file_uri = str(Path(spectrum_file_uri))
             return self
@@ -2522,6 +2533,9 @@ class SensorCamera(BaseSensor):
             ansys.speos.core.sensor.SensorCamera.Photometric.Color
                 Color mode.
             """
+            if self._monochromatic_spectrum is not None:
+                self._monochromatic_spectrum.delete()
+
             field_name = SensorCamera._camera_color_mode_field(self._mode_photometric, "color")
             if self._mode is None and self._mode_photometric.HasField(field_name):
                 # Happens in case of project created via load of speos file, or after a reset.
@@ -2549,16 +2563,54 @@ class SensorCamera(BaseSensor):
                 return
 
             self._transmittance_spectrum.commit()
+            self._mode_photometric.transmittance_spectrum_guid = (
+                self._transmittance_spectrum.spectrum_link.key
+            )
+
             if self._mode_photometric.HasField(
                 SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic")
             ):
                 self._monochromatic_spectrum.commit()
+                self._mode_photometric.mode_monochromatic.spectrum_guid = (
+                    self._monochromatic_spectrum.spectrum_link.key
+                )
             elif isinstance(self._mode, SensorCamera.Photometric.Color):
                 self._mode._commit_spectra()
 
+        def _reset_spectra(self) -> None:
+            if self._transmittance_spectrum is None:
+                return
+
+            self._transmittance_spectrum.reset()
+
+            if self._mode_photometric.HasField(
+                SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic")
+            ):
+                self._monochromatic_spectrum.reset()
+            elif isinstance(self._mode, SensorCamera.Photometric.Color):
+                self._mode._reset_spectra()
+
+        def _delete_spectra(self) -> None:
+            if self._transmittance_spectrum is None:
+                return
+
+            self._transmittance_spectrum.delete()
+            self._mode_photometric.transmittance_spectrum_guid = ""
+
+            # Only the active oneof branch may be touched: clearing a field on an inactive
+            # sub-message would attach it and switch the color mode.
+            if self._mode_photometric.HasField(
+                SensorCamera._camera_color_mode_field(self._mode_photometric, "monochromatic")
+            ):
+                self._monochromatic_spectrum.delete()
+                self._mode_photometric.mode_monochromatic.spectrum_guid = ""
+            elif isinstance(self._mode, SensorCamera.Photometric.Color):
+                self._mode._delete_spectra()
+
         def _clear_transmittance(self) -> None:
             if self._transmittance_spectrum is not None:
-                self._transmittance_spectrum.clear()
+                self._transmittance_spectrum.delete()
+                self._mode_photometric.ClearField("transmittance_spectrum_guid")
             else:
                 self._mode_photometric.ClearField("transmittance_file_uri")
 
@@ -3059,6 +3111,38 @@ class SensorCamera(BaseSensor):
         if isinstance(self._type, SensorCamera.Photometric):
             self._type._commit_spectra()
 
+    def _reset_guid_backed_spectra(self) -> None:
+        """Reset auxiliary v2 spectrum objects owned by this sensor."""
+        if isinstance(self._type, SensorCamera.Photometric):
+            self._type._reset_spectra()
+
+    def _delete_guid_backed_spectra(self) -> None:
+        """Delete the auxiliary v2 spectrum objects owned by this sensor."""
+        if isinstance(self._type, SensorCamera.Photometric):
+            self._type._delete_spectra()
+
+    def reset(self) -> SensorCamera:
+        """Reset the sensor to its default state."""
+        super().reset()
+        # Spectra live in their own database.
+        self._reset_guid_backed_spectra()
+        return self
+
+    def delete(self) -> SensorCamera:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorCamera
+            Sensor feature.
+        """
+        super().delete()
+        # Spectra live in their own database and are only released once nothing refers to them.
+        self._delete_guid_backed_spectra()
+        return self
+
     def _clear_distortion_driven_values(self) -> None:
         """Clear the template values that a distortion file can provide itself."""
         for value in self._DISTORTION_DRIVEN_VALUES:
@@ -3089,12 +3173,15 @@ class SensorCamera(BaseSensor):
             try:
                 super()._commit_template()
                 break
-            except grpc.RpcError:
-                if not fallbacks:
-                    raise
-                clear_values, names = fallbacks.pop(0)
-                clear_values()
-                cleared += names
+            except grpc.RpcError as e:
+                if "FieldForbiddenDueToDistortionVersion" in e.details():
+                    if not fallbacks:
+                        raise
+                    clear_values, names = fallbacks.pop(0)
+                    clear_values()
+                    cleared += names
+                else:
+                    raise e
         if cleared:
             msg = (
                 "Please note that the following values {} were over written by the values"

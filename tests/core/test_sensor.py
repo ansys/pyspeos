@@ -22,9 +22,9 @@
 
 """Test basic using sensor."""
 
+import json
 import math
 from pathlib import Path
-import warnings
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v2 import sensor_pb2 as sensor_v2_pb2
@@ -719,13 +719,18 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
-    sensor1.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    mode_photometric = sensor1.set_mode_photometric()
+    mode_photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    mode_color = mode_photometric.set_mode_color()
+    mode_color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
-    sensor1.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    mode_color.green_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
-    sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    mode_color.blue_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
 
@@ -754,15 +759,6 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
     assert (
         mode_photometric.acquisition_lag_time
         == sensor_parameters.sensor_type_parameters.acquisition_lag_time
-    )
-    assert (
-        camera_library_spectrum_uri(
-            p,
-            mode_photometric,
-            "transmittance_file_uri",
-            "transmittance_spectrum_guid",
-        )
-        == sensor_parameters.sensor_type_parameters.transmittance_file_uri
     )
     assert math.isclose(
         a=mode_photometric.gamma_correction,
@@ -879,6 +875,9 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
 
     # sensor_mode_photometric
     sensor1.set_mode_photometric()
+    sensor1.photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
     color = sensor1.photometric.set_mode_color()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
@@ -891,6 +890,16 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
     )
     sensor1.commit()
     assert has_camera_mode(sensor1, "photometric")
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            mode_photometric,
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        != ""
+    )
+    assert sensor1.photometric.transmittance_file_uri != ""
 
     # acquisition_integration
     sensor1.photometric.acquisition_integration = 0.03
@@ -905,23 +914,6 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
     mode_photometric = camera_mode(sensor1, "photometric")
     assert mode_photometric.acquisition_lag_time == 0.1
     assert sensor1.photometric.acquisition_lag_time == 0.1
-
-    # transmittance_file_uri
-    sensor1.photometric.transmittance_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
-    )
-    sensor1.commit()
-    mode_photometric = camera_mode(sensor1, "photometric")
-    assert (
-        camera_library_spectrum_uri(
-            p,
-            mode_photometric,
-            "transmittance_file_uri",
-            "transmittance_spectrum_guid",
-        )
-        != ""
-    )
-    assert sensor1.photometric.transmittance_file_uri != ""
 
     # gamma_correction
     sensor1.photometric.gamma_correction = 2.5
@@ -1220,11 +1212,15 @@ def test_create_camera_sensor(speos: Speos, sensor_template_version):
 
 
 @pytest.mark.supported_speos_versions(min=271)
-def test_camera_spectra_persist_with_project_commit(speos: Speos):
+def test_camera_spectra_persist_with_project_commit(speos: Speos, sensor_template_version):
     """Test v2 camera spectra are persisted when committing the project."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Camera.ProjectCommit", feature_type=SensorCamera)
-    color = sensor.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color = photometric_mode.set_mode_color()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -1267,26 +1263,74 @@ def _setup_camera_spectra(photometric) -> None:
 @pytest.mark.supported_speos_versions(min=271)
 def test_camera_spectrum_error_is_not_a_distortion_conflict(speos: Speos):
     """Test a failing spectrum does not trigger the distortion file fallbacks."""
+    camera_files = Path(test_path) / "CameraInputFiles"
+
+    # First an error due to transmittance file not specified
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Camera.BadSpectrum", feature_type=SensorCamera)
-    photometric = sensor.set_mode_photometric()
-    _setup_camera_spectra(photometric)
-    photometric.transmittance_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "DoesNotExist.spectrum"
-    )
+    color = sensor.set_mode_photometric().set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+
     sensor.focal_length = 5.0
     sensor.imager_distance = 10.0
     sensor.f_number = 20.0
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        with pytest.raises(grpc.RpcError):
-            sensor.commit()
+    with pytest.raises(grpc.RpcError) as exc_info:
+        sensor.commit()
+    error_details = json.loads(exc_info.value.details())
+    assert error_details["ErrorName"] == "SpectrumNotFromFile"
+
+    assert sensor.focal_length == 5.0
+    assert sensor.imager_distance == 10.0
+    assert sensor.f_number == 20.0
+
+    # Second an error due to the spectrum file not existing
+    photometric = sensor.set_mode_photometric()
+    photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "DoesNotExist.spectrum"
+    )
+
+    with pytest.raises(grpc.RpcError) as exc_info:
+        sensor.commit()
+    error_details = json.loads(exc_info.value.details())
+    assert error_details["ErrorName"] == "CannotOpenFile"
 
     assert sensor.focal_length == 5.0
     assert sensor.imager_distance == 10.0
     assert sensor.f_number == 20.0
     assert photometric.transmittance_file_uri.endswith("DoesNotExist.spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectra_are_released_on_delete(speos: Speos):
+    """Test v2 camera spectra are removed from the database when the sensor is deleted."""
+    p = Project(speos=speos)
+    before = len(speos.client.spectrums().list())
+
+    sensor = p.create_sensor(name="Camera.DeleteSpectra", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    _setup_camera_spectra(photometric)
+    sensor.commit()
+    assert len(speos.client.spectrums().list()) == before + 4
+
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
+
+    # Local data is still available, so committing again recreates the spectra.
+    assert photometric.transmittance_file_uri.endswith("CameraTransmittance.spectrum")
+    sensor.commit()
+    assert len(speos.client.spectrums().list()) == before + 4
+    assert camera_library_spectrum_uri(
+        p,
+        camera_color_mode(camera_mode(sensor, "photometric"), "color"),
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -2833,7 +2877,7 @@ def test_radiance_reset_internal_attributes(speos: Speos, sensor_template_versio
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_3d_irradiance_reset_internal_attributes(speos: Speos):
+def test_3d_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2884,7 +2928,7 @@ def test_3d_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_xmp_intensity_reset_internal_attributes(speos: Speos):
+def test_xmp_intensity_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of xmp intensity sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2934,7 +2978,7 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_reset_internal_attributes(speos: Speos):
+def test_immersive_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of immersive sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2973,6 +3017,9 @@ def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version)
     # Create + commit
     sensor1: SensorCamera = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     mode_photo = sensor1.set_mode_photometric()
+    mode_photo.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
     mode_photo.set_mode_monochromatic(
         spectrum_file_uri=Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
@@ -2996,7 +3043,7 @@ def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version)
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_reset_internal_attributes(speos: Speos):
+def test_observer_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of observer sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -3179,7 +3226,11 @@ def test_camera_modify_after_reset(speos: Speos, sensor_template_version):
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
-    color = sensor1.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor1.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color = photometric_mode.set_mode_color()
     color.set_balance_mode_user_white()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
@@ -3548,7 +3599,7 @@ def test_delete_sensor(speos: Speos, sensor_template_version):
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
 
 
-def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
+def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str], sensor_template_version):
     """Test get of a sensor."""
     p = Project(speos=speos)
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
@@ -4203,7 +4254,11 @@ def test_load_camera_hydrates_nested_modes(speos: Speos, sensor_template_version
     p = Project(speos=speos)
 
     sensor_camera = p.create_sensor(name="Camera.LoadHydration", feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor_camera.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color_mode = photometric_mode.set_mode_color()
     color_mode.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -4344,7 +4399,11 @@ def test_load_camera_hydrates_other_balance_modes(
 
     sensor_name = f"Camera.LoadBalance.{balance_setter}"
     sensor_camera = p.create_sensor(name=sensor_name, feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor_camera.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color_mode = photometric_mode.set_mode_color()
     color_mode.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
