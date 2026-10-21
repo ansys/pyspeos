@@ -33,8 +33,9 @@ dependencies=[
     "grpcio-health-checking>=1.45.0",
     "ansys-api-speos==0.17.dev0",
     "ansys-tools-common>=0.3.1",
+    "comtypes>=1.4,<1.5; platform_system=='Windows'",
     "numpy>=1.20.3,<3",
-    "comtypes>=1.4,<1.5; platform_system=='Windows'"
+    "typing-extensions",
 ]
 
 [project.optional-dependencies]
@@ -183,6 +184,7 @@ exclude = [
 ]
 
 [tool.ty.rules]
+deprecated = "error"
 unresolved-import = "ignore"
 
 [tool.coverage.report]
