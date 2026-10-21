@@ -105,7 +105,7 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
     """Duplicate an axis-system feature and add it to its owning project."""
     if isinstance(feature, source.BaseSource):
         p = feature._project
-        new_instance = ProtoScene.SourceInstance(name=name, description="")
+        new_instance = ProtoScene.SourceInstance()
         new_instance.CopyFrom(feature._source_instance)
         new_instance.metadata["UniqueId"] = str(uuid.uuid4())
         new_instance.name = name
@@ -118,10 +118,14 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
         p._features.append(copied)
     elif isinstance(feature, sensor.BaseSensor):
         p = feature._project
+        new_instance = ProtoScene.SensorInstance()
+        new_instance.CopyFrom(feature._sensor_instance)
+        new_instance.metadata["UniqueId"] = str(uuid.uuid4())
+        new_instance.name = name
         copied = type(feature)(
             project=p,
             name=name,
-            sensor_instance=feature._sensor_instance,
+            sensor_instance=new_instance,
             default_parameters=None,
         )
         p._features.append(copied)
@@ -134,24 +138,35 @@ def _copy_axis_feature(feature: TransformableFeature, name: str) -> Transformabl
             copied._part_instance.part_guid = feature.part_link.key
         copied._part_instance.CopyFrom(feature._part_instance)
         copied._part_instance.name = name
-        copied._unique_id = None
+        copied._part_instance.metadata["UniqueId"] = str(uuid.uuid4())
+        copied._unique_id = copied._part_instance.metadata["UniqueId"]
+        copied._part_instance.description = "UniqueId_" + copied._unique_id
+        root = parent
+        while isinstance(root, part.Part.SubPart):
+            root = root._parent_part
+        root._project._fill_bodies(body_guids=copied._part.body_guids, feat_host=copied)
+        root._project._fill_subparts(sub_parts=copied._part.parts, feat_host=copied)
+        _copy_geometry_material_assignments(feature, copied)
     elif isinstance(feature, component.LightBox):
-        p = feature.project
-        copied = p.create_light_box(name=name, description=feature._scene_instance.description)
-        copied._scene_instance.CopyFrom(feature._scene_instance)
-        copied._scene_instance.name = name
-        copied._scene_instance.metadata.pop("UniqueId", None)
-        copied._unique_id = None
-        copied.project._fill_features(context=copied._scene_instance.name + "/")
+        p = feature._parent_project
+        new_instance = ProtoScene.SceneInstance()
+        new_instance.CopyFrom(feature._scene_instance)
+        new_instance.name = name
+        new_instance.metadata["UniqueId"] = str(uuid.uuid4())
+        copied = component.LightBox(name=name, parent_project=p, instance=new_instance)
+        p._features.append(copied)
     return copied
 
 
-def _copy_body_material_assignments(original: body_module.Body, copied: body_module.Body) -> None:
-    """Reuse the original body material assignments on the copied body.
+def _copy_geometry_material_assignments(
+    original: body_module.Body | part.Part.SubPart,
+    copied: body_module.Body | part.Part.SubPart,
+) -> None:
+    """Reuse material assignments on copied geometry and its descendants.
 
-    The copied body receives a new geometry path, so any material instances that apply
-    to the original body must also include the new path. This keeps the same material
-    assignments without creating a fresh material instance.
+    Explicit body, face, and SubPart paths are remapped to the copied geometry.
+    Ancestor and all-geometry assignments already cover the copy. Geometry must
+    exist on the server before new material paths can be assigned.
     """
     parent = original._parent_part
     while parent is not None and not hasattr(parent, "_project"):
@@ -163,21 +178,40 @@ def _copy_body_material_assignments(original: body_module.Body, copied: body_mod
     original_path = original.geo_path.to_native_link()
     copied_path = copied.geo_path.to_native_link()
     scene_data = project.scene_link.get()
+    updated_materials = []
     for material in scene_data.materials:
         if not material.HasField("geometries"):
             continue
         paths = list(material.geometries.geo_paths)
-        if original_path not in paths or copied_path in paths:
-            continue
-        paths.append(copied_path)
-        material.geometries.geo_paths[:] = paths
-    project.scene_link.set(data=scene_data)
+        additions = [
+            copied_path + path[len(original_path) :]
+            for path in paths
+            if path == original_path or path.startswith(original_path + "/")
+        ]
+        additions = [path for path in additions if path not in paths]
+        if additions:
+            material.geometries.geo_paths.extend(additions)
+            updated_materials.append(material)
+    if updated_materials:
+        copied.commit()
+        project.scene_link.set(data=scene_data)
+        for feature in project._features:
+            instance = getattr(feature, "_material_instance", None)
+            if instance is None:
+                continue
+            for material in updated_materials:
+                if instance.metadata.get("UniqueId") == material.metadata.get("UniqueId"):
+                    instance.geometries.CopyFrom(material.geometries)
 
 
 def _copy_body(feature: body_module.Body, name: str) -> body_module.Body:
     """Duplicate a body and its faces."""
     parent = feature._parent_part
-    copied = parent.create_body(name=name, description=feature._body.description)
+    copied = parent.create_body(
+        name=name, description=feature._body.description, metadata=feature._body.metadata
+    )
+    copied._body.metadata["UniqueId"] = str(uuid.uuid4())
+
     for face in feature.faces:
         face_copy = copied.create_face(
             name=face._name,
@@ -185,7 +219,8 @@ def _copy_body(feature: body_module.Body, name: str) -> body_module.Body:
             metadata=face._face.metadata,
         )
         face_copy._face.CopyFrom(face._face)
-    _copy_body_material_assignments(feature, copied)
+        face_copy._face.metadata["UniqueId"] = str(uuid.uuid4())
+    _copy_geometry_material_assignments(feature, copied)
     return copied
 
 
@@ -214,9 +249,16 @@ def _apply_transform(
 ) -> TransformableFeature:
     """Apply a rigid transform to a feature and commit it."""
     if isinstance(feature, source.SourceSurface):
-        target_body = _surface_source_body(feature)
-        _transform_mesh(target_body, rotation, translation)
-        target_body.commit()
+        if feature._source_template.surface.HasField("exitance_variable"):
+            exitance = feature.set_exitance_variable()
+            plane = np.asarray(exitance.axis_plane, dtype=float)
+            origin = rotation @ plane[:3] + translation
+            axes = (rotation @ plane[3:].reshape(2, 3).T).T.reshape(-1)
+            exitance.axis_plane = np.concatenate((origin, axes)).tolist()
+        else:
+            target_body = _surface_source_body(feature)
+            _transform_mesh(target_body, rotation, translation)
+            target_body.commit()
         feature.commit()
         return feature
     if isinstance(feature, body_module.Body):
@@ -259,7 +301,7 @@ def _iter_geo_path_links(message):
             if hasattr(value, "geo_path"):
                 yield value.geo_path, bool(getattr(value, "reverse_normal", False))
             elif value:
-                yield value, False
+                yield value, bool(getattr(message, "reverse_normal", False))
         elif field.name == "geo_paths":
             if field.message_type is None:
                 for path in value:
@@ -362,7 +404,9 @@ def _copy_surface_geometry(feature: source.SourceSurface, body_copy: body_module
 
 
 def _copy_surface_source(feature: source.SourceSurface, name: str) -> source.SourceSurface:
-    """Duplicate a surface source and its referenced body for a transform copy."""
+    """Duplicate a surface source and any referenced body for a transform copy."""
+    if feature._source_template.surface.HasField("exitance_variable"):
+        return _copy_axis_feature(feature, name)
     body_target = _surface_source_body(feature)
     body_copy = _copy_body(body_target, _copy_name(body_target, None))
     source_copy = _copy_axis_feature(feature, name)
@@ -380,7 +424,7 @@ def _prepare_transform(
         if copy_feature:
             copied_name = _copy_name(feature, name)
             return _copy_surface_source(feature, copied_name)
-        return _surface_source_body(feature)
+        return feature
     if not isinstance(
         feature,
         (
@@ -430,7 +474,9 @@ def move_feature(
     Returns
     -------
     TransformableFeature
-        The modified feature or its transformed duplicate.
+        The original feature when ``copy=False``, or its transformed duplicate.
+        For a surface source, the referenced body geometry (constant exitance)
+        or XMP map plane (variable exitance) is transformed.
 
     Raises
     ------
@@ -474,7 +520,9 @@ def rotate_feature(
     Returns
     -------
     TransformableFeature
-        The modified feature or its transformed duplicate.
+        The original feature when ``copy=False``, or its transformed duplicate.
+        For a surface source, the referenced body geometry (constant exitance)
+        or XMP map plane (variable exitance) is transformed.
 
     Raises
     ------
@@ -516,7 +564,9 @@ def axis_to_axis_feature(
     Returns
     -------
     TransformableFeature
-        The modified feature or its transformed duplicate.
+        The original feature when ``copy=False``, or its transformed duplicate.
+        For a surface source, the referenced body geometry (constant exitance)
+        or XMP map plane (variable exitance) is transformed.
 
     Raises
     ------

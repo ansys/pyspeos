@@ -22,13 +22,15 @@
 
 """Tests for workflow feature transformations."""
 
+from copy import deepcopy
 from pathlib import Path
 from typing import Callable, cast
+from uuid import UUID, uuid4
 
 import numpy as np
 import pytest
 
-from ansys.speos.core import Project, Speos, source
+from ansys.speos.core import Project, Speos, body, component, part, sensor, source
 from ansys.speos.core.generic.general_methods import (
     _axis_frame,
     _validate_axis_system12,
@@ -39,6 +41,7 @@ from ansys.speos.core.generic.general_methods import (
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
 from ansys.speos.core.workflow.transform import (
     _rotation_matrix,
+    _surface_source_body,
 )
 from tests.conftest import test_path
 
@@ -176,12 +179,13 @@ def test_move_feature_matches_loaded_body_translation(speos: Speos):
     """Translate a real body from the workflow file without mutating the original."""
     project = _load_workflow_transform_project(speos)
     original = project.root_part._geom_features[0]
+    original_vertices = list(original.faces[0].vertices)
 
     moved = move_feature(original, [1, 0, 0], 5, copy=True)
 
     assert moved is not original
     assert moved.faces[0].vertices[0] == pytest.approx(original.faces[0].vertices[0] + 5.0)
-    assert original.faces[0].vertices[0] == pytest.approx(original.faces[0].vertices[0])
+    assert list(original.faces[0].vertices) == original_vertices
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -230,4 +234,548 @@ def test_move_surface_source(speos: Speos):
 
     assert moved is not source1
     assert isinstance(moved, source.SourceSurface)
-    project.preview()
+    assert moved._source_template == source1._source_template
+    assert (
+        moved.set_exitance_constant().geometries[0].geo_path
+        != source1.set_exitance_constant().geometries[0].geo_path
+    )
+
+    moved = move_feature(source1, [1, 0, 0], 5)
+
+    assert isinstance(moved, source.SourceSurface)
+    assert moved is source1
+
+
+@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.parametrize(
+    ("transform", "args", "rotation", "translation"),
+    [
+        pytest.param(move_feature, ([1, 0, 0], 5), np.eye(3), [5, 0, 0], id="move"),
+        pytest.param(
+            rotate_feature,
+            ([0, 0, 0], [0, 0, 1], 90),
+            [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+            [0, 0, 0],
+            id="rotate",
+        ),
+        pytest.param(
+            axis_to_axis_feature,
+            (
+                [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+                [5, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1],
+            ),
+            [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+            [5, 0, 0],
+            id="axis-to-axis",
+        ),
+    ],
+)
+def test_surface_source_transform_in_place(speos: Speos, transform, args, rotation, translation):
+    """Return the original surface source while transforming its referenced geometry."""
+    project = _load_workflow_transform_project(speos)
+    original = next(feature for feature in project.sources if feature._name.startswith("Surface.1"))
+    body = _surface_source_body(original)
+    vertices = np.asarray(body.faces[0].vertices).reshape(-1, 3).copy()
+    geometry_path = body.geo_path.to_native_link()
+
+    transformed = transform(original, *args, copy=False)
+
+    assert transformed is original
+    assert _surface_source_body(transformed) is body
+    assert body.geo_path.to_native_link() == geometry_path
+    np.testing.assert_allclose(
+        np.asarray(body.faces[0].vertices).reshape(-1, 3),
+        (np.asarray(rotation) @ vertices.T).T + translation,
+        atol=1e-9,
+    )
+
+
+@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.parametrize("copy", [False, True])
+@pytest.mark.parametrize(
+    ("transform", "args", "rotation", "translation"),
+    [
+        pytest.param(move_feature, ([1, 0, 0], 5), np.eye(3), [5, 0, 0], id="move"),
+        pytest.param(
+            rotate_feature,
+            ([1, 2, 3], [0, 0, 1], 90),
+            [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+            [3, 1, 0],
+            id="rotate",
+        ),
+        pytest.param(
+            axis_to_axis_feature,
+            (
+                [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+                [5, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1],
+            ),
+            [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+            [5, 0, 0],
+            id="axis-to-axis",
+        ),
+    ],
+)
+def test_transform_variable_exitance_surface_source(
+    speos: Speos, copy: bool, transform, args, rotation, translation
+):
+    """Transform and persist the XMP plane while preserving variable exitance settings."""
+    project = Project(speos, path=Path(test_path) / "Source.speos" / "SourceSurfaceTests.speos")
+    original = project.find(name="Surface.4", name_regex=True, feature_type=source.SourceSurface)[0]
+    exitance = original.set_exitance_variable()
+    original_plane = np.asarray(exitance.axis_plane).copy()
+    original_template = original._source_template.SerializeToString()
+    original_instance = deepcopy(original._source_instance)
+
+    moved = transform(original, *args, copy=copy)
+
+    assert isinstance(moved, source.SourceSurface)
+    assert (moved is original) is not copy
+    assert moved._source_template.SerializeToString() == original_template
+    expected_plane = original_plane.reshape(3, 3) @ np.asarray(rotation).T
+    expected_plane[0] += translation
+    expected_plane = expected_plane.reshape(-1)
+    np.testing.assert_allclose(moved.set_exitance_variable().axis_plane, expected_plane, atol=1e-9)
+    if copy:
+        np.testing.assert_allclose(exitance.axis_plane, original_plane, atol=1e-9)
+    moved.reset()
+    assert moved._source_template.SerializeToString() == original_template
+    np.testing.assert_allclose(moved.set_exitance_variable().axis_plane, expected_plane, atol=1e-9)
+    assert _without_pose_and_identity(moved._source_instance) == _without_pose_and_identity(
+        original_instance
+    )
+    _assert_metadata_identity(moved._source_instance, original_instance, copy)
+    if copy:
+        original.reset()
+        assert original._source_instance == original_instance
+        assert moved._unique_id != original._unique_id
+
+
+@pytest.fixture(
+    params=[
+        pytest.param((move_feature, ([2, -1, 2], 9), np.eye(3), [6, -3, 6]), id="move"),
+        pytest.param(
+            (
+                rotate_feature,
+                ([1, 2, 3], [0, 0, 2], 90),
+                [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+                [3, 1, 0],
+            ),
+            id="rotate",
+        ),
+        pytest.param(
+            (
+                axis_to_axis_feature,
+                (
+                    [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+                    [7, 5, 4, 0, 1, 0, -1, 0, 0, 0, 0, 1],
+                ),
+                [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+                [9, 4, 1],
+            ),
+            id="axis-to-axis",
+        ),
+    ]
+)
+def rigid_transform(request):
+    """Provide transforms with independently calculated expected matrices and offsets."""
+    transform, args, rotation, translation = request.param
+    return transform, args, np.asarray(rotation), np.asarray(translation)
+
+
+def _without_pose_and_identity(message):
+    """Snapshot all protobuf configuration except the transform and instance identity."""
+    result = deepcopy(message)
+    for field in ("name", "axis_system", "axis_plane"):
+        if field in result.DESCRIPTOR.fields_by_name:
+            result.ClearField(field)
+    if "metadata" in result.DESCRIPTOR.fields_by_name:
+        result.metadata.pop("UniqueId", None)
+    for field, value in result.ListFields():
+        if field.message_type is not None and not field.message_type.GetOptions().map_entry:
+            if field.is_repeated:
+                for item in value:
+                    item.CopyFrom(_without_pose_and_identity(item))
+            else:
+                value.CopyFrom(_without_pose_and_identity(value))
+    return result
+
+
+def _assert_metadata_identity(actual, original, copied: bool):
+    """Verify persisted UUIDs change only on copied objects and preserve other metadata."""
+    actual_metadata = dict(actual.metadata)
+    original_metadata = dict(original.metadata)
+    if copied:
+        assert str(UUID(actual_metadata["UniqueId"])) == actual_metadata["UniqueId"]
+        assert actual_metadata["UniqueId"] != original_metadata.get("UniqueId")
+        actual_metadata.pop("UniqueId")
+        original_metadata.pop("UniqueId", None)
+    assert actual_metadata == original_metadata
+
+
+def _geometry_snapshot(feature):
+    """Capture every body, face, mesh, and nested part through the Python API."""
+    if isinstance(feature, body.Body):
+        feature.reset()
+        message = deepcopy(feature._body)
+        message.ClearField("face_guids")
+        for face in feature.faces:
+            face.reset()
+        return message, [deepcopy(face._face) for face in feature.faces]
+    return [
+        (
+            child._name,
+            deepcopy(child._part_instance) if isinstance(child, part.Part.SubPart) else None,
+            _geometry_snapshot(child),
+        )
+        for child in feature._geom_features
+    ]
+
+
+def _create_mesh(parent, name):
+    """Create a nonempty body with two distinct faces and non-default metadata."""
+    mesh = parent.create_body(
+        name=name,
+        description="Transform body",
+        metadata={"purpose": "transform", "UniqueId": str(uuid4())},
+    )
+    for index in range(2):
+        face = mesh.create_face(
+            name=f"Face{index}",
+            description="Transform face",
+            metadata={"index": str(index), "UniqueId": str(uuid4())},
+        )
+        face.vertices = [index, 2, 3, index, 4, 3, index, 2, 5]
+        face.facets = [0, 1, 2]
+        face.normals = [1, 0, 0] * 3
+    return mesh
+
+
+@pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
+@pytest.mark.parametrize(
+    "feature_type",
+    [
+        pytest.param(source.SourceLuminaire, marks=pytest.mark.supported_speos_versions(min=252)),
+        pytest.param(source.SourceRayFile, marks=pytest.mark.supported_speos_versions(min=252)),
+        pytest.param(source.SourceDisplay, marks=pytest.mark.supported_speos_versions(min=252)),
+        pytest.param(sensor.SensorCamera, marks=pytest.mark.supported_speos_versions(min=252)),
+        pytest.param(sensor.SensorIrradiance, marks=pytest.mark.supported_speos_versions(min=251)),
+        pytest.param(sensor.SensorRadiance, marks=pytest.mark.supported_speos_versions(min=251)),
+        pytest.param(
+            sensor.SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)
+        ),
+        pytest.param(
+            sensor.SensorPolarIntensity, marks=pytest.mark.supported_speos_versions(min=252)
+        ),
+        pytest.param(sensor.SensorImmersive, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(sensor.SensorObserver, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(part.Part.SubPart, marks=pytest.mark.supported_speos_versions(min=251)),
+        pytest.param(component.LightBox, marks=pytest.mark.supported_speos_versions(min=261)),
+    ],
+    ids=lambda feature_type: feature_type.__name__,
+)
+def test_transform_axis_feature_preserves_contents(
+    speos: Speos, feature_type, rigid_transform, copy: bool
+):
+    """Transform real features and preserve all configuration and nested geometry on the server."""
+    project = Project(speos)
+    if issubclass(feature_type, source.BaseSource):
+        original = project.create_source(name="Original", feature_type=feature_type)
+        if feature_type is source.SourceLuminaire:
+            original.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+        elif feature_type is source.SourceRayFile:
+            original.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
+            original.spectrum.set_monochromatic().wavelength = 555
+        else:
+            original.image_file_uri = Path(test_path) / "stars.exr"
+            original.luminance = 200
+    elif issubclass(feature_type, sensor.BaseSensor):
+        original = project.create_sensor(name="Original", feature_type=feature_type)
+        if feature_type is sensor.SensorCamera:
+            original.set_mode_geometric()
+    elif feature_type is part.Part.SubPart:
+        root = project.create_root_part()
+        original = root.create_sub_part(name="Original", description="Nested geometry")
+        original.axis_system = [2, 3, 4, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+        _create_mesh(original, "Body1")
+        _create_mesh(original, "Body2")
+        nested = original.create_sub_part(name="Nested")
+        nested.axis_system = [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        _create_mesh(nested, "NestedBody")
+        root.commit()
+    else:
+        original = project.create_lightbox(
+            name="Original",
+            lightbox=component.LightBoxFileInstance(
+                file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox"
+            ),
+        )
+
+    original.axis_system = [2, 3, 4, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+    original.commit()
+    original.reset()
+    if isinstance(original, part.Part.SubPart):
+        original._part_instance.metadata["UniqueId"] = original._unique_id
+        original.commit()
+    initial_pose = np.asarray(original.axis_system).reshape(4, 3).copy()
+    if isinstance(original, source.BaseSource):
+        instance = original._source_instance
+        template = original.source_template_link.get()
+    elif isinstance(original, sensor.BaseSensor):
+        instance = original._sensor_instance
+        template = original.sensor_template_link.get()
+    elif isinstance(original, part.Part.SubPart):
+        instance = original._part_instance
+        template = original.part_link.get()
+    else:
+        instance = original._scene_instance
+        template = original.project.scene_link.get()
+    initial_instance = deepcopy(instance)
+    initial_contents = (
+        _geometry_snapshot(original)
+        if isinstance(original, part.Part.SubPart)
+        else _geometry_snapshot(original.project.root_part)
+        if isinstance(original, component.LightBox)
+        else None
+    )
+
+    transform, args, rotation, translation = rigid_transform
+    transformed = transform(original, *args, copy=copy, **({"name": "Transformed"} if copy else {}))
+
+    assert type(transformed) is feature_type
+    assert (transformed is original) is not copy
+    expected_pose = initial_pose @ rotation.T
+    expected_pose[0] += translation
+    np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
+    transformed.reset()
+    np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
+    if isinstance(transformed, source.BaseSource):
+        actual_instance = transformed._source_instance
+        assert transformed.source_template_link.get() == template
+    elif isinstance(transformed, sensor.BaseSensor):
+        actual_instance = transformed._sensor_instance
+        assert transformed.sensor_template_link.get() == template
+    elif isinstance(transformed, part.Part.SubPart):
+        actual_instance = transformed._part_instance
+        assert transformed.part_link.get() == template
+        assert _geometry_snapshot(transformed) == initial_contents
+    else:
+        actual_instance = transformed._scene_instance
+        assert transformed.project.scene_link.get() == template
+        assert _geometry_snapshot(transformed.project.root_part) == initial_contents
+        assert len(transformed.project._features) == len(original.project._features)
+    expected_instance = deepcopy(initial_instance)
+    if isinstance(transformed, part.Part.SubPart):
+        expected_instance.description = actual_instance.description
+    assert _without_pose_and_identity(actual_instance) == _without_pose_and_identity(
+        expected_instance
+    )
+    _assert_metadata_identity(actual_instance, initial_instance, copy)
+    assert actual_instance.metadata["UniqueId"] == transformed._unique_id
+    if isinstance(transformed, part.Part.SubPart):
+        assert actual_instance.description == "UniqueId_" + transformed._unique_id
+    if copy:
+        assert transformed._unique_id != original._unique_id
+        assert transformed._name == "Transformed"
+        original.reset()
+        np.testing.assert_allclose(original.axis_system, initial_pose.reshape(-1), atol=1e-9)
+        if isinstance(original, source.BaseSource):
+            assert original._source_instance == initial_instance
+        elif isinstance(original, sensor.BaseSensor):
+            assert original._sensor_instance == initial_instance
+        elif isinstance(original, part.Part.SubPart):
+            assert original._part_instance == initial_instance
+            assert _geometry_snapshot(original) == initial_contents
+        else:
+            assert original._scene_instance == initial_instance
+
+
+@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
+@pytest.mark.parametrize("surface_source", [False, True], ids=["body", "constant-surface"])
+def test_transform_mesh_feature_preserves_faces(
+    speos: Speos, rigid_transform, copy: bool, surface_source: bool
+):
+    """Persist transformed vertices and normals while preserving every face and body property."""
+    project = Project(speos)
+    root = project.create_root_part()
+    original = _create_mesh(root, "Original")
+    root.commit()
+    feature = original
+    if surface_source:
+        feature = project.create_source(name="Surface", feature_type=source.SourceSurface)
+        feature.set_exitance_constant().geometries = [
+            (original.faces[0], False),
+            (original.faces[1], True),
+        ]
+        feature.commit()
+        initial_template = feature.source_template_link.get()
+        initial_instance = deepcopy(feature._source_instance)
+    initial_body, initial_faces = _geometry_snapshot(original)
+    transform, args, rotation, translation = rigid_transform
+
+    result = transform(feature, *args, copy=copy)
+
+    assert (result is feature) is not copy
+    result.reset()
+    if surface_source:
+        assert isinstance(result, source.SourceSurface)
+        assert result.source_template_link.get() == initial_template
+        transformed = _surface_source_body(result)
+        expected_instance = deepcopy(initial_instance)
+        expected_geometries = expected_instance.surface_properties.exitance_constant_properties
+        for path, face in zip(expected_geometries.geo_paths, transformed.faces, strict=True):
+            path.geo_path = face.geo_path.to_native_link()
+        assert _without_pose_and_identity(result._source_instance) == _without_pose_and_identity(
+            expected_instance
+        )
+        _assert_metadata_identity(result._source_instance, initial_instance, copy)
+        if copy:
+            feature.reset()
+            assert feature._source_instance == initial_instance
+            assert result._unique_id != feature._unique_id
+    else:
+        transformed = result
+    assert len(transformed.faces) == len(initial_faces) == 2
+    transformed.reset()
+    actual_body, actual_faces = _geometry_snapshot(transformed)
+    expected_body = deepcopy(initial_body)
+    expected_body.name = actual_body.name
+    _assert_metadata_identity(actual_body, initial_body, copy)
+    expected_body.metadata["UniqueId"] = actual_body.metadata["UniqueId"]
+    assert actual_body == expected_body
+    for actual, before in zip(actual_faces, initial_faces, strict=True):
+        expected = deepcopy(before)
+        _assert_metadata_identity(actual, before, copy)
+        expected.metadata["UniqueId"] = actual.metadata["UniqueId"]
+        vertices = np.asarray(before.vertices).reshape(-1, 3) @ rotation.T + translation
+        normals = np.asarray(before.normals).reshape(-1, 3) @ rotation.T
+        expected.vertices[:] = vertices.reshape(-1).tolist()
+        expected.normals[:] = normals.reshape(-1).tolist()
+        np.testing.assert_allclose(actual.vertices, expected.vertices, atol=1e-9)
+        np.testing.assert_allclose(actual.normals, expected.normals, atol=1e-9)
+        actual.ClearField("vertices")
+        actual.ClearField("normals")
+        expected.ClearField("vertices")
+        expected.ClearField("normals")
+        assert actual == expected
+    copied_ids = [actual_body.metadata["UniqueId"]] + [
+        face.metadata["UniqueId"] for face in actual_faces
+    ]
+    assert len(set(copied_ids)) == len(copied_ids)
+    if copy:
+        original.reset()
+        assert _geometry_snapshot(original) == (initial_body, initial_faces)
+        assert transformed.body_link.key != original.body_link.key
+        assert all(
+            new.face_link.key != old.face_link.key
+            for new, old in zip(transformed.faces, original.faces, strict=True)
+        )
+
+
+@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
+@pytest.mark.parametrize("feature_kind", ["body", "surface", "subpart"])
+@pytest.mark.parametrize("assignment", ["body", "face", "parent", "all", "none"])
+def test_transform_preserves_material_assignments(
+    speos: Speos, rigid_transform, copy: bool, feature_kind: str, assignment: str
+):
+    """Keep material references, templates, and original assignments through real transforms."""
+    project = Project(speos)
+    root = project.create_root_part()
+    parent = root.create_sub_part(name="Assembly")
+    parent.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    original = _create_mesh(parent, "Original")
+    unrelated = _create_mesh(root, "Unrelated")
+    root.commit()
+    material = project.create_optical_property(name="Assigned")
+    material.set_surface_mirror().reflectance = 73
+    material.set_volume_opaque()
+    targets = {
+        "body": [original],
+        "face": [original.faces[1]],
+        "parent": [parent],
+        "all": [],
+        "none": None,
+    }
+    material.geometries = targets[assignment]
+    material.commit()
+    other_material = project.create_optical_property(name="UnrelatedMaterial")
+    other_material.geometries = [unrelated]
+    other_material.commit()
+    initial_materials = deepcopy(project.scene_link.get().materials)
+    sop = material.sop_template_link.get()
+    vop = material.vop_template_link.get()
+    feature = original
+    if feature_kind == "surface":
+        feature = project.create_source(name="Surface", feature_type=source.SourceSurface)
+        feature.set_exitance_constant().geometries = [(original, False)]
+        feature.commit()
+    elif feature_kind == "subpart":
+        feature = parent
+    original_path = (
+        feature.geo_path.to_native_link()
+        if feature_kind == "subpart"
+        else original.geo_path.to_native_link()
+    )
+    transform, args, _, _ = rigid_transform
+
+    transformed = transform(feature, *args, copy=copy)
+
+    result_body = _surface_source_body(transformed) if feature_kind == "surface" else transformed
+    result_path = result_body.geo_path.to_native_link()
+    expected = deepcopy(initial_materials)
+    if copy and (
+        assignment in ("body", "face") or (feature_kind == "subpart" and assignment == "parent")
+    ):
+        old_path = targets[assignment][0].geo_path.to_native_link()
+        expected[0].geometries.geo_paths.append(result_path + old_path[len(original_path) :])
+    assert project.scene_link.get().materials == expected
+    assert material._material_instance == expected[0]
+    material.commit()
+    assert project.scene_link.get().materials == expected
+    material.reset()
+    assert material._material_instance == expected[0]
+    assert material.sop_template_link.get() == sop
+    assert material.vop_template_link.get() == vop
+    assert len(project.scene_link.get().materials) == len(initial_materials)
+    if assignment == "parent" and feature_kind != "subpart":
+        assert result_path.startswith(parent.geo_path.to_native_link() + "/")
+    if copy:
+        assert result_path != original_path
+    material.commit()
+    assert project.scene_link.get().materials == expected
+
+
+@pytest.mark.supported_speos_versions(min=261)
+@pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
+def test_transform_lightbox_preserves_material_assignments(
+    speos: Speos, rigid_transform, copy: bool
+):
+    """Keep LightBox material assignments and optical templates in its shared scene."""
+    project = Project(speos)
+    original = project.create_lightbox(
+        name="Original",
+        lightbox=component.LightBoxFileInstance(
+            file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox"
+        ),
+    )
+    original.commit()
+    initial_materials = deepcopy(original.project.scene_link.get().materials)
+    assert initial_materials
+    assert any(material.HasField("geometries") for material in initial_materials)
+    templates = {
+        guid: project.client[guid].get()
+        for material in initial_materials
+        for guid in (material.sop_guid, material.vop_guid)
+        if guid
+    }
+    assert templates
+    transform, args, _, _ = rigid_transform
+
+    transformed = transform(original, *args, copy=copy)
+
+    transformed.reset()
+    assert transformed.project.scene_link.key == original.project.scene_link.key
+    assert transformed.project.scene_link.get().materials == initial_materials
+    for guid, template in templates.items():
+        assert project.client[guid].get() == template
