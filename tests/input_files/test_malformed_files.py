@@ -252,7 +252,7 @@ def test_user_defined_phase_function_needs_at_least_one_angle(tmp_path):
         absorption_values=[0.0],
         scattering_wavelengths=[550.0],
         scattering_values=[0.1],
-        scattering=VolumeScatteringUserDefined(),
+        scattering=VolumeScatteringUserDefined(angles=[], values=[]),
     )
 
     with pytest.raises(ValueError, match="needs angles"):

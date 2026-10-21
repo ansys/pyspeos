@@ -22,10 +22,73 @@
 
 """Test the ``*.spectrum`` file format."""
 
+import inspect
+
 import pytest
 
 from ansys.speos.core import Spectrum, SpectrumFile
+from ansys.speos.core.input_files.spectrum_file import (
+    _DEFAULT_DESCRIPTION,
+    _DEFAULT_VALUES,
+    _DEFAULT_WAVELENGTHS,
+)
 from tests.input_files import ASSETS_DIR, read_lines
+
+
+@pytest.mark.parametrize(
+    ("parameter", "default"),
+    [
+        ("wavelengths", _DEFAULT_WAVELENGTHS),
+        ("values", _DEFAULT_VALUES),
+        ("description", _DEFAULT_DESCRIPTION),
+    ],
+)
+def test_spectrum_defaults_are_signature_defaults(parameter, default):
+    """Spectrum default constants are used in the constructor signature."""
+    assert inspect.signature(SpectrumFile).parameters[parameter].default is default
+    assert isinstance(default, (tuple, str))
+
+
+def test_spectrum_defaults_to_the_blackbody(tmp_path):
+    """A default spectrum is a 5200 K blackbody."""
+    spectrum = SpectrumFile()
+
+    assert spectrum.description == "Blackbody at 5200.0 K"
+    assert spectrum.wavelengths == [360.0 + 47.0 * index for index in range(11)]
+    assert spectrum.values == [
+        58.1966,
+        76.5783,
+        89.719,
+        97.2718,
+        100.0,
+        99.0542,
+        95.5671,
+        90.4834,
+        84.521,
+        78.1915,
+        71.8403,
+    ]
+    path = spectrum.save(tmp_path / "default.spectrum")
+    assert read_lines(path)[1:5] == [
+        "Blackbody at 5200.0 K",
+        "11",
+        "360\t58.1966",
+        "407\t76.5783",
+    ]
+    assert SpectrumFile.load(path) == spectrum
+
+
+def test_spectrum_defaults_are_independent():
+    """Editing a default spectrum leaves the next default spectrum unchanged."""
+    first = SpectrumFile()
+    first.values = [50.0] * 11
+    assert SpectrumFile().values[0] == 58.1966
+
+
+def test_spectrum_columns_must_be_overridden_together():
+    """The default columns only match each other, so a partial override is rejected."""
+    with pytest.raises(ValueError, match="same length"):
+        SpectrumFile(wavelengths=[400.0, 700.0])
 
 
 def test_write_matches_the_documented_layout(tmp_path):
@@ -104,7 +167,7 @@ def test_invalid_spectra_are_rejected_at_construction(parameters, message):
     ("parameters", "message"),
     [
         ({"wavelengths": [400.0], "values": []}, "same length"),
-        ({}, "at least one sample"),
+        ({"wavelengths": [], "values": []}, "at least one sample"),
     ],
 )
 def test_incomplete_spectra_cannot_be_saved(parameters, message, tmp_path):

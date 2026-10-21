@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, List
+from typing import ClassVar, List, Sequence
 
 from ansys.speos.core.input_files._base import (
     LineReader,
@@ -46,23 +46,25 @@ from ansys.speos.core.input_files._base import (
 class CoatedSurfaceSample(_ValueComparable):
     """Coating response at one angle of incidence and one wavelength.
 
+    Called without arguments, the constructor creates a perfect reflector.
+
     Parameters
     ----------
     reflection_p : float, optional
-        Reflected part of the P polarization, in percent. By default, ``0.0``.
+        Reflected part of the P polarization, in percent. By default, ``100.0``.
     transmission_p : float, optional
         Transmitted part of the P polarization, in percent. By default, ``0.0``.
     reflection_s : float, optional
-        Reflected part of the S polarization, in percent. By default, ``0.0``.
+        Reflected part of the S polarization, in percent. By default, ``100.0``.
     transmission_s : float, optional
         Transmitted part of the S polarization, in percent. By default, ``0.0``.
     """
 
     def __init__(
         self,
-        reflection_p: float = 0.0,
+        reflection_p: float = 100.0,
         transmission_p: float = 0.0,
-        reflection_s: float = 0.0,
+        reflection_s: float = 100.0,
         transmission_s: float = 0.0,
     ) -> None:
         self._reflection_p = 0.0
@@ -228,6 +230,15 @@ class CoatedSurfaceSample(_ValueComparable):
 
 _COATING_FIELDS = CoatedSurfaceSample._COATING_FIELDS
 
+_DEFAULT_WAVELENGTHS = (400.0, 550.0, 700.0)
+"""Wavelengths used by the default coating, in nm."""
+
+_DEFAULT_INCIDENT_ANGLES = (0.0, 60.0, 90.0)
+"""Angles of incidence used by the default coating, in degrees."""
+
+_DEFAULT_DESCRIPTION = "Coating surface"
+"""Description of the default coating."""
+
 
 class CoatedSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
@@ -238,19 +249,26 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
-        Wavelengths of the samples, in nm, sorted in increasing order. By default, ``[]``.
-    incident_angles : List[float], optional
+    wavelengths : Sequence[float], optional
+        Wavelengths of the samples, in nm, sorted in increasing order. By default,
+        ``[400.0, 550.0, 700.0]``.
+    incident_angles : Sequence[float], optional
         Angles of incidence of the samples, in degrees, sorted in increasing order.
-        By default, ``[]``.
+        By default, ``[0.0, 60.0, 90.0]``.
     samples : List[List[CoatedSurfaceSample]], optional
         Coating responses, one row per angle of incidence and one column per wavelength.
-        By default, ``[]``.
+        By default, a 3 x 3 grid of independent default
+        :class:`ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample` objects,
+        which reflect all the light.
     description : str, optional
-        Free text written on the second line of the file. By default, ``"Coated surface"``.
+        Free text written on the second line of the file. By default, ``"Coating surface"``.
 
     Notes
     -----
+    Called without arguments, the constructor creates a 3 x 3 grid of perfect reflectors.
+    Pass ``wavelengths``, ``incident_angles`` and ``samples`` together to describe another
+    grid, since each default only matches the other ones.
+
     A Speos coating is only valid for the rays crossing the interface in one direction.
     List getters copy the containers, while sample objects remain shared and editable
     through validated properties. To resize a populated grid, clear
@@ -273,17 +291,25 @@ class CoatedSurfaceFile(SpeosTextFileFormat):
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        incident_angles: List[float] | None = None,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        incident_angles: Sequence[float] = _DEFAULT_INCIDENT_ANGLES,
         samples: List[List[CoatedSurfaceSample]] | None = None,
-        description: str = "Coated surface",
+        description: str = _DEFAULT_DESCRIPTION,
     ) -> None:
         self._wavelengths: List[float] = []
         self._incident_angles: List[float] = []
         self._samples: List[List[CoatedSurfaceSample]] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.incident_angles = incident_angles if incident_angles is not None else []
-        self.samples = samples if samples is not None else []
+        self.wavelengths = wavelengths
+        self.incident_angles = incident_angles
+        # Mutable sample objects cannot be signature defaults, each file gets its own grid.
+        self.samples = (
+            samples
+            if samples is not None
+            else [
+                [CoatedSurfaceSample() for _ in _DEFAULT_WAVELENGTHS]
+                for _ in _DEFAULT_INCIDENT_ANGLES
+            ]
+        )
         self.description = description
 
     @property

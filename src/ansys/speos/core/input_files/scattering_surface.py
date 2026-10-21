@@ -25,7 +25,7 @@
 from __future__ import annotations
 
 import math
-from typing import ClassVar, List
+from typing import ClassVar, List, Sequence
 
 from ansys.speos.core.input_files._base import (
     LineReader,
@@ -45,11 +45,13 @@ class ScatteringSurfaceSample(_ValueComparable):
 
     Every contribution is a percentage of the incident light. What is left once the six
     contributions are summed is absorbed, see :attr:`ScatteringSurfaceSample.absorption`.
+    Called without arguments, the constructor gives the sample of a new file in the Speos
+    default scattering surface: a perfect specular reflector.
 
     Parameters
     ----------
     specular_reflection : float, optional
-        Specularly reflected part, in percent. By default, ``0.0``.
+        Specularly reflected part, in percent. By default, ``100.0``.
     specular_transmission : float, optional
         Specularly transmitted part, in percent. By default, ``0.0``.
     lambertian_reflection : float, optional
@@ -86,12 +88,14 @@ class ScatteringSurfaceSample(_ValueComparable):
     Notes
     -----
     Construction and property assignments validate before storing a value. Negative
-    absorption from measurement or rounding errors is preserved with a warning.
+    absorption from measurement or rounding errors is preserved with a warning. Set
+    ``specular_reflection`` explicitly when giving other contributions, since its default
+    already reflects all the light.
     """
 
     def __init__(
         self,
-        specular_reflection: float = 0.0,
+        specular_reflection: float = 100.0,
         specular_transmission: float = 0.0,
         lambertian_reflection: float = 0.0,
         lambertian_transmission: float = 0.0,
@@ -410,6 +414,15 @@ _CONTRIBUTIONS = ScatteringSurfaceSample._CONTRIBUTIONS
 _WIDTHS = ScatteringSurfaceSample._WIDTHS
 _SAMPLE_FIELDS = ScatteringSurfaceSample._EQUALITY_FIELDS
 
+_DEFAULT_WAVELENGTHS = (400.0, 550.0, 700.0)
+"""Wavelengths used by the default scattering surface, in nm."""
+
+_DEFAULT_INCIDENT_ANGLES = (0.0, 60.0, 90.0)
+"""Angles of incidence used by the default scattering surface, in degrees."""
+
+_DEFAULT_DESCRIPTION = "Scattering surface"
+"""Description of the default scattering surface."""
+
 
 class ScatteringSurfaceFile(SpeosTextFileFormat):
     """Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
@@ -421,21 +434,27 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
+    wavelengths : Sequence[float], optional
         Wavelengths of the samples, in nm, sorted in increasing order. At least two
-        wavelengths are required. By default, ``[]``.
-    incident_angles : List[float], optional
+        wavelengths are required. By default, ``[400.0, 550.0, 700.0]``.
+    incident_angles : Sequence[float], optional
         Angles of incidence of the samples, in degrees, sorted in increasing order.
-        ``0`` and ``90`` are required. By default, ``[]``.
+        ``0`` and ``90`` are required. By default, ``[0.0, 60.0, 90.0]``.
     samples : List[List[ScatteringSurfaceSample]], optional
         Contributions, one row per angle of incidence and one column per wavelength.
-        By default, ``[]``.
+        By default, a 3 x 3 grid of independent default
+        :class:`ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample`
+        objects, which specularly reflect all the light.
     description : str, optional
         Free text written on the second line of the file. By default,
         ``"Scattering surface"``.
 
     Notes
     -----
+    Called without arguments, the constructor creates a 3 x 3 grid of perfect specular
+    reflectors. Pass ``wavelengths``, ``incident_angles`` and ``samples`` together to
+    describe another grid, since each default only matches the other ones.
+
     Empty lists allow staged construction, but :meth:`ScatteringSurfaceFile.validate` and
     ``save()`` require a complete surface. Nonempty assignments are checked against the
     configured axes and grid. To resize a populated grid, clear
@@ -449,7 +468,7 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
     ...     ScatteringSurfaceFile,
     ...     ScatteringSurfaceSample,
     ... )
-    >>> grey = ScatteringSurfaceSample(lambertian_reflection=50.0)
+    >>> grey = ScatteringSurfaceSample(specular_reflection=0.0, lambertian_reflection=50.0)
     >>> surface = ScatteringSurfaceFile(
     ...     wavelengths=[400.0, 700.0],
     ...     incident_angles=[0.0, 90.0],
@@ -460,17 +479,25 @@ class ScatteringSurfaceFile(SpeosTextFileFormat):
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        incident_angles: List[float] | None = None,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        incident_angles: Sequence[float] = _DEFAULT_INCIDENT_ANGLES,
         samples: List[List[ScatteringSurfaceSample]] | None = None,
-        description: str = "Scattering surface",
+        description: str = _DEFAULT_DESCRIPTION,
     ) -> None:
         self._wavelengths: List[float] = []
         self._incident_angles: List[float] = []
         self._samples: List[List[ScatteringSurfaceSample]] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.incident_angles = incident_angles if incident_angles is not None else []
-        self.samples = samples if samples is not None else []
+        self.wavelengths = wavelengths
+        self.incident_angles = incident_angles
+        # Mutable sample objects cannot be signature defaults, each file gets its own grid.
+        self.samples = (
+            samples
+            if samples is not None
+            else [
+                [ScatteringSurfaceSample() for _ in _DEFAULT_WAVELENGTHS]
+                for _ in _DEFAULT_INCIDENT_ANGLES
+            ]
+        )
         self.description = description
 
     @property

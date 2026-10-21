@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional, Sequence, Union
 
 from ansys.speos.core.input_files._base import (
     LineReader,
@@ -42,6 +42,42 @@ from ansys.speos.core.input_files._base import (
 
 _VOLUMIC_HEADER = "OPTIS - Volumic Scattering file v1"
 """Header opening the volume scattering block of a ``*.material`` file."""
+
+_DEFAULT_WAVELENGTHS = (486.0, 532.0, 643.0)
+"""Wavelengths used by default material curves, in nm."""
+
+_DEFAULT_DIFFUSION = 0.1
+"""Default diffusion coefficient for scattering materials, in mm-1."""
+
+_DEFAULT_INDICES = (1.5, 1.5, 1.5)
+"""Default refractive indices of an explicit index curve."""
+
+_DEFAULT_METALLIC_INDICES = (1.0, 1.0, 1.0)
+"""Default refractive indices of a metallic curve."""
+
+_DEFAULT_METALLIC_EXTINCTIONS = (0.0, 0.0, 0.0)
+"""Default extinction coefficients of a metallic curve."""
+
+_DEFAULT_PHASE_ANGLES = (0.0, 90.0, 180.0)
+"""Default scattering angles of a user-defined phase function."""
+
+_DEFAULT_PHASE_VALUES = ((100.0,), (100.0,), (100.0,))
+"""Default intensities of a user-defined phase function."""
+
+_DEFAULT_ANISOTROPIES = (0.9,)
+"""Default anisotropy of a phase function."""
+
+_DEFAULT_RATIOS = (0.5,)
+"""Default lobe ratio of a double Henyey-Greenstein phase function."""
+
+_DEFAULT_ALPHAS = (0.5,)
+"""Default alpha of a Gegenbauer phase function."""
+
+_DEFAULT_AXIS_J = (1.0, 0.0, 0.0)
+"""Default direction of the b axis of a birefringent material."""
+
+_DEFAULT_AXIS_K = (0.0, 1.0, 0.0)
+"""Default direction of the c axis of a birefringent material."""
 
 
 def _curve_column(model, name: str, values: List[float], names: tuple[str, ...]) -> List[float]:
@@ -162,19 +198,21 @@ class MaterialDispersionCurve(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
-        Wavelengths of the curve, in nm. By default, ``[]``.
-    indices : List[float], optional
-        Refractive index at each wavelength. By default, ``[]``.
+    wavelengths : Sequence[float], optional
+        Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+    indices : Sequence[float], optional
+        Refractive index at each wavelength. By default, ``[1.5, 1.5, 1.5]``.
     """
 
     def __init__(
-        self, wavelengths: List[float] | None = None, indices: List[float] | None = None
+        self,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        indices: Sequence[float] = _DEFAULT_INDICES,
     ) -> None:
         self._wavelengths: List[float] = []
         self._indices: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.indices = indices if indices is not None else []
+        self.wavelengths = wavelengths
+        self.indices = indices
 
     @property
     def wavelengths(self) -> List[float]:
@@ -261,22 +299,26 @@ class MaterialDispersionCurve(_ValueComparable):
 class MaterialSellmeier(_ValueComparable):
     """Dispersion of a volume material given by the Sellmeier coefficients.
 
+    The default coefficients describe glass.
+
     Parameters
     ----------
     b1, b2, b3 : float, optional
-        Numerator coefficients of the Sellmeier equation. By default, ``0.0``.
+        Numerator coefficients of the Sellmeier equation, dimensionless. By default,
+        ``1.03961``, ``0.231792`` and ``1.01047``.
     c1, c2, c3 : float, optional
-        Denominator coefficients of the Sellmeier equation. By default, ``0.0``.
+        Denominator coefficients of the Sellmeier equation, in square micrometers. By
+        default, ``0.00600070``, ``0.0200179`` and ``103.561``.
     """
 
     def __init__(
         self,
-        b1: float = 0.0,
-        c1: float = 0.0,
-        b2: float = 0.0,
-        c2: float = 0.0,
-        b3: float = 0.0,
-        c3: float = 0.0,
+        b1: float = 1.03961,
+        c1: float = 0.00600070,
+        b2: float = 0.231792,
+        c2: float = 0.0200179,
+        b3: float = 1.01047,
+        c3: float = 103.561,
     ) -> None:
         self.b1 = b1
         self.c1 = c1
@@ -443,13 +485,15 @@ class MaterialKettlerHelmholtz(_ValueComparable):
 
     Parameters
     ----------
-    a0, a1, a2, a3, a4, a5 : float, optional
-        Coefficients of the Kettler-Helmholtz equation. By default, ``0.0``.
+    a0 : float, optional
+        Constant coefficient of the Kettler-Helmholtz equation. By default, ``1.0``.
+    a1, a2, a3, a4, a5 : float, optional
+        Other coefficients of the Kettler-Helmholtz equation. By default, ``0.0``.
     """
 
     def __init__(
         self,
-        a0: float = 0.0,
+        a0: float = 1.0,
         a1: float = 0.0,
         a2: float = 0.0,
         a3: float = 0.0,
@@ -630,26 +674,32 @@ class MaterialMetallicCurve(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
-        Wavelengths of the curve, in nm. By default, ``[]``.
-    indices : List[float], optional
-        Real part n of the refractive index at each wavelength. By default, ``[]``.
-    extinctions : List[float], optional
-        Extinction coefficient k at each wavelength. By default, ``[]``.
+    wavelengths : Sequence[float], optional
+        Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+    indices : Sequence[float], optional
+        Real part n of the refractive index at each wavelength. By default,
+        ``[1.0, 1.0, 1.0]``.
+    extinctions : Sequence[float], optional
+        Extinction coefficient k at each wavelength. By default, ``[0.0, 0.0, 0.0]``.
+
+    Notes
+    -----
+    The default refractive index and extinction values are placeholders, not the optical
+    constants of a real metal.
     """
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        indices: List[float] | None = None,
-        extinctions: List[float] | None = None,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        indices: Sequence[float] = _DEFAULT_METALLIC_INDICES,
+        extinctions: Sequence[float] = _DEFAULT_METALLIC_EXTINCTIONS,
     ) -> None:
         self._wavelengths: List[float] = []
         self._indices: List[float] = []
         self._extinctions: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.indices = indices if indices is not None else []
-        self.extinctions = extinctions if extinctions is not None else []
+        self.wavelengths = wavelengths
+        self.indices = indices
+        self.extinctions = extinctions
 
     @property
     def wavelengths(self) -> List[float]:
@@ -772,9 +822,9 @@ class MaterialBirefringentCurve(_ValueComparable):
     index_a : float, optional
         Refractive index along the ``a`` axis. By default, ``1.5``.
     index_b : float, optional
-        Refractive index along the ``b`` axis. By default, ``1.5``.
+        Refractive index along the ``b`` axis. By default, ``1.51``.
     index_c : float, optional
-        Refractive index along the ``c`` axis. By default, ``1.5``.
+        Refractive index along the ``c`` axis. By default, ``1.65``.
     optical_class : int, optional
         ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
         ``2`` for a biaxial one. By default, ``0``.
@@ -784,8 +834,8 @@ class MaterialBirefringentCurve(_ValueComparable):
         self,
         wavelength: float = 550.0,
         index_a: float = 1.5,
-        index_b: float = 1.5,
-        index_c: float = 1.5,
+        index_b: float = 1.51,
+        index_c: float = 1.65,
         optical_class: int = 0,
     ) -> None:
         self.wavelength = wavelength
@@ -955,9 +1005,9 @@ class MaterialBirefringentSellmeier(_ValueComparable):
     Parameters
     ----------
     a, b, c : MaterialSellmeier, optional
-        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
-        :class:`ansys.speos.core.input_files.material.MaterialSellmeier` model with null
-        coefficients.
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
+        independent :class:`ansys.speos.core.input_files.material.MaterialSellmeier` model
+        with its default coefficients per axis.
     optical_class : int, optional
         ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
         ``2`` for a biaxial one. By default, ``0``.
@@ -1095,9 +1145,9 @@ class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
     Parameters
     ----------
     a, b, c : MaterialKettlerHelmholtz, optional
-        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, a
-        :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz` model with
-        null coefficients.
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
+        independent :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz`
+        model with its default coefficients per axis.
     optical_class : int, optional
         ``0`` for a negative uniaxial material, ``1`` for a positive uniaxial one and
         ``2`` for a biaxial one. By default, ``0``.
@@ -1275,29 +1325,29 @@ class VolumeScatteringUserDefined(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
+    wavelengths : Sequence[float], optional
         Wavelengths the efficiency is given at, in nm. Leave it empty when the phase
         function does not depend on the wavelength, in which case each row of ``values``
         holds a single entry. By default, ``[]``.
-    angles : List[float], optional
-        Scattering angles theta, in degrees. By default, ``[]``.
-    values : List[List[float]], optional
+    angles : Sequence[float], optional
+        Scattering angles theta, in degrees. By default, ``[0.0, 90.0, 180.0]``.
+    values : Sequence[Sequence[float]], optional
         Relative scattering intensity, one row per angle and one column per wavelength.
-        By default, ``[]``.
+        By default, ``[[100.0], [100.0], [100.0]]``, an isotropic phase function.
     """
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        angles: List[float] | None = None,
-        values: List[List[float]] | None = None,
+        wavelengths: Sequence[float] = (),
+        angles: Sequence[float] = _DEFAULT_PHASE_ANGLES,
+        values: Sequence[Sequence[float]] = _DEFAULT_PHASE_VALUES,
     ) -> None:
         self._wavelengths: List[float] = []
         self._angles: List[float] = []
         self._values: List[List[float]] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.angles = angles if angles is not None else []
-        self.values = values if values is not None else []
+        self.wavelengths = wavelengths
+        self.angles = angles
+        self.values = values
 
     @property
     def wavelengths(self) -> List[float]:
@@ -1448,20 +1498,22 @@ class VolumeScatteringHenyeyGreenstein(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
+    wavelengths : Sequence[float], optional
         Wavelengths the anisotropy factor is given at, in nm. A single wavelength means
         that the phase function does not depend on the wavelength. By default, ``[]``.
-    anisotropies : List[float], optional
-        Anisotropy factor g at each wavelength, between -1 and 1. By default, ``[]``.
+    anisotropies : Sequence[float], optional
+        Anisotropy factor g at each wavelength, between -1 and 1. By default, ``[0.9]``.
     """
 
     def __init__(
-        self, wavelengths: List[float] | None = None, anisotropies: List[float] | None = None
+        self,
+        wavelengths: Sequence[float] = (),
+        anisotropies: Sequence[float] = _DEFAULT_ANISOTROPIES,
     ) -> None:
         self._wavelengths: List[float] = []
         self._anisotropies: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.anisotropies = anisotropies if anisotropies is not None else []
+        self.wavelengths = wavelengths
+        self.anisotropies = anisotropies
 
     @property
     def wavelengths(self) -> List[float]:
@@ -1549,33 +1601,35 @@ class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
+    wavelengths : Sequence[float], optional
         Wavelengths the factors are given at, in nm. A single wavelength means that the
         phase function does not depend on the wavelength. By default, ``[]``.
-    anisotropies_1 : List[float], optional
-        First anisotropy factor at each wavelength, between -1 and 1. By default, ``[]``.
-    anisotropies_2 : List[float], optional
-        Second anisotropy factor at each wavelength, between -1 and 1. By default, ``[]``.
-    ratios : List[float], optional
+    anisotropies_1 : Sequence[float], optional
+        First anisotropy factor at each wavelength, between -1 and 1. By default,
+        ``[0.9]``.
+    anisotropies_2 : Sequence[float], optional
+        Second anisotropy factor at each wavelength, between -1 and 1. By default,
+        ``[0.9]``.
+    ratios : Sequence[float], optional
         Weight between the first and the second anisotropy factor, at each wavelength.
-        Values must be between 0 and 1. By default, ``[]``.
+        Values must be between 0 and 1. By default, ``[0.5]``.
     """
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        anisotropies_1: List[float] | None = None,
-        anisotropies_2: List[float] | None = None,
-        ratios: List[float] | None = None,
+        wavelengths: Sequence[float] = (),
+        anisotropies_1: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        anisotropies_2: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        ratios: Sequence[float] = _DEFAULT_RATIOS,
     ) -> None:
         self._wavelengths: List[float] = []
         self._anisotropies_1: List[float] = []
         self._anisotropies_2: List[float] = []
         self._ratios: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.anisotropies_1 = anisotropies_1 if anisotropies_1 is not None else []
-        self.anisotropies_2 = anisotropies_2 if anisotropies_2 is not None else []
-        self.ratios = ratios if ratios is not None else []
+        self.wavelengths = wavelengths
+        self.anisotropies_1 = anisotropies_1
+        self.anisotropies_2 = anisotropies_2
+        self.ratios = ratios
 
     @property
     def wavelengths(self) -> List[float]:
@@ -1710,27 +1764,27 @@ class VolumeScatteringGegenbauer(_ValueComparable):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
+    wavelengths : Sequence[float], optional
         Wavelengths the factors are given at, in nm. A single wavelength means that the
         phase function does not depend on the wavelength. By default, ``[]``.
-    anisotropies : List[float], optional
-        Anisotropy factor at each wavelength. By default, ``[]``.
-    alphas : List[float], optional
-        Alpha coefficient at each wavelength. By default, ``[]``.
+    anisotropies : Sequence[float], optional
+        Anisotropy factor at each wavelength. By default, ``[0.9]``.
+    alphas : Sequence[float], optional
+        Alpha coefficient at each wavelength. By default, ``[0.5]``.
     """
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        anisotropies: List[float] | None = None,
-        alphas: List[float] | None = None,
+        wavelengths: Sequence[float] = (),
+        anisotropies: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        alphas: Sequence[float] = _DEFAULT_ALPHAS,
     ) -> None:
         self._wavelengths: List[float] = []
         self._anisotropies: List[float] = []
         self._alphas: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.anisotropies = anisotropies if anisotropies is not None else []
-        self.alphas = alphas if alphas is not None else []
+        self.wavelengths = wavelengths
+        self.anisotropies = anisotropies
+        self.alphas = alphas
 
     @property
     def wavelengths(self) -> List[float]:
@@ -1947,7 +2001,7 @@ class MaterialFile(SpeosTextFileFormat):
     Parameters
     ----------
     description : str, optional
-        Free text written on the second line of the file. By default, ``""``.
+        Free text written on the second line of the file. By default, ``"Optical Glass"``.
     material_type : str, optional
         Type of material, one of ``"Isotropic"``, ``"Metallic"`` or ``"Birefringent"``.
         By default, ``"Isotropic"``.
@@ -1956,40 +2010,52 @@ class MaterialFile(SpeosTextFileFormat):
         :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
         birefringent one needs one of the
         :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models. By
-        default, a :class:`ansys.speos.core.input_files.material.MaterialConstringence`
-        model.
+        default, a :class:`ansys.speos.core.input_files.material.MaterialDispersionCurve`
+        model with its default index curve.
     absorption_wavelengths : List[float], optional
         Wavelengths of the absorption curve, in nm. Left empty by a metallic material,
-        whose extinction coefficient already holds the absorption. By default, ``[]``.
+        whose extinction coefficient already holds the absorption. By default,
+        ``[486.0, 532.0, 643.0]``, or ``[]`` for a metallic material.
     absorption_values : List[float], optional
         Absorption coefficient at each wavelength, in mm-1. For a birefringent material,
-        the absorption along the ``a`` axis. By default, ``[]``.
+        the absorption along the ``a`` axis. By default, ``[0.0, 0.0, 0.0]``, or ``[]`` for
+        a metallic material.
     measured_concentration : float, optional
         Concentration the absorption curve was measured at. By default, ``1.0``.
     user_concentration : float, optional
         Concentration the absorption curve is scaled to. By default, ``1.0``.
     scattering_wavelengths : List[float], optional
-        Wavelengths of the diffusion curve, in nm. By default, ``[]``.
+        Wavelengths of the diffusion curve, in nm. By default, ``[486.0, 532.0, 643.0]``
+        when ``scattering`` is given, ``[]`` otherwise.
     scattering_values : List[float], optional
-        Diffusion coefficient at each wavelength, in mm-1. By default, ``[]``.
+        Diffusion coefficient at each wavelength, in mm-1. By default, ``0.1`` at each
+        default diffusion wavelength when ``scattering`` is given, ``[]`` otherwise.
     scattering : Optional[VolumeScattering], optional
         Scattering phase function. By default, ``None``, which writes a non-scattering
         material.
-    axis_j : List[float], optional
+    axis_j : Sequence[float], optional
         Direction of the ``b`` axis of a birefringent material. Ignored by the other
         flavors. By default, ``[1.0, 0.0, 0.0]``.
-    axis_k : List[float], optional
+    axis_k : Sequence[float], optional
         Direction of the ``c`` axis of a birefringent material. Ignored by the other
         flavors. By default, ``[0.0, 1.0, 0.0]``.
     absorption_values_b : List[float], optional
         Absorption of a birefringent material along its ``b`` axis, one value per
-        wavelength of the absorption curve. By default, ``[]``.
+        wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+        for a birefringent material, ``[]`` otherwise.
     absorption_values_c : List[float], optional
         Absorption of a birefringent material along its ``c`` axis, one value per
-        wavelength of the absorption curve. By default, ``[]``.
+        wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+        for a birefringent material, ``[]`` otherwise.
 
     Notes
     -----
+    Called without arguments, the constructor creates an isotropic optical glass of index
+    1.5 that neither absorbs nor scatters light. The defaults of the curves depend on
+    ``material_type`` and ``scattering`` only so that each flavor stays valid; the default
+    dispersion model is always an index curve, so pass a matching model for a metallic or
+    birefringent material.
+
     Setters validate candidate data without partially updating the material. List getters
     return copies; dispersion and phase models remain shared with validated properties.
     Empty columns permit staged construction, while :meth:`MaterialFile.validate` and
@@ -2013,7 +2079,7 @@ class MaterialFile(SpeosTextFileFormat):
 
     def __init__(
         self,
-        description: str = "",
+        description: str = "Optical Glass",
         material_type: str = "Isotropic",
         dispersion: Union[
             MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve, None
@@ -2025,13 +2091,13 @@ class MaterialFile(SpeosTextFileFormat):
         scattering_wavelengths: List[float] | None = None,
         scattering_values: List[float] | None = None,
         scattering: Optional[VolumeScattering] = None,
-        axis_j: List[float] | None = None,
-        axis_k: List[float] | None = None,
+        axis_j: Sequence[float] = _DEFAULT_AXIS_J,
+        axis_k: Sequence[float] = _DEFAULT_AXIS_K,
         absorption_values_b: List[float] | None = None,
         absorption_values_c: List[float] | None = None,
     ) -> None:
         material_type = self._checked_type(material_type)
-        dispersion = dispersion if dispersion is not None else MaterialConstringence()
+        dispersion = dispersion if dispersion is not None else MaterialDispersionCurve()
         self._check_dispersion(material_type, dispersion)
         self._material_type = material_type
         self._dispersion = dispersion
@@ -2041,22 +2107,41 @@ class MaterialFile(SpeosTextFileFormat):
         self._absorption_values_c: List[float] = []
         self._scattering_wavelengths: List[float] = []
         self._scattering_values: List[float] = []
+        metallic = _is_type(material_type, self.METALLIC)
+        birefringent = _is_type(material_type, self.BIREFRINGENT)
+        default_absorption = [] if metallic else list(_DEFAULT_WAVELENGTHS)
+        default_diffusion = [] if scattering is None else list(_DEFAULT_WAVELENGTHS)
         self.description = description
         self.absorption_wavelengths = (
-            absorption_wavelengths if absorption_wavelengths is not None else []
+            absorption_wavelengths if absorption_wavelengths is not None else default_absorption
         )
-        self.absorption_values = absorption_values if absorption_values is not None else []
+        self.absorption_values = (
+            absorption_values if absorption_values is not None else [0.0] * len(default_absorption)
+        )
         self.measured_concentration = measured_concentration
         self.user_concentration = user_concentration
         self.scattering_wavelengths = (
-            scattering_wavelengths if scattering_wavelengths is not None else []
+            scattering_wavelengths if scattering_wavelengths is not None else default_diffusion
         )
-        self.scattering_values = scattering_values if scattering_values is not None else []
+        self.scattering_values = (
+            scattering_values
+            if scattering_values is not None
+            else [_DEFAULT_DIFFUSION] * len(default_diffusion)
+        )
         self.scattering = scattering
-        self.axis_j = axis_j if axis_j is not None else [1.0, 0.0, 0.0]
-        self.axis_k = axis_k if axis_k is not None else [0.0, 1.0, 0.0]
-        self.absorption_values_b = absorption_values_b if absorption_values_b is not None else []
-        self.absorption_values_c = absorption_values_c if absorption_values_c is not None else []
+        self.axis_j = axis_j
+        self.axis_k = axis_k
+        axis_absorption_count = len(self._absorption_wavelengths) if birefringent else 0
+        self.absorption_values_b = (
+            absorption_values_b
+            if absorption_values_b is not None
+            else [0.0] * axis_absorption_count
+        )
+        self.absorption_values_c = (
+            absorption_values_c
+            if absorption_values_c is not None
+            else [0.0] * axis_absorption_count
+        )
 
     @property
     def description(self) -> str:
@@ -2676,8 +2761,8 @@ class MaterialFile(SpeosTextFileFormat):
             scattering_wavelengths=scattering_wavelengths,
             scattering_values=scattering_values,
             scattering=scattering,
-            axis_j=axes[0] if birefringent else None,
-            axis_k=axes[1] if birefringent else None,
+            axis_j=axes[0] if birefringent else _DEFAULT_AXIS_J,
+            axis_k=axes[1] if birefringent else _DEFAULT_AXIS_K,
             absorption_values_b=absorption_values_b,
             absorption_values_c=absorption_values_c,
         )

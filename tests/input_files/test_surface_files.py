@@ -23,6 +23,7 @@
 """Test the surface optical property file formats."""
 
 from dataclasses import is_dataclass
+import inspect
 import warnings
 
 import pytest
@@ -34,12 +35,104 @@ from ansys.speos.core import (
     ScatteringSurfaceSample,
     SimpleScatteringSurfaceFile,
 )
-from ansys.speos.core.input_files.coated_surface import _COATING_FIELDS
+from ansys.speos.core.input_files.coated_surface import (
+    _COATING_FIELDS,
+    _DEFAULT_DESCRIPTION as DEFAULT_COATED_DESCRIPTION,
+    _DEFAULT_INCIDENT_ANGLES as DEFAULT_COATED_INCIDENT_ANGLES,
+    _DEFAULT_WAVELENGTHS as DEFAULT_COATED_WAVELENGTHS,
+)
 from ansys.speos.core.input_files.scattering_surface import (
     _CONTRIBUTIONS as CONTRIBUTIONS,
+    _DEFAULT_DESCRIPTION as DEFAULT_SCATTERING_DESCRIPTION,
+    _DEFAULT_INCIDENT_ANGLES as DEFAULT_SCATTERING_INCIDENT_ANGLES,
+    _DEFAULT_WAVELENGTHS as DEFAULT_SCATTERING_WAVELENGTHS,
     _WIDTHS as WIDTHS,
 )
 from tests.input_files import ASSETS_DIR, read_lines
+
+DEFAULT_SURFACE_WAVELENGTHS = [400.0, 550.0, 700.0]
+DEFAULT_SURFACE_ANGLES = [0.0, 60.0, 90.0]
+
+
+@pytest.mark.parametrize(
+    ("model_class", "parameter", "default"),
+    [
+        (CoatedSurfaceFile, "wavelengths", DEFAULT_COATED_WAVELENGTHS),
+        (CoatedSurfaceFile, "incident_angles", DEFAULT_COATED_INCIDENT_ANGLES),
+        (CoatedSurfaceFile, "description", DEFAULT_COATED_DESCRIPTION),
+        (ScatteringSurfaceFile, "wavelengths", DEFAULT_SCATTERING_WAVELENGTHS),
+        (ScatteringSurfaceFile, "incident_angles", DEFAULT_SCATTERING_INCIDENT_ANGLES),
+        (ScatteringSurfaceFile, "description", DEFAULT_SCATTERING_DESCRIPTION),
+    ],
+)
+def test_surface_file_defaults_are_signature_defaults(model_class, parameter, default):
+    """Surface-file default constants are used in the constructor signatures."""
+    assert inspect.signature(model_class).parameters[parameter].default is default
+    assert isinstance(default, (tuple, str))
+
+
+def test_simple_scattering_defaults(tmp_path):
+    """A default simple scattering surface has the documented contributions."""
+    surface = SimpleScatteringSurfaceFile()
+
+    assert surface.mode == "Reflection"
+    assert surface.absorption == 10.0
+    assert surface.lambertian == 10.0
+    assert surface.gaussian == 80.0
+    assert surface.gaussian_fwhm == 25.0
+    assert surface.reflection is None
+    assert surface.description == "Scattering surface"
+    path = surface.save(tmp_path / "default.simplescattering")
+    assert read_lines(path)[1:] == ["Scattering surface", "Reflection", "10 10 80 25"]
+    assert SimpleScatteringSurfaceFile.load(path) == surface
+
+
+def test_simple_scattering_partial_override_respects_the_side_budget():
+    """Raising the Lambertian part needs lowering the default Gaussian part."""
+    with pytest.raises(ValueError, match="must not sum to more than 100"):
+        SimpleScatteringSurfaceFile(lambertian=50.0)
+    assert SimpleScatteringSurfaceFile(lambertian=50.0, gaussian=0.0).lambertian == 50.0
+
+
+def test_coated_surface_defaults(tmp_path):
+    """A default coating is a 3 x 3 grid of perfect reflectors."""
+    sample = CoatedSurfaceSample()
+    assert (sample.reflection_p, sample.transmission_p) == (100.0, 0.0)
+    assert (sample.reflection_s, sample.transmission_s) == (100.0, 0.0)
+
+    surface = CoatedSurfaceFile()
+    assert surface.description == "Coating surface"
+    assert surface.wavelengths == DEFAULT_SURFACE_WAVELENGTHS
+    assert surface.incident_angles == DEFAULT_SURFACE_ANGLES
+    samples = [entry for row in surface.samples for entry in row]
+    assert len(surface.samples) == 3
+    assert all(len(row) == 3 for row in surface.samples)
+    assert all(entry == CoatedSurfaceSample() for entry in samples)
+    assert len({id(entry) for entry in samples}) == 9
+    path = surface.save(tmp_path / "default.coated")
+    assert CoatedSurfaceFile.load(path) == surface
+
+
+def test_scattering_surface_defaults(tmp_path):
+    """A default advanced scattering surface is a 3 x 3 grid of specular reflectors."""
+    sample = ScatteringSurfaceSample()
+    assert sample.specular_reflection == 100.0
+    assert sample.absorption == 0.0
+    for name in ScatteringSurfaceSample._EQUALITY_FIELDS:
+        if name != "specular_reflection":
+            assert getattr(sample, name) == 0.0
+
+    surface = ScatteringSurfaceFile()
+    assert surface.description == "Scattering surface"
+    assert surface.wavelengths == DEFAULT_SURFACE_WAVELENGTHS
+    assert surface.incident_angles == DEFAULT_SURFACE_ANGLES
+    samples = [entry for row in surface.samples for entry in row]
+    assert len(surface.samples) == 3
+    assert all(len(row) == 3 for row in surface.samples)
+    assert all(entry == ScatteringSurfaceSample() for entry in samples)
+    assert len({id(entry) for entry in samples}) == 9
+    path = surface.save(tmp_path / "default.scattering")
+    assert ScatteringSurfaceFile.load(path) == surface
 
 
 @pytest.mark.parametrize("model_class", [CoatedSurfaceFile, ScatteringSurfaceFile])
@@ -61,7 +154,7 @@ def documented_scattering_surface():
     remaining 20%. At 45 degrees and 600 nm it reflects and transmits 20% in a Gaussian
     lobe and absorbs 60%.
     """
-    blank = ScatteringSurfaceSample()
+    blank = ScatteringSurfaceSample(specular_reflection=0.0)
     at_400 = ScatteringSurfaceSample(
         specular_reflection=30.0,
         specular_transmission=20.0,
@@ -69,6 +162,7 @@ def documented_scattering_surface():
         lambertian_transmission=10.0,
     )
     at_600 = ScatteringSurfaceSample(
+        specular_reflection=0.0,
         gaussian_reflection=20.0,
         gaussian_transmission=20.0,
         gaussian_fwhm_incidence_reflection=30.0,
@@ -156,7 +250,7 @@ def test_scattering_surface_warns_for_an_over_unity_budget(documented_scattering
 @pytest.mark.parametrize("name", CONTRIBUTIONS + WIDTHS)
 def test_scattering_surface_sample_validated_properties(name):
     """Every sample property accepts valid values and rejects invalid assignments atomically."""
-    sample = ScatteringSurfaceSample()
+    sample = ScatteringSurfaceSample(specular_reflection=0.0)
     assert getattr(sample, name) == 0.0
     setattr(sample, name, 20.0)
     assert getattr(sample, name) == 20.0
@@ -249,14 +343,14 @@ def test_scattering_surface_copies_list_containers(documented_scattering_surface
     surface.samples[0][0].specular_reflection = 25.0
     assert surface.samples[0][0].specular_reflection == 25.0
     grid = surface.samples
-    grid[0][0] = ScatteringSurfaceSample()
+    grid[0][0] = ScatteringSurfaceSample(specular_reflection=0.0)
     surface.samples = grid
     assert surface.samples[0][0].absorption == 100.0
 
 
 def test_scattering_surface_staged_construction_and_resize(tmp_path):
-    """Empty defaults allow staged construction but cannot be saved as a complete file."""
-    surface = ScatteringSurfaceFile()
+    """Empty lists allow staged construction but cannot be saved as a complete file."""
+    surface = ScatteringSurfaceFile(wavelengths=[], incident_angles=[], samples=[])
     assert not is_dataclass(surface)
     assert not is_dataclass(ScatteringSurfaceSample())
     assert surface.wavelengths == surface.incident_angles == surface.samples == []
@@ -408,8 +502,8 @@ def test_simple_scattering_both_sides_with_an_explicit_split(tmp_path):
 
 def test_simple_scattering_shared_equality_contract():
     """Shared equality retains value comparison, strict types, and unhashable models."""
-    surface = SimpleScatteringSurfaceFile(lambertian=50.0)
-    other = SimpleScatteringSurfaceFile(lambertian=50.0)
+    surface = SimpleScatteringSurfaceFile(lambertian=50.0, gaussian=0.0)
+    other = SimpleScatteringSurfaceFile(lambertian=50.0, gaussian=0.0)
     assert surface is not other
     assert surface == other
     other.lambertian = 40.0
@@ -422,11 +516,11 @@ def test_simple_scattering_shared_equality_contract():
     class DerivedSurface(SimpleScatteringSurfaceFile):
         """A derived surface used to verify exact-type comparison."""
 
-    derived = DerivedSurface(lambertian=50.0)
+    derived = DerivedSurface(lambertian=50.0, gaussian=0.0)
     assert surface.__eq__(derived) is NotImplemented
     assert derived.__eq__(surface) is NotImplemented
     assert surface != derived
-    assert derived == DerivedSurface(lambertian=50.0)
+    assert derived == DerivedSurface(lambertian=50.0, gaussian=0.0)
 
 
 def test_simple_scattering_rejects_an_unknown_mode_at_construction():

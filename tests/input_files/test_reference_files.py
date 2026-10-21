@@ -442,7 +442,7 @@ def test_shared_equality_observes_nested_model_changes():
     """Nested coefficient and ray edits remain visible through parent model equality."""
     material, other_material = MaterialFile(), MaterialFile()
     assert material == other_material
-    material.dispersion.index = 1.6
+    material.dispersion.indices = [1.6, 1.6, 1.6]
     assert material != other_material
 
     birefringent, other_birefringent = (

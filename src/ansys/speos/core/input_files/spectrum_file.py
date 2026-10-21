@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, List
+from typing import ClassVar, List, Sequence
 
 from ansys.speos.core.input_files._base import (
     LineReader,
@@ -40,6 +40,27 @@ from ansys.speos.core.spectrum import Spectrum
 MAX_SPECTRUM_SAMPLES = 32767
 """Maximum number of wavelength samples accepted by Speos in a ``*.spectrum`` file."""
 
+_DEFAULT_WAVELENGTHS = (360.0, 407.0, 454.0, 501.0, 548.0, 595.0, 642.0, 689.0, 736.0, 783.0, 830.0)
+"""Wavelengths of the default spectrum, in nm."""
+
+_DEFAULT_VALUES = (
+    58.1966,
+    76.5783,
+    89.719,
+    97.2718,
+    100.0,
+    99.0542,
+    95.5671,
+    90.4834,
+    84.521,
+    78.1915,
+    71.8403,
+)
+"""Values of the default 5200 K blackbody spectrum, in percent."""
+
+_DEFAULT_DESCRIPTION = "Blackbody at 5200.0 K"
+"""Description of the default spectrum."""
+
 
 class SpectrumFile(SpeosTextFileFormat):
     """Speos ``*.spectrum`` file, holding a sampled spectral distribution.
@@ -50,15 +71,22 @@ class SpectrumFile(SpeosTextFileFormat):
 
     Parameters
     ----------
-    wavelengths : List[float], optional
-        Wavelengths of the samples, in nm. By default, ``[]``.
-    values : List[float], optional
-        Relative spectral values of the samples, in percent (0 to 100). By default, ``[]``.
+    wavelengths : Sequence[float], optional
+        Wavelengths of the samples, in nm. By default, 11 wavelengths from 360 nm to 830 nm
+        in 47 nm steps.
+    values : Sequence[float], optional
+        Relative spectral values of the samples, in percent (0 to 100). By default, the
+        values of the default 5200 K blackbody spectrum, normalized to 100 at its sampled
+        maximum.
     description : str, optional
-        Free text written on the second line of the file. By default, ``""``.
+        Free text written on the second line of the file. By default,
+        ``"Blackbody at 5200.0 K"``.
 
     Notes
     -----
+    Called without arguments, the constructor creates the default 5200 K blackbody
+    spectrum. Pass ``wavelengths`` and ``values`` together to describe another spectrum.
+
     Construction and setters validate numeric data before storing it. List getters return
     copies; assign an edited list back to change the model. Empty columns permit staged
     construction, while :meth:`SpectrumFile.validate` and ``save()`` require complete
@@ -74,14 +102,14 @@ class SpectrumFile(SpeosTextFileFormat):
 
     def __init__(
         self,
-        wavelengths: List[float] | None = None,
-        values: List[float] | None = None,
-        description: str = "",
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        values: Sequence[float] = _DEFAULT_VALUES,
+        description: str = _DEFAULT_DESCRIPTION,
     ) -> None:
         self._wavelengths: List[float] = []
         self._values: List[float] = []
-        self.wavelengths = wavelengths if wavelengths is not None else []
-        self.values = values if values is not None else []
+        self.wavelengths = wavelengths
+        self.values = values
         self.description = description
 
     @property

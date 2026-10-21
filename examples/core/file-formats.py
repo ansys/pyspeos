@@ -70,13 +70,19 @@ reloaded = SpectrumFile.load(spectrum_path)
 print(reloaded.wavelengths, reloaded.values)
 
 # Property assignments validate immediately. List getters return copies, so assign an
-# edited list back to update the spectrum. Empty defaults support staged construction,
-# but `validate()` and `save()` require complete, matching data.
+# edited list back to update the spectrum. `validate()` and `save()` require complete,
+# matching data.
 
 values = reloaded.values
 values[0] = 10.0
 reloaded.values = values
 print(reloaded.values)
+
+# Called without arguments, every file constructor creates a useful default. For a
+# spectrum, this is a 5200 K blackbody.
+
+default_spectrum = SpectrumFile()
+print(default_spectrum.description, default_spectrum.wavelengths)
 
 # ## Create a volume optical property file
 
@@ -124,9 +130,12 @@ print(diffuser_path.read_text())
 
 # The `*.simplescattering` format is the quickest way to describe a scattering surface: it
 # does not depend on the wavelength nor on the angle of incidence. This one is a perfect
-# white Lambertian reflector.
+# white Lambertian reflector. The Gaussian part is set explicitly to keep the contributions
+# within the 100% budget.
 
-white = SimpleScatteringSurfaceFile(mode="Reflection", absorption=0.0, lambertian=100.0)
+white = SimpleScatteringSurfaceFile(
+    mode="Reflection", absorption=0.0, lambertian=100.0, gaussian=0.0
+)
 white_path = white.save(OUTPUT_DIR / "white_diffuser.simplescattering")
 print(white_path.read_text())
 

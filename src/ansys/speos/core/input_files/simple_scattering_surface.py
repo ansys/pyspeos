@@ -51,16 +51,16 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
         Sides of the surface that scatter the light: ``"Reflection"``,
         ``"Transmission"`` or ``"Both"``. By default, ``"Reflection"``.
     absorption : float, optional
-        Absorbed part of the incident light, in percent. By default, ``0.0``.
+        Absorbed part of the incident light, in percent. By default, ``10.0``.
     lambertian : float, optional
         Lambertian part in percent. In ``"Both"`` mode this is the reflection side.
-        By default, ``0.0``.
+        By default, ``10.0``.
     gaussian : float, optional
         Gaussian part in percent. In ``"Both"`` mode this is the reflection side.
-        By default, ``0.0``.
+        By default, ``80.0``.
     gaussian_fwhm : float, optional
         Full width at half maximum of the Gaussian lobe, in degrees. In ``"Both"`` mode
-        this is the reflection side. By default, ``0.0``.
+        this is the reflection side. By default, ``25.0``.
     lambertian_transmission : float, optional
         Lambertian part of the transmission side, in percent. ``"Both"`` mode only.
         By default, ``0.0``.
@@ -80,6 +80,10 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
 
     Notes
     -----
+    Called without arguments, the constructor creates a surface with absorption 10%,
+    Lambertian reflection 10%, and Gaussian reflection 80%. These contributions fill the
+    side budget.
+
     Setters reject invalid values before changing the model. Lower an outgoing contribution
     before increasing another in a fully allocated side budget. Transmission-side values
     remain stored outside Both mode; enabling Both validates their combined budget.
@@ -89,17 +93,17 @@ class SimpleScatteringSurfaceFile(SpeosTextFileFormat):
     >>> from ansys.speos.core.input_files.simple_scattering_surface import (
     ...     SimpleScatteringSurfaceFile,
     ... )
-    >>> diffuser = SimpleScatteringSurfaceFile(mode="Reflection", lambertian=100.0)
+    >>> diffuser = SimpleScatteringSurfaceFile(mode="Reflection", lambertian=100.0, gaussian=0.0)
     >>> diffuser.save("white_diffuser.simplescattering")
     """
 
     def __init__(
         self,
         mode: str = "Reflection",
-        absorption: float = 0.0,
-        lambertian: float = 0.0,
-        gaussian: float = 0.0,
-        gaussian_fwhm: float = 0.0,
+        absorption: float = 10.0,
+        lambertian: float = 10.0,
+        gaussian: float = 80.0,
+        gaussian_fwhm: float = 25.0,
         lambertian_transmission: float = 0.0,
         gaussian_transmission: float = 0.0,
         gaussian_fwhm_transmission: float = 0.0,

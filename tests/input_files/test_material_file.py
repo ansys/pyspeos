@@ -22,6 +22,8 @@
 
 """Test the ``*.material`` file format."""
 
+import inspect
+
 import pytest
 
 from ansys.speos.core import (
@@ -43,12 +45,195 @@ from ansys.speos.core.input_files.material import (
     _ABSORPTION_NAMES,
     _BIREFRINGENT_FIELDS,
     _CURVE_FIELDS,
+    _DEFAULT_ALPHAS,
+    _DEFAULT_ANISOTROPIES,
+    _DEFAULT_AXIS_J,
+    _DEFAULT_AXIS_K,
+    _DEFAULT_INDICES,
+    _DEFAULT_METALLIC_EXTINCTIONS,
+    _DEFAULT_METALLIC_INDICES,
+    _DEFAULT_PHASE_ANGLES,
+    _DEFAULT_PHASE_VALUES,
+    _DEFAULT_RATIOS,
+    _DEFAULT_WAVELENGTHS,
     _DIFFUSION_NAMES,
     _KETTLER_FIELDS,
     _METALLIC_FIELDS,
     _SELLMEIER_FIELDS,
 )
 from tests.input_files import read_lines
+
+DEFAULT_MATERIAL_WAVELENGTHS = [486.0, 532.0, 643.0]
+
+
+@pytest.mark.parametrize(
+    ("model_class", "parameter", "default"),
+    [
+        (MaterialDispersionCurve, "wavelengths", _DEFAULT_WAVELENGTHS),
+        (MaterialDispersionCurve, "indices", _DEFAULT_INDICES),
+        (MaterialMetallicCurve, "wavelengths", _DEFAULT_WAVELENGTHS),
+        (MaterialMetallicCurve, "indices", _DEFAULT_METALLIC_INDICES),
+        (MaterialMetallicCurve, "extinctions", _DEFAULT_METALLIC_EXTINCTIONS),
+        (VolumeScatteringUserDefined, "angles", _DEFAULT_PHASE_ANGLES),
+        (VolumeScatteringUserDefined, "values", _DEFAULT_PHASE_VALUES),
+        (VolumeScatteringHenyeyGreenstein, "anisotropies", _DEFAULT_ANISOTROPIES),
+        (VolumeScatteringDoubleHenyeyGreenstein, "anisotropies_1", _DEFAULT_ANISOTROPIES),
+        (VolumeScatteringDoubleHenyeyGreenstein, "anisotropies_2", _DEFAULT_ANISOTROPIES),
+        (VolumeScatteringDoubleHenyeyGreenstein, "ratios", _DEFAULT_RATIOS),
+        (VolumeScatteringGegenbauer, "anisotropies", _DEFAULT_ANISOTROPIES),
+        (VolumeScatteringGegenbauer, "alphas", _DEFAULT_ALPHAS),
+        (MaterialFile, "axis_j", _DEFAULT_AXIS_J),
+        (MaterialFile, "axis_k", _DEFAULT_AXIS_K),
+    ],
+)
+def test_material_defaults_are_signature_defaults(model_class, parameter, default):
+    """Material default constants are used in the constructor signatures."""
+    assert inspect.signature(model_class).parameters[parameter].default is default
+    assert isinstance(default, tuple)
+
+
+def test_material_defaults_to_optical_glass(tmp_path):
+    """A default material is non-absorbing isotropic optical glass."""
+    material = MaterialFile()
+
+    assert material.description == "Optical Glass"
+    assert material.material_type == "Isotropic"
+    assert material.dispersion == MaterialDispersionCurve(
+        wavelengths=DEFAULT_MATERIAL_WAVELENGTHS, indices=[1.5, 1.5, 1.5]
+    )
+    assert material.absorption_wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
+    assert material.absorption_values == [0.0, 0.0, 0.0]
+    assert material.measured_concentration == material.user_concentration == 1.0
+    assert material.scattering is None
+    assert material.scattering_wavelengths == material.scattering_values == []
+    assert material.absorption_values_b == material.absorption_values_c == []
+    path = material.save(tmp_path / "default.material")
+    assert MaterialFile.load(path) == material
+
+
+def test_material_defaults_are_independent():
+    """Editing the default dispersion of a material leaves other materials unchanged."""
+    first = MaterialFile()
+    first.dispersion.indices = [1.6, 1.6, 1.6]
+    assert MaterialFile().dispersion.indices == [1.5, 1.5, 1.5]
+
+
+def test_material_dispersion_defaults():
+    """Each dispersion model has its documented defaults."""
+    dispersion_curve = MaterialDispersionCurve()
+    assert dispersion_curve.wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
+    assert dispersion_curve.indices == [1.5, 1.5, 1.5]
+
+    sellmeier = MaterialSellmeier()
+    assert [
+        sellmeier.b1,
+        sellmeier.c1,
+        sellmeier.b2,
+        sellmeier.c2,
+        sellmeier.b3,
+        sellmeier.c3,
+    ] == [1.03961, 0.00600070, 0.231792, 0.0200179, 1.01047, 103.561]
+
+    kettler = MaterialKettlerHelmholtz()
+    assert [kettler.a0, kettler.a1, kettler.a2, kettler.a3, kettler.a4, kettler.a5] == [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+
+    metallic_curve = MaterialMetallicCurve()
+    assert metallic_curve.wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
+    assert metallic_curve.indices == [1.0, 1.0, 1.0]
+    assert metallic_curve.extinctions == [0.0, 0.0, 0.0]
+
+
+def test_sellmeier_defaults_give_a_bk7_index():
+    """The default Sellmeier coefficients describe a glass, with lambda in micrometers."""
+    sellmeier = MaterialSellmeier()
+    wavelength = 0.5876
+    square = wavelength**2
+    index = (
+        1.0
+        + sellmeier.b1 * square / (square - sellmeier.c1)
+        + sellmeier.b2 * square / (square - sellmeier.c2)
+        + sellmeier.b3 * square / (square - sellmeier.c3)
+    ) ** 0.5
+    assert index == pytest.approx(1.5168, abs=1e-4)
+
+
+def test_birefringent_dispersion_defaults():
+    """Birefringent models have documented indices and per-axis coefficients."""
+    curve = MaterialBirefringentCurve()
+    assert curve.wavelength == 550.0
+    assert (curve.index_a, curve.index_b, curve.index_c) == (1.5, 1.51, 1.65)
+    assert curve.optical_class == 0
+
+    for model, coefficients in (
+        (MaterialBirefringentSellmeier(), MaterialSellmeier()),
+        (MaterialBirefringentKettlerHelmholtz(), MaterialKettlerHelmholtz()),
+    ):
+        assert model.a == model.b == model.c == coefficients
+        assert len({id(model.a), id(model.b), id(model.c)}) == 3
+        assert model.optical_class == 0
+
+
+def test_birefringent_material_defaults_absorb_nothing_on_each_axis(tmp_path):
+    """A default birefringent material gets a null absorption curve on each axis."""
+    material = MaterialFile(material_type="Birefringent", dispersion=MaterialBirefringentCurve())
+
+    assert material.absorption_wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
+    assert material.absorption_values == [0.0, 0.0, 0.0]
+    assert material.absorption_values_b == [0.0, 0.0, 0.0]
+    assert material.absorption_values_c == [0.0, 0.0, 0.0]
+    assert material.axis_j == [1.0, 0.0, 0.0]
+    assert material.axis_k == [0.0, 1.0, 0.0]
+    path = material.save(tmp_path / "birefringent.material")
+    assert MaterialFile.load(path) == material
+
+
+def test_metallic_material_defaults_have_no_absorption_curve(tmp_path):
+    """A metallic material stores no absorption curve, so none is set by default."""
+    material = MaterialFile(material_type="Metallic", dispersion=MaterialMetallicCurve())
+
+    assert material.absorption_wavelengths == material.absorption_values == []
+    path = material.save(tmp_path / "metallic.material")
+    assert MaterialFile.load(path) == material
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        (
+            VolumeScatteringUserDefined,
+            {"wavelengths": [], "angles": [0.0, 90.0, 180.0], "values": [[100.0]] * 3},
+        ),
+        (VolumeScatteringHenyeyGreenstein, {"wavelengths": [], "anisotropies": [0.9]}),
+        (
+            VolumeScatteringDoubleHenyeyGreenstein,
+            {
+                "wavelengths": [],
+                "anisotropies_1": [0.9],
+                "anisotropies_2": [0.9],
+                "ratios": [0.5],
+            },
+        ),
+        (VolumeScatteringGegenbauer, {"wavelengths": [], "anisotropies": [0.9], "alphas": [0.5]}),
+    ],
+)
+def test_scattering_material_defaults(model, expected, tmp_path):
+    """A scattering material gets the documented phase function and diffusion curve."""
+    scattering = model()
+    for name, value in expected.items():
+        assert getattr(scattering, name) == value
+
+    material = MaterialFile(scattering=scattering)
+    assert material.scattering_wavelengths == DEFAULT_MATERIAL_WAVELENGTHS
+    assert material.scattering_values == [0.1, 0.1, 0.1]
+    path = material.save(tmp_path / "scattering.material")
+    assert MaterialFile.load(path) == material
 
 
 @pytest.fixture
@@ -370,7 +555,7 @@ def test_user_defined_phase_function_round_trips(tmp_path):
 
 def test_material_without_absorption_cannot_be_saved(tmp_path):
     """An absorption-free material draft can be constructed but cannot be saved."""
-    material = MaterialFile()
+    material = MaterialFile(absorption_wavelengths=[], absorption_values=[])
     path = tmp_path / "empty.material"
 
     with pytest.raises(ValueError, match="must not be empty"):
@@ -384,6 +569,8 @@ def test_a_scattering_material_needs_a_diffusion_curve(tmp_path):
     material = MaterialFile(
         absorption_wavelengths=[550.0],
         absorption_values=[0.0],
+        scattering_wavelengths=[],
+        scattering_values=[],
         scattering=VolumeScatteringHenyeyGreenstein(anisotropies=[0.5]),
     )
 
@@ -425,7 +612,10 @@ def test_metallic_write_matches_the_speos_layout(metallic_material, tmp_path):
 
 def test_a_metallic_material_needs_an_index_curve(tmp_path):
     """A metallic material without its complex index cannot be written."""
-    material = MaterialFile(material_type="Metallic", dispersion=MaterialMetallicCurve())
+    material = MaterialFile(
+        material_type="Metallic",
+        dispersion=MaterialMetallicCurve(wavelengths=[], indices=[], extinctions=[]),
+    )
 
     with pytest.raises(ValueError, match="must not be empty"):
         material.save(tmp_path / "invalid.material")
