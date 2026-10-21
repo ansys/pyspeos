@@ -40,6 +40,7 @@ from ansys.speos.core.generic.general_methods import (
 )
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
 from ansys.speos.core.workflow.transform import (
+    _copy_surface_geometry,
     _rotation_matrix,
     _surface_source_body,
 )
@@ -779,3 +780,36 @@ def test_transform_lightbox_preserves_material_assignments(
     assert transformed.project.scene_link.get().materials == initial_materials
     for guid, template in templates.items():
         assert project.client[guid].get() == template
+
+
+@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.parametrize("variable", [False, True], ids=["constant", "variable"])
+def test_surface_transform_rejects_name_without_copy(speos: Speos, rigid_transform, variable: bool):
+    """Reject copy-only naming before modifying either surface source configuration."""
+    project = Project(speos)
+    original = project.create_source(name="Surface", feature_type=source.SourceSurface)
+    if variable:
+        original.set_exitance_variable()
+    instance = deepcopy(original._source_instance)
+    template = deepcopy(original._source_template)
+    transform, args, _, _ = rigid_transform
+
+    with pytest.raises(ValueError, match="name can only be provided when copy=True"):
+        transform(original, *args, copy=False, name="Unexpected")
+
+    assert original._source_instance == instance
+    assert original._source_template == template
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_surface_copy_rejects_missing_face(speos: Speos):
+    """Never replace an unmapped emissive face with the entire copied body."""
+    project = Project(speos)
+    root = project.create_root_part()
+    original = _create_mesh(root, "Original")
+    incomplete = root.create_body(name="Incomplete")
+    feature = project.create_source(name="Surface", feature_type=source.SourceSurface)
+    feature.set_exitance_constant().geometries = [(original.faces[1], True)]
+
+    with pytest.raises(ValueError, match="Cannot map surface source geometry path"):
+        _copy_surface_geometry(feature, original, incomplete)
