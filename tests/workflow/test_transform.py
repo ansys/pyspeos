@@ -24,13 +24,14 @@
 
 from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Callable, cast
 from uuid import UUID, uuid4
 
 import numpy as np
 import pytest
 
-from ansys.speos.core import Project, Speos, body, component, part, sensor, source
+from ansys.speos.core import Project, Speos, body, component, face, part, sensor, source
 from ansys.speos.core.generic.general_methods import (
     _axis_frame,
     _validate_axis_system12,
@@ -40,7 +41,11 @@ from ansys.speos.core.generic.general_methods import (
 )
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
 from ansys.speos.core.workflow.transform import (
+    _copy_feature,
+    _copy_name,
     _copy_surface_geometry,
+    _owner_project,
+    _prepare_transform,
     _rotation_matrix,
     _surface_source_body,
 )
@@ -813,3 +818,212 @@ def test_surface_copy_rejects_missing_face(speos: Speos):
 
     with pytest.raises(ValueError, match="Cannot map surface source geometry path"):
         _copy_surface_geometry(feature, original, incomplete)
+
+
+def test_owner_project_rejects_geometry_without_root_part():
+    """Reject geometry whose parent chain does not lead to a root Part."""
+    feature = SimpleNamespace(_parent_part=None)
+
+    with pytest.raises(ValueError, match="Cannot resolve the owning project without a root part"):
+        _owner_project(feature)
+
+
+@pytest.mark.parametrize("name", ["", 1], ids=["empty", "not-string"])
+def test_copy_name_rejects_invalid_name(monkeypatch, name):
+    """Require an explicit copy name to be a non-empty string."""
+    feature = SimpleNamespace(_name="Original")
+    monkeypatch.setattr("ansys.speos.core.workflow.transform._feature_siblings", lambda _: [])
+
+    with pytest.raises(ValueError, match="name must be a non-empty string"):
+        _copy_name(feature, name)
+
+
+def test_copy_name_rejects_duplicate_name(monkeypatch):
+    """Prevent copied features from colliding with an existing sibling."""
+    feature = SimpleNamespace(_name="Original")
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._feature_siblings",
+        lambda _: [SimpleNamespace(_name="Existing")],
+    )
+
+    with pytest.raises(ValueError, match="A feature named 'Existing' already exists"):
+        _copy_name(feature, "Existing")
+
+
+@pytest.mark.parametrize(
+    ("feature", "error", "message"),
+    [
+        pytest.param(
+            "unsupported",
+            TypeError,
+            "Unsupported feature type: str",
+            id="unsupported-feature",
+        ),
+        pytest.param(
+            face.Face(speos_client=None, name="Standalone"),
+            ValueError,
+            "Transforming a standalone Face is not supported",
+            id="standalone-face",
+        ),
+        pytest.param(
+            object.__new__(source.BaseSource),
+            TypeError,
+            "BaseSource does not expose an axis_system to transform",
+            id="source-without-axis-system",
+        ),
+    ],
+)
+def test_prepare_transform_rejects_unsupported_feature(feature, error, message):
+    """Reject feature types that cannot be transformed before touching their state."""
+    with pytest.raises(error, match=message):
+        _prepare_transform(feature, copy_feature=False, name=None)
+
+
+def test_copy_feature_rejects_unsupported_feature():
+    """Reject unsupported feature types at the copy-dispatch boundary."""
+    with pytest.raises(TypeError, match="Unsupported feature type: object"):
+        _copy_feature(object(), "Copy")
+
+
+def test_prepare_transform_rejects_name_without_copy():
+    """Only accept explicit names for copied features."""
+    feature = object.__new__(source.SourceLuminaire)
+    feature._source_instance = SimpleNamespace(luminaire_properties=SimpleNamespace(axis_system=[]))
+
+    with pytest.raises(ValueError, match="name can only be provided when copy=True"):
+        _prepare_transform(feature, copy_feature=False, name="Unexpected")
+
+
+def test_prepare_transform_rejects_duplicate_copy_name(monkeypatch):
+    """Reject duplicate names before attempting to construct the copied feature."""
+    feature = object.__new__(source.SourceLuminaire)
+    feature._name = "Original"
+    feature._source_instance = SimpleNamespace(luminaire_properties=SimpleNamespace(axis_system=[]))
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._feature_siblings",
+        lambda _: [SimpleNamespace(_name="Duplicate")],
+    )
+
+    with pytest.raises(ValueError, match="A feature named 'Duplicate' already exists"):
+        _prepare_transform(feature, copy_feature=True, name="Duplicate")
+
+
+def test_surface_source_body_rejects_missing_geometry(monkeypatch):
+    """Reject a surface source without any geometry references."""
+    feature = SimpleNamespace(
+        _project=SimpleNamespace(root_part=object()),
+        _source_instance=object(),
+    )
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._iter_geo_path_links", lambda _: iter(())
+    )
+
+    with pytest.raises(ValueError, match="The surface source does not reference any geometry"):
+        _surface_source_body(feature)
+
+
+def test_surface_source_body_rejects_missing_root_part(monkeypatch):
+    """Require a project root part before resolving referenced geometry paths."""
+    feature = SimpleNamespace(
+        _project=SimpleNamespace(root_part=None),
+        _source_instance=object(),
+    )
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._iter_geo_path_links",
+        lambda _: iter([("/Body/Face", False)]),
+    )
+
+    with pytest.raises(
+        ValueError, match="Cannot resolve the surface source geometry without a project root part"
+    ):
+        _surface_source_body(feature)
+
+
+def test_surface_source_body_rejects_unresolved_path(monkeypatch):
+    """Reject referenced geometry paths that are absent from the project tree."""
+    feature = SimpleNamespace(
+        _project=SimpleNamespace(root_part=SimpleNamespace(_geom_features=[])),
+        _source_instance=object(),
+    )
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._iter_geo_path_links",
+        lambda _: iter([("/Missing/Face", False)]),
+    )
+
+    with pytest.raises(ValueError, match="Cannot resolve surface source geometry path"):
+        _surface_source_body(feature)
+
+
+def test_surface_source_body_rejects_references_to_multiple_bodies(monkeypatch):
+    """Require a full surface source to target geometry from exactly one body."""
+    feature = SimpleNamespace(
+        _project=SimpleNamespace(root_part=object()),
+        _source_instance=object(),
+    )
+    bodies = iter([object(), object()])
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._iter_geo_path_links",
+        lambda _: iter([("/Body1/Face", False), ("/Body2/Face", False)]),
+    )
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._find_body_in_geometry_tree",
+        lambda *_: next(bodies),
+    )
+
+    with pytest.raises(
+        ValueError, match="A full surface source must reference geometry from exactly one body"
+    ):
+        _surface_source_body(feature)
+
+
+def test_surface_source_body_rejects_another_source_on_target_body(monkeypatch):
+    """Prevent transforming geometry also referenced by a different source."""
+    source_instance = object()
+    other_instance = object()
+    feature = SimpleNamespace(
+        _project=None,
+        _source_instance=source_instance,
+    )
+    other_source = SimpleNamespace(_source_instance=other_instance)
+    body_feature = SimpleNamespace(
+        _name="Body",
+        geo_path=SimpleNamespace(to_native_link=lambda: "/Body"),
+    )
+    feature._project = SimpleNamespace(root_part=object(), sources=[feature, other_source])
+
+    def geometry_paths(message):
+        if message is source_instance:
+            return iter([("/Body/Face", False)])
+        if message is other_instance:
+            return iter([("/Body/OtherFace", False)])
+        return iter(())
+
+    monkeypatch.setattr("ansys.speos.core.workflow.transform._iter_geo_path_links", geometry_paths)
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._find_body_in_geometry_tree",
+        lambda *_: body_feature,
+    )
+
+    with pytest.raises(
+        ValueError, match="Cannot transform body 'Body':another source is applied to it"
+    ):
+        _surface_source_body(feature)
+
+
+def test_copy_surface_geometry_rejects_missing_geometry(monkeypatch):
+    """Reject copying a surface source that has no referenced geometry."""
+    feature = SimpleNamespace(_source_instance=object())
+    original_body = SimpleNamespace(
+        geo_path=SimpleNamespace(to_native_link=lambda: "/Body"),
+        faces=[],
+    )
+    body_copy = SimpleNamespace(
+        geo_path=SimpleNamespace(to_native_link=lambda: "/Body_copy"),
+        faces=[],
+    )
+    monkeypatch.setattr(
+        "ansys.speos.core.workflow.transform._iter_geo_path_links", lambda _: iter(())
+    )
+
+    with pytest.raises(ValueError, match="The surface source does not reference any geometry"):
+        _copy_surface_geometry(feature, original_body, body_copy)
