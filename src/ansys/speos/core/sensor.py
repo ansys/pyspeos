@@ -6875,49 +6875,51 @@ class SensorPolarIntensity(BaseSensor):
     def _fill_parameters(
         self, default_parameters: Optional[PolarIntensitySensorParameters] = None
     ) -> None:
-        """Populate the sensor template and instance from parameters or from a loaded state.
+        """Populate the sensor template and instance from parameters.
 
         Parameters
         ----------
         default_parameters : PolarIntensitySensorParameters, optional
             When provided, the sensor is initialised from these values.
-            When ``None``, the sensor is reconstructed from an already-populated
-            ``_sensor_template`` (load-from-file path).
+            When ``None``, there is nothing to do: this feature caches no helper object, so
+            every property is read straight from the already-populated ``_sensor_template``
+            (load-from-file path).
         """
-        if default_parameters is not None:
-            # --- format ---
-            match default_parameters.format:
-                case PolarIntensityFormatTypes.iesna_a:
-                    self.set_format_iesna_a()
-                case PolarIntensityFormatTypes.iesna_b:
-                    self.set_format_iesna_b()
-                case PolarIntensityFormatTypes.iesna_c:
-                    self.set_format_iesna_c()
-                case PolarIntensityFormatTypes.eulumdat:
-                    self.set_format_eulumdat()
-
-            # --- sampling ---
-            if isinstance(default_parameters.dimensions, str):
-                self.set_adaptive_sampling()
-                self.adaptive_sampling_file = default_parameters.dimensions
-            else:
-                self._set_sampling_dimensions(
-                    horizontal_sampling=default_parameters.dimensions.horizontal_sampling,
-                    vertical_sampling=default_parameters.dimensions.vertical_sampling,
-                )
-
-            # --- field ---
-            if default_parameters.near_field is not None:
-                self.set_near_field()
-                self.cell_distance = default_parameters.near_field.cell_distance
-                self.cell_diameter = default_parameters.near_field.cell_diameter
-            else:
-                self.set_far_field()
-                self.integration_angle = default_parameters.integration_angle
-
-            # --- instance ---
-            self.axis_system = default_parameters.axis_system
+        if default_parameters is None:
             return
+
+        # --- format ---
+        match default_parameters.format:
+            case PolarIntensityFormatTypes.iesna_a:
+                self.set_format_iesna_a()
+            case PolarIntensityFormatTypes.iesna_b:
+                self.set_format_iesna_b()
+            case PolarIntensityFormatTypes.iesna_c:
+                self.set_format_iesna_c()
+            case PolarIntensityFormatTypes.eulumdat:
+                self.set_format_eulumdat()
+
+        # --- sampling ---
+        if isinstance(default_parameters.dimensions, str):
+            self.set_adaptive_sampling()
+            self.adaptive_sampling_file = default_parameters.dimensions
+        else:
+            self._set_sampling_dimensions(
+                horizontal_sampling=default_parameters.dimensions.horizontal_sampling,
+                vertical_sampling=default_parameters.dimensions.vertical_sampling,
+            )
+
+        # --- field ---
+        if default_parameters.near_field is not None:
+            self.set_near_field()
+            self.cell_distance = default_parameters.near_field.cell_distance
+            self.cell_diameter = default_parameters.near_field.cell_diameter
+        else:
+            self.set_far_field()
+            self.integration_angle = default_parameters.integration_angle
+
+        # --- instance ---
+        self.axis_system = default_parameters.axis_system
 
     # ------------------------------------------------------------------
     # Format setters
