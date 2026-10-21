@@ -5665,15 +5665,7 @@ class SensorXMPIntensity(BaseSensor):
         feature_z_dir = np.array(feature_pos_info[9:12])
         feature_vis_radius = self._vis_radius
 
-        template = self._sensor_mode_template
-        # Check conoscopic orientation (v1 and v2 compatible)
-        is_conoscopic = (
-            template.HasField("intensity_orientation_conoscopic")  # v1
-            if self._is_template_v2 is False
-            else template.HasField("orientation_conoscopic")  # v2
-        )
-
-        if is_conoscopic:
+        if self._has_orientation("conoscopic"):
             # intensity sensor; conoscopic case
             # simply fix vis sampling to 15 (radial) x 30 (azimuth)
             # determine the set of visualization triangles vertices
@@ -5730,13 +5722,7 @@ class SensorXMPIntensity(BaseSensor):
 
             # compute all the vertices
             iter = 0
-            # Check x_as_meridian orientation (v1 and v2 compatible)
-            is_meridian = (
-                template.HasField("intensity_orientation_x_as_meridian")  # v1
-                if self._is_template_v2 is False
-                else template.HasField("orientation_x_as_meridian")  # v2
-            )
-            if is_meridian:
+            if self._has_orientation("x_as_meridian"):
                 for x_tilt in x_tilts:
                     tilted_x = np.matmul(rm(x_tilt, feature_x_dir), u)
                     for y_tilt in y_tilts:
@@ -5924,32 +5910,17 @@ class SensorXMPIntensity(BaseSensor):
 
     def set_orientation_x_as_meridian(self) -> None:
         """Set Orientation type: X As Meridian, Y as Parallel."""
-        template = self._sensor_mode_template
-        if self._is_template_v2:
-            template.orientation_x_as_meridian.SetInParent()
-        else:
-            # V1: intensity_sensor_template
-            template.intensity_orientation_x_as_meridian.SetInParent()
+        self._set_orientation("x_as_meridian")
         self._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
 
     def set_orientation_x_as_parallel(self) -> None:
         """Set Orientation type: X as Parallel, Y as Meridian."""
-        template = self._sensor_mode_template
-        if self._is_template_v2:
-            template.orientation_x_as_parallel.SetInParent()
-        else:
-            # V1: intensity_sensor_template
-            template.intensity_orientation_x_as_parallel.SetInParent()
+        self._set_orientation("x_as_parallel")
         self._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
 
     def set_orientation_conoscopic(self) -> None:
         """Set Orientation type to conoscopic."""
-        template = self._sensor_mode_template
-        if self._is_template_v2:
-            template.orientation_conoscopic.SetInParent()
-        else:
-            # V1: intensity_sensor_template
-            template.intensity_orientation_conoscopic.SetInParent()
+        self._set_orientation("conoscopic")
         self._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
 
     def set_viewing_direction_from_source(self) -> None:
@@ -5980,30 +5951,19 @@ class SensorXMPIntensity(BaseSensor):
             IntensitySensorDimensionsConoscopicParameters,
         ],
     ):
-        template = self._sensor_mode_template
         warning_msg = (
             "Mismatch of dimensions and sensor orientation was detected. "
             "The sensor dimension are reset to the orientation types default values"
         )
 
-        # Determine orientation for both v1 and v2
-        if self._is_template_v2:
-            # V2: orientation is oneof
-            is_conoscopic = template.HasField("orientation_conoscopic")
-            is_meridian = template.HasField("orientation_x_as_meridian")
-        else:
-            # V1: intensity_orientation_* is oneof
-            is_conoscopic = template.HasField("intensity_orientation_conoscopic")
-            is_meridian = template.HasField("intensity_orientation_x_as_meridian")
-
-        if is_conoscopic:
+        if self._has_orientation("conoscopic"):
             if not isinstance(dimension, IntensitySensorDimensionsConoscopicParameters):
                 warnings.warn(warning_msg)
                 dimension = IntensitySensorDimensionsConoscopicParameters()
             self.theta_max = dimension.theta_max
             self.theta_sampling = dimension.theta_sampling
         else:
-            if is_meridian:
+            if self._has_orientation("x_as_meridian"):
                 if not isinstance(dimension, IntensitySensorDimensionsXAsMeridianParameters):
                     warnings.warn(warning_msg)
                     dimension = IntensitySensorDimensionsXAsMeridianParameters()
@@ -6033,6 +5993,31 @@ class SensorXMPIntensity(BaseSensor):
         """
         prefix = "orientation_" if self._is_template_v2 else "intensity_orientation_"
         return prefix + orientation
+
+    def _has_orientation(self, orientation: str) -> bool:
+        """Tell if the template currently uses the given orientation.
+
+        Parameters
+        ----------
+        orientation : str
+            Orientation type: "conoscopic", "x_as_meridian", or "x_as_parallel"
+
+        Returns
+        -------
+        bool
+            ``True`` if the orientation is the one currently set.
+        """
+        return self._sensor_mode_template.HasField(self._orientation_field(orientation))
+
+    def _set_orientation(self, orientation: str) -> None:
+        """Set the given orientation on the template.
+
+        Parameters
+        ----------
+        orientation : str
+            Orientation type: "conoscopic", "x_as_meridian", or "x_as_parallel"
+        """
+        getattr(self._sensor_mode_template, self._orientation_field(orientation)).SetInParent()
 
     def _angular_dimensions(self):
         """Get the protobuf message for angular (non-conoscopic) dimensions.
