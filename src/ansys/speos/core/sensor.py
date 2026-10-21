@@ -158,7 +158,7 @@ class BaseSensor(ABC):
 
         Parameters
         ----------
-        value : int
+        value : Optional[int]
             Integer value to define number of rays stored
 
         Returns
@@ -171,7 +171,7 @@ class BaseSensor(ABC):
         return None
 
     @lxp_path_number.setter
-    def lxp_path_number(self, value: int) -> None:
+    def lxp_path_number(self, value: Optional[int]) -> None:
         if value in (None, 0):
             self._sensor_instance.ClearField("lxp_properties")
             return
