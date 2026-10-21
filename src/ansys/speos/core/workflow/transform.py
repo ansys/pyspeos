@@ -218,6 +218,7 @@ def _copy_body(feature: body_module.Body, name: str) -> body_module.Body:
         name=name, description=feature._body.description, metadata=feature._body.metadata
     )
     copied._body.metadata["UniqueId"] = str(uuid.uuid4())
+    copied._body.metadata.pop("Internal_From_Speos_File", None)
 
     for face in feature.faces:
         face_copy = copied.create_face(
