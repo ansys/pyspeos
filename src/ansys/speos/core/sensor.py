@@ -171,10 +171,7 @@ class BaseSensor(ABC):
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: Optional[int]) -> None:
-        if value is None:
-            self._sensor_instance.ClearField("lxp_properties")
-            return
-        if value == 0:
+        if value is None or value == 0:
             self._sensor_instance.ClearField("lxp_properties")
             return
         scalar = general_methods._validate_positive_int(value)
