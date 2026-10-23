@@ -1,0 +1,286 @@
+
+
+
+
+
+
+:class:`SourceLuminaire`
+========================
+
+.. py:class:: ansys.speos.core.source.SourceLuminaire(project, name, description = '', metadata = None, source_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   LuminaireSource.
+
+   By default, a flux from intensity file is chosen, with an incandescent spectrum.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceLuminaire
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_flux_from_intensity_file`
+            - Take flux from intensity file provided.
+          * - :py:attr:`~set_flux_luminous`
+            - Set luminous flux.
+          * - :py:attr:`~set_flux_radiant`
+            - Set radiant flux.
+          * - :py:attr:`~set_intensity_file_uri`
+            - Set intensity file.
+          * - :py:attr:`~set_spectrum`
+            - Set spectrum.
+          * - :py:attr:`~set_axis_system`
+            - Set the position of the source.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceLuminaire
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_flux_from_intensity_file()
+
+   
+   Take flux from intensity file provided.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceLuminaire`
+           Luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_luminous(value = 683)
+
+   
+   Set luminous flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminous flux in lumens.
+           By default, ``683.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceLuminaire`
+           Luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_radiant(value = 1)
+
+   
+   Set radiant flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Radiant flux in watts.
+           By default, ``1.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceLuminaire`
+           Luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_intensity_file_uri(uri)
+
+   
+   Set intensity file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           IES or EULUMDAT format file uri.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceLuminaire`
+           Luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_spectrum()
+
+   
+   Set spectrum.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_axis_system(axis_system = None)
+
+   
+   Set the position of the source.
+
+
+   :Parameters:
+
+       **axis_system** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceLuminaire`
+           Luminaire source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

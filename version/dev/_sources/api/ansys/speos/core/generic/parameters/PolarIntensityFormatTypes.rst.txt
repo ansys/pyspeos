@@ -1,0 +1,183 @@
+
+
+
+
+
+
+:class:`PolarIntensityFormatTypes`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.PolarIntensityFormatTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Polar intensity sensor format types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PolarIntensityFormatTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~iesna_a`
+            - Generate an IESNA type A photometric file.
+          * - :py:attr:`~iesna_b`
+            - Generate an IESNA type B photometric file.
+          * - :py:attr:`~iesna_c`
+            - Generate an IESNA type C photometric file.
+          * - :py:attr:`~eulumdat`
+            - Generate an Eulumdat photometric file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import PolarIntensityFormatTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: iesna_a
+   :value: 'iesna_a'
+
+
+   
+   Generate an IESNA type A photometric file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: iesna_b
+   :value: 'iesna_b'
+
+
+   
+   Generate an IESNA type B photometric file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: iesna_c
+   :value: 'iesna_c'
+
+
+   
+   Generate an IESNA type C photometric file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: eulumdat
+   :value: 'eulumdat'
+
+
+   
+   Generate an Eulumdat photometric file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

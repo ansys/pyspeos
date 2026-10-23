@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`SpectrumSampledParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SpectrumSampledParameters
+
+   
+   Spectrum Sampled Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpectrumSampledParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Sampled wavelength values.
+          * - :py:attr:`~values`
+            - Spectrum values corresponding to ``wavelengths``.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SpectrumSampledParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: wavelengths
+   :type:  list[float]
+   :value: [400.0, 700.0]
+
+
+   
+   Sampled wavelength values.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: values
+   :type:  list[float]
+   :value: [100.0, 100.0]
+
+
+   
+   Spectrum values corresponding to ``wavelengths``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

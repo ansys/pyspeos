@@ -1,0 +1,124 @@
+
+
+
+
+
+
+:class:`MeshData`
+=================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.MeshData
+
+   
+   Store named data on meshed Geometry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MeshData
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - Name of the data added to the mesh.
+          * - :py:attr:`~data`
+            - Numerical data values associated with the named mesh item.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import MeshData
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: name
+   :type:  str
+
+   
+   Name of the data added to the mesh.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: data
+   :type:  list[float]
+
+   
+   Numerical data values associated with the named mesh item.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,200 @@
+
+
+
+
+
+
+The ``lxp.py`` module
+=====================
+
+.. py:module:: ansys.speos.core.lxp
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: lxp
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.lxp.RayPath`
+            - Framework representing a singular ray path.
+
+
+          * - :py:obj:`~ansys.speos.core.lxp.LightPathFinder`
+            - Define an interface to read LPF files.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~wavelength_to_rgb`
+            - Convert a given wavelength of light to an approximate RGB color value.
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ERROR_IDS`
+            - Intersection types indicating an error state.
+
+
+          * - :py:obj:`~NO_ERROR_IDS`
+            - Intersection types indicating a correct ray state.
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> RayPath</api/ansys/speos/core/lxp/RayPath>
+    <span class="nf nf-cod-symbol_class"></span> LightPathFinder</api/ansys/speos/core/lxp/LightPathFinder>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+The lxp module contains classes and functions to simplify the interaction with ray data (LPF file).
+
+LPF files contain a set of simulated rays with all their intersections and properties.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: wavelength_to_rgb(wavelength, gamma = 0.8)
+
+   
+   Convert a given wavelength of light to an approximate RGB color value.
+
+   The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
+   Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
+
+   :Parameters:
+
+       **wavelength** : :class:`python:float`
+           Wavelength in nanometer between 380-750 nm
+
+       **gamma** : :class:`python:float`
+           Gamma value.
+           By default : ``0.8``
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: ERROR_IDS
+   :value: [7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+
+   
+   Intersection types indicating an error state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: NO_ERROR_IDS
+
+   
+   Intersection types indicating a correct ray state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

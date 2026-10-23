@@ -1,0 +1,210 @@
+
+
+
+
+
+
+:class:`RayFileSourceParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.RayFileSourceParameters
+
+   
+   Parameters class for Ray File Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: RayFileSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ray_file_uri`
+            - Path to the ray file.
+          * - :py:attr:`~flux_type`
+            - Flux definition for the ray file source.
+          * - :py:attr:`~spectrum_type`
+            - Optional spectrum definition for the ray file source.
+          * - :py:attr:`~axis_system`
+            - Axis system used to position the source.
+          * - :py:attr:`~exit_geometry`
+            - Optional list of exit geometries associated with the source.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import RayFileSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: ray_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the ray file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: flux_type
+   :type:  Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters]
+
+   
+   Flux definition for the ray file source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: spectrum_type
+   :type:  Optional[Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters]]
+   :value: None
+
+
+   
+   Optional spectrum definition for the ray file source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Axis system used to position the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exit_geometry
+   :type:  Optional[list[str]]
+   :value: None
+
+
+   
+   Optional list of exit geometries associated with the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

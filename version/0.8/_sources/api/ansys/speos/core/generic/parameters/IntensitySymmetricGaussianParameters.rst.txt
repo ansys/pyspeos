@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`IntensitySymmetricGaussianParameters`
+=============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensitySymmetricGaussianParameters
+
+   
+   Intensity Symmetric Gaussian Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensitySymmetricGaussianParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~total_angle`
+            - Total angular extent of the Gaussian distribution.
+          * - :py:attr:`~fwhm`
+            - Full width at half maximum of the symmetric Gaussian.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensitySymmetricGaussianParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: total_angle
+   :type:  float
+   :value: 180
+
+
+   
+   Total angular extent of the Gaussian distribution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: fwhm
+   :type:  float
+   :value: 30.0
+
+
+   
+   Full width at half maximum of the symmetric Gaussian.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

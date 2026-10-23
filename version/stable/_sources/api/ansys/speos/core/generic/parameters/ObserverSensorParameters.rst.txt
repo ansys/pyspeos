@@ -1,0 +1,355 @@
+
+
+
+
+
+
+:class:`ObserverSensorParameters`
+=================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ObserverSensorParameters
+
+   
+   Parameters for SensorObserver.
+
+
+   :Parameters:
+
+       **focal** : :class:`python:float`, :obj:`optional`
+           Distance between the sensor radiance plan and the observer point in mm.
+           The larger the focal, the closer to the object.
+           By default, ``50.0``.
+
+       **integration_angle** : :class:`python:float`, :obj:`optional`
+           Integration angle in degrees for direct simulations.
+           By default, ``5.0``.
+
+       **wavelengths_range** : :obj:`ansys.speos.core.generic.parameters.WavelengthsRangeParameters`, :obj:`optional`
+           Spectral range to use for simulation.
+           By default, a range from 400nm to 700nm with sampling of 13.
+
+       **dimensions** : :obj:`ansys.speos.core.generic.parameters.DimensionsParameters`, :obj:`optional`
+           Dimensions of the sensor.
+           By default, ``x_start=-50``, ``x_end=50``, ``y_start=-50``, ``y_end=50``.
+
+       **distance** : :class:`python:float`, :obj:`optional`
+           Radius of the sphere on which the sensors will be placed in mm.
+           By default, ``1000.0``.
+
+       **sensors_locations** : :obj:`ansys.speos.core.generic.parameters.AngularRangeParameters`, :obj:`optional`
+           Locations of the sensors on the sphere.
+           By default, horizontal range from -180 to 180 degrees with 9 sampling,
+           vertical range from -90 to 90 degrees with 9 sampling.
+
+       **interocular_distance** : :class:`python:float`, :obj:`optional`
+           Distance between the left and right eyes for stereo mode in mm.
+           By default, None (stereo disabled).
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Position of the sensor (Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz).
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+       **layer_type** : :obj:`Union`\[:obj:`LayerTypes.none`, :obj:`LayerTypes.by_source`], :obj:`optional`
+           Layer separation type.
+           By default, ``LayerTypes.none``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ObserverSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~focal`
+            - Distance between sensor radiance plan and observer point in mm.
+          * - :py:attr:`~integration_angle`
+            - Integration angle in degrees.
+          * - :py:attr:`~wavelengths_range`
+            - Spectral range.
+          * - :py:attr:`~dimensions`
+            - Sensor dimensions.
+          * - :py:attr:`~distance`
+            - Radius of sphere where sensors are placed in mm.
+          * - :py:attr:`~sensors_locations`
+            - Angular locations of sensors on the sphere.
+          * - :py:attr:`~interocular_distance`
+            - Distance between viewpoints in mm for stereo mode.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~layer_type`
+            - Layer separation type.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ObserverSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: focal
+   :type:  float
+   :value: 50.0
+
+
+   
+   Distance between sensor radiance plan and observer point in mm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_angle
+   :type:  float
+   :value: 5.0
+
+
+   
+   Integration angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: wavelengths_range
+   :type:  WavelengthsRangeParameters
+
+   
+   Spectral range.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: dimensions
+   :type:  DimensionsParameters
+
+   
+   Sensor dimensions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: distance
+   :type:  float
+   :value: 1000.0
+
+
+   
+   Radius of sphere where sensors are placed in mm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sensors_locations
+   :type:  AngularRangeParameters
+
+   
+   Angular locations of sensors on the sphere.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: interocular_distance
+   :type:  Optional[float]
+   :value: None
+
+
+   
+   Distance between viewpoints in mm for stereo mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  LayerTypes
+
+   
+   Layer separation type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

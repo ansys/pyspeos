@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``fast_transmission_gathering.py`` module
+=============================================
+
+.. py:module:: ansys.speos.core.fast_transmission_gathering
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: fast_transmission_gathering
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering`
+            - Speos feature: fast transmission gathering (FTG).
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> FastTransmissionGathering</api/ansys/speos/core/fast_transmission_gathering/FastTransmissionGathering>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: fast transmission gathering.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

@@ -1,0 +1,93 @@
+
+
+
+
+
+
+:class:`TextureTypes`
+=====================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.TextureTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Different texture types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TextureTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~image`
+            - 
+          * - :py:attr:`~normal_map`
+            - 
+          * - :py:attr:`~anisotropy_map`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import TextureTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: image
+   :value: 'image'
+
+
+.. py:attribute:: normal_map
+   :value: 'normal_map'
+
+
+.. py:attribute:: anisotropy_map
+   :value: 'anisotropy_map'
+
+
+
+
+
+
