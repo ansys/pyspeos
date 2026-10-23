@@ -36,6 +36,7 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
@@ -158,7 +159,7 @@ class BaseSimulation:
 
             @adaptive_uri.setter
             def adaptive_uri(self, uri: Union[Path, str]) -> None:
-                self._adaptive.file_uri = str(uri)
+                self._adaptive.file_uri = general_methods._validate_pathlike(uri, "adaptive_uri")
 
         class Uniform:
             """Uniform sampling mode.
@@ -209,7 +210,9 @@ class BaseSimulation:
 
             @theta_sampling.setter
             def theta_sampling(self, theta_sampling: int) -> None:
-                self._uniform.theta_sampling = theta_sampling
+                self._uniform.theta_sampling = general_methods._validate_positive_int(
+                    theta_sampling
+                )
 
         def __init__(
             self,
@@ -341,6 +344,9 @@ class BaseSimulation:
 
         @minimum_energy_percentage.setter
         def minimum_energy_percentage(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
+            if not 0 <= value <= 1:
+                raise ValueError("minimum_energy_percentage must be between 0 and 1.")
             self._weight.minimum_energy_percentage = value
 
     class SourceGroup:
@@ -1556,7 +1562,7 @@ class SimulationDirect(BaseSimulation):
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
@@ -2246,7 +2252,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
@@ -2734,7 +2740,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @theta_sampling.setter
                     def theta_sampling(self, theta_sampling: int) -> None:
-                        self._uniform.theta_sampling = theta_sampling
+                        self._uniform.theta_sampling = general_methods._validate_positive_int(
+                            theta_sampling
+                        )
 
                     @property
                     def phi_sampling(self) -> int:
@@ -2755,7 +2763,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @phi_sampling.setter
                     def phi_sampling(self, phi_sampling: int) -> None:
-                        self._uniform.phi_sampling = phi_sampling
+                        self._uniform.phi_sampling = general_methods._validate_positive_int(
+                            phi_sampling
+                        )
 
                     def set_symmetric_none(
                         self,
@@ -3174,7 +3184,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @theta_sampling.setter
         def theta_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.theta_sampling = value
+            self._sensor_uniform_mode.theta_sampling = general_methods._validate_positive_int(value)
 
         @property
         def phi_sampling(self) -> int:
@@ -3195,7 +3205,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @phi_sampling.setter
         def phi_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.phi_sampling = value
+            self._sensor_uniform_mode.phi_sampling = general_methods._validate_positive_int(value)
 
     def __init__(
         self,
@@ -3319,7 +3329,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @axis_system.setter
     def axis_system(self, value: List[float]) -> None:
-        self._simulation_instance.vbb_properties.axis_system[:] = value
+        self._simulation_instance.vbb_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def analysis_x_ratio(self) -> float:
