@@ -174,10 +174,10 @@ class BaseSensor(ABC):
         if value is None:
             self._sensor_instance.ClearField("lxp_properties")
             return
-        scalar = general_methods._validate_positive_int(value)
-        if scalar == 0:
+        if value == 0:
             self._sensor_instance.ClearField("lxp_properties")
             return
+        scalar = general_methods._validate_positive_int(value)
         self._sensor_instance.lxp_properties.nb_max_paths = int(scalar)
 
     @abstractmethod
