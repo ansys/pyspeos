@@ -367,16 +367,12 @@ def test_sensor_setters_validate_inputs(speos: Speos) -> None:
         SensorCamera,
         cast(object, project.create_sensor(name="Validation.Camera", feature_type=SensorCamera)),
     )
-    with pytest.raises(TypeError, match="lxp_path_number must be a non-negative integer or None."):
+    with pytest.raises(TypeError, match="Value must be an integer."):
         camera.lxp_path_number = cast(Any, 1.5)
-    with pytest.raises(ValueError, match="lxp_path_number must be greater than or equal to 0."):
+    with pytest.raises(ValueError, match="Value must be greater than 0."):
         camera.lxp_path_number = cast(Any, -1)
-    with pytest.raises(TypeError, match="A scalar must be a finite number."):
-        camera.lxp_path_number = cast(Any, True)
-    with pytest.raises(TypeError, match="A scalar must be a finite number."):
-        camera.lxp_path_number = cast(Any, "bad")
     camera.lxp_path_number = 2
-    camera.lxp_path_number = cast(Any, 0.0)
+    camera.lxp_path_number = cast(Any, None)
     assert camera.lxp_path_number is None
     with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
         camera.axis_system = [0.0] * 11

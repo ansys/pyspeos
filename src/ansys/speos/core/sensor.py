@@ -174,11 +174,7 @@ class BaseSensor(ABC):
         if value is None:
             self._sensor_instance.ClearField("lxp_properties")
             return
-        scalar = general_methods._validate_scalar(value)
-        if not scalar.is_integer():
-            raise TypeError("lxp_path_number must be a non-negative integer or None.")
-        if scalar < 0:
-            raise ValueError("lxp_path_number must be greater than or equal to 0.")
+        scalar = general_methods._validate_positive_int(value)
         if scalar == 0:
             self._sensor_instance.ClearField("lxp_properties")
             return
