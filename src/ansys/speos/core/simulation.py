@@ -210,11 +210,9 @@ class BaseSimulation:
 
             @theta_sampling.setter
             def theta_sampling(self, theta_sampling: int) -> None:
-                if isinstance(theta_sampling, bool) or not isinstance(theta_sampling, int):
-                    raise TypeError("theta_sampling must be an integer.")
-                if theta_sampling <= 0:
-                    raise ValueError("theta_sampling must be greater than 0.")
-                self._uniform.theta_sampling = theta_sampling
+                self._uniform.theta_sampling = general_methods._validate_positive_int(
+                    theta_sampling, "theta_sampling"
+                )
 
         def __init__(
             self,
@@ -2742,7 +2740,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @theta_sampling.setter
                     def theta_sampling(self, theta_sampling: int) -> None:
-                        self._uniform.theta_sampling = theta_sampling
+                        self._uniform.theta_sampling = general_methods._validate_positive_int(
+                            theta_sampling, "theta_sampling"
+                        )
 
                     @property
                     def phi_sampling(self) -> int:
@@ -2763,7 +2763,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @phi_sampling.setter
                     def phi_sampling(self, phi_sampling: int) -> None:
-                        self._uniform.phi_sampling = phi_sampling
+                        self._uniform.phi_sampling = general_methods._validate_positive_int(
+                            phi_sampling, "phi_sampling"
+                        )
 
                     def set_symmetric_none(
                         self,
@@ -3182,7 +3184,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @theta_sampling.setter
         def theta_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.theta_sampling = value
+            self._sensor_uniform_mode.theta_sampling = general_methods._validate_positive_int(
+                value, "theta_sampling"
+            )
 
         @property
         def phi_sampling(self) -> int:
@@ -3203,7 +3207,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @phi_sampling.setter
         def phi_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.phi_sampling = value
+            self._sensor_uniform_mode.phi_sampling = general_methods._validate_positive_int(
+                value, "phi_sampling"
+            )
 
     def __init__(
         self,
@@ -3327,7 +3333,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @axis_system.setter
     def axis_system(self, value: List[float]) -> None:
-        self._simulation_instance.vbb_properties.axis_system[:] = value
+        self._simulation_instance.vbb_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def analysis_x_ratio(self) -> float:

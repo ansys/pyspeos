@@ -214,7 +214,16 @@ def _validate_scalar(value: float) -> float:
     return scalar
 
 
-def _validate_pathlike(value, name: str) -> str:
+def _validate_positive_int(value: int) -> int:
+    """Validate a positive integer value."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError("Value must be an integer.")
+    if value <= 0:
+        raise ValueError("Value must be greater than 0.")
+    return value
+
+
+def _validate_pathlike(value: Union[str, Path], name: str) -> str:
     """Validate and convert a string or path-like value to a string."""
     if not isinstance(value, (str, Path)):
         raise TypeError(f"{name} must be a string or Path.")

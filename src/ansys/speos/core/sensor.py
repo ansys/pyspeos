@@ -171,16 +171,17 @@ class BaseSensor(ABC):
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: Optional[int]) -> None:
-        if value in (None, 0):
+        if value is None:
             self._sensor_instance.ClearField("lxp_properties")
             return
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise TypeError("lxp_path_number must be a non-negative integer or None.")
         scalar = general_methods._validate_scalar(value)
         if not scalar.is_integer():
             raise TypeError("lxp_path_number must be a non-negative integer or None.")
         if scalar < 0:
             raise ValueError("lxp_path_number must be greater than or equal to 0.")
+        if scalar == 0:
+            self._sensor_instance.ClearField("lxp_properties")
+            return
         self._sensor_instance.lxp_properties.nb_max_paths = int(scalar)
 
     @abstractmethod
@@ -2495,7 +2496,9 @@ class SensorCamera(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.camera_properties.axis_system[:] = axis_system
+        self._sensor_instance.camera_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.

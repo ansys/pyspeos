@@ -23,6 +23,7 @@
 """Validation tests for public helpers across core modules."""
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 from ansys.api.speos.source.v1 import source_pb2
@@ -38,7 +39,7 @@ from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.opt_prop import TextureLayer
 from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorObserver
-from ansys.speos.core.simulation import SimulationDirect, SimulationVirtualBSDF
+from ansys.speos.core.simulation import BaseSimulation, SimulationDirect, SimulationVirtualBSDF
 from ansys.speos.core.source import BaseSource
 from tests.core.test_opt_prop import create_rect_face
 
@@ -150,6 +151,8 @@ def test_intensity_setters_validate_inputs() -> None:
         gaussian.fwhm_angle_y = -1
     with pytest.raises(ValueError, match="total_angle must be in the interval ]0, 360]."):
         gaussian.total_angle = 0
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        gaussian.axis_system = [0.0] * 11
 
     cos = Intensity.Cos(cos=ProtoIntensityTemplate.Cos())
     with pytest.raises(ValueError, match="n must be greater than 0."):
@@ -267,8 +270,15 @@ def test_sensor_setters_validate_inputs(speos: Speos) -> None:
         camera.lxp_path_number = cast(Any, 1.5)
     with pytest.raises(ValueError, match="lxp_path_number must be greater than or equal to 0."):
         camera.lxp_path_number = cast(Any, -1)
-    with pytest.raises(TypeError, match="lxp_path_number must be a non-negative integer or None."):
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
         camera.lxp_path_number = cast(Any, True)
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        camera.lxp_path_number = cast(Any, "bad")
+    camera.lxp_path_number = 2
+    camera.lxp_path_number = cast(Any, 0.0)
+    assert camera.lxp_path_number is None
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        camera.axis_system = [0.0] * 11
     wavelengths_range = camera.set_mode_photometric().set_wavelengths_range()
     with pytest.raises(ValueError, match="A scalar must be finite."):
         wavelengths_range.start = cast(Any, float("nan"))
@@ -402,6 +412,21 @@ def test_virtual_bsdf_sampling_setters_validate_inputs(speos: Speos) -> None:
         adaptive.set_uniform().theta_sampling = cast(Any, 0)
     with pytest.raises(TypeError, match="theta_sampling must be an integer."):
         adaptive.set_uniform().theta_sampling = cast(Any, 89.5)
+    with pytest.raises(TypeError, match="phi_sampling must be an integer."):
+        adaptive.set_uniform().phi_sampling = cast(Any, 89.5)
+    with pytest.raises(ValueError, match="phi_sampling must be greater than 0."):
+        adaptive.set_uniform().phi_sampling = cast(Any, 0)
+
+    sensor_sampling = simulation.set_sensor_sampling_uniform()
+    with pytest.raises(ValueError, match="theta_sampling must be greater than 0."):
+        sensor_sampling.theta_sampling = cast(Any, 0)
+    with pytest.raises(TypeError, match="theta_sampling must be an integer."):
+        sensor_sampling.theta_sampling = cast(Any, "bad")
+    with pytest.raises(ValueError, match="phi_sampling must be greater than 0."):
+        sensor_sampling.phi_sampling = cast(Any, -1)
+
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        simulation.axis_system = [0.0] * 11
 
 
 def test_opt_prop_setters_validate_inputs(speos: Speos) -> None:
@@ -436,6 +461,42 @@ def test_vector_normalize_rejects_higher_dimensional_inputs() -> None:
     """Vector normalization should reject inputs with more than three dimensions."""
     with pytest.raises(ValueError, match="Input vector must be either 2D or 3D"):
         general_methods.normalize_vector([1.0, 0.0, 0.0, 0.0])
+
+
+def test_sampling_and_axis_setters_validate_without_server() -> None:
+    """Sampling and axis-system setters reject invalid values without a Speos server."""
+    source_uniform = BaseSimulation.SourceSampling.Uniform(
+        SimpleNamespace(theta_sampling=18),
+        default_values=False,
+        stable_ctr=True,
+    )
+    with pytest.raises(ValueError, match="theta_sampling must be greater than 0."):
+        source_uniform.theta_sampling = cast(Any, 0)
+
+    sensor_uniform = SimulationVirtualBSDF.SensorUniform(
+        SimpleNamespace(theta_sampling=45, phi_sampling=180),
+        default_values=False,
+        stable_ctr=True,
+    )
+    with pytest.raises(TypeError, match="theta_sampling must be an integer."):
+        sensor_uniform.theta_sampling = cast(Any, True)
+    with pytest.raises(ValueError, match="phi_sampling must be greater than 0."):
+        sensor_uniform.phi_sampling = cast(Any, -1)
+
+    camera = cast(SensorCamera, object.__new__(SensorCamera))
+    camera._sensor_instance = ProtoScene.SensorInstance()
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        camera.lxp_path_number = cast(Any, "bad")
+    camera.lxp_path_number = 2
+    camera.lxp_path_number = 0
+    assert camera.lxp_path_number is None
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        camera.axis_system = [0.0] * 11
+
+    simulation = cast(SimulationVirtualBSDF, object.__new__(SimulationVirtualBSDF))
+    simulation._simulation_instance = ProtoScene.SimulationInstance()
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        simulation.axis_system = [0.0] * 11
 
 
 def test_rotation_matrix_contruction() -> None:
