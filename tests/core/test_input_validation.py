@@ -40,6 +40,7 @@ from ansys.speos.core.opt_prop import TextureLayer
 from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorObserver
 from ansys.speos.core.simulation import SimulationDirect, SimulationVirtualBSDF
 from ansys.speos.core.source import BaseSource
+from tests.core.test_opt_prop import create_rect_face
 
 
 @pytest.mark.parametrize(
@@ -444,3 +445,20 @@ def test_rotation_matrix_contruction() -> None:
     assert np.array([[1, 0, 0], [0, 0.5, -0.8660254], [0, 0.8660254, 0.5]]) == pytest.approx(
         matrix_rot_60_x
     )
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_vertices_data_reuse(speos: Speos):
+    """Test appending MeshData to existing vertices data, as done in examples/core/texture.py."""
+    p = Project(speos=speos)
+    rp = p.create_root_part()
+    bdy0 = rp.create_body(name="Body0")
+
+    face0_0 = create_rect_face(bdy0, "face0_0", [0, 0, 0], 5, 5)
+    uv_0 = MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+    uv_1 = MeshData(name="uv_1", data=[0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])
+    face0_0.vertices_data = [uv_0]
+    rp.commit()
+
+    face0_0.vertices_data = face0_0.vertices_data + [uv_1]
+    assert face0_0.vertices_data == [uv_0, uv_1]
