@@ -1562,7 +1562,7 @@ class SimulationDirect(BaseSimulation):
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
@@ -2252,7 +2252,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
