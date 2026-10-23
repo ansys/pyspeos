@@ -3115,7 +3115,9 @@ class SensorIrradiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.irradiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
         """Set no ray file generation.
@@ -3772,7 +3774,9 @@ class SensorRadiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.radiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     @property
     def observer_point(self) -> SensorRadiance:
@@ -5610,8 +5614,10 @@ class SensorXMPIntensity(BaseSensor):
         return self._sensor_instance.intensity_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, value: list[float]):
-        self._sensor_instance.intensity_properties.axis_system[:] = value
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorImmersive(BaseSensor):
@@ -5920,7 +5926,9 @@ class SensorImmersive(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.immersive_properties.axis_system[:] = value
+        self._sensor_instance.immersive_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:
@@ -6424,7 +6432,9 @@ class SensorPolarIntensity(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.polar_intensity_properties.axis_system[:] = value
+        self._sensor_instance.polar_intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorObserver(BaseSensor):
@@ -6680,7 +6690,9 @@ class SensorObserver(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.observer_properties.axis_system[:] = value
+        self._sensor_instance.observer_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:

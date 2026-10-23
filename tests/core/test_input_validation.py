@@ -24,6 +24,7 @@
 
 from pathlib import Path
 from typing import Any, cast
+import uuid
 
 from ansys.api.speos.source.v1 import source_pb2
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
@@ -32,14 +33,23 @@ import pytest
 
 from ansys.speos.core import Intensity, Project, Spectrum, Speos
 from ansys.speos.core.generic import general_methods
-from ansys.speos.core.generic.parameters import MeshData
+from ansys.speos.core.generic.parameters import LuminaireSourceParameters, MeshData
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.opt_prop import TextureLayer
 from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorObserver
 from ansys.speos.core.simulation import SimulationDirect, SimulationVirtualBSDF
-from ansys.speos.core.source import BaseSource
+from ansys.speos.core.source import (
+    BaseSource,
+    SourceAmbientNaturalLight,
+    SourceAmbientUniform,
+    SourceDisplay,
+    SourceLuminaire,
+    SourceSurface,
+    SourceThermic,
+)
+from tests.conftest import test_path
 from tests.core.test_opt_prop import create_rect_face
 
 
@@ -124,6 +134,98 @@ def test_white_point_and_pathlike_helpers_validate_inputs() -> None:
     assert general_methods._validate_pathlike(Path("test.spectrum"), "file_uri") == str(
         Path("test.spectrum")
     )
+
+
+def test_source_setters_validate_inputs(speos: Speos, request: pytest.FixtureRequest) -> None:
+    """Source setters validate input on features committed through Speos RPC."""
+    project = Project(speos=speos)
+    sources = []
+    request.addfinalizer(lambda: [source.delete() for source in sources])
+    luminaire_parameters = LuminaireSourceParameters()
+    luminaire_parameters.intensity_file_uri = test_path / "IES_C_DETECTOR.ies"
+
+    luminaire = cast(
+        SourceLuminaire,
+        project.create_source(
+            name=f"Validation.Luminaire.{uuid.uuid4().hex}",
+            feature_type=SourceLuminaire,
+            parameters=luminaire_parameters,
+        ),
+    )
+    luminaire.commit()
+    sources.append(luminaire)
+    with pytest.raises(TypeError, match="intensity_file_uri must be a string or Path."):
+        luminaire.intensity_file_uri = cast(Any, 123)
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        luminaire.axis_system = [0.0] * 11
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        luminaire.flux.value = cast(Any, True)
+
+    surface = cast(
+        SourceSurface,
+        project.create_source(
+            name=f"Validation.Surface.{uuid.uuid4().hex}",
+            feature_type=SourceSurface,
+        ),
+    )
+    with pytest.raises(TypeError, match="flux_variation_file_uri must be a string or Path."):
+        surface.flux_variation_file_uri = cast(Any, 12)
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        surface.relative_lag = cast(Any, "bad")
+
+    thermic = cast(
+        SourceThermic,
+        project.create_source(
+            name=f"Validation.Thermic.{uuid.uuid4().hex}",
+            feature_type=SourceThermic,
+        ),
+    )
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        thermic.set_emissive_faces().temperature = cast(Any, True)
+
+    ambient = cast(
+        SourceAmbientUniform,
+        project.create_source(
+            name=f"Validation.Ambient.{uuid.uuid4().hex}",
+            feature_type=SourceAmbientUniform,
+        ),
+    )
+    ambient.commit()
+    sources.append(ambient)
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        ambient.luminance = cast(Any, False)
+    with pytest.raises(
+        TypeError, match="A vector must be a list or tuple of three finite numbers."
+    ):
+        ambient.zenith_direction = cast(Any, "invalid")
+
+    natural_light = cast(
+        SourceAmbientNaturalLight,
+        project.create_source(
+            name=f"Validation.NaturalLight.{uuid.uuid4().hex}",
+            feature_type=SourceAmbientNaturalLight,
+        ),
+    )
+    natural_light.commit()
+    sources.append(natural_light)
+    with pytest.raises(TypeError, match="A scalar must be a finite number."):
+        natural_light.turbidity = cast(Any, "bad")
+
+    display = cast(
+        SourceDisplay,
+        project.create_source(
+            name=f"Validation.Display.{uuid.uuid4().hex}",
+            feature_type=SourceDisplay,
+        ),
+    )
+    with pytest.raises(TypeError, match="image_file_uri must be a string or Path."):
+        display.image_file_uri = cast(Any, 123)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        display.x_start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="An axis system must contain exactly twelve values."):
+        display.axis_system = [0.0] * 11
+    with pytest.raises(ValueError, match="Value must be greater than 0."):
+        display.contrast_ratio = 0
 
 
 def test_intensity_setters_validate_inputs() -> None:
