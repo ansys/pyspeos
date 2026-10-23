@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import List, Mapping, Optional, Union, cast
 
 import ansys.speos.core.body as body
+import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
     IntensitAsymmetricGaussianParameters,
     IntensityCosParameters,
@@ -146,7 +147,9 @@ class Intensity:
 
         @intensity_file_uri.setter
         def intensity_file_uri(self, intensity_file_uri: Union[Path, str]) -> None:
-            self._library.intensity_file_uri = str(intensity_file_uri)
+            self._library.intensity_file_uri = general_methods._validate_pathlike(
+                intensity_file_uri, "intensity_file_uri"
+            )
 
         @property
         def orientation_axis_system(self) -> List[float]:
@@ -169,7 +172,9 @@ class Intensity:
 
         @orientation_axis_system.setter
         def orientation_axis_system(self, value: List[float]) -> None:
-            self._library_props.axis_system.values[:] = value
+            self._library_props.axis_system.values[:] = general_methods._validate_axis_system12(
+                value
+            ).tolist()
 
         def set_orientation_normal_to_surface(self) -> Intensity.Library:
             """Set the intensity orientation as normal to surface.
@@ -298,7 +303,10 @@ class Intensity:
 
         @fwhm_angle_x.setter
         def fwhm_angle_x(self, fwhm_angle_x: float) -> None:
-            self._gaussian.FWHM_angle_x = fwhm_angle_x
+            value = general_methods._validate_scalar(fwhm_angle_x)
+            if value < 0:
+                raise ValueError("fwhm_angle_x must be greater than or equal to 0.")
+            self._gaussian.FWHM_angle_x = value
 
         @property
         def fwhm_angle_y(self) -> float:
@@ -319,7 +327,10 @@ class Intensity:
 
         @fwhm_angle_y.setter
         def fwhm_angle_y(self, fwhm_angle_y: float) -> None:
-            self._gaussian.FWHM_angle_y = fwhm_angle_y
+            value = general_methods._validate_scalar(fwhm_angle_y)
+            if value < 0:
+                raise ValueError("fwhm_angle_y must be greater than or equal to 0.")
+            self._gaussian.FWHM_angle_y = value
 
         @property
         def total_angle(self) -> float:
@@ -340,7 +351,10 @@ class Intensity:
 
         @total_angle.setter
         def total_angle(self, total_angle: float) -> None:
-            self._gaussian.total_angle = total_angle
+            value = general_methods._validate_scalar(total_angle)
+            if not 0 < value <= 360:
+                raise ValueError("total_angle must be in the interval ]0, 360].")
+            self._gaussian.total_angle = value
 
         @property
         def axis_system(self) -> float:
@@ -423,7 +437,10 @@ class Intensity:
 
         @n.setter
         def n(self, n: float) -> None:
-            self._cos.N = n
+            value = general_methods._validate_scalar(n)
+            if value <= 0:
+                raise ValueError("n must be greater than 0.")
+            self._cos.N = value
 
         @property
         def total_angle(self) -> float:
@@ -444,7 +461,10 @@ class Intensity:
 
         @total_angle.setter
         def total_angle(self, total_angle: float) -> None:
-            self._cos.total_angle = total_angle
+            value = general_methods._validate_scalar(total_angle)
+            if not 0 < value <= 360:
+                raise ValueError("total_angle must be in the interval ]0, 360].")
+            self._cos.total_angle = value
 
     def __init__(
         self,

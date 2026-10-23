@@ -36,6 +36,7 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
@@ -158,7 +159,7 @@ class BaseSimulation:
 
             @adaptive_uri.setter
             def adaptive_uri(self, uri: Union[Path, str]) -> None:
-                self._adaptive.file_uri = str(uri)
+                self._adaptive.file_uri = general_methods._validate_pathlike(uri, "adaptive_uri")
 
         class Uniform:
             """Uniform sampling mode.
@@ -209,6 +210,10 @@ class BaseSimulation:
 
             @theta_sampling.setter
             def theta_sampling(self, theta_sampling: int) -> None:
+                if isinstance(theta_sampling, bool) or not isinstance(theta_sampling, int):
+                    raise TypeError("theta_sampling must be an integer.")
+                if theta_sampling <= 0:
+                    raise ValueError("theta_sampling must be greater than 0.")
                 self._uniform.theta_sampling = theta_sampling
 
         def __init__(
@@ -341,6 +346,9 @@ class BaseSimulation:
 
         @minimum_energy_percentage.setter
         def minimum_energy_percentage(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
+            if not 0 <= value <= 1:
+                raise ValueError("minimum_energy_percentage must be between 0 and 1.")
             self._weight.minimum_energy_percentage = value
 
     class SourceGroup:

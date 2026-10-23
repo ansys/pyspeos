@@ -307,7 +307,9 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._scene_instance.axis_system[:] = axis_system
+        self._scene_instance.axis_system[:] = general_methods._validate_axis_system12(
+            axis_system
+        ).tolist()
 
     @property
     def trajectory_file_uri(self) -> str:
@@ -331,7 +333,9 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
 
     @trajectory_file_uri.setter
     def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
-        self._scene_instance.trajectory_file_uri = str(uri)
+        self._scene_instance.trajectory_file_uri = general_methods._validate_pathlike(
+            uri, "trajectory_file_uri"
+        )
 
     def find(
         self,

@@ -42,6 +42,7 @@ import uuid
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameters,
@@ -376,7 +377,9 @@ class BaseSop:
             TypeError
                 If the current SOP is not of library type.
             """
-            self._parent._sop_template.library.sop_file_uri = str(value)
+            self._parent._sop_template.library.sop_file_uri = general_methods._validate_pathlike(
+                value, "file_uri"
+            )
 
     def set_surface_library(self) -> BaseSop.SopLibrary:
         """Configure SOP to use a library file.
@@ -470,6 +473,9 @@ class BaseVop:
             value : float
                 Real refractive index value to store on the optic field.
             """
+            value = general_methods._validate_scalar(value)
+            if value <= 0:
+                raise ValueError("index must be greater than 0.")
             self._parent._vop_template.optic.index = value
 
         @property
@@ -486,6 +492,9 @@ class BaseVop:
             value : float
                 Absorption coefficient to store on the optic field.
             """
+            value = general_methods._validate_scalar(value)
+            if value < 0:
+                raise ValueError("absorption must be greater than or equal to 0.")
             self._parent._vop_template.optic.absorption = value
 
         @property
@@ -505,6 +514,9 @@ class BaseVop:
                 Abbe number value, or ``None`` to clear the field.
             """
             if value is not None:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("constringence must be greater than 0.")
                 self._parent._vop_template.optic.constringence = value
             else:
                 self._parent._vop_template.optic.ClearField("constringence")
@@ -905,7 +917,7 @@ class TextureLayer(BaseSop):
                 Twelve floats ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
             """
             self._mapping.ClearField("axis_system")
-            self._mapping.axis_system[:] = value
+            self._mapping.axis_system[:] = general_methods._validate_axis_system12(value).tolist()
 
         @property
         def u_offset(self) -> float:
