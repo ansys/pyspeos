@@ -1616,6 +1616,71 @@ class OptPropParameters:
     """VOP parameters used for optical properties."""
 
 
+# =============================================================================
+# 3D texture parameters
+# =============================================================================
+
+
+class Texture3DPatternOperations(Enum):
+    """Operations that can be applied on the support body according to the pattern.
+
+    The values match the ``ProtoScene.Texture3D.PatternOperation`` protobuf enumeration.
+    """
+
+    undefined = 0
+    """Undefined pattern operation."""
+    remove = 1
+    """Subtract the pattern from the support body."""
+    add_on_same_material = 2
+    """Add the pattern on the support body and keep the support body material."""
+    add_on_different_material = 3
+    """Add the pattern on the support body and use the pattern material."""
+    add_in = 4
+    """Add the pattern into the support body and use the pattern material."""
+    insert = 5
+    """Insert the pattern in the support body and use the pattern material."""
+
+
+@dataclass
+class Texture3DParameters:
+    """Store default values for a 3D texture.
+
+    Parameters
+    ----------
+    axis_system : list[float], optional
+        Anchor of the 3D texture pattern ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        By default, the global origin axis system.
+    support_body_geo_path : str, optional
+        Geometry path of the body supporting the 3D texture.
+        By default, ``""``.
+    pattern_body_guid : str, optional
+        Guid of the body used as 3D texture pattern.
+        By default, ``""``.
+    pattern_operation : ansys.speos.core.generic.parameters.Texture3DPatternOperations, optional
+        Operation applied on the support body according to the pattern.
+        By default, ``Texture3DPatternOperations.add_on_same_material``.
+    global_scale : float, optional
+        Global scale factor applied to the 3D texture pattern.
+        By default, ``1.0``.
+    mapping_3d_file_uri : Union[str, pathlib.Path], optional
+        Uri of the 3D mapping file (``.OPT3DMapping``) used for this 3D texture.
+        By default, ``""``.
+    """
+
+    axis_system: list[float] = field(default_factory=lambda: list(ORIGIN))
+    """Anchor of the 3D texture pattern."""
+    support_body_geo_path: str = ""
+    """Geometry path of the body supporting the 3D texture."""
+    pattern_body_guid: str = ""
+    """Guid of the body used as 3D texture pattern."""
+    pattern_operation: Texture3DPatternOperations = Texture3DPatternOperations.add_on_same_material
+    """Operation applied on the support body according to the pattern."""
+    global_scale: float = 1.0
+    """Global scale factor applied to the 3D texture pattern."""
+    mapping_3d_file_uri: Union[str, Path] = ""
+    """Uri of the 3D mapping file (``.OPT3DMapping``)."""
+
+
 @dataclass
 class EmissiveFacesParameters:
     """Emissive Faces Parameters."""
