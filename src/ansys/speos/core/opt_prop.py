@@ -1966,6 +1966,12 @@ class OptProp(BaseVop, BaseSop):
         self._project = project
         self._unique_id = None
         self._texture = None
+        self._is_pattern_material = False
+        """Whether this optical property belongs to a 3D texture pattern.
+
+        A pattern material is stored inside the 3D texture message and must not be
+        registered in the scene material instance list.
+        """
 
         # Create material instance
         self._material_instance = ProtoScene.MaterialInstance(
@@ -2425,6 +2431,11 @@ class OptProp(BaseVop, BaseSop):
         # Prepare _unique_id and commit templates if needed
         self._prepare_commit()
 
+        # A 3D texture pattern material is owned by its 3D texture feature:
+        # it must not be added to the scene material instance list.
+        if self._is_pattern_material:
+            return self
+
         # Handle instance
         if self._project.scene_link:
             # Retrieve scene data
@@ -2454,7 +2465,11 @@ class OptProp(BaseVop, BaseSop):
         self._reset_sop_template()
 
         # Reset material instance
-        if self._project.scene_link is not None:
+        # A 3D texture pattern material is not stored in the scene material list:
+        # its local material instance is the reference.
+        if self._is_pattern_material:
+            self._reset_texture_layers()
+        elif self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
@@ -2463,16 +2478,21 @@ class OptProp(BaseVop, BaseSop):
             )
             if mat_inst is not None:
                 self._material_instance = mat_inst
-                if self._material_instance.HasField("texture"):
-                    layers = []
-                    for i, layer_msg in enumerate(self._material_instance.texture.layers):
-                        temp_layer = TextureLayer(self, name="")
-                        temp_layer._index = i
-                        temp_layer._fill(layer_msg.sop_guid, layer_msg)
-                        temp_layer._sync_texture_helpers(layer_msg)
-                        layers.append(temp_layer)
-                    self.texture = layers
+                self._reset_texture_layers()
         return self
+
+    def _reset_texture_layers(self) -> None:
+        """Rebuild the local texture layers from the local material instance."""
+        if not self._material_instance.HasField("texture"):
+            return
+        layers = []
+        for i, layer_msg in enumerate(self._material_instance.texture.layers):
+            temp_layer = TextureLayer(self, name="")
+            temp_layer._index = i
+            temp_layer._fill(layer_msg.sop_guid, layer_msg)
+            temp_layer._sync_texture_helpers(layer_msg)
+            layers.append(temp_layer)
+        self.texture = layers
 
     def delete(self) -> "OptProp":
         """Delete templates and remove the material instance from the scene.
@@ -2496,18 +2516,20 @@ class OptProp(BaseVop, BaseSop):
         self._material_instance.ClearField("sop_guids")
 
         # Remove the material instance from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
-        mat_inst = next(
-            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
-            None,
-        )
-        if mat_inst is not None:
-            scene_data.materials.remove(mat_inst)
-            self._project.scene_link.set(data=scene_data)  # update scene data
+        # A 3D texture pattern material is not registered in the scene material list.
+        if not self._is_pattern_material and self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
+            if mat_inst is not None:
+                scene_data.materials.remove(mat_inst)
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
-        self._material_instance.metadata.pop("UniqueId")
+        self._material_instance.metadata.pop("UniqueId", None)
         return self
 
     def _fill(self, mat_inst: ProtoScene.MaterialInstance):

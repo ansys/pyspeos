@@ -963,7 +963,8 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         Parameters
         ----------
         value : Union[str, ansys.speos.core.body.Body]
-            Body used as pattern. A ``Body`` must be committed before being used.
+            Body used as pattern, or directly its guid.
+            A ``Body`` must be committed before being used.
 
         Returns
         -------
@@ -974,14 +975,14 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
 
     @pattern_body.setter
     def pattern_body(self, value: Union[str, body.Body]) -> None:
-        if isinstance(value, body.Body):
+        if isinstance(value, str):
+            self._texture_3d.pattern.body_guid = value
+        elif isinstance(value, body.Body):
             if value.body_link is None:
                 raise ValueError(
                     "The body used as 3D texture pattern must be committed before being used."
                 )
             self._texture_3d.pattern.body_guid = value.body_link.key
-        elif isinstance(value, str):
-            self._texture_3d.pattern.body_guid = value
         else:
             raise TypeError(f"Type {type(value)} is not supported as 3D texture pattern body.")
 
@@ -1098,6 +1099,7 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             metadata=dict(metadata) if metadata else {},
             default_parameters=parameters or OptPropParameters(),
         )
+        material._is_pattern_material = True
         self._pattern_materials.append(material)
         return material
 
@@ -1130,6 +1132,7 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         self._pattern_materials = []
         for mat_inst in self._texture_3d.pattern.materials:
             material = opt_prop.OptProp(project=self._project, name=mat_inst.name)
+            material._is_pattern_material = True
             material._fill(mat_inst=mat_inst)
             self._pattern_materials.append(material)
 
@@ -1201,12 +1204,8 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         ansys.speos.core.component.Texture3D
             Updated 3D texture feature.
         """
-        # Delete templates used by the pattern materials
-        for material in self._pattern_materials:
-            material._delete_sop_template()
-            material._delete_vop_template()
-
-        # Remove the 3D texture from the scene
+        # Remove the 3D texture from the scene first, so that the scene no longer
+        # references the templates used by the pattern materials.
         if self._project.scene_link is not None and self._index is not None:
             scene_data = self._project.scene_link.get()
             if self._index < len(scene_data.textures_3d):
@@ -1222,6 +1221,11 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
                     and feature._index > self._index
                 ):
                     feature._index -= 1
+
+        # Delete templates used by the pattern materials
+        for material in self._pattern_materials:
+            material._delete_sop_template()
+            material._delete_vop_template()
 
         self._index = None
         if self in self._project._features:
