@@ -1086,6 +1086,11 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         -------
         ansys.speos.core.opt_prop.OptProp
             Optical property applied on the pattern body.
+
+        Notes
+        -----
+        Call :meth:`ansys.speos.core.opt_prop.OptProp.delete` on the returned object to
+        remove it from the 3D texture pattern, then commit the 3D texture.
         """
         if parameters is not None and not isinstance(parameters, OptPropParameters):
             raise TypeError(
@@ -1100,16 +1105,20 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             default_parameters=parameters or OptPropParameters(),
         )
         material._is_pattern_material = True
+        material._pattern_owner = self
         self._pattern_materials.append(material)
         return material
 
-    def delete_pattern_material(self, material: opt_prop.OptProp) -> Texture3D:
-        """Remove an optical property from the 3D texture pattern.
+    def _remove_pattern_material(self, material: opt_prop.OptProp) -> Texture3D:
+        """Detach an optical property from the 3D texture pattern.
+
+        Only the local data are updated: the templates of *material* are expected to be
+        already deleted by the caller.
 
         Parameters
         ----------
         material : ansys.speos.core.opt_prop.OptProp
-            Optical property to remove.
+            Optical property to detach.
 
         Returns
         -------
@@ -1117,10 +1126,9 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             Updated 3D texture feature.
         """
         if material not in self._pattern_materials:
-            raise ValueError("The provided material is not used by this 3D texture pattern.")
-        material._delete_sop_template()
-        material._delete_vop_template()
+            return self
         self._pattern_materials.remove(material)
+        material._pattern_owner = None
         self._texture_3d.pattern.ClearField("materials")
         self._texture_3d.pattern.materials.extend(
             [mat._material_instance for mat in self._pattern_materials]
@@ -1133,6 +1141,7 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         for mat_inst in self._texture_3d.pattern.materials:
             material = opt_prop.OptProp(project=self._project, name=mat_inst.name)
             material._is_pattern_material = True
+            material._pattern_owner = self
             material._fill(mat_inst=mat_inst)
             self._pattern_materials.append(material)
 

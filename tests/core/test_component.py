@@ -632,8 +632,34 @@ def test_create_3d_texture(speos: Speos):
     assert textures_3d[0].pattern_materials[1]._vop_template is None
     assert textures_3d[0].pattern_materials[1]._sop_template.HasField("optical_polished")
 
-    textures_3d[0].delete_pattern_material(textures_3d[0].pattern_materials[1])
+    # A pattern material is removed with OptProp.delete(), like any other optical property
+    textures_3d[0].pattern_materials[1].delete()
     textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 1
+
+    # Same behaviour for a material created after the first commit
+    texture_opt3 = textures_3d[0].create_pattern_material(
+        name="PatternMaterial3",
+        parameters=OptPropParameters(
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    pattern_body_button_face = pattern_body.find(name="button", feature_type=face.Face)[0]
+    texture_opt3.geometries = [pattern_body_button_face]
+    texture_opt3.commit()
+    textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 2
+
+    texture_opt3.delete()
+    textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 1
+    assert texture_opt3 not in textures_3d[0].pattern_materials
+    assert texture_opt3.sop_template_link is None
+    assert texture_opt3._pattern_owner is None
+    assert len(textures_3d[0]._texture_3d.pattern.materials) == 1
+
+    # Deleting twice is a no-op
+    texture_opt3.delete()
     assert len(textures_3d[0].pattern_materials) == 1
 
     with pytest.raises(
@@ -654,6 +680,16 @@ def test_reset_3d_texture(speos: Speos):
     """Test reset of a 3D texture local data from the server database."""
     p = Project(speos=speos)
     support_body, pattern_body = _create_geometry(p)
+    # The support body must be a volume body: assign a VOP to it
+    support_opt_prop = p.create_optical_property(
+        name="OptProp.1",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    support_opt_prop.geometries = [support_body]
+    support_opt_prop.commit()
 
     texture_3d = p.create_3d_texture(name="Texture3D.1")
 

@@ -1972,6 +1972,13 @@ class OptProp(BaseVop, BaseSop):
         A pattern material is stored inside the 3D texture message and must not be
         registered in the scene material instance list.
         """
+        self._pattern_owner = None
+        """3D texture feature owning this optical property, when it is a pattern material.
+
+        Set by :meth:`ansys.speos.core.component.Texture3D.create_pattern_material`. It allows
+        :meth:`delete` to detach the material from its 3D texture, like a regular optical
+        property is removed from the scene.
+        """
 
         # Create material instance
         self._material_instance = ProtoScene.MaterialInstance(
@@ -2501,6 +2508,13 @@ class OptProp(BaseVop, BaseSop):
         -------
         ansys.speos.core.opt_prop.OptProp
             Returns self after deletion and cleanup.
+
+        Notes
+        -----
+        When the optical property is a 3D texture pattern material, it is removed from
+        its owning :class:`~ansys.speos.core.component.Texture3D` instead of the scene
+        material list. The 3D texture must then be committed to propagate the change to
+        the Speos server.
         """
         # Delete the vop template
         self._delete_vop_template()
@@ -2516,8 +2530,13 @@ class OptProp(BaseVop, BaseSop):
         self._material_instance.ClearField("sop_guids")
 
         # Remove the material instance from the scene
-        # A 3D texture pattern material is not registered in the scene material list.
-        if not self._is_pattern_material and self._project.scene_link is not None:
+        # A 3D texture pattern material is not registered in the scene material list:
+        # it is detached from the 3D texture feature owning it.
+        if self._is_pattern_material:
+            if self._pattern_owner is not None:
+                self._pattern_owner._remove_pattern_material(self)
+                self._pattern_owner = None
+        elif self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             mat_inst = next(
                 (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
