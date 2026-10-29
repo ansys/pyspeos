@@ -198,7 +198,7 @@ jobs:
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: ./.github/workflows/reusable-speos-tests.yml
+    uses: $/.github/workflows/reusable-speos-tests.yml
 
   build-library:
     name: Build library
