@@ -113,6 +113,18 @@ def test_create_luminaire_source(speos: Speos):
     assert (
         source1._source_instance.luminaire_properties.axis_system == default_parameter.axis_system
     )
+    with pytest.raises(TypeError, match="intensity_file_uri must be a string or Path."):
+        source1.intensity_file_uri = 123
+    with pytest.raises(
+        TypeError,
+        match="An axis system must be a list or tuple of twelve finite numbers.",
+    ):
+        source1.axis_system = "bad-axis"
+    with pytest.raises(
+        ValueError,
+        match="An axis system must contain exactly twelve values.",
+    ):
+        source1.axis_system = [1, 2, 3]
 
     # intensity_file_uri
     source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
@@ -306,6 +318,26 @@ def test_create_luminaire_source(speos: Speos):
     else:
         # version 251
         assert source8._source_template.luminaire.HasField("flux_from_intensity_file")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_rayfile_source_validates_inputs(speos: Speos):
+    """Validate rayfile source URI and axis setters."""
+    p = Project(speos=speos)
+    source = SourceRayFile(p, "Ray.1")
+
+    with pytest.raises(TypeError, match="ray_file_uri must be a string or Path."):
+        source.ray_file_uri = 123
+    with pytest.raises(
+        TypeError,
+        match="An axis system must be a list or tuple of twelve finite numbers.",
+    ):
+        source.axis_system = None
+    with pytest.raises(
+        ValueError,
+        match="An axis system must contain exactly twelve values.",
+    ):
+        source.axis_system = [0, 0, 0]
 
 
 @pytest.mark.supported_speos_versions(min=251)
