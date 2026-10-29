@@ -1,0 +1,105 @@
+
+
+
+
+
+
+The ``open_result.py`` module
+=============================
+
+.. py:module:: ansys.speos.core.workflow.open_result
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: open_result
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~open_result_image`
+            - Retrieve an image from a specific simulation result.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to open result of the simulation feature.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: open_result_image(simulation_feature, result_name)
+
+   
+   Retrieve an image from a specific simulation result.
+
+
+   :Parameters:
+
+       **simulation_feature** : :obj:`ansys.speos.core.simulation.Simulation`
+           The simulation feature.
+
+       **result_name** : :class:`python:str`
+           The result name to open as an image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

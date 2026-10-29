@@ -1,0 +1,27 @@
+
+
+
+
+
+
+:class:`PySpeosPercentStyle`
+============================
+
+.. py:class:: ansys.speos.core.logger.PySpeosPercentStyle(fmt, *, defaults=None)
+
+   Bases: :py:obj:`logging.PercentStyle`
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.logger import PySpeosPercentStyle
+
+
+
+
+

@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`SpectrumBlackBodyParameters`
+====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SpectrumBlackBodyParameters
+
+   
+   Spectrum Black Body Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpectrumBlackBodyParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~temperature`
+            - Blackbody temperature in Kelvin.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SpectrumBlackBodyParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: temperature
+   :type:  float
+   :value: 2856
+
+
+   
+   Blackbody temperature in Kelvin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

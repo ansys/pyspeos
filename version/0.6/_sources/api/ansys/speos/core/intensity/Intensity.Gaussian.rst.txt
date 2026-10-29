@@ -1,0 +1,221 @@
+
+
+
+
+
+
+:class:`Gaussian`
+=================
+
+
+.. py:class:: ansys.speos.core.intensity.Intensity.Gaussian(gaussian, gaussian_props, default_values = True)
+
+   
+   Intensity of type: Gaussian.
+
+   By default, full width at half maximum following x and y are set at 30 degrees, and total
+   angle at 180 degrees.
+   By default, no axis system is chosen, that means normal to surface map.
+
+   :Parameters:
+
+       **gaussian** : :obj:`ansys.api.speos.intensity.v1.IntensityTemplate.Gaussian`
+           Gaussian to complete.
+
+       **gaussian_props** :         :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties`
+           Gaussian properties to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Gaussian
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_FWHM_angle_x`
+            - Set the full width following x at half maximum.
+          * - :py:attr:`~set_FWHM_angle_y`
+            - Set the full width following y at half maximum.
+          * - :py:attr:`~set_total_angle`
+            - Set the total angle of the emission of the light source.
+          * - :py:attr:`~set_axis_system`
+            - Set the intensity distribution orientation.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.intensity.Intensity import Gaussian
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_FWHM_angle_x(value = 30)
+
+   
+   Set the full width following x at half maximum.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Full Width in degrees following x at Half Maximum.
+           By default, ``30.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Gaussian`
+           Gaussian intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_FWHM_angle_y(value = 30)
+
+   
+   Set the full width following y at half maximum.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Full Width in degrees following y at Half Maximum.
+           By default, ``30.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Gaussian`
+           Gaussian intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_total_angle(value = 180)
+
+   
+   Set the total angle of the emission of the light source.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+           By default, ``180.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Gaussian`
+           Gaussian intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_axis_system(axis_system = None)
+
+   
+   Set the intensity distribution orientation.
+
+
+   :Parameters:
+
+       **axis_system** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``None`` : normal to surface map.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Gaussian`
+           Gaussian intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

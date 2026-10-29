@@ -1,0 +1,300 @@
+
+
+
+
+
+
+:class:`FastTransmissionGathering`
+==================================
+
+
+.. py:class:: ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering(project, fast_transmission_gathering = None)
+
+   
+   Speos feature: fast transmission gathering (FTG).
+
+   The fast transmission gathering accelerates the simulation by neglecting the light
+   refraction that occurs when the light is being transmitted through the selected
+   transparent geometries.
+
+   Only one fast transmission gathering feature per project.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **fast_transmission_gathering** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.FastTransmissionGathering`, :obj:`optional`
+           Protobuf message to provide if the feature does not have to be created from scratch.
+           By default, ``None``, means that the feature is created from scratch.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The geometries selected here are only taken into account if the fast transmission
+   gathering is activated at simulation level, via the ``fast_transmission_gathering``
+   property of :class:`ansys.speos.core.simulation.SimulationDirect` or
+   :class:`ansys.speos.core.simulation.SimulationInverse`.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: FastTransmissionGathering
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the fast transmission gathering - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geometries`
+            - Geometries with fast transmission gathering applied.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the fast transmission gathering.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
+
+Property detail
+---------------
+
+.. py:property:: geometries
+   :type: Optional[List[str]]
+
+
+   
+   Geometries with fast transmission gathering applied.
+
+   This property gets and sets the geo paths on which the fast transmission gathering
+   is applied.
+
+   :Parameters:
+
+       **geometries** : :obj:`Optional`\[:obj:`List`\[:obj:`Union`\[:obj:`ansys.speos.core.geo_ref.GeoRef`, :obj:`ansys.speos.core.body.Body`]]]
+           Geometries on which the fast transmission gathering is applied.
+           Pass ``None`` or an empty list to clear the geometries.
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`List`\[:class:`python:str`]]
+           Geo paths with fast transmission gathering applied.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The geometries selected here are only taken into account if the fast transmission
+   gathering is activated at simulation level, via the ``fast_transmission_gathering``
+   property of the direct or inverse simulation features.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the fast transmission gathering - read only.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`, :obj:`optional`
+           Key prefix used to look up a value.
+           By default, ``""``, which returns the full dictionary.
+
+
+
+   :Returns:
+
+       :class:`python:dict` | :data:`python:None`
+           Value found for the given key, or the full dictionary when *key* is empty.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the fast transmission gathering.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering`
+           Fast transmission gathering feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering`
+           Fast transmission gathering feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering`
+           Fast transmission gathering feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

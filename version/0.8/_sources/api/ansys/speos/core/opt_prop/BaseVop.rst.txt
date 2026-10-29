@@ -1,0 +1,285 @@
+
+
+
+
+
+
+:class:`BaseVop`
+================
+
+.. toctree::
+   :hidden:
+
+    VopOptic</api/ansys/speos/core/opt_prop/BaseVop.VopOptic>
+    VopLibrary</api/ansys/speos/core/opt_prop/BaseVop.VopLibrary>
+
+
+.. py:class:: ansys.speos.core.opt_prop.BaseVop(vop_template, mat_inst, vop_parameters = None, stable_ctr=False)
+
+   
+   Base class for Volume Optical Property helpers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a superclass and is not intended to be instantiated directly.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BaseVop
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_volume_none`
+            - Remove any VOP template (no volume optical property).
+          * - :py:attr:`~set_volume_opaque`
+            - Set VOP to non-transparent (opaque) material.
+          * - :py:attr:`~set_volume_optic`
+            - Set VOP to a transparent, non-scattering optic.
+          * - :py:attr:`~set_volume_library`
+            - Set VOP to use a library file.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~vop_optic`
+            - Optic parameters for a clear transparent volume.
+          * - :py:attr:`~vop_library`
+            - Library parameters when VOP is of library type.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop import BaseVop
+
+Property detail
+---------------
+
+.. py:property:: vop_optic
+   :type: Optional[BaseVop]
+
+
+   
+   Optic parameters for a clear transparent volume.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`ansys.speos.core.opt_prop.BaseVop.VopOptic`]
+           Optic helper containing index, absorption, and constringence when
+           VOP is of optic type, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: vop_library
+   :type: Optional[BaseVop]
+
+
+   
+   Library parameters when VOP is of library type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`ansys.speos.core.opt_prop.BaseVop.VopLibrary`]
+           Library helper containing ``material_file_uri`` when VOP is of
+           library type, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_volume_none()
+
+   
+   Remove any VOP template (no volume optical property).
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Returns self (as the OptProp that owns this VOP helper).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_opaque()
+
+   
+   Set VOP to non-transparent (opaque) material.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Returns self (as the OptProp that owns this VOP helper).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_optic()
+
+   
+   Set VOP to a transparent, non-scattering optic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.BaseVop.VopOptic`
+           Returns VOP Helper.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_library()
+
+   
+   Set VOP to use a library file.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.BaseVop.VopLibrary`
+           Returns VOP Library helper.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.opt_prop.BaseVop.VopOptic
+    ansys.speos.core.opt_prop.BaseVop.VopLibrary
+
+
+
+

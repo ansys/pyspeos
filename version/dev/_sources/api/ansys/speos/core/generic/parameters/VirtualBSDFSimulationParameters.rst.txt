@@ -1,0 +1,352 @@
+
+
+
+
+
+
+:class:`VirtualBSDFSimulationParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters
+
+   
+   Virtual BSDF Simulation Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VirtualBSDFSimulationParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~axis_system`
+            - Axis system used to position the simulation.
+          * - :py:attr:`~analysis_x_ratio`
+            - Analysis ratio along the X axis.
+          * - :py:attr:`~analysis_y_ratio`
+            - Analysis ratio along the Y axis.
+          * - :py:attr:`~integration_angle`
+            - Integration angle used for BSDF analysis.
+          * - :py:attr:`~stop_condition_ray_number`
+            - Maximum number of rays before stopping the simulation.
+          * - :py:attr:`~geom_distance_tolerance`
+            - Geometry distance tolerance value.
+          * - :py:attr:`~max_impact`
+            - 
+          * - :py:attr:`~minimum_energy_percentage`
+            - Minimum energy percentage threshold for ray continuation.
+          * - :py:attr:`~colorimetric_standard`
+            - Colorimetric standard used for result computation.
+          * - :py:attr:`~wavelength_range`
+            - Wavelength range used by the simulation.
+          * - :py:attr:`~sensor_sampling_mode`
+            - Sensor angular sampling parameters.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import VirtualBSDFSimulationParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Axis system used to position the simulation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: analysis_x_ratio
+   :type:  float
+   :value: 100
+
+
+   
+   Analysis ratio along the X axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: analysis_y_ratio
+   :type:  float
+   :value: 100
+
+
+   
+   Analysis ratio along the Y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_angle
+   :type:  float
+   :value: 2
+
+
+   
+   Integration angle used for BSDF analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: stop_condition_ray_number
+   :type:  int
+   :value: 100000
+
+
+   
+   Maximum number of rays before stopping the simulation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geom_distance_tolerance
+   :type:  float
+   :value: 0.01
+
+
+   
+   Geometry distance tolerance value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: max_impact
+   :value: 100
+
+
+.. py:attribute:: minimum_energy_percentage
+   :type:  float
+   :value: 0.005
+
+
+   
+   Minimum energy percentage threshold for ray continuation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: colorimetric_standard
+   :type:  ColorimetricStandardTypes
+
+   
+   Colorimetric standard used for result computation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: wavelength_range
+   :type:  WavelengthsRangeParameters
+
+   
+   Wavelength range used by the simulation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sensor_sampling_mode
+   :type:  Optional[SensorSamplingUnionParameters]
+
+   
+   Sensor angular sampling parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
