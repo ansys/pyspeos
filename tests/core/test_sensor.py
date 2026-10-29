@@ -24,6 +24,7 @@
 
 import math
 from pathlib import Path
+from typing import Any, cast
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 import numpy as np
@@ -1501,6 +1502,15 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     assert wl.start == 400
     assert wl.end == 700
     assert sensor_3d.layer == LayerTypes.none
+    wavelengths_range = wl
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="start must be greater than 0."):
+        wavelengths_range.start = cast(Any, -1.0)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.end = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="end must be greater than 0."):
+        wavelengths_range.end = cast(Any, -1.0)
 
 
 def test_load_radiance_sensor(speos: Speos):

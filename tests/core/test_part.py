@@ -561,6 +561,8 @@ def test_vertices_data(speos: Speos):
         face0_0.vertices_data = [
             ProtoFace.MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
         ]
+    with pytest.raises(ValueError, match="vertices_data item names must be non-empty strings."):
+        face0_0.vertices_data = [MeshData(name="", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])]
 
     p2 = Project(speos=speos, path=Path(test_path) / "Texture.1.speos" / "Texture.1.speos")
 

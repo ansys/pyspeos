@@ -68,8 +68,15 @@ def test_create_lightbox(speos: Speos):
     )
     assert lightbox.__str__().startswith("local") is True
     assert lightbox.axis_system == ORIGIN
+    with pytest.raises(
+        TypeError,
+        match="An axis system must be a list or tuple of twelve finite numbers.",
+    ):
+        lightbox.axis_system = "bad-axis"
     assert len(lightbox.project._features) == 3
     assert lightbox.trajectory_file_uri == ""
+    with pytest.raises(TypeError, match="trajectory_file_uri must be a string or Path."):
+        lightbox.trajectory_file_uri = 42
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
     assert lightbox_material[0].get(key="name") == "Material.2"

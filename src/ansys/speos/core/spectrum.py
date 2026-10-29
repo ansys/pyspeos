@@ -29,6 +29,7 @@ from typing import List, Mapping, Optional, Union
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.parameters import (
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
@@ -121,6 +122,9 @@ class Spectrum:
 
         @wavelength.setter
         def wavelength(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
+            if value <= 0:
+                raise ValueError("wavelength must be greater than 0.")
             self._monochromatic.wavelength = value
 
     class Blackbody:
@@ -178,6 +182,9 @@ class Spectrum:
 
         @temperature.setter
         def temperature(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
+            if value <= 0:
+                raise ValueError("temperature must be greater than 0.")
             self._blackbody.temperature = value
 
     class Sampled:
@@ -236,7 +243,12 @@ class Spectrum:
 
         @wavelengths.setter
         def wavelengths(self, wavelengths: List[float]) -> None:
-            self._sampled.wavelengths[:] = wavelengths
+            if not isinstance(wavelengths, (list, tuple)):
+                raise TypeError("wavelengths must be a list or tuple of finite numbers.")
+            validated = [general_methods._validate_scalar(value) for value in wavelengths]
+            if any(value <= 0 for value in validated):
+                raise ValueError("wavelengths must contain only values greater than 0.")
+            self._sampled.wavelengths[:] = validated
 
         @property
         def values(self) -> List[float]:
@@ -256,7 +268,12 @@ class Spectrum:
 
         @values.setter
         def values(self, values: List[float]) -> None:
-            self._sampled.values[:] = values
+            if not isinstance(values, (list, tuple)):
+                raise TypeError("values must be a list or tuple of finite numbers.")
+            validated = [general_methods._validate_scalar(value) for value in values]
+            if any(value < 0 or value > 100 for value in validated):
+                raise ValueError("values must be within [0, 100].")
+            self._sampled.values[:] = validated
 
     class Library:
         """Library type of spectrum.
@@ -313,7 +330,7 @@ class Spectrum:
 
         @file_uri.setter
         def file_uri(self, file_uri: Union[str, Path]) -> None:
-            self._library.file_uri = str(file_uri)
+            self._library.file_uri = general_methods._validate_pathlike(file_uri, "file_uri")
 
     def __init__(
         self,
