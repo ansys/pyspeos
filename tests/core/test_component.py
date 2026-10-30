@@ -27,9 +27,15 @@ from pathlib import Path
 
 import pytest
 
-from ansys.speos.core import Project, Speos, part
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
-from ansys.speos.core.generic.parameters import ORIGIN
+from ansys.speos.core import Project, Speos, face, part
+from ansys.speos.core.component import LightBox, LightBoxFileInstance, Texture3D
+from ansys.speos.core.generic.parameters import (
+    ORIGIN,
+    OptPropParameters,
+    SopTypes,
+    Texture3DPatternOperations,
+    VopOpticParameters,
+)
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import (
@@ -475,3 +481,315 @@ def test_delete_lightbox(speos: Speos):
 
     lightbox = p.find(name=".*", name_regex=True, feature_type=LightBox)
     assert len(lightbox) == 0
+
+
+def _create_geometry(p: Project):
+    """Create a root part with a volume support body and a volume pattern body."""
+    root_part = p.create_root_part()
+    support_body = root_part.create_body(name="SupportBody")
+    support_body_face_1 = support_body.create_face(name="button")
+    support_body_face_1.vertices = [0, 0, 0, 10, 0, 0, 10, 10, 0, 0, 10, 0]
+    support_body_face_1.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_1.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]
+    support_body_face_2 = support_body.create_face(name="top")
+    support_body_face_2.vertices = [0, 0, 10, 10, 0, 10, 10, 10, 10, 0, 10, 10]
+    support_body_face_2.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
+    support_body_face_3 = support_body.create_face(name="left")
+    support_body_face_3.vertices = [0, 0, 0, 10, 0, 0, 10, 0, 10, 0, 0, 10]
+    support_body_face_3.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_3.normals = [0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0]
+    support_body_face_4 = support_body.create_face(name="right")
+    support_body_face_4.vertices = [0, 10, 0, 10, 10, 0, 10, 10, 10, 0, 10, 10]
+    support_body_face_4.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_4.normals = [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+    support_body_face_5 = support_body.create_face(name="front")
+    support_body_face_5.vertices = [10, 0, 0, 10, 10, 0, 10, 10, 10, 10, 0, 10]
+    support_body_face_5.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_5.normals = [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+    support_body_face_6 = support_body.create_face(name="back")
+    support_body_face_6.vertices = [0, 0, 0, 0, 10, 0, 0, 10, 10, 0, 0, 10]
+    support_body_face_6.facets = [0, 1, 2, 0, 2, 3]
+    support_body_face_6.normals = [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0]
+    support_body.commit()
+
+    pattern_body = root_part.create_body(name="PatternBody")
+    pattern_body_face_1 = pattern_body.create_face(name="button")
+    pattern_body_face_1.vertices = [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]
+    pattern_body_face_1.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_1.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]
+    pattern_body_face_2 = pattern_body.create_face(name="top")
+    pattern_body_face_2.vertices = [0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1]
+    pattern_body_face_2.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
+    pattern_body_face_3 = pattern_body.create_face(name="left")
+    pattern_body_face_3.vertices = [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1]
+    pattern_body_face_3.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_3.normals = [0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0]
+    pattern_body_face_4 = pattern_body.create_face(name="right")
+    pattern_body_face_4.vertices = [0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1]
+    pattern_body_face_4.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_4.normals = [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+    pattern_body_face_5 = pattern_body.create_face(name="front")
+    pattern_body_face_5.vertices = [1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1]
+    pattern_body_face_5.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_5.normals = [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+    pattern_body_face_6 = pattern_body.create_face(name="back")
+    pattern_body_face_6.vertices = [0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1]
+    pattern_body_face_6.facets = [0, 1, 2, 0, 2, 3]
+    pattern_body_face_6.normals = [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0]
+    pattern_body.commit()
+    root_part.commit()
+    return support_body, pattern_body
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_create_3d_texture(speos: Speos):
+    """Test creation of a 3D texture_3d with default values."""
+    p = Project(speos=speos)
+    support_body, pattern_body = _create_geometry(p)
+    opt_prop = p.create_optical_property(
+        name="OptProp.1",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    opt_prop.geometries = [support_body]
+    opt_prop.commit()
+
+    texture_3d = p.create_3d_texture(name="Texture3D.1")
+    assert isinstance(texture_3d, Texture3D)
+    assert texture_3d.name == "Texture3D.1"
+    assert texture_3d.axis_system == ORIGIN
+    assert texture_3d.support_body == ""
+    assert texture_3d.pattern_body == ""
+    assert texture_3d.pattern_operation == Texture3DPatternOperations.add_on_same_material
+    assert texture_3d.global_scale == 1.0
+    assert texture_3d.mapping_3d_file_uri == ""
+    assert texture_3d.pattern_materials == []
+    assert texture_3d.__str__().startswith("local") is True
+
+    # The feature is registered in the project
+    assert len(p.find(name="Texture3D.1", feature_type=Texture3D)) == 1
+
+    # Fill the 3D texture_3d and commit it
+    texture_3d.axis_system = [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    texture_3d.support_body = support_body
+    texture_3d.pattern_body = pattern_body
+    texture_3d.pattern_operation = Texture3DPatternOperations.add_in
+    texture_3d.global_scale = 2.5
+    texture_3d.mapping_3d_file_uri = (
+        Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+    )
+    texture_opt = texture_3d.create_pattern_material(
+        name="PatternMaterial",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    texture_opt.geometries = [pattern_body]
+    texture_opt.commit()
+    texture_3d.commit()
+
+    assert texture_3d.__str__().startswith("local") is False
+
+    textures_3d = p.find(name=".*", name_regex=True, feature_type=Texture3D)
+    assert len(textures_3d) == 1
+    assert textures_3d[0]._texture_3d.axis_system == [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert textures_3d[0]._texture_3d.support_body_geo_path == "SupportBody"
+    assert textures_3d[0]._texture_3d.pattern.body_guid == pattern_body.body_link.key
+    assert textures_3d[0]._texture_3d.pattern_operation == Texture3DPatternOperations.add_in.value
+    assert textures_3d[0]._texture_3d.global_scale == 2.5
+    assert textures_3d[0]._texture_3d.mapping_3d_file_uri == str(
+        Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+    )
+
+    # Read only access
+    assert texture_3d.get(key="support_body_geo_path") == "SupportBody"
+    assert texture_3d.get()["global_scale"] == 2.5
+
+    textures_3d[0].support_body = support_body.geo_path.to_native_link()
+    textures_3d[0].commit()
+    assert textures_3d[0]._texture_3d.support_body_geo_path == "SupportBody"
+
+    texture_opt2 = textures_3d[0].create_pattern_material(
+        name="PatternMaterial2",
+        parameters=OptPropParameters(
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    pattern_body_top_face = pattern_body.find(name="top", feature_type=face.Face)[0]
+    texture_opt2.geometries = [pattern_body_top_face]
+    texture_opt2.commit()
+    textures_3d[0].commit()
+
+    assert len(textures_3d[0].pattern_materials) == 2
+    assert textures_3d[0].pattern_materials[0].vop_optic.index == 1.5
+    assert textures_3d[0].pattern_materials[0].vop_optic.absorption == 0.0
+    assert textures_3d[0].pattern_materials[0]._sop_template.HasField("optical_polished")
+    assert textures_3d[0].pattern_materials[1]._vop_template is None
+    assert textures_3d[0].pattern_materials[1]._sop_template.HasField("optical_polished")
+
+    # A pattern material is removed with OptProp.delete(), like any other optical property
+    textures_3d[0].pattern_materials[1].delete()
+    textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 1
+
+    # Same behaviour for a material created after the first commit
+    texture_opt3 = textures_3d[0].create_pattern_material(
+        name="PatternMaterial3",
+        parameters=OptPropParameters(
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    pattern_body_button_face = pattern_body.find(name="button", feature_type=face.Face)[0]
+    texture_opt3.geometries = [pattern_body_button_face]
+    texture_opt3.commit()
+    textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 2
+
+    texture_opt3.delete()
+    textures_3d[0].commit()
+    assert len(textures_3d[0].pattern_materials) == 1
+    assert texture_opt3 not in textures_3d[0].pattern_materials
+    assert texture_opt3.sop_template_link is None
+    assert texture_opt3._pattern_owner is None
+    assert len(textures_3d[0]._texture_3d.pattern.materials) == 1
+
+    # Deleting twice is a no-op
+    texture_opt3.delete()
+    assert len(textures_3d[0].pattern_materials) == 1
+
+    with pytest.raises(
+        ValueError,
+        match="Texture3D.1 has a conflict name with an existing feature.",
+    ):
+        p.create_3d_texture(name="Texture3D.1")
+
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided",
+    ):
+        p.create_3d_texture(name="Texture3D.2", parameters=261)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_reset_3d_texture(speos: Speos):
+    """Test reset of a 3D texture local data from the server database."""
+    p = Project(speos=speos)
+    support_body, pattern_body = _create_geometry(p)
+    # The support body must be a volume body: assign a VOP to it
+    support_opt_prop = p.create_optical_property(
+        name="OptProp.1",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    support_opt_prop.geometries = [support_body]
+    support_opt_prop.commit()
+
+    texture_3d = p.create_3d_texture(name="Texture3D.1")
+
+    # Reset on a non-committed 3D texture: local data are kept as is
+    texture_3d.global_scale = 3.0
+    texture_3d.reset()
+    assert texture_3d._index is None
+    assert texture_3d.global_scale == 3.0
+    assert texture_3d.__str__().startswith("local") is True
+
+    # Fill and commit the 3D texture
+    texture_3d.axis_system = [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    texture_3d.support_body = support_body
+    texture_3d.pattern_body = pattern_body
+    texture_3d.pattern_operation = Texture3DPatternOperations.add_in
+    texture_3d.global_scale = 2.5
+    texture_3d.mapping_3d_file_uri = (
+        Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+    )
+    texture_opt = texture_3d.create_pattern_material(
+        name="PatternMaterial",
+        parameters=OptPropParameters(
+            vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    texture_opt.geometries = [pattern_body]
+    texture_opt.commit()
+    texture_3d.commit()
+
+    # Modify locally without committing, then reset: server values are restored
+    texture_3d.axis_system = ORIGIN
+    texture_3d.global_scale = 7.5
+    texture_3d.pattern_operation = Texture3DPatternOperations.add_on_same_material
+    texture_3d.mapping_3d_file_uri = ""
+    texture_3d.reset()
+
+    assert texture_3d.axis_system == [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert texture_3d.global_scale == 2.5
+    assert texture_3d.pattern_operation == Texture3DPatternOperations.add_in
+    assert texture_3d.support_body == "SupportBody"
+    assert texture_3d.pattern_body == pattern_body.body_link.key
+    assert texture_3d.mapping_3d_file_uri == str(
+        Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+    )
+
+    # Pattern materials are rebuilt from the server data
+    assert len(texture_3d.pattern_materials) == 1
+    assert texture_3d.pattern_materials[0]._name == "PatternMaterial"
+    assert texture_3d.pattern_materials[0].vop_optic.index == 1.5
+    assert texture_3d.pattern_materials[0].vop_optic.absorption == 0.0
+    assert texture_3d.pattern_materials[0]._sop_template.HasField("optical_polished")
+
+    # A locally added pattern material is dropped by reset
+    texture_3d.create_pattern_material(
+        name="PatternMaterial2",
+        parameters=OptPropParameters(
+            sop_parameters=SopTypes.optical_polished,
+        ),
+    )
+    assert len(texture_3d.pattern_materials) == 2
+    texture_3d.reset()
+    assert len(texture_3d.pattern_materials) == 1
+    assert texture_3d.pattern_materials[0]._name == "PatternMaterial"
+
+    # Reset after deletion: the feature is no longer in the scene, local data are kept
+    texture_3d.delete()
+    texture_3d.global_scale = 4.5
+    texture_3d.reset()
+    assert texture_3d._index is None
+    assert texture_3d.global_scale == 4.5
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_load_3d_texture(speos: Speos):
+    """Test load a simulation with 3D texture inside."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "texture3d" / "3DTexture.speos",
+    )
+    textures_3d = p.find(name=".*", name_regex=True, feature_type=Texture3D)
+    assert len(textures_3d) == 1
+    textures_3d = textures_3d[0]
+    assert textures_3d.name == "Texture3D.1"
+    assert textures_3d.axis_system == [0.0, 2.0, 10.5, 1, 0, 0, 0, 0, -1, 0, 1, 0]
+    assert textures_3d.support_body == "Solid:832815123"
+    # assert textures_3d.pattern_body == "PatternBody"
+    assert textures_3d.pattern_operation == Texture3DPatternOperations.add_in
+    assert textures_3d.global_scale == 0.1
+    assert textures_3d.mapping_3d_file_uri == str(
+        Path(test_path) / "texture3d" / "Component1.3DT.OPT3DMapping"
+    )
+    assert len(textures_3d.pattern_materials) == 2
+    assert textures_3d.pattern_materials[0].vop_optic.index == 1.5
+    assert textures_3d.pattern_materials[0].vop_optic.absorption == 0.0
+    assert textures_3d.pattern_materials[0]._sop_template.HasField("optical_polished")
+
+    assert textures_3d.pattern_materials[1]._vop_template is None
+    assert textures_3d.pattern_materials[1]._sop_template.HasField("library")
+
+    textures_3d.delete()
+    texture_found = p.find(name=".*", name_regex=True, feature_type=Texture3D)
+    assert len(texture_found) == 0

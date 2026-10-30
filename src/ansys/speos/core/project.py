@@ -34,7 +34,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFileInstance, Texture3D
 import ansys.speos.core.face as face
 from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.general_methods import graphics_required
@@ -61,6 +61,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    Texture3DParameters,
     ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )
@@ -1120,6 +1121,57 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_3d_texture(
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[Texture3DParameters] = None,
+    ) -> Texture3D:
+        """Create a new 3D texture feature.
+
+        A 3D texture repeats a pattern body on a support body of the project geometry,
+        following a 3D mapping file.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.Texture3DParameters]
+            Allows to provide parameters to overwrite default parameters.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            3D texture feature.
+
+        Notes
+        -----
+        The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                Texture3D, name
+            )
+            raise ValueError(msg)
+
+        feature = Texture3D(
+            project=self,
+            name=name,
+            description=description,
+            metadata=metadata,
+            default_parameters=parameters,
+        )
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -1147,6 +1199,7 @@ class Project:
             SimulationInteractive,
             SimulationVirtualBSDF,
             LightBox,
+            Texture3D,
             part.Part,
             body.Body,
             face.Face,
@@ -1187,6 +1240,7 @@ class Project:
         ansys.speos.core.simulation.SimulationInteractive, \
         ansys.speos.core.simulation.SimulationInverse, \
         ansys.speos.core.component.LightBox, \
+        ansys.speos.core.component.Texture3D, \
         ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
@@ -1725,6 +1779,17 @@ class Project:
                 instance=scene_inst,
             )
             self._features.append(lightbox_scene)
+
+        # 3D textures: the Texture3D message carries no name, so a name is generated
+        # from its index in the scene textures_3d list.
+        for idx, texture_3d_inst in enumerate(scene_data.textures_3d):
+            texture_3d_feat = Texture3D(
+                project=self,
+                name=f"Texture3D.{idx + 1}",
+                texture_3d_instance=texture_3d_inst,
+            )
+            texture_3d_feat._index = idx
+            self._features.append(texture_3d_feat)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:

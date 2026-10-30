@@ -44,8 +44,11 @@ from ansys.speos.core.generic.parameters import (
     OptPropParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    Texture3DParameters,
+    Texture3DPatternOperations,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
+from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import ProtoScene
 import ansys.speos.core.project as project
@@ -805,3 +808,493 @@ ansys.speos.core.kernel.scene.ProtoScene.SceneInstance, optional
         self._scene_instance.metadata.pop("UniqueId")
         self._parent_project._features.remove(self)
         return self
+
+
+class Texture3D:
+    """Represent the Speos 3D texture feature.
+
+    A 3D texture repeats a pattern body on a support body of the project geometry,
+    following a 3D mapping file.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str, optional
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]], optional
+        Metadata of the feature.
+        By default, ``{}``.
+    default_parameters : Optional[\
+ansys.speos.core.generic.parameters.Texture3DParameters], optional
+        Allows to provide parameters to overwrite the default parameters.
+        By default, ``None``, which uses
+        :class:`~ansys.speos.core.generic.parameters.Texture3DParameters` defaults.
+    texture_3d_instance : Optional[\
+ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
+        3D texture protobuf message retrieved from an existing scene.
+        By default, ``None``, which creates a new 3D texture.
+
+    Notes
+    -----
+    The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+    The pattern body must not be a body of the scene root part taken in the simulation.
+    """
+
+    @general_methods.min_speos_version(27, 1, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        default_parameters: Optional[Texture3DParameters] = None,
+        texture_3d_instance: Optional[ProtoScene.Texture3D] = None,
+    ) -> None:
+        if default_parameters is not None and not isinstance(
+            default_parameters, Texture3DParameters
+        ):
+            raise TypeError(
+                f"Incorrect parameter dataclass provided "
+                f"{str(type(default_parameters))} instead of Texture3DParameters"
+            )
+
+        self._project = project
+        self._name = name
+        self._description = description
+        self._metadata = dict(metadata) if metadata else {}
+        self._index = None
+        self._pattern_materials: List[opt_prop.OptProp] = []
+
+        if texture_3d_instance is not None:
+            self._texture_3d = texture_3d_instance
+            self._sync_pattern_materials()
+        else:
+            self._texture_3d = ProtoScene.Texture3D()
+            self._fill_parameters(default_parameters or Texture3DParameters())
+
+    def _fill_parameters(self, default_parameters: Texture3DParameters) -> None:
+        """Fill the local 3D texture message from a parameter dataclass.
+
+        Parameters
+        ----------
+        default_parameters : ansys.speos.core.generic.parameters.Texture3DParameters
+            Parameters to apply.
+        """
+        self.axis_system = default_parameters.axis_system
+        self.support_body = default_parameters.support_body_geo_path
+        self.pattern_body = default_parameters.pattern_body_guid
+        self.pattern_operation = default_parameters.pattern_operation
+        self.global_scale = default_parameters.global_scale
+        self.mapping_3d_file_uri = default_parameters.mapping_3d_file_uri
+
+    @property
+    def name(self) -> str:
+        """Name of the 3D texture feature.
+
+        Returns
+        -------
+        str
+            Name of the feature.
+        """
+        return self._name
+
+    @property
+    def axis_system(self) -> List[float]:
+        """Anchor of the 3D texture pattern.
+
+        Twelve-element list ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        The coordinate system must be orthonormal.
+
+        Parameters
+        ----------
+        value : list[float]
+            New anchor values.
+
+        Returns
+        -------
+        list[float]
+            Current anchor values.
+        """
+        return list(self._texture_3d.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: List[float]) -> None:
+        if len(value) != 12:
+            raise ValueError("axis_system must contain 12 values [Ox Oy Oz Xx .. Zz].")
+        self._texture_3d.axis_system[:] = value
+
+    @property
+    def support_body(self) -> str:
+        """Geometry path of the body supporting the 3D texture.
+
+        Parameters
+        ----------
+        value : Union[str, ansys.speos.core.geo_ref.GeoRef, ansys.speos.core.body.Body]
+            Body supporting the 3D texture.
+
+        Returns
+        -------
+        str
+            Geometry path of the support body.
+        """
+        return self._texture_3d.support_body_geo_path
+
+    @support_body.setter
+    def support_body(self, value: Union[str, GeoRef, body.Body]) -> None:
+        geometry = None
+        if isinstance(value, str):
+            geometry = value
+        elif isinstance(value, GeoRef):
+            geometry = value.to_native_link()
+        elif isinstance(value, body.Body):
+            geometry = value.geo_path.to_native_link()
+        else:
+            raise TypeError(f"Type {type(value)} is not supported as 3D texture geometry input.")
+        self._texture_3d.support_body_geo_path = geometry
+
+    @property
+    def pattern_body(self) -> str:
+        """Guid of the body used as 3D texture pattern.
+
+        Parameters
+        ----------
+        value : Union[str, ansys.speos.core.body.Body]
+            Body used as pattern, or directly its guid.
+            A ``Body`` must be committed before being used.
+
+        Returns
+        -------
+        str
+            Guid of the pattern body.
+        """
+        return self._texture_3d.pattern.body_guid
+
+    @pattern_body.setter
+    def pattern_body(self, value: Union[str, body.Body]) -> None:
+        if isinstance(value, str):
+            self._texture_3d.pattern.body_guid = value
+        elif isinstance(value, body.Body):
+            if value.body_link is None:
+                raise ValueError(
+                    "The body used as 3D texture pattern must be committed before being used."
+                )
+            self._texture_3d.pattern.body_guid = value.body_link.key
+        else:
+            raise TypeError(f"Type {type(value)} is not supported as 3D texture pattern body.")
+
+    @property
+    def pattern_operation(self) -> Texture3DPatternOperations:
+        """Operation applied on the support body according to the pattern.
+
+        Parameters
+        ----------
+        value : ansys.speos.core.generic.parameters.Texture3DPatternOperations
+            New pattern operation.
+
+        Returns
+        -------
+        ansys.speos.core.generic.parameters.Texture3DPatternOperations
+            Current pattern operation.
+        """
+        return Texture3DPatternOperations(self._texture_3d.pattern_operation)
+
+    @pattern_operation.setter
+    def pattern_operation(self, value: Union[Texture3DPatternOperations, int]) -> None:
+        self._texture_3d.pattern_operation = Texture3DPatternOperations(value).value
+
+    @property
+    def global_scale(self) -> float:
+        """Global scale factor applied to the 3D texture pattern.
+
+        Parameters
+        ----------
+        value : float
+            New global scale factor.
+
+        Returns
+        -------
+        float
+            Current global scale factor.
+        """
+        return self._texture_3d.global_scale
+
+    @global_scale.setter
+    def global_scale(self, value: float) -> None:
+        self._texture_3d.global_scale = value
+
+    @property
+    def mapping_3d_file_uri(self) -> str:
+        """Uri of the 3D mapping file (``.OPT3DMapping``) used by this 3D texture.
+
+        Parameters
+        ----------
+        value : Union[str, pathlib.Path]
+            New 3D mapping file uri.
+
+        Returns
+        -------
+        str
+            Current 3D mapping file uri.
+        """
+        return self._texture_3d.mapping_3d_file_uri
+
+    @mapping_3d_file_uri.setter
+    def mapping_3d_file_uri(self, value: Union[str, Path]) -> None:
+        self._texture_3d.mapping_3d_file_uri = str(value)
+
+    @property
+    def pattern_materials(self) -> List[opt_prop.OptProp]:
+        """Materials applied on the pattern body.
+
+        Returns
+        -------
+        list[ansys.speos.core.opt_prop.OptProp]
+            Optical properties applied on the pattern body.
+        """
+        return self._pattern_materials
+
+    def create_pattern_material(
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[OptPropParameters] = None,
+    ) -> opt_prop.OptProp:
+        """Create a new optical property applied on the 3D texture pattern body.
+
+        The created optical property belongs to the 3D texture pattern: it is not
+        registered as a project feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the optical property.
+        description : str, optional
+            Description of the optical property.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata of the optical property.
+            By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters], optional
+            Allows to provide parameters to overwrite default parameters.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Optical property applied on the pattern body.
+
+        Notes
+        -----
+        Call :meth:`ansys.speos.core.opt_prop.OptProp.delete` on the returned object to
+        remove it from the 3D texture pattern, then commit the 3D texture.
+        """
+        if parameters is not None and not isinstance(parameters, OptPropParameters):
+            raise TypeError(
+                f"Incorrect parameter dataclass provided "
+                f"{str(type(parameters))} instead of OptPropParameters"
+            )
+        material = opt_prop.OptProp(
+            project=self._project,
+            name=name,
+            description=description,
+            metadata=dict(metadata) if metadata else {},
+            default_parameters=parameters or OptPropParameters(),
+        )
+        material._is_pattern_material = True
+        material._pattern_owner = self
+        self._pattern_materials.append(material)
+        return material
+
+    def _remove_pattern_material(self, material: opt_prop.OptProp) -> Texture3D:
+        """Detach an optical property from the 3D texture pattern.
+
+        Only the local data are updated: the templates of *material* are expected to be
+        already deleted by the caller.
+
+        Parameters
+        ----------
+        material : ansys.speos.core.opt_prop.OptProp
+            Optical property to detach.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            Updated 3D texture feature.
+        """
+        if material not in self._pattern_materials:
+            return self
+        self._pattern_materials.remove(material)
+        material._pattern_owner = None
+        self._texture_3d.pattern.ClearField("materials")
+        self._texture_3d.pattern.materials.extend(
+            [mat._material_instance for mat in self._pattern_materials]
+        )
+        return self
+
+    def _sync_pattern_materials(self) -> None:
+        """Rebuild the local pattern material features from the local protobuf message."""
+        self._pattern_materials = []
+        for mat_inst in self._texture_3d.pattern.materials:
+            material = opt_prop.OptProp(project=self._project, name=mat_inst.name)
+            material._is_pattern_material = True
+            material._pattern_owner = self
+            material._fill(mat_inst=mat_inst)
+            self._pattern_materials.append(material)
+
+    def _prepare_commit(self) -> None:
+        # Commit the templates of each material used by the pattern
+        for material in self._pattern_materials:
+            material._prepare_commit()
+
+        self._texture_3d.pattern.ClearField("materials")
+        self._texture_3d.pattern.materials.extend(
+            [mat._material_instance for mat in self._pattern_materials]
+        )
+
+    def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
+        # The Texture3D message holds no metadata: the feature is tracked by its index
+        # in the scene textures_3d list.
+        if self._index is not None and self._index < len(scene_data.textures_3d):
+            texture_inst = scene_data.textures_3d[self._index]
+            if texture_inst != self._texture_3d:
+                texture_inst.CopyFrom(self._texture_3d)
+                return True
+            return False
+
+        scene_data.textures_3d.append(self._texture_3d)
+        self._index = len(scene_data.textures_3d) - 1
+        return True
+
+    def commit(self) -> Texture3D:
+        """Save the local feature data to the Speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            Updated 3D texture feature.
+        """
+        # Prepare the materials of the pattern
+        self._prepare_commit()
+
+        if self._project.scene_link:
+            scene_data = self._project.scene_link.get()
+
+            if self._update_scene_data(scene_data):
+                self._project.scene_link.set(data=scene_data)
+
+        return self
+
+    def reset(self) -> Texture3D:
+        """Reset local data from the Speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            Updated 3D texture feature.
+        """
+        if self._project.scene_link is not None and self._index is not None:
+            scene_data = self._project.scene_link.get()
+            if self._index < len(scene_data.textures_3d):
+                self._texture_3d = scene_data.textures_3d[self._index]
+                self._sync_pattern_materials()
+        return self
+
+    def delete(self) -> Texture3D:
+        """Delete feature data from the Speos server database.
+
+        The local object data remain available after deletion.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            Updated 3D texture feature.
+        """
+        # Remove the 3D texture from the scene first, so that the scene no longer
+        # references the templates used by the pattern materials.
+        if self._project.scene_link is not None and self._index is not None:
+            scene_data = self._project.scene_link.get()
+            if self._index < len(scene_data.textures_3d):
+                del scene_data.textures_3d[self._index]
+                self._project.scene_link.set(data=scene_data)
+
+            # Indexes of the remaining 3D textures need to be updated
+            for feature in self._project._features:
+                if (
+                    isinstance(feature, Texture3D)
+                    and feature is not self
+                    and feature._index is not None
+                    and feature._index > self._index
+                ):
+                    feature._index -= 1
+
+        # Delete templates used by the pattern materials
+        for material in self._pattern_materials:
+            material._delete_sop_template()
+            material._delete_vop_template()
+
+        self._index = None
+        if self in self._project._features:
+            self._project._features.remove(self)
+        return self
+
+    def _to_dict(self) -> dict:
+        """Convert the 3D texture data to a dictionary representation.
+
+        Returns
+        -------
+        dict
+            Flattened dictionary with resolved GUID references and properties.
+        """
+        out_dict = {}
+        if self._project.scene_link and self._index is not None:
+            scene_data = self._project.scene_link.get()
+            if self._index < len(scene_data.textures_3d):
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client,
+                    message=scene_data.textures_3d[self._index],
+                )
+        if not out_dict:
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._texture_3d
+            )
+        proto_message_utils._replace_properties(json_dict=out_dict)
+        return out_dict
+
+    def get(self, key: str = "") -> Union[str, dict]:
+        """Get 3D texture information from its dictionary representation - read only.
+
+        Parameters
+        ----------
+        key : str, optional
+            Key prefix used to look up a value.
+            By default, ``""``, which returns the full dictionary.
+
+        Returns
+        -------
+        str | dict
+            Value found for the given key, or the full dictionary when *key* is empty.
+        """
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        content = list(info)
+        if len(content) != 0:
+            content.sort(
+                key=lambda x: SequenceMatcher(None, x[0], key).ratio(),
+                reverse=True,
+            )
+            return content[0][1]
+        info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+        print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
+    def __str__(self) -> str:
+        """Return the string representation of the 3D texture."""
+        out_str = ""
+        if not (self._project.scene_link and self._index is not None):
+            out_str += "local: "
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
+        return out_str
