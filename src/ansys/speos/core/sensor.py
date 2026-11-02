@@ -172,16 +172,10 @@ class BaseSensor(ABC):
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: Optional[int]) -> None:
-        if value in (None, 0):
+        if value is None or value == 0:
             self._sensor_instance.ClearField("lxp_properties")
             return
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise TypeError("lxp_path_number must be a non-negative integer or None.")
-        scalar = general_methods._validate_scalar(value)
-        if not scalar.is_integer():
-            raise TypeError("lxp_path_number must be a non-negative integer or None.")
-        if scalar < 0:
-            raise ValueError("lxp_path_number must be greater than or equal to 0.")
+        scalar = general_methods._validate_positive_int(value)
         self._sensor_instance.lxp_properties.nb_max_paths = int(scalar)
 
     @abstractmethod
@@ -2496,7 +2490,9 @@ class SensorCamera(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.camera_properties.axis_system[:] = axis_system
+        self._sensor_instance.camera_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.
@@ -3113,7 +3109,9 @@ class SensorIrradiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.irradiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
         """Set no ray file generation.
@@ -3770,7 +3768,9 @@ class SensorRadiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.radiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     @property
     def observer_point(self) -> SensorRadiance:
@@ -5608,8 +5608,10 @@ class SensorXMPIntensity(BaseSensor):
         return self._sensor_instance.intensity_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, value: list[float]):
-        self._sensor_instance.intensity_properties.axis_system[:] = value
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorImmersive(BaseSensor):
@@ -5918,7 +5920,9 @@ class SensorImmersive(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.immersive_properties.axis_system[:] = value
+        self._sensor_instance.immersive_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:
@@ -6422,7 +6426,9 @@ class SensorPolarIntensity(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.polar_intensity_properties.axis_system[:] = value
+        self._sensor_instance.polar_intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorObserver(BaseSensor):
@@ -6678,7 +6684,9 @@ class SensorObserver(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.observer_properties.axis_system[:] = value
+        self._sensor_instance.observer_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:

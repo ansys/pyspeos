@@ -205,7 +205,7 @@ class Part:
             """
             self._part_instance.axis_system[:] = general_methods._validate_axis_system12(
                 axis_system
-            )
+            ).tolist()
 
         @property
         def subparts(self) -> List[Part.SubPart]:

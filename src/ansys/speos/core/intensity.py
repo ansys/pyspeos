@@ -357,7 +357,7 @@ class Intensity:
             self._gaussian.total_angle = value
 
         @property
-        def axis_system(self) -> float:
+        def axis_system(self) -> Optional[List[float]]:
             """Property the intensity distribution axis system orientation.
 
             Parameters
@@ -375,11 +375,13 @@ class Intensity:
 
         @axis_system.setter
         def axis_system(self, axis_system: Optional[List[float]] = None) -> None:
-            self._gaussian_props.Clear()
             if axis_system is None:
+                self._gaussian_props.Clear()
                 self._gaussian_props.SetInParent()
             else:
-                self._gaussian_props.axis_system[:] = axis_system
+                values = general_methods._validate_axis_system12(axis_system).tolist()
+                self._gaussian_props.Clear()
+                self._gaussian_props.axis_system[:] = values
 
     class Cos:
         """Intensity of type: Cos.

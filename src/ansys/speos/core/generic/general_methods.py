@@ -162,10 +162,9 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
     vector_np = np.array(vector, dtype=float)
     if vector_np.size not in (2, 3):
         raise ValueError("Input vector must be either 2D or 3D")
-
     magnitude = magnitude_vector(cast(List[float], vector_np.tolist()))
     if magnitude == 0:
-        raise ValueError("A vector must not be a zero vector.")
+        raise ValueError("Cannot normalize a zero vector")
     return cast(List[float], (vector_np / magnitude).tolist())
 
 
@@ -215,7 +214,16 @@ def _validate_scalar(value: float) -> float:
     return scalar
 
 
-def _validate_pathlike(value, name: str) -> str:
+def _validate_positive_int(value: int) -> int:
+    """Validate a positive integer value."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError("Value must be an integer.")
+    if value <= 0:
+        raise ValueError("Value must be greater than 0.")
+    return value
+
+
+def _validate_pathlike(value: Union[str, Path], name: str) -> str:
     """Validate and convert a string or path-like value to a string."""
     if not isinstance(value, (str, Path)):
         raise TypeError(f"{name} must be a string or Path.")
