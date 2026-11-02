@@ -321,7 +321,7 @@ class BaseSensor(ABC):
 
         Parameters
         ----------
-        value : int
+        value : Optional[int]
             Integer value to define number of rays stored
 
         Returns
@@ -334,11 +334,12 @@ class BaseSensor(ABC):
         return None
 
     @lxp_path_number.setter
-    def lxp_path_number(self, value: int) -> None:
-        if value:
-            self._sensor_instance.lxp_properties.nb_max_paths = int(value)
-        else:
+    def lxp_path_number(self, value: Optional[int]) -> None:
+        if value is None or value == 0:
             self._sensor_instance.ClearField("lxp_properties")
+            return
+        scalar = general_methods._validate_positive_int(value)
+        self._sensor_instance.lxp_properties.nb_max_paths = int(scalar)
 
     @abstractmethod
     def _fill_parameters(self, default_parameters=None) -> None:
@@ -408,7 +409,7 @@ class BaseSensor(ABC):
 
         @x_start.setter
         def x_start(self, value: float):
-            self._angular_range.x_start = value
+            self._angular_range.x_start = general_methods._validate_scalar(value)
 
         @property
         def x_end(self) -> float:
@@ -417,7 +418,7 @@ class BaseSensor(ABC):
 
         @x_end.setter
         def x_end(self, value: float):
-            self._angular_range.x_end = value
+            self._angular_range.x_end = general_methods._validate_scalar(value)
 
         @property
         def x_sampling(self) -> int:
@@ -426,6 +427,10 @@ class BaseSensor(ABC):
 
         @x_sampling.setter
         def x_sampling(self, value: int):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError("x_sampling must be an integer.")
+            if value <= 0:
+                raise ValueError("x_sampling must be greater than 0.")
             self._angular_range.x_sampling = value
 
         @property
@@ -435,7 +440,7 @@ class BaseSensor(ABC):
 
         @y_start.setter
         def y_start(self, value: float):
-            self._angular_range.y_start = value
+            self._angular_range.y_start = general_methods._validate_scalar(value)
 
         @property
         def y_end(self) -> float:
@@ -444,7 +449,7 @@ class BaseSensor(ABC):
 
         @y_end.setter
         def y_end(self, value: float):
-            self._angular_range.y_end = value
+            self._angular_range.y_end = general_methods._validate_scalar(value)
 
         @property
         def y_sampling(self) -> int:
@@ -453,6 +458,10 @@ class BaseSensor(ABC):
 
         @y_sampling.setter
         def y_sampling(self, value: int):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError("y_sampling must be an integer.")
+            if value <= 0:
+                raise ValueError("y_sampling must be greater than 0.")
             self._angular_range.y_sampling = value
 
     class WavelengthsRange:
@@ -539,8 +548,14 @@ class BaseSensor(ABC):
         @start.setter
         def start(self, value: float):
             if self._uses_w_prefix:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("start must be greater than 0.")
                 self._wavelengths_range.w_start = value
             else:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("start must be greater than 0.")
                 self._wavelengths_range.wavelength_start = value
 
         @property
@@ -565,8 +580,14 @@ class BaseSensor(ABC):
         @end.setter
         def end(self, value: float):
             if self._uses_w_prefix:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("start must be greater than 0.")
                 self._wavelengths_range.w_end = value
             else:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("end must be greater than 0.")
                 self._wavelengths_range.wavelength_end = value
 
         @property
@@ -591,6 +612,10 @@ class BaseSensor(ABC):
         @sampling.setter
         def sampling(self, value):
             if self._supports_sampling:
+                if isinstance(value, bool) or not isinstance(value, int):
+                    raise TypeError("sampling must be an integer.")
+                if value <= 0:
+                    raise ValueError("sampling must be greater than 0.")
                 self._wavelengths_range.w_sampling = value
             else:
                 raise AttributeError("Wavelength sampling is not supported for this sensor.")
@@ -663,7 +688,7 @@ class BaseSensor(ABC):
 
         @x_start.setter
         def x_start(self, value: float):
-            self._sensor_dimensions.x_start = value
+            self._sensor_dimensions.x_start = general_methods._validate_scalar(value)
 
         @property
         def x_end(self) -> float:
@@ -683,7 +708,7 @@ class BaseSensor(ABC):
 
         @x_end.setter
         def x_end(self, value: float):
-            self._sensor_dimensions.x_end = value
+            self._sensor_dimensions.x_end = general_methods._validate_scalar(value)
 
         @property
         def x_sampling(self) -> int:
@@ -703,6 +728,10 @@ class BaseSensor(ABC):
 
         @x_sampling.setter
         def x_sampling(self, value: int):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError("x_sampling must be an integer.")
+            if value <= 0:
+                raise ValueError("x_sampling must be greater than 0.")
             self._sensor_dimensions.x_sampling = value
 
         @property
@@ -723,7 +752,7 @@ class BaseSensor(ABC):
 
         @y_start.setter
         def y_start(self, value: float):
-            self._sensor_dimensions.y_start = value
+            self._sensor_dimensions.y_start = general_methods._validate_scalar(value)
 
         @property
         def y_end(self) -> float:
@@ -743,7 +772,7 @@ class BaseSensor(ABC):
 
         @y_end.setter
         def y_end(self, value: float):
-            self._sensor_dimensions.y_end = value
+            self._sensor_dimensions.y_end = general_methods._validate_scalar(value)
 
         @property
         def y_sampling(self) -> int:
@@ -763,6 +792,10 @@ class BaseSensor(ABC):
 
         @y_sampling.setter
         def y_sampling(self, value: int):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError("y_sampling must be an integer.")
+            if value <= 0:
+                raise ValueError("y_sampling must be greater than 0.")
             self._sensor_dimensions.y_sampling = value
 
     class Colorimetric:
@@ -3102,7 +3135,9 @@ class SensorCamera(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.camera_properties.axis_system[:] = axis_system
+        self._sensor_instance.camera_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.
@@ -3813,7 +3848,9 @@ class SensorIrradiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.irradiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
         """Set no ray file generation.
@@ -4474,7 +4511,9 @@ class SensorRadiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
+        self._sensor_instance.radiance_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     @property
     def observer_point(self) -> SensorRadiance:
@@ -6502,8 +6541,10 @@ class SensorXMPIntensity(BaseSensor):
         return self._sensor_instance.intensity_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, value: list[float]):
-        self._sensor_instance.intensity_properties.axis_system[:] = value
+    def axis_system(self, value: list[float]) -> None:
+        self._sensor_instance.intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorImmersive(BaseSensor):
@@ -6821,7 +6862,9 @@ class SensorImmersive(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.immersive_properties.axis_system[:] = value
+        self._sensor_instance.immersive_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:
@@ -7353,7 +7396,9 @@ class SensorPolarIntensity(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.polar_intensity_properties.axis_system[:] = value
+        self._sensor_instance.polar_intensity_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
 
 class SensorObserver(BaseSensor):
@@ -7618,7 +7663,9 @@ class SensorObserver(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
-        self._sensor_instance.observer_properties.axis_system[:] = value
+        self._sensor_instance.observer_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def layer(self) -> Union[str, None]:
