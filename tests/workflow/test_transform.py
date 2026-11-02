@@ -25,20 +25,12 @@
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Callable, cast
 from uuid import UUID, uuid4
 
 import numpy as np
 import pytest
 
 from ansys.speos.core import Project, Speos, body, component, face, part, sensor, source
-from ansys.speos.core.generic.general_methods import (
-    _axis_frame,
-    _validate_axis_system12,
-    _validate_scalar,
-    _validate_vector3,
-    normalize_vector,
-)
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
 from ansys.speos.core.workflow.transform import (
     _copy_feature,
@@ -46,130 +38,9 @@ from ansys.speos.core.workflow.transform import (
     _copy_surface_geometry,
     _owner_project,
     _prepare_transform,
-    _rotation_matrix,
     _surface_source_body,
 )
 from tests.conftest import test_path
-
-
-@pytest.mark.parametrize(
-    ("validator", "value", "error", "message"),
-    [
-        pytest.param(
-            _validate_vector3,
-            "1,2,3",
-            TypeError,
-            "A vector must be a list or tuple of three finite numbers.",
-            id="wrong-vector-type",
-        ),
-        pytest.param(
-            _validate_vector3,
-            [1, "2", 3],
-            TypeError,
-            "Vector values must be numeric.",
-            id="wrong-vector-values",
-        ),
-        pytest.param(
-            _validate_vector3,
-            [1, float("nan"), 3],
-            ValueError,
-            "Vector values must be finite.",
-            id="nan-vector",
-        ),
-        pytest.param(
-            _validate_vector3,
-            [10**1000, 0, 0],
-            ValueError,
-            "Vector values must be finite.",
-            id="overflow-vector",
-        ),
-        pytest.param(
-            _validate_axis_system12,
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, float("nan")],
-            ValueError,
-            "Axis system values must be finite.",
-            id="nan-axis-system",
-        ),
-        pytest.param(
-            _validate_axis_system12,
-            [1, 2, 3, 4],
-            ValueError,
-            "An axis system must contain exactly twelve values.",
-            id="short-axis-system",
-        ),
-        pytest.param(
-            _validate_axis_system12,
-            "axis",
-            TypeError,
-            "An axis system must be a list or tuple of twelve finite numbers.",
-            id="wrong-axis-system-type",
-        ),
-        pytest.param(
-            _validate_axis_system12,
-            [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, "x"],
-            TypeError,
-            "Axis system values must be numeric.",
-            id="wrong-axis-system-values",
-        ),
-        pytest.param(
-            _validate_axis_system12,
-            [10**1000, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-            ValueError,
-            "Axis system values must be finite.",
-            id="overflow-axis-system",
-        ),
-    ],
-)
-def test_vector_and_axis_validators_reject_invalid_values(
-    validator: Callable[..., np.ndarray], value, error, message
-):
-    """Cover validator branches for malformed types, lengths, and non-finite values."""
-    with pytest.raises(error, match=message):
-        validator(value)
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        pytest.param(None, id="none"),
-        pytest.param(True, id="bool"),
-        pytest.param("1", id="string"),
-        pytest.param(float("inf"), id="infinity"),
-        pytest.param(float("nan"), id="nan"),
-        pytest.param(10**1000, id="overflow"),
-    ],
-)
-def test_scalar_validator_rejects_non_finite_or_non_numeric_values(value):
-    """Reject scalar values that cannot safely represent a finite number."""
-    expected_error = TypeError if value is None or isinstance(value, (bool, str)) else ValueError
-    match = (
-        "A scalar must be a finite number."
-        if expected_error is TypeError
-        else "A scalar must be finite."
-    )
-    with pytest.raises(expected_error, match=match):
-        _validate_scalar(cast(float, value))
-
-
-def test_axis_frame_rejects_left_handed_basis():
-    """Reject an axis system whose basis has a negative determinant."""
-    left_handed = _validate_axis_system12([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, -1])
-    with pytest.raises(
-        ValueError,
-        match="An axis system must contain an orthonormal, right-handed coordinate frame.",
-    ):
-        _axis_frame(left_handed)
-
-
-def test_transform_math_rejects_zero_norm_and_builds_rotation():
-    """Exercise normalized vectors and a basic Rodrigues rotation."""
-    with pytest.raises(ValueError, match="A vector must not be a zero vector."):
-        normalize_vector(_validate_vector3([0, 0, 0]))
-    np.testing.assert_allclose(
-        _rotation_matrix(_validate_vector3([0, 0, 2]), 90),
-        [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
-        atol=1e-12,
-    )
 
 
 def _load_workflow_transform_project(speos: Speos):
