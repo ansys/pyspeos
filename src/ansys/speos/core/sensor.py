@@ -582,7 +582,7 @@ class BaseSensor(ABC):
             if self._uses_w_prefix:
                 value = general_methods._validate_scalar(value)
                 if value <= 0:
-                    raise ValueError("start must be greater than 0.")
+                    raise ValueError("end must be greater than 0.")
                 self._wavelengths_range.w_end = value
             else:
                 value = general_methods._validate_scalar(value)
