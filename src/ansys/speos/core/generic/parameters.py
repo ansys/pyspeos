@@ -1627,8 +1627,6 @@ class Texture3DPatternOperations(Enum):
     The values match the ``ProtoScene.Texture3D.PatternOperation`` protobuf enumeration.
     """
 
-    undefined = 0
-    """Undefined pattern operation."""
     remove = 1
     """Subtract the pattern from the support body."""
     add_on_same_material = 2
