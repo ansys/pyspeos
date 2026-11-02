@@ -868,10 +868,27 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         self._metadata = dict(metadata) if metadata else {}
         self._index = None
         self._pattern_materials: List[opt_prop.OptProp] = []
+        self._pattern_body_feat = None
 
         if texture_3d_instance is not None:
             self._texture_3d = texture_3d_instance
             self._sync_pattern_materials()
+
+            # Pattern body feature
+            self._pattern_body_feat = body.Body(
+                speos_client=self._project.client,
+                name=self.name,
+                description=self._description,
+                metadata={},
+            )
+            # Set link and data
+            self._pattern_body_feat.body_link = self._project.client[
+                self._texture_3d.pattern.body_guid
+            ]
+            self._pattern_body_feat._body = self._pattern_body_feat.body_link.get()
+            # Create faces of the pattern body
+            self._pattern_body_feat._fill_faces()
+
         else:
             self._texture_3d = ProtoScene.Texture3D()
             self._fill_parameters(default_parameters or Texture3DParameters())
@@ -890,6 +907,22 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         self.pattern_operation = default_parameters.pattern_operation
         self.global_scale = default_parameters.global_scale
         self.mapping_3d_file_uri = default_parameters.mapping_3d_file_uri
+
+    def create_pattern_body(self) -> body.Body:
+        """Create a body in this element.
+
+        Returns
+        -------
+        ansys.speos.core.body.Body
+            Body feature.
+        """
+        self._pattern_body_feat = body.Body(
+            speos_client=self._project.client,
+            name=self.name,
+            description=self._description,
+            metadata={},
+        )
+        return self._pattern_body_feat
 
     @property
     def name(self) -> str:
@@ -957,34 +990,25 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         self._texture_3d.support_body_geo_path = geometry
 
     @property
-    def pattern_body(self) -> str:
-        """Guid of the body used as 3D texture pattern.
+    def pattern_body(self) -> body.Body:
+        """Body used as 3D texture pattern.
 
         Parameters
         ----------
-        value : Union[str, ansys.speos.core.body.Body]
-            Body used as pattern, or directly its guid.
-            A ``Body`` must be committed before being used.
+        value : ansys.speos.core.body.Body
+            Body used as pattern
 
         Returns
         -------
-        str
-            Guid of the pattern body.
+        ansys.speos.core.body.Body
+            Pattern body.
         """
-        return self._texture_3d.pattern.body_guid
+        return self._pattern_body_feat
 
     @pattern_body.setter
-    def pattern_body(self, value: Union[str, body.Body]) -> None:
-        if isinstance(value, str):
-            self._texture_3d.pattern.body_guid = value
-        elif isinstance(value, body.Body):
-            if value.body_link is None:
-                raise ValueError(
-                    "The body used as 3D texture pattern must be committed before being used."
-                )
+    def pattern_body(self, value: body.Body) -> None:
+        if value.body_link is not None:
             self._texture_3d.pattern.body_guid = value.body_link.key
-        else:
-            raise TypeError(f"Type {type(value)} is not supported as 3D texture pattern body.")
 
     @property
     def pattern_operation(self) -> Texture3DPatternOperations:
@@ -1146,6 +1170,14 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             self._pattern_materials.append(material)
 
     def _prepare_commit(self) -> None:
+        # Ensure that the pattern body is set before committing the 3D texture.
+        if self._pattern_body_feat is None:
+            raise ValueError("The pattern body must be set before committing the 3D texture.")
+
+        if self._pattern_body_feat.body_link is None:
+            self._pattern_body_feat.commit()
+            self._texture_3d.pattern.body_guid = self._pattern_body_feat.body_link.key
+
         # Commit the templates of each material used by the pattern
         for material in self._pattern_materials:
             material._prepare_commit()
@@ -1201,6 +1233,11 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             if self._index < len(scene_data.textures_3d):
                 self._texture_3d = scene_data.textures_3d[self._index]
                 self._sync_pattern_materials()
+
+        # Reset the pattern body feature if it exists.
+        if self._pattern_body_feat is not None:
+            self._pattern_body_feat.reset()
+
         return self
 
     def delete(self) -> Texture3D:
@@ -1235,6 +1272,12 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         for material in self._pattern_materials:
             material._delete_sop_template()
             material._delete_vop_template()
+
+        # Delete the pattern body feature if it exists.
+        if self._pattern_body_feat is not None:
+            self._pattern_body_feat.delete()
+            self._pattern_body_feat = None
+            self._texture_3d.pattern.ClearField("body_guid")
 
         self._index = None
         if self in self._project._features:

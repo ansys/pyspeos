@@ -69,7 +69,6 @@ from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
-from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
@@ -1518,24 +1517,7 @@ class Project:
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
 
-            f_links = self.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
-            face_db = self.client.faces()
-            if face_db._is_batch_available:
-                f_data_list = face_db.read_batch(refs=f_links)
-                for f_data, f_link in zip(f_data_list, f_links):
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
-            else:
-                for f_link in f_links:
-                    f_data = f_link.get()
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
+            b_feat._fill_faces()
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
