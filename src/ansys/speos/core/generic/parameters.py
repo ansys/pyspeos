@@ -1671,8 +1671,6 @@ class Texture3DParameters:
     """Anchor of the 3D texture pattern."""
     support_body_geo_path: str = ""
     """Geometry path of the body supporting the 3D texture."""
-    pattern_body_guid: str = ""
-    """Guid of the body used as 3D texture pattern."""
     pattern_operation: Texture3DPatternOperations = Texture3DPatternOperations.add_on_same_material
     """Operation applied on the support body according to the pattern."""
     global_scale: float = 1.0

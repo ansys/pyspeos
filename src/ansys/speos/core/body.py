@@ -360,8 +360,8 @@ class Body:
         return found_features
 
     def _fill_faces(self):
-        f_links = self._project.client.get_items(keys=self._body.face_guids, item_type=FaceLink)
-        face_db = self._project.client.faces()
+        f_links = self._speos_client.get_items(keys=self._body.face_guids, item_type=FaceLink)
+        face_db = self._speos_client.faces()
         if face_db._is_batch_available:
             f_data_list = face_db.read_batch(refs=f_links)
             for f_data, f_link in zip(f_data_list, f_links):

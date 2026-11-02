@@ -903,26 +903,9 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         """
         self.axis_system = default_parameters.axis_system
         self.support_body = default_parameters.support_body_geo_path
-        self.pattern_body = default_parameters.pattern_body_guid
         self.pattern_operation = default_parameters.pattern_operation
         self.global_scale = default_parameters.global_scale
         self.mapping_3d_file_uri = default_parameters.mapping_3d_file_uri
-
-    def create_pattern_body(self) -> body.Body:
-        """Create a body in this element.
-
-        Returns
-        -------
-        ansys.speos.core.body.Body
-            Body feature.
-        """
-        self._pattern_body_feat = body.Body(
-            speos_client=self._project.client,
-            name=self.name,
-            description=self._description,
-            metadata={},
-        )
-        return self._pattern_body_feat
 
     @property
     def name(self) -> str:
@@ -989,8 +972,25 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             raise TypeError(f"Type {type(value)} is not supported as 3D texture geometry input.")
         self._texture_3d.support_body_geo_path = geometry
 
+    def create_pattern_body(self) -> body.Body:
+        """Create a body in this element.
+
+        Returns
+        -------
+        ansys.speos.core.body.Body
+            Body feature.
+        """
+        if self._pattern_body_feat is None:
+            self._pattern_body_feat = body.Body(
+                speos_client=self._project.client,
+                name=self.name,
+                description=self._description,
+                metadata={},
+            )
+        return self._pattern_body_feat
+
     @property
-    def pattern_body(self) -> body.Body:
+    def pattern_body(self) -> Union[body.Body, None]:
         """Body used as 3D texture pattern.
 
         Parameters
@@ -1000,8 +1000,8 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
 
         Returns
         -------
-        ansys.speos.core.body.Body
-            Pattern body.
+        Union[ansys.speos.core.body.Body, None]
+            Pattern body if it exists, otherwise ``None``.
         """
         return self._pattern_body_feat
 

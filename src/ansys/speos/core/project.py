@@ -1767,7 +1767,7 @@ class Project:
         for idx, texture_3d_inst in enumerate(scene_data.textures_3d):
             texture_3d_feat = Texture3D(
                 project=self,
-                name=f"Texture3D.{idx + 1}",
+                name=self.client[texture_3d_inst.pattern.body_guid].get().name,
                 texture_3d_instance=texture_3d_inst,
             )
             texture_3d_feat._index = idx
