@@ -31,6 +31,7 @@ import uuid
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.part import ProtoPart
@@ -202,15 +203,9 @@ class Part:
             ValueError
                 If axis_system does not contain exactly 12 elements.
             """
-            if not isinstance(axis_system, (list, tuple)):
-                raise TypeError("axis_system must be a list or tuple of 12 numeric values.")
-            if len(axis_system) != 12:
-                raise ValueError("axis_system must contain exactly 12 elements.")
-            for v in axis_system:
-                if not isinstance(v, (int, float)):
-                    raise TypeError("axis_system elements must be int or float.")
-            # assign
-            self._part_instance.axis_system[:] = list(axis_system)
+            self._part_instance.axis_system[:] = general_methods._validate_axis_system12(
+                axis_system
+            ).tolist()
 
         @property
         def subparts(self) -> List[Part.SubPart]:

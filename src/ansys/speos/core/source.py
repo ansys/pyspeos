@@ -191,7 +191,9 @@ class BaseSource:
 
             @white_point.setter
             def white_point(self, value: List[float]):
-                self._userdefined_white_point.white_point[:] = value
+                self._userdefined_white_point.white_point[:] = (
+                    general_methods._validate_numeric_sequence(value, 2, "white point").tolist()
+                )
 
         def __init__(
             self,
@@ -283,6 +285,9 @@ class BaseSource:
 
         @red_spectrum.setter
         def red_spectrum(self, red_spectrum_file_uri: Union[str, Path]) -> None:
+            red_spectrum_file_uri = general_methods._validate_pathlike(
+                red_spectrum_file_uri, "red_spectrum_file_uri"
+            )
             if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._red_spectrum._message_to_complete = self._userdefined_color_space
@@ -310,6 +315,9 @@ class BaseSource:
 
         @green_spectrum.setter
         def green_spectrum(self, green_spectrum_file_uri: Union[str, Path]) -> None:
+            green_spectrum_file_uri = general_methods._validate_pathlike(
+                green_spectrum_file_uri, "green_spectrum_file_uri"
+            )
             if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._green_spectrum._message_to_complete = self._userdefined_color_space
@@ -337,6 +345,9 @@ class BaseSource:
 
         @blue_spectrum.setter
         def blue_spectrum(self, blue_spectrum_file_uri: Union[str, Path]) -> None:
+            blue_spectrum_file_uri = general_methods._validate_pathlike(
+                blue_spectrum_file_uri, "blue_spectrum_file_uri"
+            )
             if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._blue_spectrum._message_to_complete = self._userdefined_color_space
@@ -695,6 +706,7 @@ class BaseSource:
 
         @value.setter
         def value(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
             if self._flux.HasField("radiant_flux"):
                 self._flux_type = self._flux.radiant_flux
                 self._flux.radiant_flux.radiant_value = value
@@ -1224,7 +1236,9 @@ class SourceLuminaire(BaseSource):
 
     @intensity_file_uri.setter
     def intensity_file_uri(self, uri: Union[str, Path]) -> None:
-        self._source_template.luminaire.intensity_file_uri = str(uri)
+        self._source_template.luminaire.intensity_file_uri = general_methods._validate_pathlike(
+            uri, "intensity_file_uri"
+        )
 
     @property
     def spectrum(self) -> Spectrum:
@@ -1260,7 +1274,9 @@ class SourceLuminaire(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._source_instance.luminaire_properties.axis_system[:] = axis_system
+        self._source_instance.luminaire_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
 
 class SourceRayFile(BaseSource):
@@ -1505,7 +1521,9 @@ class SourceRayFile(BaseSource):
 
     @ray_file_uri.setter
     def ray_file_uri(self, uri: Union[Path, str]) -> None:
-        self._source_template.rayfile.ray_file_uri = str(uri)
+        self._source_template.rayfile.ray_file_uri = general_methods._validate_pathlike(
+            uri, "ray_file_uri"
+        )
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
@@ -1601,7 +1619,9 @@ class SourceRayFile(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._source_instance.rayfile_properties.axis_system[:] = axis_system
+        self._source_instance.rayfile_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
         """Set exit geometries.
@@ -1861,7 +1881,9 @@ class SourceSurface(BaseSource):
 
         @xmp_file_uri.setter
         def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
-            self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
+            self._exitance_variable.exitance_xmp_file_uri = general_methods._validate_pathlike(
+                xmp_file_uri, "xmp_file_uri"
+            )
 
         @property
         def axis_plane(self) -> List[float]:
@@ -1884,7 +1906,9 @@ class SourceSurface(BaseSource):
 
         @axis_plane.setter
         def axis_plane(self, axis_plane: List[float]) -> None:
-            self._exitance_variable_props.axis_plane[:] = axis_plane
+            self._exitance_variable_props.axis_plane[:] = (
+                general_methods._validate_numeric_sequence(axis_plane, 9, "axis plane").tolist()
+            )
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -2191,7 +2215,9 @@ class SourceSurface(BaseSource):
         if uri == "":
             self._source_template.surface.ClearField("timeline")
         else:
-            self._source_template.surface.timeline.flux_variation_file_uri = str(uri)
+            self._source_template.surface.timeline.flux_variation_file_uri = (
+                general_methods._validate_pathlike(uri, "flux_variation_file_uri")
+            )
 
     @property
     def relative_lag(self) -> float:
@@ -2216,6 +2242,7 @@ class SourceSurface(BaseSource):
 
     @relative_lag.setter
     def relative_lag(self, relative_lag: float) -> None:
+        relative_lag = general_methods._validate_scalar(relative_lag)
         if self._source_template.surface.HasField("timeline"):
             self._source_template.surface.timeline.relative_lag = relative_lag
         else:
@@ -2468,7 +2495,7 @@ class SourceThermic(BaseSource):
 
         @temperature.setter
         def temperature(self, value: float) -> None:
-            self._emissive_faces.temperature = float(value)
+            self._emissive_faces.temperature = general_methods._validate_scalar(value)
             return
 
         @property
@@ -2617,7 +2644,9 @@ class SourceThermic(BaseSource):
 
         @temperature_field_uri.setter
         def temperature_field_uri(self, temperature_field_uri: Union[str, Path]) -> None:
-            self._temperature_field.temperature_field_uri = str(temperature_field_uri)
+            self._temperature_field.temperature_field_uri = general_methods._validate_pathlike(
+                temperature_field_uri, "temperature_field_uri"
+            )
 
         @property
         def sop(self) -> BaseSop:
@@ -2659,7 +2688,9 @@ class SourceThermic(BaseSource):
             None
 
             """
-            self._temperature_field_props.axis_plane[:] = axis_plane
+            self._temperature_field_props.axis_plane[:] = (
+                general_methods._validate_numeric_sequence(axis_plane, 9, "axis plane").tolist()
+            )
             return
 
     def __init__(
@@ -3102,7 +3133,7 @@ class BaseSourceAmbient(BaseSource):
 
         @longitude.setter
         def longitude(self, longitude: float) -> None:
-            self._sun.longitude = longitude
+            self._sun.longitude = general_methods._validate_scalar(longitude)
 
         @property
         def latitude(self) -> float:
@@ -3122,7 +3153,7 @@ class BaseSourceAmbient(BaseSource):
 
         @latitude.setter
         def latitude(self, latitude: float) -> None:
-            self._sun.latitude = latitude
+            self._sun.latitude = general_methods._validate_scalar(latitude)
 
         @property
         def time_zone(self) -> str:
@@ -3209,7 +3240,7 @@ class BaseSourceAmbient(BaseSource):
 
         @direction.setter
         def direction(self, direction: List[float]) -> None:
-            self._sun.sun_direction[:] = direction
+            self._sun.sun_direction[:] = general_methods._validate_vector3(direction).tolist()
 
         @property
         def reverse_sun(self) -> bool:
@@ -3335,7 +3366,9 @@ class SourceAmbientUniform(BaseSourceAmbient):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        self._source_template.ambient.uniform_ambient.luminance = value
+        self._source_template.ambient.uniform_ambient.luminance = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def mirrored_extent(self) -> bool:
@@ -3377,7 +3410,9 @@ class SourceAmbientUniform(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -3571,7 +3606,9 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        self._source_template.ambient.cie_general.luminance = value
+        self._source_template.ambient.cie_general.luminance = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def cie_type(self) -> CieType:
@@ -3644,7 +3681,9 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -3692,7 +3731,7 @@ class SourceAmbientCieStandardGeneralSky(BaseSourceAmbient):
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.cie_general_properties.north_direction[:] = (
-            direction
+            general_methods._validate_vector3(direction).tolist()
         )
 
     @property
@@ -3864,7 +3903,9 @@ class SourceAmbientCieStandardOvercastSky(BaseSourceAmbient):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        self._source_template.ambient.cie_overcast.luminance = value
+        self._source_template.ambient.cie_overcast.luminance = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def zenith_direction(self) -> List[float]:
@@ -3879,7 +3920,9 @@ class SourceAmbientCieStandardOvercastSky(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -4008,6 +4051,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @turbidity.setter
     def turbidity(self, value: float) -> None:
+        value = general_methods._validate_scalar(value)
         if not 1.9 <= value <= 9.9:
             raise ValueError("Varies needs to be between 1.9 and 9.9")
         self._source_template.ambient.natural_light.turbidity = value
@@ -4057,7 +4101,9 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -4105,7 +4151,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
-            direction
+            general_methods._validate_vector3(direction).tolist()
         )
 
     @property
@@ -4281,7 +4327,9 @@ class SourceAmbientUsStandard(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -4312,7 +4360,7 @@ class SourceAmbientUsStandard(BaseSourceAmbient):
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.us_standard_properties.north_direction[:] = (
-            direction
+            general_methods._validate_vector3(direction).tolist()
         )
 
     @property
@@ -4522,7 +4570,9 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: List[float]) -> None:
-        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        self._source_instance.ambient_properties.zenith_direction[:] = (
+            general_methods._validate_vector3(direction).tolist()
+        )
 
     @property
     def reverse_zenith_direction(self) -> bool:
@@ -4570,7 +4620,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.environment_map_properties.north_direction[:] = (
-            direction
+            general_methods._validate_vector3(direction).tolist()
         )
 
     @property
@@ -4617,7 +4667,9 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        self._source_template.ambient.environment_map.luminance = value
+        self._source_template.ambient.environment_map.luminance = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def image_file_uri(self) -> str:
@@ -4640,7 +4692,9 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @image_file_uri.setter
     def image_file_uri(self, uri: Union[str, Path]) -> None:
-        self._source_template.ambient.environment_map.image_uri = str(uri)
+        self._source_template.ambient.environment_map.image_uri = (
+            general_methods._validate_pathlike(uri, "image_file_uri")
+        )
 
     @property
     def color_space(
@@ -5007,7 +5061,9 @@ class SourceDisplay(BaseSource):
         uri : Union[str, pathlib.Path]
             File path or URI to the image to be used by the display.
         """
-        self._source_template.display.image_file_uri = str(uri)
+        self._source_template.display.image_file_uri = general_methods._validate_pathlike(
+            uri, "image_file_uri"
+        )
 
     @property
     def x_start(self) -> float:
@@ -5029,7 +5085,9 @@ class SourceDisplay(BaseSource):
         value : float
             x_start in millimeters.
         """
-        self._source_template.display.source_dimensions.x_start = float(value)
+        self._source_template.display.source_dimensions.x_start = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def x_end(self) -> float:
@@ -5051,7 +5109,9 @@ class SourceDisplay(BaseSource):
         value : float
             x_end in millimeters.
         """
-        self._source_template.display.source_dimensions.x_end = float(value)
+        self._source_template.display.source_dimensions.x_end = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def y_start(self) -> float:
@@ -5073,7 +5133,9 @@ class SourceDisplay(BaseSource):
         value : float
             y_start in millimeters.
         """
-        self._source_template.display.source_dimensions.y_start = float(value)
+        self._source_template.display.source_dimensions.y_start = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def y_end(self) -> float:
@@ -5095,7 +5157,9 @@ class SourceDisplay(BaseSource):
         value : float
             y_end in millimeters.
         """
-        self._source_template.display.source_dimensions.y_end = float(value)
+        self._source_template.display.source_dimensions.y_end = general_methods._validate_scalar(
+            value
+        )
 
     @property
     def luminance(self) -> float:
@@ -5117,7 +5181,7 @@ class SourceDisplay(BaseSource):
         value : float
             Luminance value in cd/m^2.
         """
-        self._source_template.display.luminous_flux = float(value)
+        self._source_template.display.luminous_flux = general_methods._validate_scalar(value)
 
     @property
     def contrast_ratio(self) -> Optional[int]:
@@ -5151,7 +5215,9 @@ class SourceDisplay(BaseSource):
             # proto3 optional semantics: clear by assigning default (no direct ClearField on scalar)
             self._source_template.display.ClearField("contrast_ratio")
         else:
-            self._source_template.display.contrast_ratio = int(value)
+            self._source_template.display.contrast_ratio = general_methods._validate_positive_int(
+                value
+            )
 
     @property
     def axis_system(self) -> list:
@@ -5174,7 +5240,9 @@ class SourceDisplay(BaseSource):
         axis_system : list
             12-element sequence describing the origin and local axes for placement in the scene.
         """
-        self._source_instance.display_properties.axis_system[:] = axis_system
+        self._source_instance.display_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(axis_system).tolist()
+        )
 
     @property
     def intensity(self) -> intensity.Intensity:
