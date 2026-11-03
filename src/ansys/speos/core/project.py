@@ -34,7 +34,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFileInstance, Texture3D
 import ansys.speos.core.face as face
 from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.general_methods import graphics_required
@@ -61,6 +61,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    Texture3DParameters,
     ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )
@@ -68,7 +69,6 @@ from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
-from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
@@ -1120,6 +1120,57 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_3d_texture(
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[Texture3DParameters] = None,
+    ) -> Texture3D:
+        """Create a new 3D texture feature.
+
+        A 3D texture repeats a pattern body on a support body of the project geometry,
+        following a 3D mapping file.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.Texture3DParameters]
+            Allows to provide parameters to overwrite default parameters.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            3D texture feature.
+
+        Notes
+        -----
+        The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                Texture3D, name
+            )
+            raise ValueError(msg)
+
+        feature = Texture3D(
+            project=self,
+            name=name,
+            description=description,
+            metadata=metadata,
+            default_parameters=parameters,
+        )
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -1147,6 +1198,7 @@ class Project:
             SimulationInteractive,
             SimulationVirtualBSDF,
             LightBox,
+            Texture3D,
             part.Part,
             body.Body,
             face.Face,
@@ -1187,6 +1239,7 @@ class Project:
         ansys.speos.core.simulation.SimulationInteractive, \
         ansys.speos.core.simulation.SimulationInverse, \
         ansys.speos.core.component.LightBox, \
+        ansys.speos.core.component.Texture3D, \
         ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
@@ -1464,24 +1517,7 @@ class Project:
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
 
-            f_links = self.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
-            face_db = self.client.faces()
-            if face_db._is_batch_available:
-                f_data_list = face_db.read_batch(refs=f_links)
-                for f_data, f_link in zip(f_data_list, f_links):
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
-            else:
-                for f_link in f_links:
-                    f_data = f_link.get()
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
+            b_feat._fill_faces()
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
@@ -1725,6 +1761,16 @@ class Project:
                 instance=scene_inst,
             )
             self._features.append(lightbox_scene)
+
+        # 3D textures: the Texture3D message carries no name, so the name of the pattern
+        # body is used as feature name.
+        for texture_3d_inst in scene_data.textures_3d:
+            texture_3d_feat = Texture3D(
+                project=self,
+                name=self.client[texture_3d_inst.pattern.body_guid].get().name,
+                texture_3d_instance=texture_3d_inst,
+            )
+            self._features.append(texture_3d_feat)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
