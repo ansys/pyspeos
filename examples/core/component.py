@@ -451,7 +451,8 @@ print(texture_3d)
 
 # ### Define the pattern body
 #
-# The pattern body is created from the 3D texture itself.
+# The pattern body is created from the 3D texture itself. It is automatically attached
+# to the 3D texture when the 3D texture is committed.
 #
 # > **Note:** The pattern body must not be a body of the scene root part taken
 # > in the simulation.
@@ -460,7 +461,6 @@ print(texture_3d)
 pattern_body = texture_3d.create_pattern_body()
 pattern_body = add_cube_faces(pattern_body, size=1)
 pattern_body.commit()
-texture_3d.pattern_body = pattern_body
 # -
 
 # ### Add a material on the pattern

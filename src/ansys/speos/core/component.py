@@ -996,12 +996,9 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
 
     @property
     def pattern_body(self) -> Union[body.Body, None]:
-        """Body used as 3D texture pattern.
+        """Body used as 3D texture pattern - read only.
 
-        Parameters
-        ----------
-        value : ansys.speos.core.body.Body
-            Body used as pattern
+        Use :meth:`create_pattern_body` to create it.
 
         Returns
         -------
@@ -1009,11 +1006,6 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             Pattern body if it exists, otherwise ``None``.
         """
         return self._pattern_body_feat
-
-    @pattern_body.setter
-    def pattern_body(self, value: body.Body) -> None:
-        if value.body_link is not None:
-            self._texture_3d.pattern.body_guid = value.body_link.key
 
     @property
     def pattern_operation(self) -> Texture3DPatternOperations:
@@ -1181,7 +1173,7 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
 
         if self._pattern_body_feat.body_link is None:
             self._pattern_body_feat.commit()
-            self._texture_3d.pattern.body_guid = self._pattern_body_feat.body_link.key
+        self._texture_3d.pattern.body_guid = self._pattern_body_feat.body_link.key
 
         # Commit the templates of each material used by the pattern
         for material in self._pattern_materials:

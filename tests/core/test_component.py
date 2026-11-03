@@ -588,7 +588,6 @@ def test_create_3d_texture(speos: Speos):
     pattern_body = texture_3d.create_pattern_body()
     _create_pattern_faces(pattern_body)
     pattern_body.commit()
-    texture_3d.pattern_body = pattern_body
     texture_3d.pattern_operation = Texture3DPatternOperations.add_in
     texture_3d.global_scale = 2.5
     texture_3d.mapping_3d_file_uri = (
@@ -723,7 +722,6 @@ def test_reset_3d_texture(speos: Speos):
     pattern_body = texture_3d.create_pattern_body()
     _create_pattern_faces(pattern_body)
     pattern_body.commit()
-    texture_3d.pattern_body = pattern_body
     texture_3d.pattern_operation = Texture3DPatternOperations.add_in
     texture_3d.global_scale = 2.5
     texture_3d.mapping_3d_file_uri = (
@@ -880,8 +878,7 @@ def test_3d_texture_edge_cases(speos: Speos):
         Path(test_path) / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
     )
 
-    # The pattern body is not committed yet: the guid cannot be assigned
-    texture_3d.pattern_body = pattern_body
+    # The pattern body is not committed yet: the guid is not assigned yet
     assert texture_3d._texture_3d.pattern.body_guid == ""
     material = texture_3d.create_pattern_material(
         name="PatternMaterial",
