@@ -579,6 +579,7 @@ class BaseSource:
                 name=name, description=description, metadata=metadata
             )
         else:
+            self._source_instance = source_instance
             self._unique_id = source_instance.metadata["UniqueId"]
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
@@ -1941,6 +1942,11 @@ class SourceSurface(BaseSource):
             name=name,
             message_to_complete=self._source_template.surface,
             spectrum_guid=spectrum_guid,
+        )
+        self._spectrum._no_spectrum_local = (
+            source_instance is not None
+            and self._source_template.surface.HasField("exitance_variable")
+            and not self._source_template.surface.HasField("spectrum_guid")
         )
 
         self._intensity = Intensity(
