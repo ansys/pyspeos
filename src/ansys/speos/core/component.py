@@ -870,12 +870,13 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         self._name = name
         self._description = description
         self._metadata = dict(metadata) if metadata else {}
-        self._index = None
+        self._committed_body_guid = ""
         self._pattern_materials: List[opt_prop.OptProp] = []
         self._pattern_body_feat = None
 
         if texture_3d_instance is not None:
             self._texture_3d = texture_3d_instance
+            self._committed_body_guid = self._texture_3d.pattern.body_guid
             self._sync_pattern_materials()
 
             # Pattern body feature
@@ -1191,18 +1192,46 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             [mat._material_instance for mat in self._pattern_materials]
         )
 
+    def _find_texture_3d_instance(
+        self, scene_data: ProtoScene.Scene
+    ) -> Union[ProtoScene.Texture3D, None]:
+        """Retrieve the scene 3D texture instance corresponding to this feature.
+
+        The Texture3D message holds no metadata: the feature is tracked thanks to the
+        guid of its pattern body, which is unique for each 3D texture.
+
+        Parameters
+        ----------
+        scene_data : ansys.speos.core.kernel.scene.ProtoScene.Scene
+            Scene data in which the 3D texture is searched.
+
+        Returns
+        -------
+        Union[ansys.speos.core.kernel.scene.ProtoScene.Texture3D, None]
+            3D texture instance if found, otherwise ``None``.
+        """
+        if not self._committed_body_guid:
+            return None
+        return next(
+            (
+                texture_inst
+                for texture_inst in scene_data.textures_3d
+                if texture_inst.pattern.body_guid == self._committed_body_guid
+            ),
+            None,
+        )
+
     def _update_scene_data(self, scene_data: ProtoScene.Scene) -> bool:
-        # The Texture3D message holds no metadata: the feature is tracked by its index
-        # in the scene textures_3d list.
-        if self._index is not None and self._index < len(scene_data.textures_3d):
-            texture_inst = scene_data.textures_3d[self._index]
+        texture_inst = self._find_texture_3d_instance(scene_data)
+        if texture_inst is not None:
             if texture_inst != self._texture_3d:
                 texture_inst.CopyFrom(self._texture_3d)
+                self._committed_body_guid = self._texture_3d.pattern.body_guid
                 return True
             return False
 
         scene_data.textures_3d.append(self._texture_3d)
-        self._index = len(scene_data.textures_3d) - 1
+        self._committed_body_guid = self._texture_3d.pattern.body_guid
         return True
 
     def commit(self) -> Texture3D:
@@ -1232,10 +1261,11 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         ansys.speos.core.component.Texture3D
             Updated 3D texture feature.
         """
-        if self._project.scene_link is not None and self._index is not None:
+        if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()
-            if self._index < len(scene_data.textures_3d):
-                self._texture_3d = scene_data.textures_3d[self._index]
+            texture_inst = self._find_texture_3d_instance(scene_data)
+            if texture_inst is not None:
+                self._texture_3d = texture_inst
                 self._sync_pattern_materials()
 
         # Reset the pattern body feature if it exists.
@@ -1256,21 +1286,12 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
         """
         # Remove the 3D texture from the scene first, so that the scene no longer
         # references the templates used by the pattern materials.
-        if self._project.scene_link is not None and self._index is not None:
+        if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()
-            if self._index < len(scene_data.textures_3d):
-                del scene_data.textures_3d[self._index]
+            texture_inst = self._find_texture_3d_instance(scene_data)
+            if texture_inst is not None:
+                scene_data.textures_3d.remove(texture_inst)
                 self._project.scene_link.set(data=scene_data)
-
-            # Indexes of the remaining 3D textures need to be updated
-            for feature in self._project._features:
-                if (
-                    isinstance(feature, Texture3D)
-                    and feature is not self
-                    and feature._index is not None
-                    and feature._index > self._index
-                ):
-                    feature._index -= 1
 
         # Delete templates used by the pattern materials
         for material in self._pattern_materials:
@@ -1283,7 +1304,7 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             self._pattern_body_feat = None
             self._texture_3d.pattern.ClearField("body_guid")
 
-        self._index = None
+        self._committed_body_guid = ""
         if self in self._project._features:
             self._project._features.remove(self)
         return self
@@ -1297,12 +1318,13 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
             Flattened dictionary with resolved GUID references and properties.
         """
         out_dict = {}
-        if self._project.scene_link and self._index is not None:
+        if self._project.scene_link:
             scene_data = self._project.scene_link.get()
-            if self._index < len(scene_data.textures_3d):
+            texture_inst = self._find_texture_3d_instance(scene_data)
+            if texture_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
-                    message=scene_data.textures_3d[self._index],
+                    message=texture_inst,
                 )
         if not out_dict:
             out_dict = proto_message_utils._replace_guids(
@@ -1341,7 +1363,10 @@ ansys.speos.core.kernel.scene.ProtoScene.Texture3D], optional
     def __str__(self) -> str:
         """Return the string representation of the 3D texture."""
         out_str = ""
-        if not (self._project.scene_link and self._index is not None):
+        committed = False
+        if self._project.scene_link:
+            committed = self._find_texture_3d_instance(self._project.scene_link.get()) is not None
+        if not committed:
             out_str += "local: "
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str

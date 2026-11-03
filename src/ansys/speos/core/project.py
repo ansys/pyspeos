@@ -1762,15 +1762,14 @@ class Project:
             )
             self._features.append(lightbox_scene)
 
-        # 3D textures: the Texture3D message carries no name, so a name is generated
-        # from its index in the scene textures_3d list.
-        for idx, texture_3d_inst in enumerate(scene_data.textures_3d):
+        # 3D textures: the Texture3D message carries no name, so the name of the pattern
+        # body is used as feature name.
+        for texture_3d_inst in scene_data.textures_3d:
             texture_3d_feat = Texture3D(
                 project=self,
                 name=self.client[texture_3d_inst.pattern.body_guid].get().name,
                 texture_3d_instance=texture_3d_inst,
             )
-            texture_3d_feat._index = idx
             self._features.append(texture_3d_feat)
 
         for sim_inst in scene_data.simulations:
