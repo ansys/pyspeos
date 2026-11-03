@@ -32,7 +32,7 @@ from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate
 # Direction vectors are normalized by the helpers, so their magnitude does not change
 # the requested distance.
 
-GRPC_PORT = 50055
+GRPC_PORT = 50098
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
 # ## Model setup
