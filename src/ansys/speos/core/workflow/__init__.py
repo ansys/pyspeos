@@ -29,6 +29,11 @@ from ansys.speos.core.workflow.combine_speos import (
     combine_speos,
     insert_speos,
 )
+from ansys.speos.core.workflow.transform import (
+    axis_to_axis_feature,
+    move_feature,
+    rotate_feature,
+)
 
 if os.name == "nt":
     from ansys.speos.core.workflow.open_result import (
