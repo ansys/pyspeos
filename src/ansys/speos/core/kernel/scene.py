@@ -103,7 +103,6 @@ class SceneLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
-    # Actions
     def load_file(self, file_uri: Path | str, password: str | None = None) -> None:
         """
         Load speos file to fill the scene.
@@ -122,7 +121,6 @@ class SceneLink(CrudItem):
                 guid=self.key,
                 file_uri=str(file_uri),
                 password=password,
-                force_version={"SensorTemplateVersion": 1},
             )
         )
 
