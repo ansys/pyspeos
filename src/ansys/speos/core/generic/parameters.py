@@ -750,6 +750,69 @@ class ObserverSensorParameters:
     """Layer separation type."""
 
 
+class HumanEyeSensorTypes(str, Enum):
+    """Sensor types available for the human eye sensor."""
+
+    colorimetric = "colorimetric"
+    spectral = "spectral"
+
+
+@dataclass
+class HumanEyeSensorParameters:
+    """Parameters for :class:`~ansys.speos.core.sensor.SensorHumanEye`.
+
+    Parameters
+    ----------
+    sensor_type : ansys.speos.core.generic.parameters.HumanEyeSensorTypes, optional
+        Sensor type, colorimetric or spectral.
+        By default, ``HumanEyeSensorTypes.colorimetric``.
+    wavelength_sampling : int, optional
+        Number of wavelengths between the fixed 360 nm and 830 nm bounds.
+        By default, ``13``.
+    pupil_diameter : float, optional
+        Diameter of the pupil in mm.
+        By default, ``4.0``.
+    dimensions : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+        Field of view and sampling of the sensor. X is the horizontal direction, Y the vertical
+        direction. By default, horizontal field of view from -20 to 20 degrees with a sampling of
+        2352, vertical field of view from -10 to 10 degrees with a sampling of 1176.
+    axis_system : list[float], optional
+        Sensor axis system ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``. O corresponds to the
+        observer (eye point), Y to the top direction and Z to the sight direction.
+        By default, ``ORIGIN``.
+    focal : float, optional
+        Focal length in mm, distance between the observer point and the target point.
+        By default, ``None``: the focal length (thus the target point) is not defined.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
+    """
+
+    sensor_type: HumanEyeSensorTypes = HumanEyeSensorTypes.colorimetric
+    """Sensor type."""
+    wavelength_sampling: int = 13
+    """Number of wavelengths between 360 nm and 830 nm."""
+    pupil_diameter: float = 4.0
+    """Pupil diameter in mm."""
+    dimensions: AngularRangeParameters = field(
+        default_factory=lambda: AngularRangeParameters(
+            x_start=-20.0,
+            x_end=20.0,
+            x_sampling=2352,
+            y_start=-10.0,
+            y_end=10.0,
+            y_sampling=1176,
+        )
+    )
+    """Field of view and sampling."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor: observer point, top direction (Y) and sight direction (Z)."""
+    focal: Optional[float] = None
+    """Focal length in mm."""
+    layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
+
+
 # =============================================================================
 # Source parameters
 # =============================================================================

@@ -48,6 +48,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
+    HumanEyeSensorParameters,
     ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
@@ -78,6 +79,7 @@ from ansys.speos.core.sensor import (
     BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorHumanEye,
     SensorImmersive,
     SensorIrradiance,
     SensorObserver,
@@ -264,8 +266,10 @@ class Project:
         Union[
             Sensor3DIrradiance,
             SensorCamera,
+            SensorHumanEye,
             SensorImmersive,
             SensorIrradiance,
+            SensorObserver,
             SensorPolarIntensity,
             SensorRadiance,
             SensorXMPIntensity,
@@ -277,8 +281,10 @@ class Project:
         -------
         List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorHumanEye, \
         ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorObserver, \
         ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
@@ -809,6 +815,7 @@ class Project:
                 ImmersiveSensorParameters,
                 ObserverSensorParameters,
                 PolarIntensitySensorParameters,
+                HumanEyeSensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -820,6 +827,7 @@ class Project:
         SensorImmersive,
         SensorObserver,
         SensorPolarIntensity,
+        SensorHumanEye,
     ]:
         """Create a new Sensor feature.
 
@@ -840,7 +848,8 @@ class Project:
             ansys.speos.core.sensor.SensorXMPIntensity, \
             ansys.speos.core.sensor.SensorObserver, \
             ansys.speos.core.sensor.SensorImmersive, \
-            ansys.speos.core.sensor.SensorPolarIntensity].
+            ansys.speos.core.sensor.SensorPolarIntensity, \
+            ansys.speos.core.sensor.SensorHumanEye].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -852,7 +861,8 @@ class Project:
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
         ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
         ansys.speos.core.generic.parameters.ObserverSensorParameters,\
-        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
+        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters,\
+        ansys.speos.core.generic.parameters.HumanEyeSensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -860,7 +870,8 @@ class Project:
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
-        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity]
+        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity, \
+        ansys.speos.core.sensor.SensorObserver, ansys.speos.core.sensor.SensorHumanEye]
             Sensor class instance.
         """
         if metadata is None:
@@ -994,6 +1005,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SensorHumanEye":
+                if parameters is None:
+                    parameters = HumanEyeSensorParameters()
+                elif not isinstance(parameters, HumanEyeSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of HumanEyeSensorParameters"
+                    )
+                feature = SensorHumanEye(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -1006,6 +1032,7 @@ class Project:
                         SensorImmersive,
                         SensorObserver,
                         SensorPolarIntensity,
+                        SensorHumanEye,
                     ],
                 )
                 raise TypeError(msg)
@@ -1746,6 +1773,13 @@ class Project:
                 )
             elif ssr_inst.HasField("observer_properties"):
                 ssr_feat = SensorObserver(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("human_eye_properties"):
+                ssr_feat = SensorHumanEye(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,

@@ -345,6 +345,7 @@ def _create_mesh(parent, name):
         ),
         pytest.param(sensor.SensorImmersive, marks=pytest.mark.supported_speos_versions(min=261)),
         pytest.param(sensor.SensorObserver, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(sensor.SensorHumanEye, marks=pytest.mark.supported_speos_versions(min=271)),
         pytest.param(part.Part.SubPart, marks=pytest.mark.supported_speos_versions(min=251)),
         pytest.param(component.LightBox, marks=pytest.mark.supported_speos_versions(min=261)),
     ],
@@ -369,6 +370,8 @@ def test_transform_axis_feature_preserves_contents(
         original = project.create_sensor(name="Original", feature_type=feature_type)
         if feature_type is sensor.SensorCamera:
             original.set_mode_geometric()
+        elif feature_type is sensor.SensorHumanEye:
+            original.focal = 250.0
     elif feature_type is part.Part.SubPart:
         root = project.create_root_part()
         original = root.create_sub_part(name="Original", description="Nested geometry")
