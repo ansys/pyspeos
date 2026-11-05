@@ -16,6 +16,8 @@ from ansys.speos.core.generic.parameters import (
     ColorParameters,
     EnergyDensity3DDimensionsParameters,
     EnergyDensity3DSensorParameters,
+    HumanEyeSensorParameters,
+    HumanEyeSensorTypes,
     LayerTypes,
     ObserverSensorParameters,
     PhotometricCameraParameters,
@@ -32,6 +34,7 @@ from ansys.speos.core.sensor import (
     Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorHumanEye,
     SensorImmersive,
     SensorIrradiance,
     SensorObserver,
@@ -417,6 +420,66 @@ print(sensor8)
 
 sensor7.delete()
 print(sensor7)
+
+# ### Human eye sensor
+#
+# A human eye sensor simulates what a human eye perceives when looking from an observer point
+# to a target point. The spectral range is fixed from 360 nm to 830 nm; only the wavelength
+# sampling can be changed. This sensor requires a Speos server 2027 R1 or above.
+#
+# **Default values**
+#
+# Colorimetric, wavelength sampling 13, pupil diameter 4 mm, horizontal field of view +/- 20 deg
+# (sampling 2352), vertical field of view +/- 10 deg (sampling 1176), no layer separation,
+# origin axis system and no focal (the target point is not defined yet).
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    sensor_eye = p.create_sensor(name="HumanEye.1", feature_type=SensorHumanEye)
+    print(sensor_eye)  # local: not yet on server
+
+    # The focal must be defined before committing (here by giving the target point)
+    sensor_eye.target_point = [0, 0, 100]
+    sensor_eye.commit()
+    print(sensor_eye)  # now on server
+
+    # **Customise the sensor**
+    #
+    # The sensor is positioned with an observer point, a target point and a top direction.
+    # The focal length is the distance between the observer and the target points.
+
+    sensor_eye.set_type_spectral()
+    sensor_eye.wavelength_sampling = 25
+    sensor_eye.pupil_diameter = 6.0
+    eye_fov = sensor_eye.set_dimensions()
+    eye_fov.x_sampling = 1200
+    eye_fov.y_sampling = 600
+    sensor_eye.observer_point = [0, 0, 0]
+    sensor_eye.target_point = [0, 0, 500]
+    sensor_eye.top_direction = [0, 1, 0]
+    sensor_eye.set_layer_type_source()
+    sensor_eye.commit()
+    print(sensor_eye)
+    print(sensor_eye.focal, sensor_eye.target_point)
+
+    # **Create from parameter dataclass**
+    #
+    # The dataclass defines the axis system (observer, top direction Y, sight direction Z)
+    # and the focal length.
+
+    eye_params = HumanEyeSensorParameters(
+        sensor_type=HumanEyeSensorTypes.colorimetric,
+        pupil_diameter=5.0,
+        axis_system=[0, 50, -200, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        focal=200.0,
+    )
+    sensor_eye2 = p.create_sensor(
+        name="HumanEye.Parameters", feature_type=SensorHumanEye, parameters=eye_params
+    )
+    sensor_eye2.commit()
+    print(sensor_eye2)
+
+    sensor_eye2.delete()
+    sensor_eye.delete()
 
 # ### Polar intensity sensor
 #
