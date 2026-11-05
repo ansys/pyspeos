@@ -565,7 +565,7 @@ wheels = [
 ]
 
 [[package]]
-name = "asteroid"
+name = "astroid"
 version = "4.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
