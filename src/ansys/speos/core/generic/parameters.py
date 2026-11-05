@@ -809,7 +809,10 @@ class HumanEyeSensorParameters:
     """Position of the sensor: observer point, top direction (Y) and sight direction (Z)."""
     focal: Optional[float] = None
     """Focal length in mm."""
-    layer_type: LayerTypes = LayerTypes.none
+    layer_type: Union[
+        Literal[LayerTypes.none],
+        Literal[LayerTypes.by_source],
+    ] = LayerTypes.none
     """Layer separation type."""
 
 
