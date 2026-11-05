@@ -23,13 +23,14 @@
 """Unit tests for PySpeos BSDF module."""
 
 from copy import deepcopy
+from importlib import import_module
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
 import numpy as np
 import pytest
 
-from ansys.speos.core import Speos, bsdf
+from ansys.speos.core import Speos
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint, SpectralBRDF
 from tests.conftest import test_path
 from tests.helper import (
@@ -39,6 +40,20 @@ from tests.helper import (
     does_file_exist,
     remove_file,
 )
+
+
+@pytest.fixture(
+    params=["ansys.speos.core.bsdf", "ansys.speos.core.input_files.bsdf"],
+    ids=["legacy", "input_files"],
+    autouse=True,
+)
+def bsdf_module(request, speos: Speos):
+    """Run the same BSDF behavior scenarios through each supported import route."""
+    clean_all_dbs(speos.client)
+    try:
+        yield import_module(request.param)
+    finally:
+        clean_all_dbs(speos.client)
 
 
 def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
@@ -60,7 +75,7 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
     return thetas, phis, bxdf
 
 
-def create_bsdf_data_point(is_brdf, incident_angle, anisotropy, wavelength=555.0):
+def create_bsdf_data_point(is_brdf, incident_angle, anisotropy, wavelength=555.0, *, bsdf_module):
     """Create a BxDFDatapoint."""
     nb_theta = 91
     nb_phi = 361
@@ -79,13 +94,15 @@ def create_bsdf_data_point(is_brdf, incident_angle, anisotropy, wavelength=555.0
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
                 bxdf[t, p] = abs(np.cos(thetas[t]) / np.pi)
-    datapoint = bsdf.BxdfDatapoint(is_brdf, 0, thetas, phis, bxdf, 0.5, anisotropy, wavelength)
+    datapoint = bsdf_module.BxdfDatapoint(
+        is_brdf, 0, thetas, phis, bxdf, 0.5, anisotropy, wavelength
+    )
     datapoint.set_incident_angle(0, False)
     datapoint.set_incident_angle(incident_angle)
     return datapoint
 
 
-def create_spectral_brdf(speos: Speos):
+def create_spectral_brdf(speos: Speos, *, bsdf_module):
     """Create an spectral bsdf as Class object."""
     nb_lambda = 5
     spectrum = []
@@ -95,22 +112,26 @@ def create_spectral_brdf(speos: Speos):
     incidence_angles = []
     for i in range(nb_incidence):
         incidence_angles.insert(0, i * 85 / (nb_incidence - 1))
-    spectral_brdf = SpectralBRDF(speos)
+    spectral_brdf = bsdf_module.SpectralBRDF(speos)
     spectral_brdf.description = "PySpeos Unittest"
     spectral_brdf.anisotropy_vector = [1, 0, 0]
     brdf = []
     btdf = []
     for wl in spectrum:
         for incident_angle in incidence_angles:
-            brdf.append(create_bsdf_data_point(True, incident_angle, 0, wl))
-            btdf.append(create_bsdf_data_point(False, incident_angle, 0, wl))
+            brdf.append(
+                create_bsdf_data_point(True, incident_angle, 0, wl, bsdf_module=bsdf_module)
+            )
+            btdf.append(
+                create_bsdf_data_point(False, incident_angle, 0, wl, bsdf_module=bsdf_module)
+            )
     spectral_brdf.brdf = brdf
     spectral_brdf.btdf = btdf
     spectral_brdf.commit()
     return spectral_brdf
 
 
-def create_anisotropic_bsdf(speos: Speos):
+def create_anisotropic_bsdf(speos: Speos, *, bsdf_module):
     """Create an anisotropic bsdf as Class object."""
     nb_lambda = 10
     spectrum = np.zeros((2, nb_lambda))
@@ -122,7 +143,7 @@ def create_anisotropic_bsdf(speos: Speos):
     incidence_angles = []
     for i in range(nb_incidence):
         incidence_angles.insert(0, i * 85 / (nb_incidence - 1))
-    ani_bsdf = AnisotropicBSDF(speos)
+    ani_bsdf = bsdf_module.AnisotropicBSDF(speos)
     ani_bsdf.spectrum_incidence = [0, 0]
     ani_bsdf.spectrum_anisotropy = [0, 0]
     ani_bsdf.description = "PySpeos Unittest"
@@ -131,8 +152,12 @@ def create_anisotropic_bsdf(speos: Speos):
     btdf = []
     for angle in anisotropy:
         for incident_angle in incidence_angles:
-            brdf.append(create_bsdf_data_point(True, incident_angle, angle))
-            btdf.append(create_bsdf_data_point(False, incident_angle, angle))
+            brdf.append(
+                create_bsdf_data_point(True, incident_angle, angle, bsdf_module=bsdf_module)
+            )
+            btdf.append(
+                create_bsdf_data_point(False, incident_angle, angle, bsdf_module=bsdf_module)
+            )
     ani_bsdf.brdf = brdf
     ani_bsdf.btdf = btdf
     ani_bsdf.reflection_spectrum = spectrum
@@ -232,17 +257,20 @@ def compare_spectral_bsdf(bsdf1: SpectralBRDF, bsdf2: SpectralBRDF):
         return False
 
 
-def test_anisotropic_bsdf(speos: Speos):
+def test_anisotropic_bsdf(speos: Speos, bsdf_module):
     """Unit test for anisotropic bsdf class."""
-    initial_bsdf = create_anisotropic_bsdf(speos)
-    bsdf_path = Path(test_path) / "Test_Lambertian_bsdf.anisotropicbsdf"
+    initial_bsdf = create_anisotropic_bsdf(speos, bsdf_module=bsdf_module)
+    bsdf_path = (
+        Path(test_path)
+        / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf.anisotropicbsdf"
+    )
     initial_bsdf.save(bsdf_path)
 
     # check save
     assert does_file_exist(str(bsdf_path))
 
     # compare loaded with created
-    exported_bsdf = AnisotropicBSDF(speos, bsdf_path)
+    exported_bsdf = bsdf_module.AnisotropicBSDF(speos, bsdf_path)
     assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
 
     # remove transmission
@@ -269,18 +297,18 @@ def test_anisotropic_bsdf(speos: Speos):
     exported_bsdf.spectrum_anisotropy = [np.radians(2), np.radians(2)]
 
     # save non changed file
-    bsdf_path2 = Path(test_path) / "Test_Lambertian_bsdf2"
+    bsdf_path2 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf2"
     bsdf_path2 = exported_bsdf.save(bsdf_path2, commit=False)
     assert does_file_exist(str(bsdf_path2))
 
     # save changed file
-    bsdf_path3 = Path(test_path) / "Test_Lambertian_bsdf3"
+    bsdf_path3 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf3"
     bsdf_path3 = exported_bsdf.save(bsdf_path3, commit=True)
     assert does_file_exist(str(bsdf_path3))
 
     # load and compare files
-    bsdf2 = AnisotropicBSDF(speos, bsdf_path2)
-    bsdf3 = AnisotropicBSDF(speos, bsdf_path3)
+    bsdf2 = bsdf_module.AnisotropicBSDF(speos, bsdf_path2)
+    bsdf3 = bsdf_module.AnisotropicBSDF(speos, bsdf_path3)
     assert compare_anisotropic_bsdf(initial_bsdf, bsdf2)
     assert not compare_anisotropic_bsdf(bsdf2, bsdf3)
     remove_file(str(bsdf_path))
@@ -288,12 +316,15 @@ def test_anisotropic_bsdf(speos: Speos):
     remove_file(str(bsdf_path3))
 
 
-def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
+def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos, bsdf_module):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
-    output_file = Path(test_path) / "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
-    initial_bsdf = AnisotropicBSDF(speos=speos, file_path=input_file)
+    output_file = Path(test_path) / (
+        f"{bsdf_module.__name__.replace('.', '_')}_"
+        "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
+    )
+    initial_bsdf = bsdf_module.AnisotropicBSDF(speos=speos, file_path=input_file)
     assert initial_bsdf.interpolation_settings is None
 
     # test indices setting and cones data generation
@@ -382,7 +413,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     # test the interpolation enhancement settings in a saved bsdf file
     initial_bsdf.save(output_file)
     clean_all_dbs(speos.client)
-    saved_bsdf = AnisotropicBSDF(speos=speos, file_path=output_file)
+    saved_bsdf = bsdf_module.AnisotropicBSDF(speos=speos, file_path=output_file)
     assert saved_bsdf.interpolation_settings is not None
 
     # test if the backend data is correct
@@ -440,37 +471,39 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["0.0"]["0.0"]["height"] != 0.6
 
 
-def test_bsdf180_creation(speos: Speos):
+def test_bsdf180_creation(speos: Speos, bsdf_module):
     """Unit test for create bsdf180 method."""
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
-    output_file_1 = Path(test_path) / "Test_bsdf180_1"
-    output_file_2 = Path(test_path) / "Test_bsdf180_2.bsdf180"
-    output_file_1 = bsdf.create_bsdf180(speos, output_file_1, input_file, input_file)
+    output_file_1 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_bsdf180_1"
+    output_file_2 = (
+        Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_bsdf180_2.bsdf180"
+    )
+    output_file_1 = bsdf_module.create_bsdf180(speos, output_file_1, input_file, input_file)
     assert does_file_exist(str(output_file_1))
-    bsdf.create_bsdf180(speos, output_file_2, input_file, input_file)
+    bsdf_module.create_bsdf180(speos, output_file_2, input_file, input_file)
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
 
 
-def test_spectral_brdf_creation(speos: Speos):
+def test_spectral_brdf_creation(speos: Speos, bsdf_module):
     """Unit test for create spectral brdf method."""
     input_file = [
         Path(test_path) / "R_test.anisotropicbsdf",
         Path(test_path) / "R_test.anisotropicbsdf",
     ]
     wl_list = [400.0, 700.0]
-    output_file_1 = Path(test_path) / "Test_brdf_1"
-    output_file_2 = Path(test_path) / "Test_brdf_2.brdf"
-    output_file_1 = bsdf.create_spectral_brdf(speos, output_file_1, wl_list, input_file)
+    output_file_1 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_brdf_1"
+    output_file_2 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_brdf_2.brdf"
+    output_file_1 = bsdf_module.create_spectral_brdf(speos, output_file_1, wl_list, input_file)
     assert does_file_exist(str(output_file_1))
-    bsdf.create_spectral_brdf(speos, output_file_2, wl_list, input_file)
+    bsdf_module.create_spectral_brdf(speos, output_file_2, wl_list, input_file)
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
 
 
-def test_anisotropic_bsdf_creation(speos: Speos):
+def test_anisotropic_bsdf_creation(speos: Speos, bsdf_module):
     """Unit test for create anisotropic bsdf method."""
     input_file = [
         Path(test_path) / "R_test.anisotropicbsdf",
@@ -478,22 +511,26 @@ def test_anisotropic_bsdf_creation(speos: Speos):
         Path(test_path) / "R_test.anisotropicbsdf",
     ]
     ani_list = [np.radians(0), np.radians(90), np.radians(180)]
-    output_file_1 = Path(test_path) / "Test_brdf_1"
-    output_file_2 = Path(test_path) / "Test_brdf_2.anisotropicbsdf"
-    output_file_1 = bsdf.create_anisotropic_bsdf(speos, output_file_1, ani_list, input_file)
+    output_file_1 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_brdf_1"
+    output_file_2 = (
+        Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_brdf_2.anisotropicbsdf"
+    )
+    output_file_1 = bsdf_module.create_anisotropic_bsdf(speos, output_file_1, ani_list, input_file)
     assert does_file_exist(str(output_file_1))
-    bsdf.create_anisotropic_bsdf(speos, output_file_2, ani_list, input_file, fix_disparity=True)
+    bsdf_module.create_anisotropic_bsdf(
+        speos, output_file_2, ani_list, input_file, fix_disparity=True
+    )
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
 
 
-def test_bsdf_error_management(speos: Speos):
+def test_bsdf_error_management(speos: Speos, bsdf_module):
     """Unit test of most bsdf error."""
     # BXDF datapoint class
     nb_theta, nb_phi = 5, 5
     thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
-    data = BxdfDatapoint(False, 0, thetas, phis, brdf)
+    data = bsdf_module.BxdfDatapoint(False, 0, thetas, phis, brdf)
     with pytest.raises(ValueError, match="Phi values need to be between"):
         t_phi = deepcopy(data.phi_values)
         t_phi.append(7)
@@ -517,10 +554,10 @@ def test_bsdf_error_management(speos: Speos):
     with pytest.raises(ValueError, match="Anisotropy angle needs to be between"):
         data.anisotropy = 7
     thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
-    data_t = BxdfDatapoint(False, 0, thetas, phis, brdf)
+    data_t = bsdf_module.BxdfDatapoint(False, 0, thetas, phis, brdf)
     thetas, phis, brdf = create_lambertian_bsdf(True, nb_theta, nb_phi)
-    data_r = BxdfDatapoint(True, 0, thetas, phis, brdf)
-    new_bsdf = AnisotropicBSDF(speos)
+    data_r = bsdf_module.BxdfDatapoint(True, 0, thetas, phis, brdf)
+    new_bsdf = bsdf_module.AnisotropicBSDF(speos)
     with pytest.raises(ValueError, match="One or multiple datapoints are transmission"):
         new_bsdf.brdf = [data_t]
     with pytest.raises(ValueError, match="One or multiple datapoints are reflection"):
@@ -548,17 +585,17 @@ def test_bsdf_error_management(speos: Speos):
         new_bsdf.transmission_spectrum = [[1, 2, 3], [1, 2]]
 
 
-def test_spectral_brdf(speos: Speos):
+def test_spectral_brdf(speos: Speos, bsdf_module):
     """Unit test for anisotropic bsdf class."""
-    initial_bsdf = create_spectral_brdf(speos)
-    bsdf_path = Path(test_path) / "Test_Lambertian.brdf"
+    initial_bsdf = create_spectral_brdf(speos, bsdf_module=bsdf_module)
+    bsdf_path = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian.brdf"
     initial_bsdf.save(bsdf_path)
 
     # check save
     assert does_file_exist(str(bsdf_path))
 
     # compare loaded with created
-    exported_bsdf = SpectralBRDF(speos, bsdf_path)
+    exported_bsdf = bsdf_module.SpectralBRDF(speos, bsdf_path)
     assert compare_spectral_bsdf(initial_bsdf, exported_bsdf)
 
     # remove transmission
@@ -592,40 +629,40 @@ def test_spectral_brdf(speos: Speos):
     exported_bsdf.has_transmission = False
 
     # save non changed file
-    bsdf_path2 = Path(test_path) / "Test_Lambertian_bsdf2"
+    bsdf_path2 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf2"
     bsdf_path2 = exported_bsdf.save(bsdf_path2, commit=False)
     assert does_file_exist(str(bsdf_path2))
 
     # save changed file
-    bsdf_path3 = Path(test_path) / "Test_Lambertian_bsdf3"
+    bsdf_path3 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf3"
     bsdf_path3 = exported_bsdf.save(bsdf_path3, commit=True)
     assert does_file_exist(str(bsdf_path3))
 
     # load and compare files
-    bsdf2 = SpectralBRDF(speos, bsdf_path2)
-    bsdf3 = SpectralBRDF(speos, bsdf_path3)
+    bsdf2 = bsdf_module.SpectralBRDF(speos, bsdf_path2)
+    bsdf3 = bsdf_module.SpectralBRDF(speos, bsdf_path3)
     assert compare_spectral_bsdf(initial_bsdf, bsdf2)
     assert not compare_spectral_bsdf(bsdf2, bsdf3)
 
     # compare loaded with created
-    exported_bsdf = SpectralBRDF(speos, bsdf_path)
+    exported_bsdf = bsdf_module.SpectralBRDF(speos, bsdf_path)
     # test commit True/false
     # change value
     exported_bsdf.has_reflection = False
 
     # save non changed file
-    bsdf_path4 = Path(test_path) / "Test_Lambertian_bsdf4"
+    bsdf_path4 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf4"
     bsdf_path4 = exported_bsdf.save(bsdf_path4, commit=False)
     assert does_file_exist(str(bsdf_path4))
 
     # save changed file
-    bsdf_path5 = Path(test_path) / "Test_Lambertian_bsdf5"
+    bsdf_path5 = Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_Lambertian_bsdf5"
     bsdf_path5 = exported_bsdf.save(bsdf_path5, commit=True)
     assert does_file_exist(str(bsdf_path5))
 
     # load and compare files
-    bsdf4 = SpectralBRDF(speos, bsdf_path4)
-    bsdf5 = SpectralBRDF(speos, bsdf_path5)
+    bsdf4 = bsdf_module.SpectralBRDF(speos, bsdf_path4)
+    bsdf5 = bsdf_module.SpectralBRDF(speos, bsdf_path5)
     assert compare_spectral_bsdf(initial_bsdf, bsdf4)
     assert not compare_spectral_bsdf(bsdf4, bsdf5)
     remove_file(str(bsdf_path))
@@ -635,12 +672,14 @@ def test_spectral_brdf(speos: Speos):
     remove_file(str(bsdf_path5))
 
 
-def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
+def test_spectral_bsdf_interpolation_enhancement(speos: Speos, bsdf_module):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
     input_file = Path(test_path) / "Test_not_interpolated.brdf"
-    output_file = Path(test_path) / "Test_interpolated.brdf"
-    initial_bsdf = SpectralBRDF(speos=speos, file_path=input_file)
+    output_file = (
+        Path(test_path) / f"{bsdf_module.__name__.replace('.', '_')}_Test_interpolated.brdf"
+    )
+    initial_bsdf = bsdf_module.SpectralBRDF(speos=speos, file_path=input_file)
     assert initial_bsdf.interpolation_settings is None
 
     # test indices setting and cones data generation
@@ -729,7 +768,7 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     # test the interpolation enhancement settings in a saved bsdf file
     initial_bsdf.save(output_file)
     clean_all_dbs(speos.client)
-    saved_bsdf = SpectralBRDF(speos=speos, file_path=output_file)
+    saved_bsdf = bsdf_module.SpectralBRDF(speos=speos, file_path=output_file)
     assert saved_bsdf.interpolation_settings is not None
 
     # test if the backend data is correct
@@ -780,17 +819,17 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
 
 
-def test_spectral_brdf_error_management(speos: Speos):
+def test_spectral_brdf_error_management(speos: Speos, bsdf_module):
     """Unit test of most bsdf error."""
     # BXDF datapoint class
     nb_theta, nb_phi = 5, 5
     thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
-    data_t1 = BxdfDatapoint(False, 0, thetas, phis, brdf)
-    data_t2 = BxdfDatapoint(False, 0.1, thetas, phis, brdf, wavelength=400)
+    data_t1 = bsdf_module.BxdfDatapoint(False, 0, thetas, phis, brdf)
+    data_t2 = bsdf_module.BxdfDatapoint(False, 0.1, thetas, phis, brdf, wavelength=400)
     thetas, phis, brdf = create_lambertian_bsdf(True, nb_theta, nb_phi)
-    data_r1 = BxdfDatapoint(True, 0, thetas, phis, brdf)
-    data_r2 = BxdfDatapoint(True, 0.1, thetas, phis, brdf, wavelength=400)
-    new_bsdf = SpectralBRDF(speos)
+    data_r1 = bsdf_module.BxdfDatapoint(True, 0, thetas, phis, brdf)
+    data_r2 = bsdf_module.BxdfDatapoint(True, 0.1, thetas, phis, brdf, wavelength=400)
+    new_bsdf = bsdf_module.SpectralBRDF(speos)
     new_bsdf.brdf = [data_r1, data_r2]
     new_bsdf.btdf = [data_t1]
     err = new_bsdf.sanity_check()

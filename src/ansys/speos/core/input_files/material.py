@@ -1,0 +1,2780 @@
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""Provides the Speos ``*.material`` input file format."""
+
+from __future__ import annotations
+
+from enum import Enum, IntEnum
+from typing import ClassVar, List, Optional, Sequence, Union
+
+from ansys.speos.core.input_files._base import (
+    LineReader,
+    SpeosTextFileFormat,
+    _finite_number,
+    _finite_values,
+    _matching_columns,
+    _matching_grid,
+    _numeric_tuple,
+    _property_name,
+    _single_line,
+    _ValueComparable,
+    format_number,
+)
+
+_VOLUMIC_HEADER = "OPTIS - Volumic Scattering file v1"
+"""Header opening the volume scattering block of a ``*.material`` file."""
+
+_DEFAULT_WAVELENGTHS = (486.0, 532.0, 643.0)
+"""Wavelengths used by default material curves, in nm."""
+
+_DEFAULT_DIFFUSION = 0.1
+"""Default diffusion coefficient for scattering materials, in mm-1."""
+
+_DEFAULT_INDICES = (1.5, 1.5, 1.5)
+"""Default refractive indices of an explicit index curve."""
+
+_DEFAULT_METALLIC_INDICES = (1.0, 1.0, 1.0)
+"""Default refractive indices of a metallic curve."""
+
+_DEFAULT_METALLIC_EXTINCTIONS = (0.0, 0.0, 0.0)
+"""Default extinction coefficients of a metallic curve."""
+
+_DEFAULT_PHASE_ANGLES = (0.0, 90.0, 180.0)
+"""Default scattering angles of a user-defined phase function."""
+
+_DEFAULT_PHASE_VALUES = ((100.0,), (100.0,), (100.0,))
+"""Default intensities of a user-defined phase function."""
+
+_DEFAULT_ANISOTROPIES = (0.9,)
+"""Default anisotropy of a phase function."""
+
+_DEFAULT_RATIOS = (0.5,)
+"""Default lobe ratio of a double Henyey-Greenstein phase function."""
+
+_DEFAULT_ALPHAS = (0.5,)
+"""Default alpha of a Gegenbauer phase function."""
+
+_DEFAULT_AXIS_J = (1.0, 0.0, 0.0)
+"""Default direction of the b axis of a birefringent material."""
+
+_DEFAULT_AXIS_K = (0.0, 1.0, 0.0)
+"""Default direction of the c axis of a birefringent material."""
+
+
+def _curve_column(model, name: str, values: Sequence[float], names: tuple[str, ...]) -> List[float]:
+    """Validate a candidate column against the populated columns of a curve."""
+    values = _finite_values(name, values)
+    columns = {entry: values if entry == name else getattr(model, "_" + entry) for entry in names}
+    _matching_columns(columns)
+    return values
+
+
+class MaterialType(str, Enum):
+    """Select the refractive-index model for a volume material."""
+
+    isotropic = "Isotropic"
+    metallic = "Metallic"
+    birefringent = "Birefringent"
+
+
+class MaterialOpticalClass(IntEnum):
+    """Classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial."""
+
+    negative_uniaxial = 0
+    positive_uniaxial = 1
+    biaxial = 2
+
+
+def _optical_class(value: MaterialOpticalClass) -> MaterialOpticalClass:
+    """Validate that an optical class is an enum member."""
+    if not isinstance(value, MaterialOpticalClass):
+        raise TypeError("optical_class must be a MaterialOpticalClass member.")
+    return value
+
+
+def _axis_model(value, expected):
+    """Check the model assigned to a birefringent axis."""
+    if not isinstance(value, expected):
+        raise TypeError(f"An axis needs {expected.__name__}, got {type(value).__name__}.")
+    value.validate()
+    return value
+
+
+class MaterialConstringence(_ValueComparable):
+    """Dispersion of a volume material given by its index and its Abbe number.
+
+    Parameters
+    ----------
+    constringence : float, optional
+        Abbe number, measured with the refractive index at the 587.5618 nm helium line.
+        By default, ``57.2``.
+    index : float, optional
+        Refractive index at 587.6 nm. By default, ``1.49``.
+    """
+
+    def __init__(self, constringence: float = 57.2, index: float = 1.49) -> None:
+        self.constringence = constringence
+        self.index = index
+
+    @property
+    def constringence(self) -> float:
+        """Abbe number.
+
+        Parameters
+        ----------
+        value : float
+            New abbe number, measured with the refractive index at the 587.5618 nm helium line.
+
+        Returns
+        -------
+        float
+            Finite constringence value.
+        """
+        return self._constringence
+
+    @constringence.setter
+    def constringence(self, value: float) -> None:
+        self._constringence = _finite_number(
+            _property_name(MaterialConstringence.constringence), value
+        )
+
+    @property
+    def index(self) -> float:
+        """Refractive index at 587.6 nm.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index at 587.6 nm.
+
+        Returns
+        -------
+        float
+            Finite refractive index.
+        """
+        return self._index
+
+    @index.setter
+    def index(self, value: float) -> None:
+        self._index = _finite_number(_property_name(MaterialConstringence.index), value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(constringence),
+        _property_name(index),
+    )
+
+    def validate(self) -> None:
+        """Check the finite dispersion parameters.
+
+        Raises
+        ------
+        ValueError
+            If a parameter is nonfinite.
+        """
+        _finite_number(_property_name(MaterialConstringence.constringence), self._constringence)
+        _finite_number(_property_name(MaterialConstringence.index), self._index)
+
+    KEYWORD: ClassVar[str] = "Constringence"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        return [self.KEYWORD, format_number(self.constringence), format_number(self.index)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialConstringence:
+        return cls(
+            constringence=reader.next_floats(count=1)[0], index=reader.next_floats(count=1)[0]
+        )
+
+
+class MaterialDispersionCurve(_ValueComparable):
+    """Dispersion of a volume material given by an explicit index curve.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+    indices : Sequence[float], optional
+        Refractive index at each wavelength. By default, ``[1.5, 1.5, 1.5]``.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        indices: Sequence[float] = _DEFAULT_INDICES,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._indices: List[float] = []
+        self.wavelengths = wavelengths
+        self.indices = indices
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Curve wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths of the curve, in nm.
+
+        Returns
+        -------
+        List[float]
+            Finite wavelengths.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        self._wavelengths = _curve_column(
+            self, _property_name(MaterialDispersionCurve.wavelengths), values, _CURVE_FIELDS
+        )
+
+    @property
+    def indices(self) -> List[float]:
+        """Refractive index column, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New refractive index at each wavelength.
+
+        Returns
+        -------
+        List[float]
+            Finite refractive indices.
+        """
+        return self._indices.copy()
+
+    @indices.setter
+    def indices(self, values: Sequence[float]) -> None:
+        self._indices = _curve_column(
+            self, _property_name(MaterialDispersionCurve.indices), values, _CURVE_FIELDS
+        )
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(indices),
+    )
+
+    def validate(self) -> None:
+        """Check that the curve is complete and its columns match.
+
+        Raises
+        ------
+        ValueError
+            If columns are empty or of unequal length.
+        """
+        if len(self._wavelengths) != len(self._indices) or not self._wavelengths:
+            raise ValueError("wavelengths and indices must be non empty and of equal length.")
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        self.validate()
+        lines = [self.KEYWORD, str(len(self.wavelengths))]
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(index)}"
+            for wavelength, index in zip(self.wavelengths, self.indices)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialDispersionCurve:
+        wavelengths, indices = [], []
+        for _ in range(reader.next_int(minimum=1)):
+            wavelength, index = reader.next_floats(count=2)
+            wavelengths.append(wavelength)
+            indices.append(index)
+        return cls(wavelengths=wavelengths, indices=indices)
+
+
+class MaterialSellmeier(_ValueComparable):
+    """Dispersion of a volume material given by the Sellmeier coefficients.
+
+    The default coefficients describe glass.
+
+    Parameters
+    ----------
+    b1, b2, b3 : float, optional
+        Numerator coefficients of the Sellmeier equation, dimensionless. By default,
+        ``1.03961``, ``0.231792`` and ``1.01047``.
+    c1, c2, c3 : float, optional
+        Denominator coefficients of the Sellmeier equation, in square micrometers. By
+        default, ``0.00600070``, ``0.0200179`` and ``103.561``.
+    """
+
+    def __init__(
+        self,
+        b1: float = 1.03961,
+        c1: float = 0.00600070,
+        b2: float = 0.231792,
+        c2: float = 0.0200179,
+        b3: float = 1.01047,
+        c3: float = 103.561,
+    ) -> None:
+        self.b1 = b1
+        self.c1 = c1
+        self.b2 = b2
+        self.c2 = c2
+        self.b3 = b3
+        self.c3 = c3
+
+    @property
+    def b1(self) -> float:
+        """First numerator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._b1
+
+    @b1.setter
+    def b1(self, value: float) -> None:
+        self._b1 = _finite_number(_property_name(MaterialSellmeier.b1), value)
+
+    @property
+    def c1(self) -> float:
+        """First denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._c1
+
+    @c1.setter
+    def c1(self, value: float) -> None:
+        self._c1 = _finite_number(_property_name(MaterialSellmeier.c1), value)
+
+    @property
+    def b2(self) -> float:
+        """Second numerator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._b2
+
+    @b2.setter
+    def b2(self, value: float) -> None:
+        self._b2 = _finite_number(_property_name(MaterialSellmeier.b2), value)
+
+    @property
+    def c2(self) -> float:
+        """Second denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._c2
+
+    @c2.setter
+    def c2(self, value: float) -> None:
+        self._c2 = _finite_number(_property_name(MaterialSellmeier.c2), value)
+
+    @property
+    def b3(self) -> float:
+        """Third numerator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New numerator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._b3
+
+    @b3.setter
+    def b3(self, value: float) -> None:
+        self._b3 = _finite_number(_property_name(MaterialSellmeier.b3), value)
+
+    @property
+    def c3(self) -> float:
+        """Third denominator coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New denominator coefficients of the Sellmeier equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._c3
+
+    @c3.setter
+    def c3(self, value: float) -> None:
+        self._c3 = _finite_number(_property_name(MaterialSellmeier.c3), value)
+
+    _FIELD_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(b1),
+        _property_name(c1),
+        _property_name(b2),
+        _property_name(c2),
+        _property_name(b3),
+        _property_name(c3),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = _FIELD_NAMES
+
+    def validate(self) -> None:
+        """Check all coefficients are finite.
+
+        Raises
+        ------
+        ValueError
+            If a coefficient is nonfinite.
+        """
+        for name in self._FIELD_NAMES:
+            _finite_number(name, getattr(self, name))
+
+    KEYWORD: ClassVar[str] = "SellMeier"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        coefficients = (self.b1, self.c1, self.b2, self.c2, self.b3, self.c3)
+        return [self.KEYWORD, *(format_number(value) for value in coefficients)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialSellmeier:
+        return cls(*(reader.next_floats(count=1)[0] for _ in range(6)))
+
+
+class MaterialKettlerHelmholtz(_ValueComparable):
+    """Dispersion of a glass given by the Kettler-Helmholtz coefficients.
+
+    Parameters
+    ----------
+    a0 : float, optional
+        Constant coefficient of the Kettler-Helmholtz equation. By default, ``1.0``.
+    a1, a2, a3, a4, a5 : float, optional
+        Other coefficients of the Kettler-Helmholtz equation. By default, ``0.0``.
+    """
+
+    def __init__(
+        self,
+        a0: float = 1.0,
+        a1: float = 0.0,
+        a2: float = 0.0,
+        a3: float = 0.0,
+        a4: float = 0.0,
+        a5: float = 0.0,
+    ) -> None:
+        self.a0 = a0
+        self.a1 = a1
+        self.a2 = a2
+        self.a3 = a3
+        self.a4 = a4
+        self.a5 = a5
+
+    @property
+    def a0(self) -> float:
+        """Constant coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a0
+
+    @a0.setter
+    def a0(self, value: float) -> None:
+        self._a0 = _finite_number(_property_name(MaterialKettlerHelmholtz.a0), value)
+
+    @property
+    def a1(self) -> float:
+        """First coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a1
+
+    @a1.setter
+    def a1(self, value: float) -> None:
+        self._a1 = _finite_number(_property_name(MaterialKettlerHelmholtz.a1), value)
+
+    @property
+    def a2(self) -> float:
+        """Second coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a2
+
+    @a2.setter
+    def a2(self, value: float) -> None:
+        self._a2 = _finite_number(_property_name(MaterialKettlerHelmholtz.a2), value)
+
+    @property
+    def a3(self) -> float:
+        """Third coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a3
+
+    @a3.setter
+    def a3(self, value: float) -> None:
+        self._a3 = _finite_number(_property_name(MaterialKettlerHelmholtz.a3), value)
+
+    @property
+    def a4(self) -> float:
+        """Fourth coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a4
+
+    @a4.setter
+    def a4(self, value: float) -> None:
+        self._a4 = _finite_number(_property_name(MaterialKettlerHelmholtz.a4), value)
+
+    @property
+    def a5(self) -> float:
+        """Fifth coefficient.
+
+        Parameters
+        ----------
+        value : float
+            New coefficients of the Kettler-Helmholtz equation.
+
+        Returns
+        -------
+        float
+            Finite coefficient.
+        """
+        return self._a5
+
+    @a5.setter
+    def a5(self, value: float) -> None:
+        self._a5 = _finite_number(_property_name(MaterialKettlerHelmholtz.a5), value)
+
+    _FIELD_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(a0),
+        _property_name(a1),
+        _property_name(a2),
+        _property_name(a3),
+        _property_name(a4),
+        _property_name(a5),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = _FIELD_NAMES
+
+    def validate(self) -> None:
+        """Check all coefficients are finite.
+
+        Raises
+        ------
+        ValueError
+            If a coefficient is nonfinite.
+        """
+        for name in self._FIELD_NAMES:
+            _finite_number(name, getattr(self, name))
+
+    KEYWORD: ClassVar[str] = "Kettler-Helmotz"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        coefficients = (self.a0, self.a1, self.a2, self.a3, self.a4, self.a5)
+        return [self.KEYWORD, *(format_number(value) for value in coefficients)]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialKettlerHelmholtz:
+        return cls(*(reader.next_floats(count=1)[0] for _ in range(6)))
+
+
+MaterialDispersion = Union[
+    MaterialConstringence,
+    MaterialDispersionCurve,
+    MaterialSellmeier,
+    MaterialKettlerHelmholtz,
+]
+"""Dispersion models accepted by :class:`ansys.speos.core.input_files.material.MaterialFile`."""
+
+
+class MaterialMetallicCurve(_ValueComparable):
+    """Dispersion of a metal given by its complex refractive index.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+    indices : Sequence[float], optional
+        Real part n of the refractive index at each wavelength. By default,
+        ``[1.0, 1.0, 1.0]``.
+    extinctions : Sequence[float], optional
+        Extinction coefficient k at each wavelength. By default, ``[0.0, 0.0, 0.0]``.
+
+    Notes
+    -----
+    The default refractive index and extinction values are placeholders, not the optical
+    constants of a real metal.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
+        indices: Sequence[float] = _DEFAULT_METALLIC_INDICES,
+        extinctions: Sequence[float] = _DEFAULT_METALLIC_EXTINCTIONS,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._indices: List[float] = []
+        self._extinctions: List[float] = []
+        self.wavelengths = wavelengths
+        self.indices = indices
+        self.extinctions = extinctions
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Curve wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths of the curve, in nm.
+
+        Returns
+        -------
+        List[float]
+            Finite wavelengths.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        self._wavelengths = _curve_column(
+            self, _property_name(MaterialMetallicCurve.wavelengths), values, _METALLIC_FIELDS
+        )
+
+    @property
+    def indices(self) -> List[float]:
+        """Real refractive indices, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New real part n of the refractive index at each wavelength.
+
+        Returns
+        -------
+        List[float]
+            Finite indices.
+        """
+        return self._indices.copy()
+
+    @indices.setter
+    def indices(self, values: Sequence[float]) -> None:
+        self._indices = _curve_column(
+            self, _property_name(MaterialMetallicCurve.indices), values, _METALLIC_FIELDS
+        )
+
+    @property
+    def extinctions(self) -> List[float]:
+        """Extinction coefficients, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New extinction coefficient k at each wavelength.
+
+        Returns
+        -------
+        List[float]
+            Finite extinction coefficients.
+        """
+        return self._extinctions.copy()
+
+    @extinctions.setter
+    def extinctions(self, values: Sequence[float]) -> None:
+        self._extinctions = _curve_column(
+            self, _property_name(MaterialMetallicCurve.extinctions), values, _METALLIC_FIELDS
+        )
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(indices),
+        _property_name(extinctions),
+    )
+
+    def validate(self) -> None:
+        """Check the complex index curve is complete.
+
+        Raises
+        ------
+        ValueError
+            If columns are empty or their lengths differ.
+        """
+        _matching_columns({name: getattr(self, "_" + name) for name in _METALLIC_FIELDS}, True)
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        _matching_columns(
+            {name: getattr(self, name) for name in self._EQUALITY_FIELDS},
+            complete=True,
+        )
+        lines = [self.KEYWORD, str(len(self.wavelengths))]
+        lines.extend(
+            " ".join(format_number(value) for value in row)
+            for row in zip(self.wavelengths, self.indices, self.extinctions)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialMetallicCurve:
+        wavelengths, indices, extinctions = [], [], []
+        for _ in range(reader.next_int(minimum=1)):
+            wavelength, index, extinction = reader.next_floats(count=3)
+            wavelengths.append(wavelength)
+            indices.append(index)
+            extinctions.append(extinction)
+        return cls(wavelengths=wavelengths, indices=indices, extinctions=extinctions)
+
+
+class MaterialBirefringentCurve(_ValueComparable):
+    """Refractive indices of a birefringent material along its three axes.
+
+    Speos does not make the indices of a birefringent material vary with the wavelength
+    when they are given explicitly, so a single index per axis is stored.
+
+    Parameters
+    ----------
+    wavelength : float, optional
+        Wavelength the indices are given at, in nm. By default, ``550.0``.
+    index_a : float, optional
+        Refractive index along the ``a`` axis. By default, ``1.5``.
+    index_b : float, optional
+        Refractive index along the ``b`` axis. By default, ``1.51``.
+    index_c : float, optional
+        Refractive index along the ``c`` axis. By default, ``1.65``.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
+    """
+
+    def __init__(
+        self,
+        wavelength: float = 550.0,
+        index_a: float = 1.5,
+        index_b: float = 1.51,
+        index_c: float = 1.65,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
+    ) -> None:
+        self.wavelength = wavelength
+        self.index_a = index_a
+        self.index_b = index_b
+        self.index_c = index_c
+        self.optical_class = optical_class
+
+    @property
+    def wavelength(self) -> float:
+        """Wavelength of the indices, in nm.
+
+        Parameters
+        ----------
+        value : float
+            New wavelength the indices are given at, in nm.
+
+        Returns
+        -------
+        float
+            Finite wavelength.
+        """
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        self._wavelength = _finite_number(
+            _property_name(MaterialBirefringentCurve.wavelength), value
+        )
+
+    @property
+    def index_a(self) -> float:
+        """Refractive index along the a axis.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``a`` axis.
+
+        Returns
+        -------
+        float
+            Finite index.
+        """
+        return self._index_a
+
+    @index_a.setter
+    def index_a(self, value: float) -> None:
+        self._index_a = _finite_number(_property_name(MaterialBirefringentCurve.index_a), value)
+
+    @property
+    def index_b(self) -> float:
+        """Refractive index along the b axis.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``b`` axis.
+
+        Returns
+        -------
+        float
+            Finite index.
+        """
+        return self._index_b
+
+    @index_b.setter
+    def index_b(self, value: float) -> None:
+        self._index_b = _finite_number(_property_name(MaterialBirefringentCurve.index_b), value)
+
+    @property
+    def index_c(self) -> float:
+        """Refractive index along the c axis.
+
+        Parameters
+        ----------
+        value : float
+            New refractive index along the ``c`` axis.
+
+        Returns
+        -------
+        float
+            Finite index.
+        """
+        return self._index_c
+
+    @index_c.setter
+    def index_c(self, value: float) -> None:
+        self._index_c = _finite_number(_property_name(MaterialBirefringentCurve.index_c), value)
+
+    @property
+    def optical_class(self) -> MaterialOpticalClass:
+        """Optical class of the material.
+
+        Parameters
+        ----------
+        value : MaterialOpticalClass
+            New optical class.
+
+        Returns
+        -------
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
+        """
+        return self._optical_class
+
+    @optical_class.setter
+    def optical_class(self, value: MaterialOpticalClass) -> None:
+        self._optical_class = _optical_class(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelength),
+        _property_name(index_a),
+        _property_name(index_b),
+        _property_name(index_c),
+        _property_name(optical_class),
+    )
+
+    def validate(self) -> None:
+        """Check finite indices and the optical class.
+
+        Raises
+        ------
+        ValueError
+            If a numeric value or optical class is invalid.
+        """
+        for name in _BIREFRINGENT_FIELDS[:-1]:
+            _finite_number(name, getattr(self, name))
+        _optical_class(self._optical_class)
+
+    KEYWORD: ClassVar[str] = "Dispersion_Curve"
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    def _to_lines(self) -> List[str]:
+        return [
+            self.KEYWORD,
+            "1",
+            f"{format_number(self.wavelength)} {format_number(self.index_a)}",
+            str(self.optical_class.value),
+            f"{format_number(self.index_b)} {format_number(self.index_c)}",
+        ]
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentCurve:
+        count = reader.next_int()
+        if count != 1:
+            raise reader.error(
+                "the indices of a birefringent material do not vary with the wavelength, "
+                f"expected a single wavelength, got {count}."
+            )
+        wavelength, index_a = reader.next_floats(count=2)
+        optical_class = MaterialOpticalClass(reader.next_int())
+        index_b, index_c = reader.next_floats(count=2)
+        return cls(
+            wavelength=wavelength,
+            index_a=index_a,
+            index_b=index_b,
+            index_c=index_c,
+            optical_class=optical_class,
+        )
+
+
+class MaterialBirefringentSellmeier(_ValueComparable):
+    """Dispersion of a birefringent material given by the Sellmeier coefficients.
+
+    Parameters
+    ----------
+    a, b, c : MaterialSellmeier, optional
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
+        independent :class:`ansys.speos.core.input_files.material.MaterialSellmeier` model
+        with its default coefficients per axis.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
+    """
+
+    def __init__(
+        self,
+        a: MaterialSellmeier | None = None,
+        b: MaterialSellmeier | None = None,
+        c: MaterialSellmeier | None = None,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
+    ) -> None:
+        self.a = a if a is not None else MaterialSellmeier()
+        self.b = b if b is not None else MaterialSellmeier()
+        self.c = c if c is not None else MaterialSellmeier()
+        self.optical_class = optical_class
+
+    @property
+    def a(self) -> MaterialSellmeier:
+        """Coefficients along the a axis.
+
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialSellmeier
+            Shared validated coefficient model.
+        """
+        return self._a
+
+    @a.setter
+    def a(self, value: MaterialSellmeier) -> None:
+        self._a = _axis_model(value, MaterialSellmeier)
+
+    @property
+    def b(self) -> MaterialSellmeier:
+        """Coefficients along the b axis.
+
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialSellmeier
+            Shared validated coefficient model.
+        """
+        return self._b
+
+    @b.setter
+    def b(self, value: MaterialSellmeier) -> None:
+        self._b = _axis_model(value, MaterialSellmeier)
+
+    @property
+    def c(self) -> MaterialSellmeier:
+        """Coefficients along the c axis.
+
+        Parameters
+        ----------
+        value : MaterialSellmeier
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialSellmeier
+            Shared validated coefficient model.
+        """
+        return self._c
+
+    @c.setter
+    def c(self, value: MaterialSellmeier) -> None:
+        self._c = _axis_model(value, MaterialSellmeier)
+
+    @property
+    def optical_class(self) -> MaterialOpticalClass:
+        """Optical class of the material.
+
+        Parameters
+        ----------
+        value : MaterialOpticalClass
+            New optical class.
+
+        Returns
+        -------
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
+        """
+        return self._optical_class
+
+    @optical_class.setter
+    def optical_class(self, value: MaterialOpticalClass) -> None:
+        self._optical_class = _optical_class(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(a),
+        _property_name(b),
+        _property_name(c),
+        _property_name(optical_class),
+    )
+
+    def validate(self) -> None:
+        """Check the three coefficient models and optical class.
+
+        Raises
+        ------
+        ValueError
+            If coefficients or optical class are invalid.
+        """
+        for model in (self._a, self._b, self._c):
+            model.validate()
+        _optical_class(self._optical_class)
+
+    KEYWORD: ClassVar[str] = MaterialSellmeier.KEYWORD
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    COEFFICIENTS: ClassVar[type] = MaterialSellmeier
+    """Model holding the coefficients of a single axis."""
+
+    def _to_lines(self) -> List[str]:
+        return _birefringent_coefficient_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentSellmeier:
+        return _read_birefringent_coefficients(cls, reader)
+
+
+class MaterialBirefringentKettlerHelmholtz(_ValueComparable):
+    """Dispersion of a birefringent material given by the Kettler-Helmholtz coefficients.
+
+    Parameters
+    ----------
+    a, b, c : MaterialKettlerHelmholtz, optional
+        Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
+        independent :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz`
+        model with its default coefficients per axis.
+    optical_class : MaterialOpticalClass, optional
+        Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
+    """
+
+    def __init__(
+        self,
+        a: MaterialKettlerHelmholtz | None = None,
+        b: MaterialKettlerHelmholtz | None = None,
+        c: MaterialKettlerHelmholtz | None = None,
+        optical_class: MaterialOpticalClass = MaterialOpticalClass.negative_uniaxial,
+    ) -> None:
+        self.a = a if a is not None else MaterialKettlerHelmholtz()
+        self.b = b if b is not None else MaterialKettlerHelmholtz()
+        self.c = c if c is not None else MaterialKettlerHelmholtz()
+        self.optical_class = optical_class
+
+    @property
+    def a(self) -> MaterialKettlerHelmholtz:
+        """Coefficients along the a axis.
+
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialKettlerHelmholtz
+            Shared validated coefficient model.
+        """
+        return self._a
+
+    @a.setter
+    def a(self, value: MaterialKettlerHelmholtz) -> None:
+        self._a = _axis_model(value, MaterialKettlerHelmholtz)
+
+    @property
+    def b(self) -> MaterialKettlerHelmholtz:
+        """Coefficients along the b axis.
+
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialKettlerHelmholtz
+            Shared validated coefficient model.
+        """
+        return self._b
+
+    @b.setter
+    def b(self, value: MaterialKettlerHelmholtz) -> None:
+        self._b = _axis_model(value, MaterialKettlerHelmholtz)
+
+    @property
+    def c(self) -> MaterialKettlerHelmholtz:
+        """Coefficients along the c axis.
+
+        Parameters
+        ----------
+        value : MaterialKettlerHelmholtz
+            New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+        Returns
+        -------
+        MaterialKettlerHelmholtz
+            Shared validated coefficient model.
+        """
+        return self._c
+
+    @c.setter
+    def c(self, value: MaterialKettlerHelmholtz) -> None:
+        self._c = _axis_model(value, MaterialKettlerHelmholtz)
+
+    @property
+    def optical_class(self) -> MaterialOpticalClass:
+        """Optical class of the material.
+
+        Parameters
+        ----------
+        value : MaterialOpticalClass
+            New optical class.
+
+        Returns
+        -------
+        MaterialOpticalClass
+            Negative uniaxial, positive uniaxial, or biaxial.
+        """
+        return self._optical_class
+
+    @optical_class.setter
+    def optical_class(self, value: MaterialOpticalClass) -> None:
+        self._optical_class = _optical_class(value)
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(a),
+        _property_name(b),
+        _property_name(c),
+        _property_name(optical_class),
+    )
+
+    def validate(self) -> None:
+        """Check the three coefficient models and optical class.
+
+        Raises
+        ------
+        ValueError
+            If coefficients or optical class are invalid.
+        """
+        for model in (self._a, self._b, self._c):
+            model.validate()
+        _optical_class(self._optical_class)
+
+    KEYWORD: ClassVar[str] = MaterialKettlerHelmholtz.KEYWORD
+    """Keyword identifying the model in a ``*.material`` file."""
+
+    COEFFICIENTS: ClassVar[type] = MaterialKettlerHelmholtz
+    """Model holding the coefficients of a single axis."""
+
+    def _to_lines(self) -> List[str]:
+        return _birefringent_coefficient_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialBirefringentKettlerHelmholtz:
+        return _read_birefringent_coefficients(cls, reader)
+
+
+MaterialBirefringence = Union[
+    MaterialBirefringentCurve,
+    MaterialBirefringentSellmeier,
+    MaterialBirefringentKettlerHelmholtz,
+]
+"""Dispersion models accepted by a birefringent
+:class:`ansys.speos.core.input_files.material.MaterialFile`."""
+
+_COEFFICIENT_COUNT = 6
+"""Number of coefficients an analytic dispersion model holds for a single axis."""
+
+
+def _birefringent_coefficient_lines(model) -> List[str]:
+    """Write the coefficients of an axis as one number per line.
+
+    The ``a`` axis comes first, then the optical class, then the ``b`` and the ``c`` axes
+    interleaved coefficient by coefficient.
+    """
+    lines = [model.KEYWORD]
+    names = model.COEFFICIENTS._FIELD_NAMES
+    lines.extend(format_number(getattr(model.a, name)) for name in names)
+    lines.append(str(model.optical_class.value))
+    for name in names:
+        lines.extend((format_number(getattr(model.b, name)), format_number(getattr(model.c, name))))
+    return lines
+
+
+def _read_birefringent_coefficients(model_class, reader: LineReader):
+    """Read the coefficients of the three axes of a birefringent material."""
+    coefficients = model_class.COEFFICIENTS
+    axis_a = coefficients(*(reader.next_floats(count=1)[0] for _ in range(_COEFFICIENT_COUNT)))
+    optical_class = MaterialOpticalClass(reader.next_int())
+    interleaved = [reader.next_floats(count=1)[0] for _ in range(2 * _COEFFICIENT_COUNT)]
+    return model_class(
+        a=axis_a,
+        b=coefficients(*interleaved[0::2]),
+        c=coefficients(*interleaved[1::2]),
+        optical_class=optical_class,
+    )
+
+
+class VolumeScatteringUserDefined(_ValueComparable):
+    """Scattering phase function given as a scattering efficiency per angle.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+        function does not depend on the wavelength, in which case each row of ``values``
+        holds a single entry. By default, ``[]``.
+    angles : Sequence[float], optional
+        Scattering angles theta, in degrees. By default, ``[0.0, 90.0, 180.0]``.
+    values : Sequence[Sequence[float]], optional
+        Relative scattering intensity, one row per angle and one column per wavelength.
+        By default, ``[[100.0], [100.0], [100.0]]``, an isotropic phase function.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = (),
+        angles: Sequence[float] = _DEFAULT_PHASE_ANGLES,
+        values: Sequence[Sequence[float]] = _DEFAULT_PHASE_VALUES,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._angles: List[float] = []
+        self._values: List[List[float]] = []
+        self.wavelengths = wavelengths
+        self.angles = angles
+        self.values = values
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Spectral wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+            function does not depend on the wavelength, in which case each row of ``values``
+            holds a single entry.
+
+        Returns
+        -------
+        List[float]
+            Empty for a nonspectral function, otherwise at least two wavelengths.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        values = _finite_values(_property_name(VolumeScatteringUserDefined.wavelengths), values)
+        if len(values) == 1:
+            raise ValueError(
+                "The format does not store a wavelength for a phase function holding a "
+                "single value per angle, leave wavelengths empty."
+            )
+        self._check_grid(self._angles, self._values, values)
+        self._wavelengths = values
+
+    @property
+    def angles(self) -> List[float]:
+        """Scattering angles in degrees, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New scattering angles theta, in degrees.
+
+        Returns
+        -------
+        List[float]
+            Finite scattering angles.
+        """
+        return self._angles.copy()
+
+    @angles.setter
+    def angles(self, values: Sequence[float]) -> None:
+        values = _finite_values(_property_name(VolumeScatteringUserDefined.angles), values)
+        self._check_grid(values, self._values, self._wavelengths)
+        self._angles = values
+
+    @property
+    def values(self) -> List[List[float]]:
+        """Relative intensities, returned with copied row containers.
+
+        Parameters
+        ----------
+        values : Sequence[Sequence[float]]
+            New relative scattering intensity, one row per angle and one column per wavelength.
+
+        Returns
+        -------
+        List[List[float]]
+            One row per angle, one column per wavelength or one nonspectral value.
+        """
+        return [row.copy() for row in self._values]
+
+    @values.setter
+    def values(self, values: Sequence[Sequence[float]]) -> None:
+        values = [
+            _finite_values(_property_name(VolumeScatteringUserDefined.values), row)
+            for row in values
+        ]
+        self._check_grid(self._angles, values, self._wavelengths)
+        self._values = values
+
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(wavelengths),
+        _property_name(angles),
+        _property_name(values),
+    )
+
+    @staticmethod
+    def _check_grid(angles, values, wavelengths) -> None:
+        _matching_grid(
+            "values",
+            values,
+            row_count=len(angles) if angles and values else None,
+            column_count=len(wavelengths) or 1,
+        )
+
+    MODEL: ClassVar[int] = 0
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no angle is given, or the value grid does not match the angles and the
+            wavelengths.
+        """
+        if not self.angles:
+            raise ValueError("A user defined phase function needs angles.")
+        if len(self.wavelengths) == 1:
+            raise ValueError(
+                "The format does not store a wavelength for a phase function holding a "
+                "single value per angle, leave wavelengths empty."
+            )
+        _matching_grid(
+            "values",
+            self._values,
+            row_count=len(self._angles),
+            column_count=len(self._wavelengths) or 1,
+            incidences=self._angles,
+        )
+
+    def _to_lines(self) -> List[str]:
+        lines = [str(len(self.wavelengths) or 1), str(len(self.angles))]
+        if self.wavelengths:
+            lines.append(" ".join(format_number(wavelength) for wavelength in self.wavelengths))
+        lines.extend(
+            " ".join(format_number(value) for value in (angle, *row))
+            for angle, row in zip(self.angles, self.values)
+        )
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringUserDefined:
+        wavelength_count = reader.next_int(minimum=0)
+        angle_count = reader.next_int(minimum=1)
+        wavelengths = reader.next_floats(count=wavelength_count) if wavelength_count > 1 else []
+        angles, values = [], []
+        for _ in range(angle_count):
+            row = reader.next_floats(count=(wavelength_count or 1) + 1)
+            angles.append(row[0])
+            values.append(row[1:])
+        return cls(wavelengths=wavelengths, angles=angles, values=values)
+
+
+class VolumeScatteringHenyeyGreenstein(_ValueComparable):
+    """Henyey-Greenstein scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+        that the phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies : Sequence[float], optional
+        Anisotropy factor g at each wavelength, between -1 and 1. By default, ``[0.9]``.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = (),
+        anisotropies: Sequence[float] = _DEFAULT_ANISOTROPIES,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._anisotropies: List[float] = []
+        self.wavelengths = wavelengths
+        self.anisotropies = anisotropies
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Spectral wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+            that the phase function does not depend on the wavelength.
+
+        Returns
+        -------
+        List[float]
+            Empty for a nonspectral parameter set.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        self._wavelengths = _phase_candidate(
+            self, _property_name(VolumeScatteringHenyeyGreenstein.wavelengths), values
+        )
+
+    @property
+    def anisotropies(self) -> List[float]:
+        """Anisotropy factors, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New anisotropy factor g at each wavelength, between -1 and 1.
+
+        Returns
+        -------
+        List[float]
+            Factors between -1 and 1.
+        """
+        return self._anisotropies.copy()
+
+    @anisotropies.setter
+    def anisotropies(self, values: Sequence[float]) -> None:
+        values = _finite_values(
+            _property_name(VolumeScatteringHenyeyGreenstein.anisotropies), values
+        )
+        if any(not -1.0 <= value <= 1.0 for value in values):
+            raise ValueError("anisotropies must be between -1 and 1.")
+        self._anisotropies = _phase_candidate(
+            self, _property_name(VolumeScatteringHenyeyGreenstein.anisotropies), values
+        )
+
+    _COLUMN_NAMES: ClassVar[tuple[str, ...]] = (_property_name(anisotropies),)
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (_property_name(wavelengths), *_COLUMN_NAMES)
+
+    MODEL: ClassVar[int] = 1
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no anisotropy factor is given, the lists do not match, or an anisotropy
+            factor is outside the -1 to 1 range.
+        """
+        _check_phase_function(self)
+        for anisotropy in self.anisotropies:
+            if not -1.0 <= anisotropy <= 1.0:
+                raise ValueError(f"anisotropies must be between -1 and 1, got {anisotropy}.")
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringHenyeyGreenstein:
+        return _read_phase_function(cls, reader)
+
+
+class VolumeScatteringDoubleHenyeyGreenstein(_ValueComparable):
+    """Double Henyey-Greenstein scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths the factors are given at, in nm. A single wavelength means that the
+        phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies_1 : Sequence[float], optional
+        First anisotropy factor at each wavelength, between -1 and 1. By default,
+        ``[0.9]``.
+    anisotropies_2 : Sequence[float], optional
+        Second anisotropy factor at each wavelength, between -1 and 1. By default,
+        ``[0.9]``.
+    ratios : Sequence[float], optional
+        Weight between the first and the second anisotropy factor, at each wavelength.
+        Values must be between 0 and 1. By default, ``[0.5]``.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = (),
+        anisotropies_1: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        anisotropies_2: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        ratios: Sequence[float] = _DEFAULT_RATIOS,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._anisotropies_1: List[float] = []
+        self._anisotropies_2: List[float] = []
+        self._ratios: List[float] = []
+        self.wavelengths = wavelengths
+        self.anisotropies_1 = anisotropies_1
+        self.anisotropies_2 = anisotropies_2
+        self.ratios = ratios
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Spectral wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths the factors are given at, in nm. A single wavelength means that the
+            phase function does not depend on the wavelength.
+
+        Returns
+        -------
+        List[float]
+            Empty for a nonspectral parameter set.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        self._wavelengths = _phase_candidate(
+            self, _property_name(VolumeScatteringDoubleHenyeyGreenstein.wavelengths), values
+        )
+
+    @property
+    def anisotropies_1(self) -> List[float]:
+        """First anisotropy column, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New first anisotropy factor at each wavelength, between -1 and 1.
+
+        Returns
+        -------
+        List[float]
+            Factors between -1 and 1.
+        """
+        return self._anisotropies_1.copy()
+
+    @anisotropies_1.setter
+    def anisotropies_1(self, values: Sequence[float]) -> None:
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_1)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, -1.0, 1.0)
+        self._anisotropies_1 = values
+
+    @property
+    def anisotropies_2(self) -> List[float]:
+        """Second anisotropy column, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New second anisotropy factor at each wavelength, between -1 and 1.
+
+        Returns
+        -------
+        List[float]
+            Factors between -1 and 1.
+        """
+        return self._anisotropies_2.copy()
+
+    @anisotropies_2.setter
+    def anisotropies_2(self, values: Sequence[float]) -> None:
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.anisotropies_2)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, -1.0, 1.0)
+        self._anisotropies_2 = values
+
+    @property
+    def ratios(self) -> List[float]:
+        """Mixture weights, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New weight between the first and the second anisotropy factor, at each wavelength.
+            Values must be between 0 and 1.
+
+        Returns
+        -------
+        List[float]
+            Mixture weights between 0 and 1.
+        """
+        return self._ratios.copy()
+
+    @ratios.setter
+    def ratios(self, values: Sequence[float]) -> None:
+        name = _property_name(VolumeScatteringDoubleHenyeyGreenstein.ratios)
+        values = _phase_candidate(self, name, values)
+        _check_phase_bounds(name, values, 0.0, 1.0)
+        self._ratios = values
+
+    _COLUMN_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(anisotropies_1),
+        _property_name(anisotropies_2),
+        _property_name(ratios),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (_property_name(wavelengths), *_COLUMN_NAMES)
+
+    MODEL: ClassVar[int] = 5
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = _VOLUMIC_HEADER
+    """Header of the scattering block holding the model."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no factor is given, the lists do not match, an anisotropy is outside
+            -1 to 1, or a mixture weight is outside 0 to 1.
+        """
+        _check_phase_function(self)
+        for name in self._COLUMN_NAMES:
+            minimum = 0.0 if name == _property_name(type(self).ratios) else -1.0
+            _check_phase_bounds(name, getattr(self, "_" + name), minimum, 1.0)
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringDoubleHenyeyGreenstein:
+        return _read_phase_function(cls, reader)
+
+
+class VolumeScatteringGegenbauer(_ValueComparable):
+    """Gegenbauer scattering phase function.
+
+    Parameters
+    ----------
+    wavelengths : Sequence[float], optional
+        Wavelengths the factors are given at, in nm. A single wavelength means that the
+        phase function does not depend on the wavelength. By default, ``[]``.
+    anisotropies : Sequence[float], optional
+        Anisotropy factor at each wavelength. By default, ``[0.9]``.
+    alphas : Sequence[float], optional
+        Alpha coefficient at each wavelength. By default, ``[0.5]``.
+    """
+
+    def __init__(
+        self,
+        wavelengths: Sequence[float] = (),
+        anisotropies: Sequence[float] = _DEFAULT_ANISOTROPIES,
+        alphas: Sequence[float] = _DEFAULT_ALPHAS,
+    ) -> None:
+        self._wavelengths: List[float] = []
+        self._anisotropies: List[float] = []
+        self._alphas: List[float] = []
+        self.wavelengths = wavelengths
+        self.anisotropies = anisotropies
+        self.alphas = alphas
+
+    @property
+    def wavelengths(self) -> List[float]:
+        """Spectral wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New wavelengths the factors are given at, in nm. A single wavelength means that the
+            phase function does not depend on the wavelength.
+
+        Returns
+        -------
+        List[float]
+            Empty for a nonspectral parameter set.
+        """
+        return self._wavelengths.copy()
+
+    @wavelengths.setter
+    def wavelengths(self, values: Sequence[float]) -> None:
+        self._wavelengths = _phase_candidate(
+            self, _property_name(VolumeScatteringGegenbauer.wavelengths), values
+        )
+
+    @property
+    def anisotropies(self) -> List[float]:
+        """Anisotropy factors, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New anisotropy factor at each wavelength.
+
+        Returns
+        -------
+        List[float]
+            Finite factors.
+        """
+        return self._anisotropies.copy()
+
+    @anisotropies.setter
+    def anisotropies(self, values: Sequence[float]) -> None:
+        self._anisotropies = _phase_candidate(
+            self, _property_name(VolumeScatteringGegenbauer.anisotropies), values
+        )
+
+    @property
+    def alphas(self) -> List[float]:
+        """Alpha coefficients, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New alpha coefficient at each wavelength.
+
+        Returns
+        -------
+        List[float]
+            Finite coefficients.
+        """
+        return self._alphas.copy()
+
+    @alphas.setter
+    def alphas(self, values: Sequence[float]) -> None:
+        self._alphas = _phase_candidate(
+            self, _property_name(VolumeScatteringGegenbauer.alphas), values
+        )
+
+    _COLUMN_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(anisotropies),
+        _property_name(alphas),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (_property_name(wavelengths), *_COLUMN_NAMES)
+
+    MODEL: ClassVar[int] = 6
+    """Identifier of the model in a ``*.material`` file."""
+
+    VOLUMIC_HEADER: ClassVar[str] = "OPTIS - Volumic Scattering file v3"
+    """Header of the scattering block, which the Gegenbauer model bumps to ``v3``."""
+
+    def validate(self) -> None:
+        """Check the phase function.
+
+        Raises
+        ------
+        ValueError
+            If no factor is given or the lists do not match.
+        """
+        _check_phase_function(self)
+
+    def _to_lines(self) -> List[str]:
+        return _phase_function_lines(self)
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> VolumeScatteringGegenbauer:
+        return _read_phase_function(cls, reader)
+
+
+VolumeScattering = Union[
+    VolumeScatteringUserDefined,
+    VolumeScatteringHenyeyGreenstein,
+    VolumeScatteringDoubleHenyeyGreenstein,
+    VolumeScatteringGegenbauer,
+]
+"""Scattering phase functions accepted by
+:class:`ansys.speos.core.input_files.material.MaterialFile`."""
+
+
+def _check_phase_function(model) -> None:
+    """Check the columns of a phase function against its optional wavelength list.
+
+    Speos does not store the wavelength when the phase function holds a single set of
+    parameters, so ``wavelengths`` must be left empty in that case.
+    """
+    columns = {name: getattr(model, "_" + name) for name in model._COLUMN_NAMES}
+    _check_phase_data(model._wavelengths, columns, complete=True)
+
+
+def _check_phase_bounds(name: str, values: List[float], minimum: float, maximum: float) -> None:
+    """Check phase parameters against their model's physical bounds."""
+    if any(not minimum <= value <= maximum for value in values):
+        raise ValueError(
+            f"{name} must be between {format_number(minimum)} and {format_number(maximum)}."
+        )
+
+
+def _phase_candidate(model, name: str, values: Sequence[float]) -> List[float]:
+    """Check a candidate phase column without changing its current model."""
+    values = _finite_values(name, values)
+    wavelengths = values if name == _property_name(type(model).wavelengths) else model._wavelengths
+    columns = {
+        entry: values if entry == name else getattr(model, "_" + entry)
+        for entry in model._COLUMN_NAMES
+    }
+    _check_phase_data(wavelengths, columns)
+    return values
+
+
+def _check_phase_data(wavelengths, columns, complete: bool = False) -> None:
+    """Check phase-column lengths and the nonspectral empty-wavelength sentinel."""
+    _matching_columns(columns, complete)
+    count = next((len(values) for values in columns.values() if values), 0)
+    if not count:
+        return
+    if not wavelengths:
+        if count != 1:
+            raise ValueError(
+                "wavelengths is required as soon as the phase function holds more than one "
+                f"set of parameters, got {count} sets."
+            )
+        return
+    if count == 1:
+        raise ValueError(
+            "The format does not store a wavelength for a phase function holding a single "
+            "set of parameters, leave wavelengths empty."
+        )
+    if len(wavelengths) != count:
+        raise ValueError(
+            f"All phase columns must have the same length: wavelengths must hold one "
+            f"entry per set of parameters, expected {count}, got {len(wavelengths)}."
+        )
+
+
+def _phase_function_lines(model) -> List[str]:
+    """Write a phase function as a count followed by one line per wavelength."""
+    columns = [getattr(model, "_" + name) for name in model._COLUMN_NAMES]
+    lines = [str(len(columns[0]))]
+    if not model.wavelengths:
+        lines.append(" ".join(format_number(column[0]) for column in columns))
+        return lines
+    lines.extend(
+        " ".join(format_number(value) for value in (wavelength, *values))
+        for wavelength, *values in zip(model.wavelengths, *columns)
+    )
+    return lines
+
+
+def _read_phase_function(model_class, reader: LineReader):
+    """Read a phase function written as a count followed by one line per wavelength."""
+    names = model_class._COLUMN_NAMES
+    count = reader.next_int(minimum=1)
+    if count == 1:
+        values = reader.next_floats(count=len(names))
+        return model_class(**{name: [value] for name, value in zip(names, values)})
+
+    wavelengths: List[float] = []
+    columns: dict = {name: [] for name in names}
+    for _ in range(count):
+        wavelength, *values = reader.next_floats(count=len(names) + 1)
+        wavelengths.append(wavelength)
+        for name, value in zip(names, values):
+            columns[name].append(value)
+    return model_class(wavelengths=wavelengths, **columns)
+
+
+class MaterialFile(SpeosTextFileFormat):
+    """Speos ``*.material`` file, holding the volume optical properties of a body.
+
+    The file always describes how the refractive index and the absorption vary with the
+    wavelength. Setting :attr:`MaterialFile.scattering` adds a volume scattering block,
+    which turns the file into the scattering flavor of the format.
+
+    :attr:`MaterialFile.material_type` selects the flavor of the format, and with it the
+    models :attr:`MaterialFile.dispersion` accepts. A metallic material holds nothing but
+    the complex
+    refractive index of the metal, while a birefringent one holds an index per axis, the
+    orientation of these axes and an absorption curve per axis.
+
+    Parameters
+    ----------
+    description : str, optional
+        Free text written on the second line of the file. By default, ``"Optical Glass"``.
+    material_type : MaterialType, optional
+        Type of material. By default, ``MaterialType.isotropic``.
+    dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
+        How the refractive index varies with the wavelength. A metallic material needs a
+        :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+        birefringent one needs one of the
+        :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models. By
+        default, a :class:`ansys.speos.core.input_files.material.MaterialDispersionCurve`
+        model with its default index curve.
+    absorption_wavelengths : List[float], optional
+        Wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+        whose extinction coefficient already holds the absorption. By default,
+        ``[486.0, 532.0, 643.0]``, or ``[]`` for a metallic material.
+    absorption_values : List[float], optional
+        Absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+        the absorption along the ``a`` axis. By default, ``[0.0, 0.0, 0.0]``, or ``[]`` for
+        a metallic material.
+    measured_concentration : float, optional
+        Concentration the absorption curve was measured at. By default, ``1.0``.
+    user_concentration : float, optional
+        Concentration the absorption curve is scaled to. By default, ``1.0``.
+    scattering_wavelengths : List[float], optional
+        Wavelengths of the diffusion curve, in nm. By default, ``[486.0, 532.0, 643.0]``
+        when ``scattering`` is given, ``[]`` otherwise.
+    scattering_values : List[float], optional
+        Diffusion coefficient at each wavelength, in mm-1. By default, ``0.1`` at each
+        default diffusion wavelength when ``scattering`` is given, ``[]`` otherwise.
+    scattering : Optional[VolumeScattering], optional
+        Scattering phase function. By default, ``None``, which writes a non-scattering
+        material.
+    axis_j : Sequence[float], optional
+        Direction of the ``b`` axis of a birefringent material. Ignored by the other
+        flavors. By default, ``[1.0, 0.0, 0.0]``.
+    axis_k : Sequence[float], optional
+        Direction of the ``c`` axis of a birefringent material. Ignored by the other
+        flavors. By default, ``[0.0, 1.0, 0.0]``.
+    absorption_values_b : List[float], optional
+        Absorption of a birefringent material along its ``b`` axis, one value per
+        wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+        for a birefringent material, ``[]`` otherwise.
+    absorption_values_c : List[float], optional
+        Absorption of a birefringent material along its ``c`` axis, one value per
+        wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+        for a birefringent material, ``[]`` otherwise.
+
+    Notes
+    -----
+    Called without arguments, the constructor creates an isotropic optical glass of index
+    1.5 that neither absorbs nor scatters light. The defaults of the curves depend on
+    ``material_type`` and ``scattering`` only so that each flavor stays valid; the default
+    dispersion model is always an index curve, so pass a matching model for a metallic or
+    birefringent material.
+
+    Setters validate candidate data without partially updating the material. List getters
+    return copies; dispersion and phase models remain shared with validated properties.
+    Empty columns permit staged construction, while :meth:`MaterialFile.validate` and
+    ``save()`` require complete data and recheck shared child models. To resize a curve,
+    clear all
+    dependent value columns before changing its wavelengths, then repopulate the columns.
+    Likewise, clear all phase parameter columns before changing phase wavelengths.
+    To change between isotropic, metallic and birefringent flavors, construct a new
+    material with the matching dispersion model rather than changing the flavor in place.
+
+    Examples
+    --------
+    >>> from ansys.speos.core.input_files.material import MaterialFile, MaterialConstringence
+    >>> MaterialFile(
+    ...     description="PMMA",
+    ...     dispersion=MaterialConstringence(constringence=57.2, index=1.49),
+    ...     absorption_wavelengths=[486.0, 643.0],
+    ...     absorption_values=[0.0001, 0.0005],
+    ... ).save("pmma.material")
+    """
+
+    def __init__(
+        self,
+        description: str = "Optical Glass",
+        material_type: MaterialType = MaterialType.isotropic,
+        dispersion: Union[
+            MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve, None
+        ] = None,
+        absorption_wavelengths: List[float] | None = None,
+        absorption_values: List[float] | None = None,
+        measured_concentration: float = 1.0,
+        user_concentration: float = 1.0,
+        scattering_wavelengths: List[float] | None = None,
+        scattering_values: List[float] | None = None,
+        scattering: Optional[VolumeScattering] = None,
+        axis_j: Sequence[float] = _DEFAULT_AXIS_J,
+        axis_k: Sequence[float] = _DEFAULT_AXIS_K,
+        absorption_values_b: List[float] | None = None,
+        absorption_values_c: List[float] | None = None,
+    ) -> None:
+        material_type = self._checked_type(material_type)
+        dispersion = dispersion if dispersion is not None else MaterialDispersionCurve()
+        self._check_dispersion(material_type, dispersion)
+        self._material_type = material_type
+        self._dispersion = dispersion
+        self._absorption_wavelengths: List[float] = []
+        self._absorption_values: List[float] = []
+        self._absorption_values_b: List[float] = []
+        self._absorption_values_c: List[float] = []
+        self._scattering_wavelengths: List[float] = []
+        self._scattering_values: List[float] = []
+        metallic = material_type is MaterialType.metallic
+        birefringent = material_type is MaterialType.birefringent
+        default_absorption = [] if metallic else list(_DEFAULT_WAVELENGTHS)
+        default_diffusion = [] if scattering is None else list(_DEFAULT_WAVELENGTHS)
+        self.description = description
+        self.absorption_wavelengths = (
+            absorption_wavelengths if absorption_wavelengths is not None else default_absorption
+        )
+        self.absorption_values = (
+            absorption_values if absorption_values is not None else [0.0] * len(default_absorption)
+        )
+        self.measured_concentration = measured_concentration
+        self.user_concentration = user_concentration
+        self.scattering_wavelengths = (
+            scattering_wavelengths if scattering_wavelengths is not None else default_diffusion
+        )
+        self.scattering_values = (
+            scattering_values
+            if scattering_values is not None
+            else [_DEFAULT_DIFFUSION] * len(default_diffusion)
+        )
+        self.scattering = scattering
+        self.axis_j = axis_j
+        self.axis_k = axis_k
+        axis_absorption_count = len(self._absorption_wavelengths) if birefringent else 0
+        self.absorption_values_b = (
+            absorption_values_b
+            if absorption_values_b is not None
+            else [0.0] * axis_absorption_count
+        )
+        self.absorption_values_c = (
+            absorption_values_c
+            if absorption_values_c is not None
+            else [0.0] * axis_absorption_count
+        )
+
+    @property
+    def description(self) -> str:
+        """Single-line description.
+
+        Parameters
+        ----------
+        value : str
+            New free text written on the second line of the file.
+
+        Returns
+        -------
+        str
+            Free text written after the header.
+        """
+        return self._description
+
+    @description.setter
+    def description(self, value: str) -> None:
+        self._description = _single_line(value)
+
+    @property
+    def material_type(self) -> MaterialType:
+        """Material flavor matching the dispersion model.
+
+        Parameters
+        ----------
+        value : MaterialType
+            New type of material.
+
+        Returns
+        -------
+        MaterialType
+            Isotropic, metallic, or birefringent.
+
+        Notes
+        -----
+        Construct a new material to switch to a flavor requiring another dispersion type.
+        """
+        return self._material_type
+
+    @material_type.setter
+    def material_type(self, value: MaterialType) -> None:
+        value = self._checked_type(value)
+        self._check_dispersion(value, self._dispersion)
+        self._material_type = value
+
+    @classmethod
+    def _checked_type(cls, value: MaterialType) -> MaterialType:
+        if not isinstance(value, MaterialType):
+            raise TypeError("material_type must be a MaterialType member.")
+        return value
+
+    @classmethod
+    def _check_dispersion(cls, material_type: MaterialType, value) -> None:
+        if material_type is MaterialType.metallic:
+            if not isinstance(value, MaterialMetallicCurve):
+                raise ValueError(
+                    "A metallic material needs a MaterialMetallicCurve, got "
+                    f"{type(value).__name__}."
+                )
+            return
+        expected = (
+            cls.BIREFRINGENT_DISPERSIONS
+            if material_type is MaterialType.birefringent
+            else cls.DISPERSIONS
+        )
+        if not isinstance(value, expected):
+            raise ValueError(
+                f"A {material_type!r} material needs one of "
+                f"{[model.__name__ for model in expected]}, got {type(value).__name__}."
+            )
+
+    @property
+    def dispersion(self) -> Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]:
+        """Dispersion model of this material flavor.
+
+        Parameters
+        ----------
+        value : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
+            New how the refractive index varies with the wavelength. A metallic material needs a
+            :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+            birefringent one needs one of the
+            :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models.
+
+        Returns
+        -------
+        Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
+            Shared model with locally validated properties.
+        """
+        return self._dispersion
+
+    @dispersion.setter
+    def dispersion(
+        self, value: Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
+    ) -> None:
+        self._check_dispersion(self._material_type, value)
+        self._dispersion = value
+
+    def _column(self, name: str, values: List[float]) -> List[float]:
+        values = _finite_values(name, values)
+        if name in _AXIS_ABSORPTION_NAMES and not self._has_type(self.BIREFRINGENT) and values:
+            raise ValueError(f"{name} is only supported for a birefringent material.")
+        if self._has_type(self.METALLIC) and values:
+            if name in _ABSORPTION_NAMES:
+                raise ValueError(
+                    "A metallic material has no absorption curve, its extinction "
+                    "coefficient already holds the absorption."
+                )
+            if name in _DIFFUSION_NAMES:
+                raise ValueError("A metallic material cannot scatter light in its volume.")
+        names = _DIFFUSION_NAMES if name in _DIFFUSION_NAMES else _ABSORPTION_NAMES
+        columns = {
+            entry: values if entry == name else getattr(self, "_" + entry) for entry in names
+        }
+        _matching_columns(columns)
+        if name not in _DIFFUSION_NAMES and self._has_type(self.BIREFRINGENT):
+            wavelengths = columns[_property_name(MaterialFile.absorption_wavelengths)]
+            for entry in _AXIS_ABSORPTION_NAMES:
+                axis_values = values if entry == name else getattr(self, "_" + entry)
+                if wavelengths and axis_values and len(axis_values) != len(wavelengths):
+                    raise ValueError(
+                        f"{entry} must hold one value per absorption wavelength, "
+                        f"expected {len(wavelengths)}, got {len(axis_values)}."
+                    )
+        return values
+
+    @property
+    def absorption_wavelengths(self) -> List[float]:
+        """Absorption wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+            whose extinction coefficient already holds the absorption.
+
+        Returns
+        -------
+        List[float]
+            Finite wavelengths.
+        """
+        return self._absorption_wavelengths.copy()
+
+    @absorption_wavelengths.setter
+    def absorption_wavelengths(self, values: List[float]) -> None:
+        self._absorption_wavelengths = self._column(
+            _property_name(MaterialFile.absorption_wavelengths), values
+        )
+
+    @property
+    def absorption_values(self) -> List[float]:
+        """Absorption coefficients in mm-1, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+            the absorption along the ``a`` axis.
+
+        Returns
+        -------
+        List[float]
+            Finite coefficients, along the a axis for a birefringent material.
+        """
+        return self._absorption_values.copy()
+
+    @absorption_values.setter
+    def absorption_values(self, values: List[float]) -> None:
+        self._absorption_values = self._column(
+            _property_name(MaterialFile.absorption_values), values
+        )
+
+    @property
+    def measured_concentration(self) -> float:
+        """Concentration at which absorption was measured.
+
+        Parameters
+        ----------
+        value : float
+            New concentration the absorption curve was measured at.
+
+        Returns
+        -------
+        float
+            Finite concentration.
+        """
+        return self._measured_concentration
+
+    @measured_concentration.setter
+    def measured_concentration(self, value: float) -> None:
+        self._measured_concentration = _finite_number(
+            _property_name(MaterialFile.measured_concentration), value
+        )
+
+    @property
+    def user_concentration(self) -> float:
+        """Concentration to which absorption is scaled.
+
+        Parameters
+        ----------
+        value : float
+            New concentration the absorption curve is scaled to.
+
+        Returns
+        -------
+        float
+            Finite concentration.
+        """
+        return self._user_concentration
+
+    @user_concentration.setter
+    def user_concentration(self, value: float) -> None:
+        self._user_concentration = _finite_number(
+            _property_name(MaterialFile.user_concentration), value
+        )
+
+    @property
+    def scattering_wavelengths(self) -> List[float]:
+        """Diffusion wavelengths in nm, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New wavelengths of the diffusion curve, in nm.
+
+        Returns
+        -------
+        List[float]
+            Finite wavelengths.
+        """
+        return self._scattering_wavelengths.copy()
+
+    @scattering_wavelengths.setter
+    def scattering_wavelengths(self, values: List[float]) -> None:
+        self._scattering_wavelengths = self._column(
+            _property_name(MaterialFile.scattering_wavelengths), values
+        )
+
+    @property
+    def scattering_values(self) -> List[float]:
+        """Diffusion coefficients in mm-1, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New diffusion coefficient at each wavelength, in mm-1.
+
+        Returns
+        -------
+        List[float]
+            Finite coefficients.
+        """
+        return self._scattering_values.copy()
+
+    @scattering_values.setter
+    def scattering_values(self, values: List[float]) -> None:
+        self._scattering_values = self._column(
+            _property_name(MaterialFile.scattering_values), values
+        )
+
+    @property
+    def scattering(self) -> Optional[VolumeScattering]:
+        """Volume scattering phase function.
+
+        Parameters
+        ----------
+        value : Optional[VolumeScattering]
+            New scattering phase function.
+
+        Returns
+        -------
+        Optional[VolumeScattering]
+            Shared phase model, or None for a nonscattering material.
+        """
+        return self._scattering
+
+    @scattering.setter
+    def scattering(self, value: Optional[VolumeScattering]) -> None:
+        if value is not None:
+            if self._has_type(self.METALLIC):
+                raise ValueError("A metallic material cannot scatter light in its volume.")
+            if not isinstance(value, self.SCATTERINGS):
+                raise TypeError("scattering must be a supported volume scattering model or None.")
+        self._scattering = value
+
+    @property
+    def axis_j(self) -> List[float]:
+        """Direction of the b axis, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New direction of the ``b`` axis of a birefringent material. Ignored by the other
+            flavors.
+
+        Returns
+        -------
+        List[float]
+            Three finite coordinates.
+        """
+        return list(self._axis_j)
+
+    @axis_j.setter
+    def axis_j(self, values: Sequence[float]) -> None:
+        self._axis_j = _numeric_tuple(_property_name(MaterialFile.axis_j), values)
+
+    @property
+    def axis_k(self) -> List[float]:
+        """Direction of the c axis, returned as a copy.
+
+        Parameters
+        ----------
+        values : Sequence[float]
+            New direction of the ``c`` axis of a birefringent material. Ignored by the other
+            flavors.
+
+        Returns
+        -------
+        List[float]
+            Three finite coordinates.
+        """
+        return list(self._axis_k)
+
+    @axis_k.setter
+    def axis_k(self, values: Sequence[float]) -> None:
+        self._axis_k = _numeric_tuple(_property_name(MaterialFile.axis_k), values)
+
+    @property
+    def absorption_values_b(self) -> List[float]:
+        """Absorption coefficients along b, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption of a birefringent material along its ``b`` axis, one value per
+            wavelength of the absorption curve.
+
+        Returns
+        -------
+        List[float]
+            Finite coefficients in mm-1.
+        """
+        return self._absorption_values_b.copy()
+
+    @absorption_values_b.setter
+    def absorption_values_b(self, values: List[float]) -> None:
+        self._absorption_values_b = self._column(
+            _property_name(MaterialFile.absorption_values_b), values
+        )
+
+    @property
+    def absorption_values_c(self) -> List[float]:
+        """Absorption coefficients along c, returned as a copy.
+
+        Parameters
+        ----------
+        values : List[float]
+            New absorption of a birefringent material along its ``c`` axis, one value per
+            wavelength of the absorption curve.
+
+        Returns
+        -------
+        List[float]
+            Finite coefficients in mm-1.
+        """
+        return self._absorption_values_c.copy()
+
+    @absorption_values_c.setter
+    def absorption_values_c(self, values: List[float]) -> None:
+        self._absorption_values_c = self._column(
+            _property_name(MaterialFile.absorption_values_c), values
+        )
+
+    _ABSORPTION_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(absorption_wavelengths),
+        _property_name(absorption_values),
+    )
+    _DIFFUSION_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(scattering_wavelengths),
+        _property_name(scattering_values),
+    )
+    _AXIS_ABSORPTION_NAMES: ClassVar[tuple[str, ...]] = (
+        _property_name(absorption_values_b),
+        _property_name(absorption_values_c),
+    )
+    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        _property_name(description),
+        _property_name(material_type),
+        _property_name(dispersion),
+        *_ABSORPTION_NAMES,
+        _property_name(measured_concentration),
+        _property_name(user_concentration),
+        *_DIFFUSION_NAMES,
+        _property_name(scattering),
+        _property_name(axis_j),
+        _property_name(axis_k),
+        *_AXIS_ABSORPTION_NAMES,
+    )
+
+    EXTENSION = ".material"
+    HEADER = "OPTIS - Material file v13"
+    HEADER_PREFIX = "OPTIS - Material file"
+
+    ISOTROPIC: ClassVar[MaterialType] = MaterialType.isotropic
+    """Material type of the default flavor of the format."""
+
+    METALLIC: ClassVar[MaterialType] = MaterialType.metallic
+    """Material type of the metallic flavor of the format."""
+
+    BIREFRINGENT: ClassVar[MaterialType] = MaterialType.birefringent
+    """Material type of the birefringent flavor of the format."""
+
+    DISPERSIONS: ClassVar[tuple] = (
+        MaterialConstringence,
+        MaterialDispersionCurve,
+        MaterialSellmeier,
+        MaterialKettlerHelmholtz,
+    )
+    """Dispersion models the file can hold."""
+
+    BIREFRINGENT_DISPERSIONS: ClassVar[tuple] = (
+        MaterialBirefringentCurve,
+        MaterialBirefringentSellmeier,
+        MaterialBirefringentKettlerHelmholtz,
+    )
+    """Dispersion models a birefringent material can hold."""
+
+    SCATTERINGS: ClassVar[tuple] = (
+        VolumeScatteringUserDefined,
+        VolumeScatteringHenyeyGreenstein,
+        VolumeScatteringDoubleHenyeyGreenstein,
+        VolumeScatteringGegenbauer,
+    )
+    """Scattering phase functions the file can hold."""
+
+    def validate(self) -> None:
+        """Check the material against the constraints of the ``*.material`` format.
+
+        Raises
+        ------
+        ValueError
+            If the dispersion model does not match :attr:`MaterialFile.material_type`, if
+            the
+            absorption curve is empty or inconsistent, if a scattering phase function is
+            set without a matching diffusion curve, or if a metallic material carries data
+            the format cannot store.
+        """
+        if not self._has_type(self.BIREFRINGENT):
+            for name in self._AXIS_ABSORPTION_NAMES:
+                if getattr(self, "_" + name):
+                    raise ValueError(f"{name} is only supported for a birefringent material.")
+        if self._has_type(self.METALLIC):
+            self._validate_metallic()
+            return
+        self._validate_dispersion()
+        self._dispersion.validate()
+        _matching_columns(
+            {name: getattr(self, "_" + name) for name in _ABSORPTION_NAMES}, complete=True
+        )
+        if self._has_type(self.BIREFRINGENT):
+            self._validate_birefringent()
+        if self.scattering is None:
+            return
+        _matching_columns(
+            {name: getattr(self, "_" + name) for name in _DIFFUSION_NAMES}, complete=True
+        )
+        self.scattering.validate()
+
+    def _has_type(self, material_type: MaterialType) -> bool:
+        return self.material_type is material_type
+
+    def _validate_dispersion(self) -> None:
+        """Check that the dispersion model belongs to the flavor of the material type."""
+        self._check_dispersion(self._material_type, self._dispersion)
+
+    def _validate_metallic(self) -> None:
+        """Check a metallic material, which holds nothing but its complex index."""
+        self._check_dispersion(self.METALLIC, self._dispersion)
+        self._dispersion.validate()
+        if self.absorption_wavelengths or self.absorption_values:
+            raise ValueError(
+                "A metallic material has no absorption curve, its extinction coefficient "
+                "already holds the absorption."
+            )
+        if self.scattering is not None or self.scattering_wavelengths or self.scattering_values:
+            raise ValueError("A metallic material cannot scatter light in its volume.")
+
+    def _validate_birefringent(self) -> None:
+        """Check the axes and the per axis absorption of a birefringent material."""
+        self._check_dispersion(self._material_type, self._dispersion)
+        for name in (_property_name(MaterialFile.axis_j), _property_name(MaterialFile.axis_k)):
+            axis = getattr(self, name)
+            if len(axis) != 3:
+                raise ValueError(f"{name} must hold 3 coordinates, got {len(axis)}.")
+        expected = len(self.absorption_wavelengths)
+        for name in self._AXIS_ABSORPTION_NAMES:
+            values = getattr(self, name)
+            if len(values) != expected:
+                raise ValueError(
+                    f"{name} must hold one value per absorption wavelength, expected "
+                    f"{expected}, got {len(values)}."
+                )
+
+    def _to_lines(self) -> List[str]:
+        lines = [self.description, self.material_type.value]
+        lines.extend(self.dispersion._to_lines())
+        if self._has_type(self.METALLIC):
+            return lines
+
+        birefringent = self._has_type(self.BIREFRINGENT)
+        if birefringent:
+            lines.append(" ".join(format_number(value) for value in self.axis_j))
+            lines.append(" ".join(format_number(value) for value in self.axis_k))
+        lines.append(str(len(self.absorption_wavelengths)))
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(value)}"
+            for wavelength, value in zip(self.absorption_wavelengths, self.absorption_values)
+        )
+        if birefringent:
+            lines.extend(
+                f"{format_number(value_b)} {format_number(value_c)}"
+                for value_b, value_c in zip(self.absorption_values_b, self.absorption_values_c)
+            )
+        lines.append(format_number(self.measured_concentration))
+        lines.append(format_number(self.user_concentration))
+        lines.append("1" if self.scattering is not None else "0")
+
+        if self.scattering is None:
+            return lines
+
+        lines.append(self.scattering.VOLUMIC_HEADER)
+        lines.append(str(self.scattering.MODEL))
+        lines.append(str(len(self.scattering_wavelengths)))
+        lines.extend(
+            f"{format_number(wavelength)} {format_number(value)}"
+            for wavelength, value in zip(self.scattering_wavelengths, self.scattering_values)
+        )
+        lines.extend(self.scattering._to_lines())
+        return lines
+
+    @classmethod
+    def _from_lines(cls, reader: LineReader) -> MaterialFile:
+        description = reader.next_line()
+        type_name = reader.next_data_line()
+        types: dict[str, MaterialType] = {member.value.lower(): member for member in MaterialType}
+        if type_name.lower() not in types:
+            raise reader.error(f"unknown material_type {type_name!r}.")
+        material_type = types[type_name.lower()]
+        metallic = material_type is MaterialType.metallic
+        birefringent = material_type is MaterialType.birefringent
+
+        keyword = reader.next_data_line()
+        if metallic:
+            if keyword.lower() != MaterialMetallicCurve.KEYWORD.lower():
+                raise reader.error(
+                    "a metallic material needs a "
+                    f"{MaterialMetallicCurve.KEYWORD!r} index variation mode, got {keyword!r}."
+                )
+            return cls(
+                description=description,
+                material_type=material_type,
+                dispersion=MaterialMetallicCurve._from_lines(reader),
+            )
+
+        candidates = cls.BIREFRINGENT_DISPERSIONS if birefringent else cls.DISPERSIONS
+        models = {model.KEYWORD.lower(): model for model in candidates}
+        if keyword.lower() not in models:
+            raise reader.error(f"unknown index variation mode {keyword!r}.")
+        dispersion = models[keyword.lower()]._from_lines(reader)
+
+        axes = [reader.next_floats(count=3), reader.next_floats(count=3)] if birefringent else []
+
+        absorption_wavelengths, absorption_values = [], []
+        for _ in range(reader.next_int(minimum=1)):
+            wavelength, value = reader.next_floats(count=2)
+            absorption_wavelengths.append(wavelength)
+            absorption_values.append(value)
+
+        absorption_values_b, absorption_values_c = [], []
+        if birefringent:
+            for _ in absorption_wavelengths:
+                value_b, value_c = reader.next_floats(count=2)
+                absorption_values_b.append(value_b)
+                absorption_values_c.append(value_c)
+        measured_concentration = reader.next_floats(count=1)[0]
+        user_concentration = reader.next_floats(count=1)[0]
+        scattering_wavelengths, scattering_values = [], []
+        scattering = None
+        if reader.next_int():
+            header = reader.next_data_line()
+            header_error = reader.error(
+                f"expected the volumic-scattering header for the selected phase model, "
+                f"got {header!r}."
+            )
+            model_id = reader.next_int()
+            models = {model.MODEL: model for model in cls.SCATTERINGS}
+            if model_id not in models:
+                raise reader.error(f"unsupported scattering phase function {model_id}.")
+            model_class = models[model_id]
+            if header not in (model_class.VOLUMIC_HEADER, model_class.VOLUMIC_HEADER + ".0"):
+                raise header_error
+            for _ in range(reader.next_int(minimum=1)):
+                wavelength, value = reader.next_floats(count=2)
+                scattering_wavelengths.append(wavelength)
+                scattering_values.append(value)
+            scattering = model_class._from_lines(reader)
+        return cls(
+            description=description,
+            material_type=material_type,
+            dispersion=dispersion,
+            absorption_wavelengths=absorption_wavelengths,
+            absorption_values=absorption_values,
+            measured_concentration=measured_concentration,
+            user_concentration=user_concentration,
+            scattering_wavelengths=scattering_wavelengths,
+            scattering_values=scattering_values,
+            scattering=scattering,
+            axis_j=axes[0] if birefringent else _DEFAULT_AXIS_J,
+            axis_k=axes[1] if birefringent else _DEFAULT_AXIS_K,
+            absorption_values_b=absorption_values_b,
+            absorption_values_c=absorption_values_c,
+        )
+
+
+_CURVE_FIELDS = MaterialDispersionCurve._EQUALITY_FIELDS
+_SELLMEIER_FIELDS = MaterialSellmeier._FIELD_NAMES
+_KETTLER_FIELDS = MaterialKettlerHelmholtz._FIELD_NAMES
+_METALLIC_FIELDS = MaterialMetallicCurve._EQUALITY_FIELDS
+_BIREFRINGENT_FIELDS = MaterialBirefringentCurve._EQUALITY_FIELDS
+_ABSORPTION_NAMES = MaterialFile._ABSORPTION_NAMES
+_DIFFUSION_NAMES = MaterialFile._DIFFUSION_NAMES
+_AXIS_ABSORPTION_NAMES = MaterialFile._AXIS_ABSORPTION_NAMES
+_MATERIAL_FIELDS = MaterialFile._EQUALITY_FIELDS
