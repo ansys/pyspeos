@@ -14,16 +14,22 @@ from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
+    EnergyDensity3DDimensionsParameters,
+    EnergyDensity3DSensorParameters,
+    LayerTypes,
     ObserverSensorParameters,
     PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
     PolarIntensitySensorParameters,
+    SensorTypes,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.sensor import (
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
     SensorImmersive,
@@ -454,5 +460,61 @@ print(sensor_polar_param)
 
 sensor_polar_param.delete()
 sensor_polar.delete()
+
+# ### 3D energy density sensor (Speos 2027 R1 or later)
+#
+# This sensor records energy density inside a volume, rather than on a surface.
+# The default is a photometric 50 mm cube centered on the axis-system origin,
+# with 100 voxels along each edge and no layer separation.
+# Only photometric and radiometric modes and none/source/face layers are supported.
+# Light Expert and result-file readers/VTP exporters are not supported.
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    energy = p.create_sensor(name="EnergyDensity.1", feature_type=Sensor3DEnergyDensity)
+    print(energy)
+    energy.commit()
+    print(energy)
+
+    energy.set_type_radiometric().set_layer_type_source()
+    volume = energy.set_dimensions()
+    volume.x_size = 60.0
+    volume.y_size = 40.0
+    volume.z_size = 20.0
+    volume.x_sampling = 60
+    volume.y_sampling = 40
+    volume.z_sampling = 20
+    energy.axis_system = [10, 0, 25, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    energy.result_file_name = "EnergyDensityVolume"
+    energy.commit()
+    print(energy)
+
+    # The same volume can be configured through parameter dataclasses.
+    energy_parameters = EnergyDensity3DSensorParameters(
+        dimensions=EnergyDensity3DDimensionsParameters(
+            x_size=60,
+            x_sampling=60,
+            y_size=40,
+            y_sampling=40,
+            z_size=20,
+            z_sampling=20,
+        ),
+        sensor_type=SensorTypes.radiometric,
+        layer_type=LayerTypes.by_source,
+    )
+    energy_from_parameters = p.create_sensor(
+        name="EnergyDensity.Parameters",
+        feature_type=Sensor3DEnergyDensity,
+        parameters=energy_parameters,
+    ).commit()
+    print(energy_from_parameters)
+
+    # With the graphics extra installed, p.preview() includes the oriented volume.
+    # Export a simulation containing the sensor to save it in a .speos project;
+    # lightbox exports do not retain sensors. Speos export also omits template metadata.
+    energy.dimensions.z_size = 100
+    energy.reset()
+    print(energy)
+    energy_from_parameters.delete()
+    energy.delete()
 
 speos.close()

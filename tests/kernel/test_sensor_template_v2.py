@@ -122,6 +122,32 @@ def test_sensor_template_v2_irradiance(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=271)
+@pytest.mark.parametrize("mode", ["mode_photometric", "mode_radiometric"])
+def test_sensor_template_v2_energy_density(speos: Speos, mode: str):
+    """Round-trip every energy density template field through the real v2 manager."""
+    template = ProtoSensorTemplateV2(
+        name="EnergyDensityKernel", description="Energy density CRUD", metadata={"test": "kernel"}
+    )
+    getattr(template.energy_density, mode).SetInParent()
+    template.energy_density.dimensions_3d.CopyFrom(
+        ProtoSensorTemplateV2.EnergyDensity.Dimensions3D(
+            x_size=20, x_sampling=11, y_size=40, y_sampling=13, z_size=60, z_sampling=17
+        )
+    )
+    db = speos.client.sensor_templates_v2()
+    link = db.create(template)
+    try:
+        assert link.get() == template
+        assert link.key in [item.key for item in db.list()]
+        template.energy_density.dimensions_3d.z_size = 75
+        link.set(template)
+        assert link.get() == template
+    finally:
+        link.delete()
+    assert link.key not in [item.key for item in db.list()]
+
+
+@pytest.mark.supported_speos_versions(min=271)
 def test_sensor_template_v2_list(speos: Speos):
     """Test listing sensor template v2."""
     assert speos.client.healthy is True

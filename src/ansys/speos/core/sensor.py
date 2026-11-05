@@ -52,6 +52,8 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    EnergyDensity3DDimensionsParameters,
+    EnergyDensity3DSensorParameters,
     ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
@@ -131,6 +133,9 @@ class BaseSensor(ABC):
     _supports_template_v2 = False
     """Whether the concrete sensor feature is able to handle a sensor template v2."""
 
+    _requires_template_v2 = False
+    """Whether the concrete sensor feature only exists in sensor template v2."""
+
     _sensor_mode_template_field_v1 = None
     _sensor_mode_template_field_v2 = None
     """Field names of the sensor-template sub-message holding mode configuration."""
@@ -148,6 +153,8 @@ class BaseSensor(ABC):
         bool
             ``True`` if the feature supports v2 and the connected server is recent enough.
         """
+        if cls._requires_template_v2:
+            return True
         if not cls._supports_template_v2:
             return False
         return server_version_checker.is_version_supported(2027, 1, 0)
@@ -255,16 +262,15 @@ class BaseSensor(ABC):
         AttributeError
             If the concrete sensor does not declare mode-template field names.
         """
-        if (
-            self._sensor_mode_template_field_v1 is None
-            or self._sensor_mode_template_field_v2 is None
-        ):
+        field = (
+            self._sensor_mode_template_field_v2
+            if self._is_template_v2
+            else self._sensor_mode_template_field_v1
+        )
+        if field is None:
             msg = "Sensor mode template fields must be declared on the concrete sensor class."
             raise AttributeError(msg)
-        return self._sensor_template_part(
-            self._sensor_mode_template_field_v1,
-            self._sensor_mode_template_field_v2,
-        )
+        return getattr(self._sensor_template, field)
 
     def _sensor_mode_field(self, mode: str) -> str:
         """Get the template field name corresponding to a sensor mode.
@@ -1009,8 +1015,10 @@ class BaseSensor(ABC):
                 case "intersected_one_time":
                     self.set_sca_filtering_mode_intersected_one_time()
             if default_parameters.geometries:
-                for item in default_parameters.geometries:
-                    self.layers.append(BaseSensor.FaceLayer(item.name, item.geometry))
+                self.layers = [
+                    BaseSensor.FaceLayer(item.name, item.geometry)
+                    for item in default_parameters.geometries
+                ]
 
         def set_sca_filtering_mode_intersected_one_time(
             self,
@@ -1058,10 +1066,12 @@ class BaseSensor(ABC):
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
-                if isinstance(layer.geometries, list):
-                    layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
-                else:
-                    layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
+                layer_data.append(
+                    BaseSensor.FaceLayer(
+                        layer.name,
+                        [GeoRef.from_native_link(path) for path in layer.geometries.geo_paths],
+                    )
+                )
             return layer_data
 
         @layers.setter
@@ -7400,6 +7410,457 @@ class SensorPolarIntensity(BaseSensor):
         self._sensor_instance.polar_intensity_properties.axis_system[:] = (
             general_methods._validate_axis_system12(value).tolist()
         )
+
+
+class Sensor3DEnergyDensity(BaseSensor):
+    """Sensor feature: volumetric 3D energy density.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that owns the feature.
+    name : str
+        Name of the feature.
+    description : str, optional
+        Description of the feature.
+    metadata : Mapping[str, str], optional
+        User metadata.
+    sensor_instance : ProtoScene.SensorInstance, optional
+        Existing instance to load instead of creating a new sensor.
+    default_parameters : EnergyDensity3DSensorParameters, optional
+        Parameters to apply. When loading, ``None`` preserves existing values.
+
+    Notes
+    -----
+    Requires Speos 2027 R1 SP0 and sensor template v2. The default photometric
+    volume is a 50 mm cube centered on its axis-system origin, sampled with
+    100 voxels along each edge, with no layer separation.
+    Result-file readers and VTP export are not provided for this sensor.
+    Light Expert (LXP) is not supported.
+    """
+
+    _supports_template_v2 = True
+    _requires_template_v2 = True
+    _sensor_mode_template_field_v2 = "energy_density"
+
+    @general_methods.min_speos_version(27, 1, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[EnergyDensity3DSensorParameters] = None,
+    ) -> None:
+        self._layer_type = None
+        super().__init__(project, name, description, metadata, sensor_instance)
+        if sensor_instance is None and default_parameters is None:
+            default_parameters = EnergyDensity3DSensorParameters()
+        self._fill_parameters(default_parameters)
+
+    class Dimensions3D:
+        """Dimensions and voxel counts of an energy density volume.
+
+        Parameters
+        ----------
+        dimensions : sensor_v2_pb2.SensorTemplate.EnergyDensity.Dimensions3D
+            Protobuf dimensions to modify.
+        default_parameters : EnergyDensity3DDimensionsParameters, optional
+            Values to apply, or ``None`` to preserve existing dimensions.
+        stable_ctr : bool, optional
+            Internal constructor guard.
+
+        Notes
+        -----
+        Use the parent sensor's ``set_dimensions()`` method.
+        """
+
+        def __init__(
+            self,
+            dimensions: sensor_v2_pb2.SensorTemplate.EnergyDensity.Dimensions3D,
+            default_parameters: Optional[EnergyDensity3DDimensionsParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                raise RuntimeError("Use Sensor3DEnergyDensity.set_dimensions().")
+            self._dimensions = dimensions
+            if default_parameters is not None:
+                self.x_size = default_parameters.x_size
+                self.y_size = default_parameters.y_size
+                self.z_size = default_parameters.z_size
+                self.x_sampling = default_parameters.x_sampling
+                self.y_sampling = default_parameters.y_sampling
+                self.z_sampling = default_parameters.z_sampling
+
+        def _set_size(self, axis: str, value: float) -> None:
+            size = general_methods._validate_scalar(value)
+            if size <= 0:
+                raise ValueError("Size must be greater than 0.")
+            setattr(self._dimensions, axis + "_size", size)
+
+        def _set_sampling(self, axis: str, value: int) -> None:
+            sampling = general_methods._validate_positive_int(value)
+            if sampling > 2**32 - 1:
+                raise ValueError("Sampling must not exceed 4294967295.")
+            setattr(self._dimensions, axis + "_sampling", sampling)
+
+        @property
+        def x_size(self) -> float:
+            """Size along the local X axis in millimeters.
+
+            Returns
+            -------
+            float
+                X size.
+            """
+            return self._dimensions.x_size
+
+        @x_size.setter
+        def x_size(self, value: float) -> None:
+            self._set_size("x", value)
+
+        @property
+        def y_size(self) -> float:
+            """Size along the local Y axis in millimeters.
+
+            Returns
+            -------
+            float
+                Y size.
+            """
+            return self._dimensions.y_size
+
+        @y_size.setter
+        def y_size(self, value: float) -> None:
+            self._set_size("y", value)
+
+        @property
+        def z_size(self) -> float:
+            """Size along the local Z axis in millimeters.
+
+            Returns
+            -------
+            float
+                Z size.
+            """
+            return self._dimensions.z_size
+
+        @z_size.setter
+        def z_size(self, value: float) -> None:
+            self._set_size("z", value)
+
+        @property
+        def x_sampling(self) -> int:
+            """Number of voxels along the local X axis.
+
+            Returns
+            -------
+            int
+                X voxel count.
+            """
+            return self._dimensions.x_sampling
+
+        @x_sampling.setter
+        def x_sampling(self, value: int) -> None:
+            self._set_sampling("x", value)
+
+        @property
+        def y_sampling(self) -> int:
+            """Number of voxels along the local Y axis.
+
+            Returns
+            -------
+            int
+                Y voxel count.
+            """
+            return self._dimensions.y_sampling
+
+        @y_sampling.setter
+        def y_sampling(self, value: int) -> None:
+            self._set_sampling("y", value)
+
+        @property
+        def z_sampling(self) -> int:
+            """Number of voxels along the local Z axis.
+
+            Returns
+            -------
+            int
+                Z voxel count.
+            """
+            return self._dimensions.z_sampling
+
+        @z_sampling.setter
+        def z_sampling(self, value: int) -> None:
+            self._set_sampling("z", value)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[EnergyDensity3DSensorParameters] = None
+    ) -> None:
+        self._layer_type = None
+        self._sensor_dimensions = self.Dimensions3D(
+            self._sensor_mode_template.dimensions_3d,
+            default_parameters.dimensions if default_parameters is not None else None,
+            stable_ctr=True,
+        )
+        if default_parameters is not None:
+            match default_parameters.sensor_type:
+                case SensorTypes.photometric:
+                    self.set_type_photometric()
+                case SensorTypes.radiometric:
+                    self.set_type_radiometric()
+                case _:
+                    raise ValueError(
+                        "Energy density supports only photometric or radiometric mode."
+                    )
+            self.axis_system = default_parameters.axis_system
+            if default_parameters.layer_type == LayerTypes.none:
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
+                self.set_layer_type_face()._fill_parameters(default_parameters.layer_type)
+            else:
+                raise ValueError("Energy density supports only none, source, or face layers.")
+        else:
+            properties = self._sensor_instance.energy_density_properties
+            match properties.WhichOneof("layer_type"):
+                case "layer_type_none":
+                    self._layer_type = LayerTypes.none
+                case "layer_type_source":
+                    self._layer_type = LayerTypes.by_source
+                case "layer_type_face":
+                    self._layer_type = BaseSensor.LayerTypeFace(
+                        properties.layer_type_face, stable_ctr=True
+                    )
+        if self._visual_data is not None:
+            self._visual_data.updated = False
+
+    @property
+    def dimensions(self) -> Sensor3DEnergyDensity.Dimensions3D:
+        """Volume dimensions.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity.Dimensions3D
+            Sizes and voxel counts.
+        """
+        return self._sensor_dimensions
+
+    def set_dimensions(self) -> Sensor3DEnergyDensity.Dimensions3D:
+        """Configure volume dimensions.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity.Dimensions3D
+            Sizes and voxel counts.
+        """
+        return self.dimensions
+
+    @property
+    def result_file_name(self) -> str:
+        """Base name of the result file, without an extension.
+
+        Returns
+        -------
+        str
+            Configured result base name.
+        """
+        return self._sensor_instance.result_file_name
+
+    @result_file_name.setter
+    def result_file_name(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError("Result file name must be a string.")
+        self._sensor_instance.result_file_name = value
+
+    @property
+    def lxp_path_number(self) -> None:
+        """Light Expert setting, unsupported for energy density sensors.
+
+        Returns
+        -------
+        None
+            Light Expert is disabled.
+        """
+        return None
+
+    @lxp_path_number.setter
+    def lxp_path_number(self, value: Optional[int]) -> None:
+        if value is not None and value != 0:
+            raise NotImplementedError("Energy density sensors do not support Light Expert (LXP).")
+        self._sensor_instance.ClearField("lxp_properties")
+
+    @property
+    def type(self) -> str:
+        """Sensor mode.
+
+        Returns
+        -------
+        str
+            ``"Photometric"`` or ``"Radiometric"``.
+        """
+        match self._sensor_mode_template.WhichOneof("sensor_mode"):
+            case "mode_photometric":
+                return "Photometric"
+            case "mode_radiometric":
+                return "Radiometric"
+            case _:
+                raise ValueError("Energy density sensor mode is not set.")
+
+    def set_type_photometric(self) -> Sensor3DEnergyDensity:
+        """Select photometric mode.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity
+            This sensor.
+        """
+        self._get_sensor_mode("photometric").SetInParent()
+        return self
+
+    def set_type_radiometric(self) -> Sensor3DEnergyDensity:
+        """Select radiometric mode.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity
+            This sensor.
+        """
+        self._get_sensor_mode("radiometric").SetInParent()
+        return self
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Position and orientation as twelve axis-system values.
+
+        Returns
+        -------
+        list[float]
+            Origin followed by the X, Y, and Z directions.
+
+        Notes
+        -----
+        Provide an orthonormal, right-handed coordinate frame.
+        """
+        return list(self._sensor_instance.energy_density_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        axes = general_methods._validate_axis_system12(value)
+        general_methods._axis_frame(axes)
+        self._sensor_instance.energy_density_properties.axis_system[:] = axes.tolist()
+        if self._visual_data is not None:
+            self._visual_data.updated = False
+
+    @property
+    def layer(self) -> Union[LayerTypes, BaseSensor.LayerTypeFace, None]:
+        """Layer separation configuration.
+
+        Returns
+        -------
+        LayerTypes or BaseSensor.LayerTypeFace or None
+            Active layer configuration, or ``None`` if absent in a loaded instance.
+        """
+        return self._layer_type
+
+    def set_layer_type_none(self) -> Sensor3DEnergyDensity:
+        """Disable layer separation.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity
+            This sensor.
+        """
+        self._sensor_instance.energy_density_properties.layer_type_none.SetInParent()
+        self._layer_type = LayerTypes.none
+        return self
+
+    def set_layer_type_source(self) -> Sensor3DEnergyDensity:
+        """Separate results by source.
+
+        Returns
+        -------
+        Sensor3DEnergyDensity
+            This sensor.
+        """
+        self._sensor_instance.energy_density_properties.layer_type_source.SetInParent()
+        self._layer_type = LayerTypes.by_source
+        return self
+
+    def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
+        """Separate results by face.
+
+        Returns
+        -------
+        BaseSensor.LayerTypeFace
+            Face groups and filtering configuration.
+        """
+        if not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
+            properties = self._sensor_instance.energy_density_properties
+            properties.layer_type_face.SetInParent()
+            self._layer_type = BaseSensor.LayerTypeFace(
+                properties.layer_type_face, LayerByFaceParameters(), stable_ctr=True
+            )
+        return self._layer_type
+
+    @property
+    @general_methods.graphics_required
+    def visual_data(self) -> _VisualData:
+        """Oriented volume preview, independent of voxel sampling.
+
+        Returns
+        -------
+        ansys.speos.core.generic.visualization_methods._VisualData
+            Box surface and coordinate axes.
+
+        Notes
+        -----
+        Uses local dimensions and positioning so uncommitted edits are visible.
+        """
+        axes = np.array(self.axis_system).reshape(4, 3)
+        half_sizes = (
+            np.array([self.dimensions.x_size, self.dimensions.y_size, self.dimensions.z_size]) / 2
+        )
+        corners = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+            ]
+        )
+        vertices = (corners * half_sizes) @ axes[1:] + axes[0]
+        facets = np.array(
+            [
+                [3, 0, 2, 1],
+                [3, 0, 3, 2],
+                [3, 4, 5, 6],
+                [3, 4, 6, 7],
+                [3, 0, 1, 5],
+                [3, 0, 5, 4],
+                [3, 1, 2, 6],
+                [3, 1, 6, 5],
+                [3, 2, 3, 7],
+                [3, 2, 7, 6],
+                [3, 3, 0, 4],
+                [3, 3, 4, 7],
+            ]
+        )
+        self._visual_data = _VisualData()
+        self._visual_data.add_data_mesh(vertices, facets)
+        assert self._visual_data.coordinates is not None
+        self._visual_data.coordinates.origin = axes[0]
+        self._visual_data.coordinates.x_axis = axes[1]
+        self._visual_data.coordinates.y_axis = axes[2]
+        self._visual_data.coordinates.z_axis = axes[3]
+        self._visual_data.updated = True
+        return self._visual_data
 
 
 class SensorObserver(BaseSensor):
