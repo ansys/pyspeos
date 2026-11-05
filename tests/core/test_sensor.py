@@ -5453,7 +5453,7 @@ def test_human_eye_sensor_default_values(speos: Speos):
     assert dims.y_end == 10.0
     assert dims.y_sampling == 1176
 
-    assert sensor_he.observer_point == pytest.approx([0.0, 0.0, 0.0])
+    assert sensor_he.eye_point == pytest.approx([0.0, 0.0, 0.0])
     assert sensor_he.top_direction == pytest.approx([0.0, 1.0, 0.0])
     assert sensor_he.axis_system == pytest.approx([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     # Focal (thus target point) is left empty by default
@@ -5466,7 +5466,7 @@ def test_human_eye_sensor_default_values(speos: Speos):
     # Defining the target point sets the focal and keeps observer and top direction
     sensor_he.target_point = [0.0, 0.0, 150.0]
     assert sensor_he.focal == pytest.approx(150.0)
-    assert sensor_he.observer_point == pytest.approx([0.0, 0.0, 0.0])
+    assert sensor_he.eye_point == pytest.approx([0.0, 0.0, 0.0])
     assert sensor_he.axis_system == pytest.approx([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
@@ -5749,7 +5749,7 @@ def test_human_eye_sensor_save_and_load(speos: Speos):
         assert dims.y_start == pytest.approx(params.dimensions.y_start)
         assert dims.y_end == pytest.approx(params.dimensions.y_end)
         assert dims.y_sampling == params.dimensions.y_sampling
-        assert loaded_he.observer_point == pytest.approx([10.0, -5.0, 2.0])
+        assert loaded_he.eye_point == pytest.approx([10.0, -5.0, 2.0])
         assert loaded_he.target_point == pytest.approx([10.0, 395.0, 2.0])
         assert loaded_he.top_direction == pytest.approx([0.0, 0.0, 1.0])
         assert loaded_he.focal == pytest.approx(400.0)

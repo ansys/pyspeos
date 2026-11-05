@@ -7887,39 +7887,15 @@ class SensorHumanEye(BaseSensor):
 
     def _active_wavelengths_range(
         self,
-    ) -> Union[None, sensor_v2_pb2.SensorTemplate.WavelengthsRange]:
+    ) -> sensor_v2_pb2.SensorTemplate.WavelengthsRange:
         if self._has_sensor_mode("colorimetric"):
             return self._get_sensor_mode("colorimetric").wavelengths_range
         if self._has_sensor_mode("spectral"):
             return self._get_sensor_mode("spectral").wavelengths_range
-        return None
+        raise RuntimeError("No active sensor mode found.")  # pragma: no cover
 
     @property
-    def wavelength_start(self) -> float:
-        """Minimum wavelength in nm - read only, fixed to 360 nm.
-
-        Returns
-        -------
-        float
-            Minimum wavelength.
-        """
-        wl_range = self._active_wavelengths_range()
-        return self.WAVELENGTH_START if wl_range is None else wl_range.w_start
-
-    @property
-    def wavelength_end(self) -> float:
-        """Maximum wavelength in nm - read only, fixed to 830 nm.
-
-        Returns
-        -------
-        float
-            Maximum wavelength.
-        """
-        wl_range = self._active_wavelengths_range()
-        return self.WAVELENGTH_END if wl_range is None else wl_range.w_end
-
-    @property
-    def wavelength_sampling(self) -> Union[int, None]:
+    def wavelength_sampling(self) -> int:
         """Number of wavelengths taken into account between 360 nm and 830 nm.
 
         Parameters
@@ -7929,19 +7905,16 @@ class SensorHumanEye(BaseSensor):
 
         Returns
         -------
-        Union[int, None]
-            Current wavelength sampling, ``None`` when no sensor type is set yet.
+        int
+            Current wavelength sampling.
         """
         wl_range = self._active_wavelengths_range()
-        return None if wl_range is None else wl_range.w_sampling
+        return wl_range.w_sampling
 
     @wavelength_sampling.setter
     def wavelength_sampling(self, value: int) -> None:
         value = general_methods._validate_positive_int(value)
         wl_range = self._active_wavelengths_range()
-        if wl_range is None:
-            self.set_type_colorimetric()
-            wl_range = self._active_wavelengths_range()
         wl_range.w_sampling = value
 
     @property
@@ -8008,9 +7981,12 @@ class SensorHumanEye(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, value: list[float]) -> None:
+        temp_target = self.target_point
         self._sensor_instance.human_eye_properties.axis_system[:] = (
             general_methods._validate_axis_system12(value).tolist()
         )
+        if temp_target is not None:
+            self._set_view(self.eye_point, temp_target, self.top_direction)
 
     @property
     def focal(self) -> Union[float, None]:
@@ -8070,7 +8046,7 @@ class SensorHumanEye(BaseSensor):
         x_dir = np.cross(y_dir, z_dir)
         return np.concatenate([observer, x_dir, y_dir, z_dir]).tolist()
 
-    def set_view(
+    def _set_view(
         self,
         observer_point: list[float],
         target_point: list[float],
@@ -8117,7 +8093,7 @@ class SensorHumanEye(BaseSensor):
         return self
 
     @property
-    def observer_point(self) -> list[float]:
+    def eye_point(self) -> list[float]:
         """Position of the eye.
 
         Parameters
@@ -8133,13 +8109,13 @@ class SensorHumanEye(BaseSensor):
         """
         return list(self.axis_system[0:3])
 
-    @observer_point.setter
-    def observer_point(self, value: list[float]) -> None:
-        if self.focal is None:
+    @eye_point.setter
+    def eye_point(self, value: list[float]) -> None:
+        if self.target_point is None:
             observer = general_methods._validate_vector3(value)
             self._sensor_instance.human_eye_properties.axis_system[0:3] = observer.tolist()
         else:
-            self.set_view(value, self.target_point, self.top_direction)
+            self._set_view(value, self.target_point, self.top_direction)
 
     @property
     def target_point(self) -> Union[list[float], None]:
@@ -8165,7 +8141,7 @@ class SensorHumanEye(BaseSensor):
 
     @target_point.setter
     def target_point(self, value: list[float]) -> None:
-        self.set_view(self.observer_point, value, self.top_direction)
+        self._set_view(self.eye_point, value, self.top_direction)
 
     @property
     def top_direction(self) -> list[float]:

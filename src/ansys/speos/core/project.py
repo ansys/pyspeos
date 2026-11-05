@@ -1897,13 +1897,16 @@ class Project:
         self,
         plotter: Plotter,
         speos_feature: Union[
-            SensorCamera,
-            SensorRadiance,
             SensorIrradiance,
+            SensorRadiance,
+            SensorCamera,
             Sensor3DIrradiance,
+            SensorXMPIntensity,
+            SensorHumanEye,
             SourceLuminaire,
             SourceRayFile,
-            SourceLuminaire,
+            SourceSurface,
+            LightBox,
         ],
         scene_seize: float,
     ) -> Plotter:
@@ -1914,14 +1917,16 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[\
+            ansys.speos.core.source.LightBox, \
             ansys.speos.core.sensor.SensorCamera, \
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SensorHumanEye, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceRayFile, \
-            ansys.speos.core.source.SourceLuminaire
+            ansys.speos.core.source.SourceSurface
         ]
             speos feature whose visual data will be added.
         scene_seize: float
@@ -1940,6 +1945,7 @@ class Project:
                 SensorCamera,
                 Sensor3DIrradiance,
                 SensorXMPIntensity,
+                SensorHumanEye,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
@@ -2020,6 +2026,7 @@ class Project:
                     | SensorCamera()
                     | SourceLuminaire()
                     | SourceRayFile()
+                    | SensorHumanEye()
                     | LightBox()
                 ):
                     plotter.plot(display_coordinates.x_axis, color="red")
