@@ -52,6 +52,8 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    HumanEyeSensorParameters,
+    HumanEyeSensorTypes,
     ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
@@ -131,6 +133,9 @@ class BaseSensor(ABC):
     _supports_template_v2 = False
     """Whether the concrete sensor feature is able to handle a sensor template v2."""
 
+    _requires_template_v2 = False
+    """Whether the concrete sensor feature only exists in sensor template v2."""
+
     _sensor_mode_template_field_v1 = None
     _sensor_mode_template_field_v2 = None
     """Field names of the sensor-template sub-message holding mode configuration."""
@@ -148,6 +153,8 @@ class BaseSensor(ABC):
         bool
             ``True`` if the feature supports v2 and the connected server is recent enough.
         """
+        if cls._requires_template_v2:
+            return True
         if not cls._supports_template_v2:
             return False
         return server_version_checker.is_version_supported(2027, 1, 0)
@@ -255,16 +262,15 @@ class BaseSensor(ABC):
         AttributeError
             If the concrete sensor does not declare mode-template field names.
         """
-        if (
-            self._sensor_mode_template_field_v1 is None
-            or self._sensor_mode_template_field_v2 is None
-        ):
+        field = (
+            self._sensor_mode_template_field_v2
+            if self._is_template_v2
+            else self._sensor_mode_template_field_v1
+        )
+        if field is None:
             msg = "Sensor mode template fields must be declared on the concrete sensor class."
             raise AttributeError(msg)
-        return self._sensor_template_part(
-            self._sensor_mode_template_field_v1,
-            self._sensor_mode_template_field_v2,
-        )
+        return getattr(self._sensor_template, field)
 
     def _sensor_mode_field(self, mode: str) -> str:
         """Get the template field name corresponding to a sensor mode.
@@ -365,7 +371,8 @@ class BaseSensor(ABC):
 
         Parameters
         ----------
-        angular_range : ansys.api.speos.sensor.v1.common_pb2.AngularRange
+        angular_range : Union[ansys.api.speos.sensor.v1.common_pb2.AngularRange, \
+        ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate.AngularRange]
             AngularRange protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
             If defined, the values in the sensor instance are overwritten by the values
@@ -381,7 +388,9 @@ class BaseSensor(ABC):
 
         def __init__(
             self,
-            angular_range: common_pb2.AngularRange,
+            angular_range: Union[
+                common_pb2.AngularRange, sensor_v2_pb2.SensorTemplate.AngularRange
+            ],
             default_parameters: Optional[AngularRangeParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -7705,3 +7714,598 @@ class SensorObserver(BaseSensor):
         self._sensor_instance.observer_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
         return self
+
+
+class SensorHumanEye(BaseSensor):
+    """Sensor feature: Human Eye.
+
+    A human eye sensor simulates the light perceived by a human eye looking from an observer point
+    to a target point. The spectral range is fixed from 360 nm to 830 nm, only the wavelength
+    sampling can be changed.
+    By default, a colorimetric sensor with a wavelength sampling of 13, a pupil diameter of 4 mm,
+    a horizontal field of view from -20 to 20 degrees (sampling 2352), a vertical field of view
+    from -10 to 10 degrees (sampling 1176), no layer separation, the origin axis system and no
+    focal length (target point not defined) are chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not have to be created from scratch.
+        By default, ``None``, means that the feature is created from scratch.
+    default_parameters : ansys.speos.core.generic.parameters.HumanEyeSensorParameters, optional
+        If defined the values in the sensor instance will be overwritten by the values of the
+        dataclass.
+        By default, ``None``.
+
+    Notes
+    -----
+    This feature only exists in sensor template version 2 and requires a Speos server
+    2027 R1 SP0 or above.
+
+    The position of the sensor is defined by an observer point, a target point and a top
+    direction. The sensor axis system has its origin at the observer point, its Z axis along the
+    sight direction (from observer to target), its Y axis along the top direction
+    (orthogonalized against the sight direction) and its X axis equal to ``Y x Z``. The focal
+    length is the distance between the observer and the target points.
+    """
+
+    _supports_template_v2 = True
+    _requires_template_v2 = True
+    _sensor_mode_template_field_v2 = "human_eye"
+
+    WAVELENGTH_START = 360.0
+    """Fixed minimum wavelength of the human eye sensor (nm)."""
+    WAVELENGTH_END = 830.0
+    """Fixed maximum wavelength of the human eye sensor (nm)."""
+
+    @general_methods.min_speos_version(27, 1, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_parameters: Optional[HumanEyeSensorParameters] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        self._type = None
+        self._layer_type = None
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[HumanEyeSensorParameters] = None
+    ) -> None:
+        # _fill_parameters resets class local attributes.
+        # Important because _fill_parameters can be called from different places:
+        #     - during initialization
+        #     - after a reset
+        self._type = None
+        self._layer_type = None
+
+        if default_parameters:
+            if default_parameters.sensor_type == HumanEyeSensorTypes.spectral:
+                self.set_type_spectral()
+            else:
+                self.set_type_colorimetric()
+            self.wavelength_sampling = default_parameters.wavelength_sampling
+            self.pupil_diameter = default_parameters.pupil_diameter
+            self.set_dimensions()._fill_parameters(default_parameters.dimensions)
+            self.axis_system = default_parameters.axis_system
+            if default_parameters.focal is None:
+                self._sensor_instance.human_eye_properties.ClearField("focal")
+            else:
+                self.focal = default_parameters.focal
+            if default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            else:
+                self.set_layer_type_none()
+            return
+
+        # Load state from existing template/instance (reset or load path)
+        if self._has_sensor_mode("colorimetric"):
+            self._type = HumanEyeSensorTypes.colorimetric.value
+        elif self._has_sensor_mode("spectral"):
+            self._type = HumanEyeSensorTypes.spectral.value
+        else:
+            self.set_type_colorimetric()
+        properties = self._sensor_instance.human_eye_properties
+        if properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+        else:
+            self.set_layer_type_none()
+
+    # ------------------------------------------------------------------
+    # Template-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def type(self) -> Union[str, None]:
+        """Type of the sensor.
+
+        Returns
+        -------
+        Union[str, None]
+            ``"colorimetric"``, ``"spectral"`` or ``None`` when not yet set.
+        """
+        return self._type
+
+    def _set_type(self, mode: str) -> SensorHumanEye:
+        sampling = self.wavelength_sampling
+        mode_msg = self._get_sensor_mode(mode)
+        mode_msg.SetInParent()
+        mode_msg.wavelengths_range.w_start = self.WAVELENGTH_START
+        mode_msg.wavelengths_range.w_end = self.WAVELENGTH_END
+        mode_msg.wavelengths_range.w_sampling = sampling if sampling else 13
+        self._type = mode
+        return self
+
+    def set_type_colorimetric(self) -> SensorHumanEye:
+        """Set type colorimetric.
+
+        The sensor generates color results without any spectral data. The wavelength sampling is
+        preserved when switching type.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor.
+        """
+        return self._set_type(HumanEyeSensorTypes.colorimetric.value)
+
+    def set_type_spectral(self) -> SensorHumanEye:
+        """Set type spectral.
+
+        The sensor generates color results and spectral data separated by wavelength. The
+        wavelength sampling is preserved when switching type.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor.
+        """
+        return self._set_type(HumanEyeSensorTypes.spectral.value)
+
+    def _active_wavelengths_range(
+        self,
+    ) -> Union[None, sensor_v2_pb2.SensorTemplate.WavelengthsRange]:
+        if self._has_sensor_mode("colorimetric"):
+            return self._get_sensor_mode("colorimetric").wavelengths_range
+        if self._has_sensor_mode("spectral"):
+            return self._get_sensor_mode("spectral").wavelengths_range
+        return None
+
+    @property
+    def wavelength_sampling(self) -> Union[None, int]:
+        """Number of wavelengths taken into account between 360 nm and 830 nm.
+
+        Parameters
+        ----------
+        value : int
+            Wavelength sampling. By default, ``13``.
+
+        Returns
+        -------
+        Union[None, int]
+            Current wavelength sampling.
+        """
+        wl_range = self._active_wavelengths_range()
+        return wl_range.w_sampling if wl_range else None
+
+    @wavelength_sampling.setter
+    def wavelength_sampling(self, value: int) -> None:
+        value = general_methods._validate_positive_int(value)
+        wl_range = self._active_wavelengths_range()
+        wl_range.w_sampling = value
+
+    @property
+    def pupil_diameter(self) -> float:
+        """Diameter of the pupil.
+
+        Parameters
+        ----------
+        value : float
+            Pupil diameter in mm. By default, ``4.0``.
+
+        Returns
+        -------
+        float
+            Current pupil diameter.
+        """
+        return self._sensor_mode_template.pupil_diameter
+
+    @pupil_diameter.setter
+    def pupil_diameter(self, value: float) -> None:
+        value = general_methods._validate_scalar(value)
+        if value <= 0:
+            raise ValueError("pupil_diameter must be greater than 0.")
+        self._sensor_mode_template.pupil_diameter = value
+
+    def set_dimensions(self) -> BaseSensor.AngularRange:
+        """Set the field of view and sampling of the sensor.
+
+        X corresponds to the horizontal direction, Y to the vertical direction.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.AngularRange
+            Angular range object.
+        """
+        return BaseSensor.AngularRange(
+            angular_range=self._sensor_mode_template.dimensions,
+            stable_ctr=True,
+        )
+
+    # ------------------------------------------------------------------
+    # Instance-level properties
+    # ------------------------------------------------------------------
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Axis system of the sensor.
+
+        O corresponds to the observer (eye point), Y to the top direction and Z to the sight
+        direction. Prefer :meth:`set_view` or the ``observer_point``, ``target_point`` and
+        ``top_direction`` properties to position the sensor.
+
+        Parameters
+        ----------
+        value : list[float]
+            Orthonormal axis system ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+
+        Returns
+        -------
+        list[float]
+            Current axis system.
+        """
+        return list(self._sensor_instance.human_eye_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: list[float]) -> None:
+        temp_target = self.target_point
+        self._sensor_instance.human_eye_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
+        if temp_target is not None:
+            self._set_view(self.eye_point, temp_target, self.top_direction)
+
+    @property
+    def focal(self) -> Union[float, None]:
+        """Focal length - distance between the observer point and the target point (mm).
+
+        Parameters
+        ----------
+        value : float
+            Focal length in mm. Must be greater than 0. The observer point and the sight
+            direction are kept, so the target point moves along the sight direction.
+
+        Returns
+        -------
+        Union[float, None]
+            Current focal length, ``None`` when not yet defined.
+        """
+        focal = self._sensor_instance.human_eye_properties.focal
+        return focal if focal > 0 else None
+
+    @focal.setter
+    def focal(self, value: float) -> None:
+        value = general_methods._validate_scalar(value)
+        if value <= 0:
+            raise ValueError("focal must be greater than 0.")
+        self._sensor_instance.human_eye_properties.focal = value
+
+    def commit(self) -> SensorHumanEye:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor feature.
+
+        Raises
+        ------
+        ValueError
+            If the focal length is not defined. Set it with :attr:`focal`,
+            :attr:`target_point` or :meth:`set_view` before committing.
+        """
+        if self.focal is None:
+            raise ValueError(
+                "The human eye sensor focal is not defined. Set focal, target_point or use "
+                "set_view() before committing."
+            )
+        super().commit()
+        return self
+
+    @staticmethod
+    def _orthonormal_frame(observer: np.ndarray, sight: np.ndarray, top: np.ndarray) -> list[float]:
+        z_dir = sight / np.linalg.norm(sight)
+        y_dir = top - np.dot(top, z_dir) * z_dir
+        y_norm = float(np.linalg.norm(y_dir))
+        if y_norm < 1e-9 * max(float(np.linalg.norm(top)), 1.0):
+            raise ValueError("top_direction must not be parallel to the sight direction.")
+        y_dir = y_dir / y_norm
+        x_dir = np.cross(y_dir, z_dir)
+        return np.concatenate([observer, x_dir, y_dir, z_dir]).tolist()
+
+    def _set_view(
+        self,
+        observer_point: list[float],
+        target_point: list[float],
+        top_direction: list[float],
+    ) -> SensorHumanEye:
+        """Position the sensor from an observer point, a target point and a top direction.
+
+        The axis system and the focal length are computed from the given points. The top
+        direction is orthogonalized against the sight direction if needed.
+
+        Parameters
+        ----------
+        observer_point : list[float]
+            Position of the eye ``[x, y, z]`` in mm.
+        target_point : list[float]
+            Point looked at ``[x, y, z]`` in mm.
+        top_direction : list[float]
+            Top direction ``[x, y, z]``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor.
+
+        Raises
+        ------
+        ValueError
+            If observer and target points are identical, or if the top direction is parallel to
+            the sight direction.
+        """
+        observer = general_methods._validate_vector3(observer_point)
+        target = general_methods._validate_vector3(target_point)
+        top = general_methods._validate_vector3(top_direction)
+
+        sight = target - observer
+        focal = float(np.linalg.norm(sight))
+        if focal == 0.0:
+            raise ValueError("observer_point and target_point must be different.")
+        axis_system = self._orthonormal_frame(observer, sight, top)
+
+        properties = self._sensor_instance.human_eye_properties
+        properties.axis_system[:] = axis_system
+        properties.focal = focal
+        return self
+
+    @property
+    def eye_point(self) -> list[float]:
+        """Position of the eye.
+
+        Parameters
+        ----------
+        value : list[float]
+            Position ``[x, y, z]`` in mm. If the focal length is defined, the target point and
+            top direction are kept, otherwise the orientation of the sensor is kept.
+
+        Returns
+        -------
+        list[float]
+            Observer point, origin of the axis system.
+        """
+        return list(self.axis_system[0:3])
+
+    @eye_point.setter
+    def eye_point(self, value: list[float]) -> None:
+        if self.target_point is None:
+            observer = general_methods._validate_vector3(value)
+            self._sensor_instance.human_eye_properties.axis_system[0:3] = observer.tolist()
+        else:
+            self._set_view(value, self.target_point, self.top_direction)
+
+    @property
+    def target_point(self) -> Union[list[float], None]:
+        """Point looked at by the eye.
+
+        Parameters
+        ----------
+        value : list[float]
+            Target point ``[x, y, z]`` in mm. The observer point and top direction are kept, the
+            focal length is updated.
+
+        Returns
+        -------
+        Union[list[float], None]
+            Target point computed from the axis system and the focal length. ``None`` when the
+            focal length is not defined.
+        """
+        focal = self.focal
+        if focal is None:
+            return None
+        axis = np.asarray(self.axis_system, dtype=float)
+        return (axis[0:3] + focal * axis[9:12]).tolist()
+
+    @target_point.setter
+    def target_point(self, value: list[float]) -> None:
+        self._set_view(self.eye_point, value, self.top_direction)
+
+    @property
+    def top_direction(self) -> list[float]:
+        """Top direction of the eye.
+
+        Parameters
+        ----------
+        value : list[float]
+            Top direction ``[x, y, z]``. It is orthogonalized against the sight direction.
+
+        Returns
+        -------
+        list[float]
+            Top direction, Y axis of the axis system.
+        """
+        return list(self.axis_system[6:9])
+
+    @top_direction.setter
+    def top_direction(self, value: list[float]) -> None:
+        top = general_methods._validate_vector3(value)
+        axis = np.asarray(self.axis_system, dtype=float)
+        self._sensor_instance.human_eye_properties.axis_system[:] = self._orthonormal_frame(
+            axis[0:3], axis[9:12], top
+        )
+
+    @property
+    def layer(self) -> Union[str, None]:
+        """Current layer separation type.
+
+        Returns
+        -------
+        Union[str, None]
+            ``"none"``, ``"by_source"``, or ``None`` when not yet set.
+        """
+        return self._layer_type
+
+    def set_layer_type_none(self) -> SensorHumanEye:
+        """Set layer separation to *None* (no layer separation).
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor.
+        """
+        self._sensor_instance.human_eye_properties.layer_type_none.SetInParent()
+        self._layer_type = LayerTypes.none
+        return self
+
+    def set_layer_type_source(self) -> SensorHumanEye:
+        """Set layer separation to *by source*.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorHumanEye
+            Human eye sensor.
+        """
+        self._sensor_instance.human_eye_properties.layer_type_source.SetInParent()
+        self._layer_type = LayerTypes.by_source
+        return self
+
+    # ------------------------------------------------------------------
+    # Visualization
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _sphere_section_mesh(
+        axis_system: list[float],
+        radius: float,
+        x_start: float,
+        x_end: float,
+        y_start: float,
+        y_end: float,
+        resolution: int = 16,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Build the viewing cone: a sphere section closed by triangles to the observer.
+
+        Parameters
+        ----------
+        axis_system : list[float]
+            Sensor axis system ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        radius : float
+            Radius of the sphere section (focal length).
+        x_start, x_end : float
+            Horizontal field of view bounds in degrees.
+        y_start, y_end : float
+            Vertical field of view bounds in degrees.
+        resolution : int
+            Number of subdivisions along each direction.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            Vertices ``(n, 3)`` and triangle facets ``(m, 4)`` in pyvista format.
+        """
+        axis = np.asarray(axis_system, dtype=float)
+        origin, x_dir, y_dir, z_dir = axis[0:3], axis[3:6], axis[6:9], axis[9:12]
+        h_angles = np.radians(np.linspace(x_start, x_end, resolution + 1))
+        v_angles = np.radians(np.linspace(y_start, y_end, resolution + 1))
+        n = resolution + 1
+
+        vertices = [origin]
+        for v in v_angles:
+            for h in h_angles:
+                direction = (
+                    np.cos(v) * np.sin(h) * x_dir
+                    + np.sin(v) * y_dir
+                    + np.cos(v) * np.cos(h) * z_dir
+                )
+                vertices.append(origin + radius * direction)
+
+        def idx(i: int, j: int) -> int:
+            return 1 + j * n + i
+
+        facets = []
+        for j in range(resolution):
+            for i in range(resolution):
+                facets.append([3, idx(i, j), idx(i + 1, j), idx(i + 1, j + 1)])
+                facets.append([3, idx(i, j), idx(i + 1, j + 1), idx(i, j + 1)])
+        border = (
+            [idx(i, 0) for i in range(n)]
+            + [idx(n - 1, j) for j in range(1, n)]
+            + [idx(i, n - 1) for i in range(n - 2, -1, -1)]
+            + [idx(0, j) for j in range(n - 2, -1, -1)]
+        )
+        for a, b in zip(border[:-1], border[1:]):
+            facets.append([3, 0, a, b])
+        return np.asarray(vertices, dtype=float), np.asarray(facets, dtype=int)
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing human eye sensor visualization data.
+
+        The viewing cone is represented by a sphere section of radius equal to the focal length,
+        centered on the observer point and covering the field of view, closed by triangles to the
+        observer point.
+
+        Returns
+        -------
+        ansys.speos.core.generic.visualization_methods._VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
+        axis_system = self.axis_system
+        focal = self.focal
+        if focal is not None:
+            # Viewing cone only exists once the target point (focal) is defined
+            dims = self.set_dimensions()
+            vertices, facets = self._sphere_section_mesh(
+                axis_system=axis_system,
+                radius=focal,
+                x_start=dims.x_start,
+                x_end=dims.x_end,
+                y_start=dims.y_start,
+                y_end=dims.y_end,
+            )
+            self._visual_data.add_data_mesh(vertices=vertices, facets=facets)
+        self._visual_data.coordinates.origin = np.asarray(axis_system[0:3])
+        self._visual_data.coordinates.x_axis = np.asarray(axis_system[3:6])
+        self._visual_data.coordinates.y_axis = np.asarray(axis_system[6:9])
+        self._visual_data.updated = True
+        return self._visual_data
