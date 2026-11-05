@@ -448,7 +448,9 @@ if server_version_checker.is_version_supported(2027, 1, 0):
     eye_fov = sensor_eye.set_dimensions()
     eye_fov.x_sampling = 1200
     eye_fov.y_sampling = 600
-    sensor_eye.set_view(observer_point=[0, 0, 0], target_point=[0, 0, 500], top_direction=[0, 1, 0])
+    sensor_eye.observer_point = [0, 0, 0]
+    sensor_eye.target_point = [0, 0, 500]
+    sensor_eye.top_direction = [0, 1, 0]
     sensor_eye.set_layer_type_source()
     sensor_eye.commit()
     print(sensor_eye)
