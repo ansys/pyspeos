@@ -7859,7 +7859,6 @@ class Sensor3DEnergyDensity(BaseSensor):
         )
         self._visual_data = _VisualData()
         self._visual_data.add_data_mesh(vertices, facets)
-        assert self._visual_data.coordinates is not None
         self._visual_data.coordinates.origin = axes[0]
         self._visual_data.coordinates.x_axis = axes[1]
         self._visual_data.coordinates.y_axis = axes[2]
