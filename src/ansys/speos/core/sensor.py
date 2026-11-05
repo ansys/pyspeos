@@ -7828,11 +7828,15 @@ class SensorHumanEye(BaseSensor):
             self._type = HumanEyeSensorTypes.colorimetric.value
         elif self._has_sensor_mode("spectral"):
             self._type = HumanEyeSensorTypes.spectral.value
+        else:
+            self.set_type_colorimetric()
         properties = self._sensor_instance.human_eye_properties
         if properties.HasField("layer_type_none"):
             self._layer_type = LayerTypes.none
         elif properties.HasField("layer_type_source"):
             self._layer_type = LayerTypes.by_source
+        else:
+            self.set_layer_type_none()
 
     # ------------------------------------------------------------------
     # Template-level properties
@@ -7887,15 +7891,15 @@ class SensorHumanEye(BaseSensor):
 
     def _active_wavelengths_range(
         self,
-    ) -> sensor_v2_pb2.SensorTemplate.WavelengthsRange:
+    ) -> Union[None, sensor_v2_pb2.SensorTemplate.WavelengthsRange]:
         if self._has_sensor_mode("colorimetric"):
             return self._get_sensor_mode("colorimetric").wavelengths_range
         if self._has_sensor_mode("spectral"):
             return self._get_sensor_mode("spectral").wavelengths_range
-        raise RuntimeError("No active sensor mode found.")  # pragma: no cover
+        return None
 
     @property
-    def wavelength_sampling(self) -> int:
+    def wavelength_sampling(self) -> Union[None, int]:
         """Number of wavelengths taken into account between 360 nm and 830 nm.
 
         Parameters
@@ -7905,11 +7909,11 @@ class SensorHumanEye(BaseSensor):
 
         Returns
         -------
-        int
+        Union[None, int]
             Current wavelength sampling.
         """
         wl_range = self._active_wavelengths_range()
-        return wl_range.w_sampling
+        return wl_range.w_sampling if wl_range else None
 
     @wavelength_sampling.setter
     def wavelength_sampling(self, value: int) -> None:

@@ -262,7 +262,7 @@ def rigid_transform(request):
 def _without_pose_and_identity(message):
     """Snapshot all protobuf configuration except the transform and instance identity."""
     result = deepcopy(message)
-    for field in ("name", "axis_system", "axis_plane"):
+    for field in ("name", "axis_system", "axis_plane", "focal"):
         if field in result.DESCRIPTOR.fields_by_name:
             result.ClearField(field)
     if "metadata" in result.DESCRIPTOR.fields_by_name:
@@ -425,9 +425,20 @@ def test_transform_axis_feature_preserves_contents(
     assert (transformed is original) is not copy
     expected_pose = initial_pose @ rotation.T
     expected_pose[0] += translation
-    np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
-    transformed.reset()
-    np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
+    if not isinstance(transformed, sensor.SensorHumanEye):
+        np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
+        transformed.reset()
+        np.testing.assert_allclose(transformed.axis_system, expected_pose.reshape(-1), atol=1e-9)
+    else:
+        # human eye target point stays fixed-> hence view direction is recomputed
+        # and axis_system is not preserved
+        np.testing.assert_allclose(
+            transformed.axis_system[0:3], expected_pose.reshape(-1)[0:3], atol=1e-9
+        )
+        transformed.reset()
+        np.testing.assert_allclose(
+            transformed.axis_system[0:3], expected_pose.reshape(-1)[0:3], atol=1e-9
+        )
     if isinstance(transformed, source.BaseSource):
         actual_instance = transformed._source_instance
         assert transformed.source_template_link.get() == template
@@ -446,6 +457,7 @@ def test_transform_axis_feature_preserves_contents(
     expected_instance = deepcopy(initial_instance)
     if isinstance(transformed, part.Part.SubPart):
         expected_instance.description = actual_instance.description
+
     assert _without_pose_and_identity(actual_instance) == _without_pose_and_identity(
         expected_instance
     )

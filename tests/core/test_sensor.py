@@ -5440,8 +5440,6 @@ def test_human_eye_sensor_default_values(speos: Speos):
     assert sensor_he._sensor_instance.HasField("human_eye_properties")
 
     assert sensor_he.type == HumanEyeSensorTypes.colorimetric
-    assert sensor_he.wavelength_start == 360.0
-    assert sensor_he.wavelength_end == 830.0
     assert sensor_he.wavelength_sampling == 13
     assert sensor_he.pupil_diameter == 4.0
 
@@ -5477,7 +5475,7 @@ def test_human_eye_sensor_without_focal(speos: Speos):
     sensor_he = p.create_sensor(name="HumanEye.NoFocal", feature_type=SensorHumanEye)
 
     # Observer moves, orientation is kept
-    sensor_he.observer_point = [1.0, 2.0, 3.0]
+    sensor_he.eye_point = [1.0, 2.0, 3.0]
     assert sensor_he.axis_system == pytest.approx([1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     assert sensor_he.focal is None
     assert sensor_he.target_point is None
@@ -5529,15 +5527,13 @@ def test_human_eye_sensor_with_parameters_dataclass(speos: Speos):
     )
 
     assert sensor_he.type == HumanEyeSensorTypes.spectral
-    assert sensor_he.wavelength_start == 360.0
-    assert sensor_he.wavelength_end == 830.0
     assert sensor_he.wavelength_sampling == 25
     assert sensor_he.pupil_diameter == 6.5
     dims = sensor_he.set_dimensions()
     assert (dims.x_start, dims.x_end, dims.x_sampling) == (-30, 25, 300)
     assert (dims.y_start, dims.y_end, dims.y_sampling) == (-15, 12, 150)
     assert sensor_he.axis_system == pytest.approx(params.axis_system)
-    assert sensor_he.observer_point == pytest.approx([10.0, 20.0, 30.0])
+    assert sensor_he.eye_point == pytest.approx([10.0, 20.0, 30.0])
     assert sensor_he.target_point == pytest.approx([10.0, 20.0, 530.0])
     assert sensor_he.top_direction == pytest.approx([0.0, 1.0, 0.0])
     assert sensor_he.focal == pytest.approx(500.0)
@@ -5563,18 +5559,12 @@ def test_human_eye_sensor_type_and_wavelengths(speos: Speos):
     assert sensor_he._sensor_template.human_eye.HasField("mode_spectral")
     assert not sensor_he._sensor_template.human_eye.HasField("mode_colorimetric")
     assert sensor_he.wavelength_sampling == 20
-    assert sensor_he.wavelength_start == 360.0
-    assert sensor_he.wavelength_end == 830.0
 
     assert sensor_he.set_type_colorimetric() is sensor_he
     assert sensor_he.type == HumanEyeSensorTypes.colorimetric
     assert sensor_he._sensor_template.human_eye.HasField("mode_colorimetric")
     assert sensor_he.wavelength_sampling == 20
 
-    with pytest.raises(AttributeError):
-        sensor_he.wavelength_start = 400.0
-    with pytest.raises(AttributeError):
-        sensor_he.wavelength_end = 700.0
     with pytest.raises(ValueError):
         sensor_he.wavelength_sampling = 0
     with pytest.raises(ValueError):
@@ -5593,16 +5583,16 @@ def test_human_eye_sensor_view(speos: Speos):
     sensor_he = p.create_sensor(name="HumanEye.View", feature_type=SensorHumanEye)
 
     # Non orthogonal top direction is corrected to be orthogonal to the sight direction
-    assert sensor_he.set_view([0, 0, 0], [100, 0, 0], [1, 0, 1]) is sensor_he
+    assert sensor_he._set_view([0, 0, 0], [100, 0, 0], [1, 0, 1]) is sensor_he
     assert sensor_he.focal == pytest.approx(100.0)
-    assert sensor_he.observer_point == pytest.approx([0, 0, 0])
+    assert sensor_he.eye_point == pytest.approx([0, 0, 0])
     assert sensor_he.target_point == pytest.approx([100, 0, 0])
     assert sensor_he.top_direction == pytest.approx([0, 0, 1])
     assert sensor_he.axis_system[9:12] == pytest.approx([1, 0, 0])
     _assert_orthonormal(sensor_he.axis_system)
 
     # Oblique view
-    sensor_he.set_view([1, 2, 3], [4, 6, 3], [0, 0, 5])
+    sensor_he._set_view([1, 2, 3], [4, 6, 3], [0, 0, 5])
     assert sensor_he.focal == pytest.approx(5.0)
     assert sensor_he.target_point == pytest.approx([4, 6, 3])
     assert sensor_he.axis_system[9:12] == pytest.approx([0.6, 0.8, 0.0])
@@ -5610,17 +5600,17 @@ def test_human_eye_sensor_view(speos: Speos):
     _assert_orthonormal(sensor_he.axis_system)
 
     # Individual setters keep the other parameters
-    sensor_he.observer_point = [-2, -2, 3]
-    assert sensor_he.observer_point == pytest.approx([-2, -2, 3])
+    sensor_he.eye_point = [-2, -2, 3]
+    assert sensor_he.eye_point == pytest.approx([-2, -2, 3])
     assert sensor_he.target_point == pytest.approx([4, 6, 3])
     assert sensor_he.focal == pytest.approx(10.0)
     assert sensor_he.top_direction == pytest.approx([0, 0, 1])
     _assert_orthonormal(sensor_he.axis_system)
 
-    sensor_he.set_view([0, 0, 0], [0, 0, 100], [0, 1, 0])
+    sensor_he._set_view([0, 0, 0], [0, 0, 100], [0, 1, 0])
     sensor_he.target_point = [0, 0, 250]
     assert sensor_he.focal == pytest.approx(250.0)
-    assert sensor_he.observer_point == pytest.approx([0, 0, 0])
+    assert sensor_he.eye_point == pytest.approx([0, 0, 0])
     assert sensor_he.top_direction == pytest.approx([0, 1, 0])
 
     sensor_he.top_direction = [1, 0, 0]
@@ -5629,9 +5619,9 @@ def test_human_eye_sensor_view(speos: Speos):
     _assert_orthonormal(sensor_he.axis_system)
 
     with pytest.raises(ValueError, match="different"):
-        sensor_he.set_view([1, 1, 1], [1, 1, 1], [0, 1, 0])
+        sensor_he._set_view([1, 1, 1], [1, 1, 1], [0, 1, 0])
     with pytest.raises(ValueError, match="parallel"):
-        sensor_he.set_view([0, 0, 0], [0, 0, 10], [0, 0, 3])
+        sensor_he._set_view([0, 0, 0], [0, 0, 10], [0, 0, 3])
     # Failed calls do not modify the sensor
     assert sensor_he.target_point == pytest.approx([0, 0, 250])
 
@@ -5644,7 +5634,7 @@ def test_human_eye_sensor_commit_reset_delete(speos: Speos):
     sensor_he.set_type_spectral().wavelength_sampling = 21
     sensor_he.pupil_diameter = 5.0
     sensor_he.set_dimensions().x_sampling = 400
-    sensor_he.set_view([0, 0, 0], [0, 0, 300], [0, 1, 0])
+    sensor_he._set_view([0, 0, 0], [0, 0, 300], [0, 1, 0])
     sensor_he.set_layer_type_source()
     sensor_he.lxp_path_number = 50
     sensor_he.commit()
@@ -5738,8 +5728,6 @@ def test_human_eye_sensor_save_and_load(speos: Speos):
         loaded_he = loaded[0]
         assert isinstance(loaded_he, SensorHumanEye)
         assert loaded_he.type == HumanEyeSensorTypes.spectral
-        assert loaded_he.wavelength_start == 360.0
-        assert loaded_he.wavelength_end == 830.0
         assert loaded_he.wavelength_sampling == params.wavelength_sampling
         assert loaded_he.pupil_diameter == pytest.approx(params.pupil_diameter)
         dims = loaded_he.set_dimensions()
@@ -5807,7 +5795,7 @@ def test_human_eye_sensor_visual_data(speos: Speos):
     pytest.importorskip("pyvista")
     p = Project(speos=speos)
     sensor_he = p.create_sensor(name="HumanEye.Visual", feature_type=SensorHumanEye)
-    sensor_he.set_view([0, 0, 0], [0, 0, 200], [0, 1, 0])
+    sensor_he._set_view([0, 0, 0], [0, 0, 200], [0, 1, 0])
 
     visual_data = sensor_he.visual_data
     assert visual_data.updated is True
