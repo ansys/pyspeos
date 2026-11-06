@@ -82,7 +82,8 @@ class BaseSimulation:
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
     job : ansys.speos.core.kernel.job.ProtoJob, optional
-        Saved simulation job to restore. If omitted, a new local job is created.
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
 
     Notes
     -----
@@ -478,8 +479,7 @@ class BaseSimulation:
                     f"Job for simulation {job.simulation_path!r} cannot be loaded into "
                     f"simulation {self._simulation_instance.name!r}."
                 )
-            self._job = ProtoJob()
-            self._job.CopyFrom(job)
+            self._job = job
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
@@ -1330,7 +1330,8 @@ class SimulationDirect(BaseSimulation):
         If defined the values in the direct simulation instance will be overwritten by the
         values of the data class.
     job : ansys.speos.core.kernel.job.ProtoJob, optional
-        Saved simulation job to restore. If omitted, a new local job is created.
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class SourceSampling:
@@ -1651,7 +1652,8 @@ class SimulationInverse(BaseSimulation):
         If defined the values in the inverse simulation instance will be overwritten by the
         values of the data class.
     job : ansys.speos.core.kernel.job.ProtoJob, optional
-        Saved simulation job to restore. If omitted, a new local job is created.
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
 
     Notes
     -----
@@ -2344,7 +2346,8 @@ class SimulationInteractive(BaseSimulation):
         If defined the values in the interactive simulation instance will be overwritten by the
         values of the data class.
     job : ansys.speos.core.kernel.job.ProtoJob, optional
-        Saved simulation job to restore. If omitted, a new local job is created.
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class RaysNumberPerSource:
@@ -2571,7 +2574,8 @@ class SimulationVirtualBSDF(BaseSimulation):
         If defined the values in the virtual bsdf simulation instance will be overwritten by the
         values of the data class.
     job : ansys.speos.core.kernel.job.ProtoJob, optional
-        Saved simulation job to restore. If omitted, a new local job is created.
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class RoughnessOnly(BaseSimulation.SourceSampling):

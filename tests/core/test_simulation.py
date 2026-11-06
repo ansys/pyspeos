@@ -118,6 +118,7 @@ def test_load_saved_job_properties_over_rpc(speos: Speos):
         projects.append(loaded_direct_project)
         loaded_direct = loaded_direct_project.find(name="Prism", feature_type=SimulationDirect)[0]
         assert loaded_direct._job_loaded_from_file
+        assert loaded_direct._job is loaded_direct_project._loaded_jobs["Prism"]
         assert loaded_direct.job_link is None
         assert loaded_direct.stop_condition_rays_number == 123456
         assert loaded_direct.stop_condition_duration == 789
@@ -155,6 +156,7 @@ def test_load_saved_job_properties_over_rpc(speos: Speos):
             name=inverse_name, feature_type=SimulationInverse
         )[0]
         assert loaded_inverse._job_loaded_from_file
+        assert loaded_inverse._job is loaded_inverse_project._loaded_jobs[inverse_name]
         assert loaded_inverse.stop_condition_passes_number is None
         assert loaded_inverse.stop_condition_duration == 654
         assert loaded_inverse.automatic_save_frequency == 87
