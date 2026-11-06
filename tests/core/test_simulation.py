@@ -29,6 +29,7 @@ import re
 from threading import Thread
 from time import sleep
 from types import SimpleNamespace
+import uuid
 
 from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
@@ -88,6 +89,82 @@ def _create_source_group_test_prerequisites(
     source_2.commit()
 
     return sensor, source_1, source_2
+
+
+def test_load_saved_job_properties_over_rpc(speos: Speos):
+    """Test direct and inverse saved-job restoration through Speos RPC."""
+    if not server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("Saved job loading requires Speos 2027 R1 or newer.")
+
+    project_dir = Path(test_path) / f"JobLoad.{uuid.uuid4().hex}"
+    projects = []
+    try:
+        project = Project(
+            speos=speos,
+            path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+        )
+        projects.append(project)
+
+        direct = project.find(name="Prism", feature_type=SimulationDirect)[0]
+        direct.stop_condition_rays_number = 123456
+        direct.stop_condition_duration = 789
+        direct.automatic_save_frequency = 92
+        direct_export = project_dir / "direct"
+        direct.export(direct_export)
+        direct_file = direct_export / "Prism.speos" / "Prism.speos"
+        assert does_file_exist(direct_file)
+
+        loaded_direct_project = Project(speos=speos, path=str(direct_file))
+        projects.append(loaded_direct_project)
+        loaded_direct = loaded_direct_project.find(name="Prism", feature_type=SimulationDirect)[0]
+        assert loaded_direct._job_loaded_from_file
+        assert loaded_direct.job_link is None
+        assert loaded_direct.stop_condition_rays_number == 123456
+        assert loaded_direct.stop_condition_duration == 789
+        assert loaded_direct.automatic_save_frequency == 92
+
+        direct_resave = project_dir / "direct-resave"
+        loaded_direct.export(direct_resave)
+        direct_resaved_file = direct_resave / "Prism.speos" / "Prism.speos"
+        assert does_file_exist(direct_resaved_file)
+        roundtrip_project = Project(speos=speos, path=str(direct_resaved_file))
+        projects.append(roundtrip_project)
+        roundtrip_direct = roundtrip_project.find(name="Prism", feature_type=SimulationDirect)[0]
+        assert roundtrip_direct.stop_condition_rays_number == 123456
+        assert roundtrip_direct.stop_condition_duration == 789
+        assert roundtrip_direct.automatic_save_frequency == 92
+
+        inverse_name = f"Inverse.JobLoad.{uuid.uuid4().hex}"
+        inverse = project.create_simulation(inverse_name, feature_type=SimulationInverse)
+        inverse.source_paths = [source._name for source in project.sources]
+        inverse.sensor_paths = [sensor._name for sensor in project.sensors]
+        inverse.stop_condition_duration = 654
+        inverse.automatic_save_frequency = 87
+        optimized = inverse.set_optimized_propagation_relative()
+        optimized.min_pass_number = 23
+        optimized.relative_value = 41
+        inverse.commit()
+
+        inverse_export = project_dir / "inverse"
+        inverse.export(inverse_export)
+        inverse_file = inverse_export / f"{inverse_name}.speos" / f"{inverse_name}.speos"
+        assert does_file_exist(inverse_file)
+        loaded_inverse_project = Project(speos=speos, path=str(inverse_file))
+        projects.append(loaded_inverse_project)
+        loaded_inverse = loaded_inverse_project.find(
+            name=inverse_name, feature_type=SimulationInverse
+        )[0]
+        assert loaded_inverse._job_loaded_from_file
+        assert loaded_inverse.stop_condition_passes_number is None
+        assert loaded_inverse.stop_condition_duration == 654
+        assert loaded_inverse.automatic_save_frequency == 87
+        loaded_optimized = loaded_inverse.set_optimized_propagation_relative()
+        assert loaded_optimized.min_pass_number == 23
+        assert loaded_optimized.relative_value == 41
+    finally:
+        for loaded_project in reversed(projects):
+            loaded_project.delete()
+        remove_file(project_dir)
 
 
 def _validate_source_groups_support_or_skip() -> None:
@@ -402,6 +479,7 @@ def test_create_inverse(speos: Speos):
 
     # stop_condition_passes_number
     sim1.stop_condition_passes_number = None
+    assert sim1.stop_condition_passes_number is None
 
     assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none") is True
     assert (

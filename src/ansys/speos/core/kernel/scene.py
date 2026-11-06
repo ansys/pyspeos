@@ -33,6 +33,7 @@ from ansys.api.speos.scene.v2 import (
 
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
+from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
 
@@ -103,7 +104,7 @@ class SceneLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
-    def load_file(self, file_uri: Path | str, password: str | None = None) -> None:
+    def load_file(self, file_uri: Path | str, password: str | None = None) -> ProtoJob | None:
         """
         Load speos file to fill the scene.
 
@@ -114,15 +115,22 @@ class SceneLink(CrudItem):
         password : str | None, optional
             Password needed to open the speos lightbox file.
             This is only necessary when the user protects the speos light box with a password.
+
+        Returns
+        -------
+        ansys.speos.core.kernel.job.ProtoJob | None
+            Saved simulation job properties included in the file, if available.
         """
-        # remove if to allow older API version but API version is forced by toml
-        self._actions_stub.LoadFile(
+        response = self._actions_stub.LoadFile(
             messages.LoadFile_Request(
                 guid=self.key,
                 file_uri=str(file_uri),
                 password=password,
             )
         )
+        if response.HasField("job_v2"):
+            return response.job_v2
+        return None
 
     # Actions
     def save_file(

@@ -81,6 +81,8 @@ class BaseSimulation:
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore. If omitted, a new local job is created.
 
     Notes
     -----
@@ -424,6 +426,7 @@ class BaseSimulation:
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         self._project = project
         self._name = name
@@ -432,6 +435,7 @@ class BaseSimulation:
         """Link object for the simulation template in database."""
         self.job_link = None
         """Link object for the job in database."""
+        self._job_loaded_from_file = job is not None
         self.result_list = []
         """List of results created after a simulation compute."""
 
@@ -461,13 +465,21 @@ class BaseSimulation:
             ]
             self.reset()
 
-        # Create local Job
-        self._job = ProtoJob(
-            name=self._name,
-            description=description,
-            metadata=metadata,
-            simulation_path=self._simulation_instance.name,
-        )
+        if job is None:
+            self._job = ProtoJob(
+                name=self._name,
+                description=description,
+                metadata=metadata,
+                simulation_path=self._simulation_instance.name,
+            )
+        else:
+            if job.simulation_path != self._simulation_instance.name:
+                raise ValueError(
+                    f"Job for simulation {job.simulation_path!r} cannot be loaded into "
+                    f"simulation {self._simulation_instance.name!r}."
+                )
+            self._job = ProtoJob()
+            self._job.CopyFrom(job)
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
@@ -983,15 +995,20 @@ class BaseSimulation:
             job_props = self._job.inverse_mc_simulation_properties
             if not (
                 job_props.HasField("stop_condition_duration")
+                or job_props.HasField("optimized_propagation_relative")
+                or job_props.HasField("optimized_propagation_absolute")
                 or (
-                    job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
-                    or job_props.optimized_propagation_relative.min_pass_number != 0
-                    or job_props.optimized_propagation_absolute.min_pass_number != 0
+                    job_props.HasField("optimized_propagation_none")
+                    and job_props.optimized_propagation_none.HasField(
+                        "stop_condition_passes_number"
+                    )
                 )
             ):
                 stop_condition_error = True
 
         if stop_condition_error:
+            if self._job_loaded_from_file:
+                return
             warnings.warn(
                 "In the current RPC version, simulation stop condition information may be lost "
                 "when loading a .speos file. Please define a stop condition explicitly. Default "
@@ -1312,6 +1329,8 @@ class SimulationDirect(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.DirectSimulationParameters, optional
         If defined the values in the direct simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore. If omitted, a new local job is created.
     """
 
     class SourceSampling:
@@ -1328,6 +1347,7 @@ class SimulationDirect(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[DirectSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1338,6 +1358,7 @@ class SimulationDirect(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "direct_mc_simulation_template"
 
@@ -1629,6 +1650,8 @@ class SimulationInverse(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
         If defined the values in the inverse simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore. If omitted, a new local job is created.
 
     Notes
     -----
@@ -1795,6 +1818,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[InverseSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1805,6 +1829,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "inverse_mc_simulation_template"
         self._optimized = None
@@ -2089,7 +2114,9 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         int
         """
         props = self._job.inverse_mc_simulation_properties
-        if props.HasField("optimized_propagation_none"):
+        if props.HasField(
+            "optimized_propagation_none"
+        ) and props.optimized_propagation_none.HasField("stop_condition_passes_number"):
             return props.optimized_propagation_none.stop_condition_passes_number
         return None
 
@@ -2316,6 +2343,8 @@ class SimulationInteractive(BaseSimulation):
     ansys.speos.core.generic.parameters.InteractiveSimulationParameters] = None
         If defined the values in the interactive simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore. If omitted, a new local job is created.
     """
 
     class RaysNumberPerSource:
@@ -2349,6 +2378,7 @@ class SimulationInteractive(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[InteractiveSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2359,6 +2389,7 @@ class SimulationInteractive(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "interactive_simulation_template"
 
@@ -2539,6 +2570,8 @@ class SimulationVirtualBSDF(BaseSimulation):
     ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters] = None
         If defined the values in the virtual bsdf simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore. If omitted, a new local job is created.
     """
 
     class RoughnessOnly(BaseSimulation.SourceSampling):
@@ -3215,6 +3248,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[VirtualBSDFSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3225,6 +3259,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "virtual_bsdf_bench_simulation_template"
 
