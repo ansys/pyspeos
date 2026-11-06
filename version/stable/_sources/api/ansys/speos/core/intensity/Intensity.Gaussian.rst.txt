@@ -1,0 +1,230 @@
+
+
+
+
+
+
+:class:`Gaussian`
+=================
+
+
+.. py:class:: ansys.speos.core.intensity.Intensity.Gaussian(gaussian, gaussian_props, default_parameters = None)
+
+   
+   Intensity of type: Gaussian.
+
+   By default, full width at half maximum following x and y are set at 30 degrees, and total
+   angle at 180 degrees.
+   By default, no axis system is chosen, that means normal to surface map.
+
+   :Parameters:
+
+       **gaussian** : :obj:`ansys.api.speos.intensity.v1.IntensityTemplate.Gaussian`
+           Gaussian to complete.
+
+       **gaussian_props** :         :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties`
+           Gaussian properties to complete.
+
+       **default_parameters** : :obj:`Optional`\[:obj:`Union`\[        :obj:`ansys.speos.core.generic.parameters.IntensitAsymmetricGaussianParameters`,         :obj:`ansys.speos.core.generic.parameters.IntensitySymmetricGaussianParameters`]] = :data:`python:None`
+           If defined the values in the Gaussian instance will be overwritten by the values of the
+           data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Gaussian
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~fwhm_angle_x`
+            - Property of the full width following x at half maximum.
+          * - :py:attr:`~fwhm_angle_y`
+            - Property of the full width following y at half maximum.
+          * - :py:attr:`~total_angle`
+            - Property of total angle of the emission of the light source.
+          * - :py:attr:`~axis_system`
+            - Property the intensity distribution axis system orientation.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.intensity.Intensity import Gaussian
+
+Property detail
+---------------
+
+.. py:property:: fwhm_angle_x
+   :type: float
+
+
+   
+   Property of the full width following x at half maximum.
+
+
+   :Parameters:
+
+       **fwhm_angle_x** : :class:`python:float`
+           Full Width in degrees following x at Half Maximum.
+           By default, ``30.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full Width in degrees following x at Half Maximum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: fwhm_angle_y
+   :type: float
+
+
+   
+   Property of the full width following y at half maximum.
+
+
+   :Parameters:
+
+       **fwhm_angle_y** : :class:`python:float`
+           Full Width in degrees following y at Half Maximum.
+           By default, ``30.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full Width in degrees following y at Half Maximum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: total_angle
+   :type: float
+
+
+   
+   Property of total angle of the emission of the light source.
+
+
+   :Parameters:
+
+       **total_angle** : :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+           By default, ``180.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: float
+
+
+   
+   Property the intensity distribution axis system orientation.
+
+
+   :Parameters:
+
+       **axis_system** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``None`` : normal to surface map.
+
+
+
+   :Returns:
+
+       **axis_system** : :obj:`List`\[:class:`python:float`]
+           Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

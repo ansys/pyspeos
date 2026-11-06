@@ -1,0 +1,606 @@
+
+
+
+
+
+
+:class:`SensorPolarIntensity`
+=============================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorPolarIntensity(project, name, description = '', metadata = None, sensor_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSensor`
+
+
+   
+   Class for polar intensity sensor.
+
+   A polar intensity sensor generates a photometric file (IESNA A/B/C or Eulumdat) from a
+   simulation.  It supports both far-field (integration angle) and near-field (cell distance +
+   diameter) configurations as well as explicit dimensional sampling or adaptive sampling from a
+   file.
+
+   By default, IESNA C format, explicit dimensions (360 × 90), far-field with integration angle
+   of 5 degrees, and the origin axis system are used.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not have to be created from scratch.
+           By default, ``None``, means that the feature is created from scratch.
+
+       **default_parameters** :     :obj:`ansys.speos.core.generic.parameters.PolarIntensitySensorParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           dataclass.
+           By default, ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   ``PolarIntensityProperties`` in the scene proto only contains an ``axis_system`` field –
+   there is no layer-type separation for polar intensity sensors.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorPolarIntensity
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_format_iesna_a`
+            - Set output format to IESNA type A.
+          * - :py:attr:`~set_format_iesna_b`
+            - Set output format to IESNA type B.
+          * - :py:attr:`~set_format_iesna_c`
+            - Set output format to IESNA type C.
+          * - :py:attr:`~set_format_eulumdat`
+            - Set output format to Eulumdat.
+          * - :py:attr:`~set_constant_sampling`
+            - Use constant samplign instead of an adaptive-sampling file.
+          * - :py:attr:`~set_adaptive_sampling`
+            - Use an adaptive-sampling file instead of explicit dimensions.
+          * - :py:attr:`~set_far_field`
+            - Configure the sensor for far-field measurement.
+          * - :py:attr:`~set_near_field`
+            - Configure the sensor for near-field measurement.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~adaptive_sampling_file`
+            - Location of the adaptive-sampling file.
+          * - :py:attr:`~horizontal_sampling`
+            - Number of horizontal samples.
+          * - :py:attr:`~vertical_sampling`
+            - Number of vertical samples.
+          * - :py:attr:`~integration_angle`
+            - Far-field integration angle in degrees.
+          * - :py:attr:`~cell_distance`
+            - Distance of the measurement cell from the sensor origin in mm.
+          * - :py:attr:`~cell_diameter`
+            - Diameter of the measurement cell in mm.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import SensorPolarIntensity
+
+Property detail
+---------------
+
+.. py:property:: adaptive_sampling_file
+   :type: Union[pathlib.Path, None]
+
+
+   
+   Location of the adaptive-sampling file.
+
+
+   :Parameters:
+
+       **uri** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           Path to the adaptive-sampling file.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`Path`, :data:`python:None`]
+           Path to the adaptive-sampling file, or ``None`` if constant sampling is active.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: horizontal_sampling
+   :type: Union[int, None]
+
+
+   
+   Number of horizontal samples.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Number of horizontal samples of the intensity file.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:int`, :data:`python:None`]
+           Horizontal sampling count, or ``None`` if adaptive sampling is active.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: vertical_sampling
+   :type: Union[int, None]
+
+
+   
+   Number of vertical samples.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Number of vertical samples of the intensity file.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:int`, :data:`python:None`]
+           Vertical sampling count, or ``None`` if adaptive sampling is active.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: integration_angle
+   :type: Union[float, None]
+
+
+   
+   Far-field integration angle in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Integration angle (degrees).
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:float`, :data:`python:None`]
+           Integration angle, or ``None`` when the sensor is in near-field mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: cell_distance
+   :type: Union[float, None]
+
+
+   
+   Distance of the measurement cell from the sensor origin in mm.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Cell distance in mm.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:float`, :data:`python:None`]
+           Cell distance, or ``None`` when the sensor is in far-field mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: cell_diameter
+   :type: Union[float, None]
+
+
+   
+   Diameter of the measurement cell in mm.
+
+   The diameter is derived from ``cell_distance`` and the stored
+   ``cell_integration_angle`` via ``2 * cell_distance * tan(cell_integration_angle)``.
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Cell diameter in mm.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:class:`python:float`, :data:`python:None`]
+           Cell diameter, or ``None`` when the sensor is in far-field mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list[float]
+
+
+   
+   Position of the sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:list`\[:class:`python:float`]
+           Position ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Current axis system.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   ``PolarIntensityProperties`` contains only an ``axis_system``; there is no
+   layer-type separation for polar intensity sensors.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_format_iesna_a()
+
+   
+   Set output format to IESNA type A.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_format_iesna_b()
+
+   
+   Set output format to IESNA type B.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_format_iesna_c()
+
+   
+   Set output format to IESNA type C.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_format_eulumdat()
+
+   
+   Set output format to Eulumdat.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_constant_sampling()
+
+   
+   Use constant samplign instead of an adaptive-sampling file.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_adaptive_sampling()
+
+   
+   Use an adaptive-sampling file instead of explicit dimensions.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_far_field()
+
+   
+   Configure the sensor for far-field measurement.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_near_field()
+
+   
+   Configure the sensor for near-field measurement.
+
+   Default cell distance is ``10`` mm and default cell diameter is ``0.3491`` mm.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorPolarIntensity`
+           This polar intensity sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

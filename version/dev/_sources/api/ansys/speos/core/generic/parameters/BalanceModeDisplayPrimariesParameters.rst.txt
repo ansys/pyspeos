@@ -1,0 +1,156 @@
+
+
+
+
+
+
+:class:`BalanceModeDisplayPrimariesParameters`
+==============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters
+
+   
+   Parameters for Balance mode: Display primaries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BalanceModeDisplayPrimariesParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~red_display_file_uri`
+            - Spectrum path of the red display spectrum.
+          * - :py:attr:`~green_display_file_uri`
+            - Spectrum path of the green display spectrum.
+          * - :py:attr:`~blue_display_file_uri`
+            - Spectrum path of the red display spectrum.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import BalanceModeDisplayPrimariesParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: red_display_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Spectrum path of the red display spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: green_display_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Spectrum path of the green display spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: blue_display_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Spectrum path of the red display spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

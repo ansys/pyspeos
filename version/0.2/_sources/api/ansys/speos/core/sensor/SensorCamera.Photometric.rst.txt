@@ -1,0 +1,539 @@
+
+
+
+
+
+
+:class:`Photometric`
+====================
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/sensor/SensorCamera.Photometric.Color
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera.Photometric(mode_photometric, camera_props, default_values = True, stable_ctr = False)
+
+   
+   Mode of camera sensor : Photometric.
+
+   This allows to set every Camera Sensor parameters, including the photometric definition parameters.
+   By default, a camera with mode color is chosen (vs monochromatic mode).
+
+   :Parameters:
+
+       **mode_photometric** : :obj:`ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric`
+           SensorCameraModePhotometric protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_type_photometric method available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Photometric
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_acquisition_integration`
+            - Set the acquisition integration value.
+          * - :py:attr:`~set_acquisition_lag_time`
+            - Set the acquisition lag time value.
+          * - :py:attr:`~set_transmittance_file_uri`
+            - Set the transmittance file.
+          * - :py:attr:`~set_gamma_correction`
+            - Set the gamma correction.
+          * - :py:attr:`~set_png_bits_08`
+            - Choose 08-bits for png.
+          * - :py:attr:`~set_png_bits_10`
+            - Choose 10-bits for png.
+          * - :py:attr:`~set_png_bits_12`
+            - Choose 12-bits for png.
+          * - :py:attr:`~set_png_bits_16`
+            - Choose 16-bits for png.
+          * - :py:attr:`~set_wavelengths_range`
+            - Set the range of wavelengths.
+          * - :py:attr:`~set_mode_monochromatic`
+            - Set the monochromatic mode.
+          * - :py:attr:`~set_mode_color`
+            - Set the color mode.
+          * - :py:attr:`~set_trajectory_file_uri`
+            - Set the trajectory file.
+          * - :py:attr:`~set_layer_type_none`
+            - Set no layer separation: includes the simulation's results in one layer.
+          * - :py:attr:`~set_layer_type_source`
+            - Set layer separation by source: includes one layer per active source in the result.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.SensorCamera import Photometric
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_acquisition_integration(value = 0.01)
+
+   
+   Set the acquisition integration value.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Acquisition integration value (s).
+           By default, ``0.01``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_acquisition_lag_time(value = 0.0)
+
+   
+   Set the acquisition lag time value.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Acquisition lag time value (s).
+           By default, ``0.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_transmittance_file_uri(uri)
+
+   
+   Set the transmittance file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Amount of light of the source that passes through the lens and reaches the sensor.
+           The transmittance is expressed in a .spectrum file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_gamma_correction(value = 2.2)
+
+   
+   Set the gamma correction.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Compensation of the curve before the display on the screen.
+           By default, ``2.2``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_png_bits_08()
+
+   
+   Choose 08-bits for png.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_png_bits_10()
+
+   
+   Choose 10-bits for png.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_png_bits_12()
+
+   
+   Choose 12-bits for png.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_png_bits_16()
+
+   
+   Choose 16-bits for png.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_wavelengths_range()
+
+   
+   Set the range of wavelengths.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           Wavelengths range.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_mode_monochromatic(spectrum_file_uri)
+
+   
+   Set the monochromatic mode.
+
+   Results will be available in grey scale.
+
+   :Parameters:
+
+       **spectrum_file_uri** : :class:`python:str`
+           Spectrum file uri.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_mode_color()
+
+   
+   Set the color mode.
+
+   Results will be available in color.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_trajectory_file_uri(uri)
+
+   
+   Set the trajectory file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Trajectory file, used to define the position and orientations of the Camera sensor in time.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_none()
+
+   
+   Set no layer separation: includes the simulation's results in one layer.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_source()
+
+   
+   Set layer separation by source: includes one layer per active source in the result.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.sensor.SensorCamera.Photometric.Color
+
+
+
+

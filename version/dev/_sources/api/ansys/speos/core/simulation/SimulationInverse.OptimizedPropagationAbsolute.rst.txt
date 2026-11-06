@@ -1,0 +1,153 @@
+
+
+
+
+
+
+:class:`OptimizedPropagationAbsolute`
+=====================================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationInverse.OptimizedPropagationAbsolute(propagation_absolute, default_parameters = None, stable_ctr = False)
+
+   
+   Optimized propagation using an absolute pixel standard deviation stop condition.
+
+   The algorithm adapts the number of passes per pixel to send the optimal number of rays
+   according to the signal each pixel needs. As a result, the signal-to-noise ratio is
+   adequate in areas where pixels need more rays, thus giving a balanced image.
+
+   :Parameters:
+
+       **propagation_absolute** : :obj:`ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties.OptimizedPropagationAbsolute`
+           Protobuf message filled by this class.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters`, :obj:`optional`
+           If defined, the protobuf message is initialized with the values of the data class.
+           By default, ``None``, means that the message is left untouched.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Internal safety flag. It must be set to ``True`` by the parent class.
+           By default, ``False``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Do not instantiate this class directly. Use
+   :meth:`SimulationInverse.set_optimized_propagation_absolute` instead.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: OptimizedPropagationAbsolute
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~min_pass_number`
+            - Minimum number of passes computed without pass optimization.
+          * - :py:attr:`~absolute_value`
+            - Absolute photometric value of the pixel standard deviation threshold.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationInverse import OptimizedPropagationAbsolute
+
+Property detail
+---------------
+
+.. py:property:: min_pass_number
+   :type: int
+
+
+   
+   Minimum number of passes computed without pass optimization.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Minimum number of passes.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absolute_value
+   :type: int
+
+
+   
+   Absolute photometric value of the pixel standard deviation threshold.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Absolute photometric threshold.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

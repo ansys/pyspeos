@@ -1,0 +1,124 @@
+
+
+
+
+
+
+:class:`ThermicSourceParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ThermicSourceParameters
+
+   
+   Thermic Source Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ThermicSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~emittance_type`
+            - Emittance parameters for the thermic source.
+          * - :py:attr:`~intensity_type`
+            - Intensity parameters for the thermic source.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ThermicSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: emittance_type
+   :type:  Union[EmissiveFacesParameters, TemperatureFieldParameters]
+
+   
+   Emittance parameters for the thermic source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: intensity_type
+   :type:  Union[IntensityLambertianParameters, IntensityCosParameters]
+
+   
+   Intensity parameters for the thermic source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

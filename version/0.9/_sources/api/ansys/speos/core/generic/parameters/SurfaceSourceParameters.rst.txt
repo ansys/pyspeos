@@ -1,0 +1,232 @@
+
+
+
+
+
+
+:class:`SurfaceSourceParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SurfaceSourceParameters
+
+   
+   Parameters class for Surface Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SurfaceSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~flux_type`
+            - Flux definition used by the surface source.
+          * - :py:attr:`~exitance_type`
+            - Exitance definition applied on emitting faces.
+          * - :py:attr:`~intensity_type`
+            - Intensity distribution model used by the source.
+          * - :py:attr:`~spectrum_type`
+            - Spectrum definition used by the source.
+          * - :py:attr:`~flux_variation_file_uri`
+            - Path to the flux variation file. When empty, no flux variation is applied.
+          * - :py:attr:`~relative_lag`
+            - Relative lag for the flux variation. Has no impact if ``flux_variation_file_uri``    is empty.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SurfaceSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: flux_type
+   :type:  Union[LuminousFluxParameters, RadiantFluxParameters, IntensityFluxParameters, FluxFromFileParameters]
+
+   
+   Flux definition used by the surface source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exitance_type
+   :type:  Union[VariableExitanceParameters, ConstantExitanceParameters]
+
+   
+   Exitance definition applied on emitting faces.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: intensity_type
+   :type:  Union[IntensityLambertianParameters, IntensityCosParameters, IntensitySymmetricGaussianParameters, IntensitAsymmetricGaussianParameters, IntensityLibraryParameters]
+
+   
+   Intensity distribution model used by the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: spectrum_type
+   :type:  Optional[Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters]]
+
+   
+   Spectrum definition used by the source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: flux_variation_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the flux variation file. When empty, no flux variation is applied.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: relative_lag
+   :type:  float
+   :value: 0.0
+
+
+   
+   Relative lag for the flux variation. Has no impact if ``flux_variation_file_uri``    is empty.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

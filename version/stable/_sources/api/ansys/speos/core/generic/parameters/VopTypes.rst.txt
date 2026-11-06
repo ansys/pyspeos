@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`VopTypes`
+=================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.VopTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Allowed mapping types.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VopTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~none`
+            - 
+          * - :py:attr:`~opaque`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import VopTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: none
+   :value: None
+
+
+.. py:attribute:: opaque
+   :value: 'opaque'
+
+
+
+
+
+

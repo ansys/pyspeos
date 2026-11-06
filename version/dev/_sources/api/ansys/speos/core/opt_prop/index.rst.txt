@@ -1,0 +1,111 @@
+
+
+
+
+
+
+The ``opt_prop.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.opt_prop
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: opt_prop
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop.BaseSop`
+            - Base class for Surface Optical Property helpers.
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop.BaseVop`
+            - Base class for Volume Optical Property helpers.
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop.TextureLayer`
+            - Describes the optical and texture properties of a single texture layer.
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop.OptProp`
+            - Speos feature wrapper for an optical property (SOP + VOP + geometries).
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BaseSop</api/ansys/speos/core/opt_prop/BaseSop>
+    <span class="nf nf-cod-symbol_class"></span> BaseVop</api/ansys/speos/core/opt_prop/BaseVop>
+    <span class="nf nf-cod-symbol_class"></span> TextureLayer</api/ansys/speos/core/opt_prop/TextureLayer>
+    <span class="nf nf-cod-symbol_class"></span> OptProp</api/ansys/speos/core/opt_prop/OptProp>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Utilities to interact with Speos optical property features.
+
+This module exposes classes to create and manage Surface Optical Properties (SOP)
+and Volume Optical Properties (VOP) and to compose material instances that can
+be committed to a Speos project scene.
+
+The public classes are:
+- `BaseSop` for inheritance of SOP helpers,
+- `BaseVop` for inheritance of VOP helpers,
+- `TextureLayer` for a single texture layer,
+- `OptProp` to represent a full material instance (SOP + VOP + geometries).
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

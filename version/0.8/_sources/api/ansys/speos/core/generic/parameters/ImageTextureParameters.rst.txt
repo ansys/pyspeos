@@ -1,0 +1,182 @@
+
+
+
+
+
+
+:class:`ImageTextureParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ImageTextureParameters
+
+   
+   Parameters of an image based texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ImageTextureParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~file_path`
+            - Path to the texture image file.
+          * - :py:attr:`~repeat_u`
+            - Whether the image texture repeats along the U direction.
+          * - :py:attr:`~repeat_v`
+            - Whether the image texture repeats along the V direction.
+          * - :py:attr:`~mapping`
+            - Mapping settings applied to the image texture.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ImageTextureParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: file_path
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the texture image file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: repeat_u
+   :type:  bool
+   :value: True
+
+
+   
+   Whether the image texture repeats along the U direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: repeat_v
+   :type:  bool
+   :value: True
+
+
+   
+   Whether the image texture repeats along the V direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: mapping
+   :type:  [Union[UVMappingPlanarParameters, UVMappingCubicParameters, UVMappingSphericalParameters, UVMappingCylindricalParameters, UVMappingByData]]
+
+   
+   Mapping settings applied to the image texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

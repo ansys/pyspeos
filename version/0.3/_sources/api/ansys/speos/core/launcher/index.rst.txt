@@ -1,0 +1,160 @@
+
+
+
+
+
+
+The ``launcher.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.launcher
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: launcher
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~launch_speos`
+            - Start the Speos Service remotely using the product instance management API.
+
+
+          * - :py:obj:`~launch_remote_speos`
+            - Start the Speos Service remotely using the product instance management API.
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~MAX_MESSAGE_LENGTH`
+            - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module to start Speos RPC Server.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: launch_speos(version = None)
+
+   
+   Start the Speos Service remotely using the product instance management API.
+
+   Prerequisite : product instance management configured.
+
+   :Parameters:
+
+       **version** : :class:`python:str`, :obj:`optional`
+           The Speos Service version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen by the server.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.speos.Speos`
+           An instance of the Speos Service.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: launch_remote_speos(version = None)
+
+   
+   Start the Speos Service remotely using the product instance management API.
+
+   When calling this method, you need to ensure that you are in an
+   environment where PyPIM is configured. This can be verified with
+   :func:`pypim.is_configured <ansys.platform.instancemanagement.is_configured>`.
+
+   :Parameters:
+
+       **version** : :class:`python:str`, :obj:`optional`
+           The Speos Service version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen by the server.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.speos.Speos`
+           An instance of the Speos Service.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: MAX_MESSAGE_LENGTH
+
+
+
