@@ -2937,6 +2937,37 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sim.delete()
 
 
+@pytest.mark.parametrize("sensor_type", [SensorIrradiance, SensorRadiance, SensorXMPIntensity])
+def test_sensor_result_file_name(speos: Speos, sensor_type: type[BaseSensor]):
+    """Persist and reset the shared result filename on real sensor instances."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="ResultFileName", feature_type=sensor_type)
+    assert ssr.result_file_name == ""
+    ssr.result_file_name = "custom_result"
+    assert ssr.result_file_name == "custom_result"
+    assert ssr._sensor_instance.result_file_name == "custom_result"
+    ssr.commit()
+    assert p.scene_link.get().sensors[0].result_file_name == "custom_result"
+    assert ssr.get("result_file_name") == "custom_result"
+
+    for value in (None, 42, True, Path("result")):
+        with pytest.raises(TypeError, match="Result file name must be a string"):
+            ssr.result_file_name = value
+        assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "uncommitted_result"
+    ssr.reset()
+    assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "updated_result"
+    ssr.commit().reset()
+    assert ssr.result_file_name == "updated_result"
+    assert p.scene_link.get().sensors[0].result_file_name == "updated_result"
+    ssr.result_file_name = ""
+    ssr.commit().reset()
+    assert ssr.result_file_name == ""
+    assert p.scene_link.get().sensors[0].result_file_name == ""
+    ssr.delete()
+
+
 def test_commit_sensor(speos: Speos, sensor_template_version):
     """Test commit of sensor."""
     p = Project(speos=speos)

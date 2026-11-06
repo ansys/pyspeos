@@ -325,6 +325,33 @@ class BaseSensor(ABC):
         return self._sensor_mode_template.HasField(self._sensor_mode_field(mode))
 
     @property
+    def result_file_name(self) -> str:
+        """Base name of the result file, without an extension.
+
+        Parameters
+        ----------
+        value : str
+            Result base name. An empty string uses the server's default naming.
+
+        Returns
+        -------
+        str
+            Configured result base name.
+
+        Notes
+        -----
+        This is a common scene-instance field, available with both sensor template versions.
+        Call ``commit()`` to persist changes.
+        """
+        return self._sensor_instance.result_file_name
+
+    @result_file_name.setter
+    def result_file_name(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError("Result file name must be a string.")
+        self._sensor_instance.result_file_name = value
+
+    @property
     def lxp_path_number(self) -> Union[None, int]:
         """Number of LXP rays simulated for the Sensor.
 
@@ -7662,23 +7689,6 @@ class Sensor3DEnergyDensity(BaseSensor):
             Sizes and voxel counts.
         """
         return self.dimensions
-
-    @property
-    def result_file_name(self) -> str:
-        """Base name of the result file, without an extension.
-
-        Returns
-        -------
-        str
-            Configured result base name.
-        """
-        return self._sensor_instance.result_file_name
-
-    @result_file_name.setter
-    def result_file_name(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise TypeError("Result file name must be a string.")
-        self._sensor_instance.result_file_name = value
 
     @property
     def lxp_path_number(self) -> None:
