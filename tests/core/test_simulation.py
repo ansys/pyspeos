@@ -797,7 +797,7 @@ def test_create_interactive(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(max=251)
-def test_create_virtual_bsdf_bench_unsupported(speos: Speos):
+def test_create_virtual_bsdf_bench_unsupported(speos: Speos, monkeypatch):
     """Test creation of Virtual BSDF Bench Simulation on unsupported Speos versions."""
     p = Project(speos=speos)
     with pytest.raises(NotImplementedError, match="needs a Speos Version of 25 R2 SP1 or higher."):
@@ -2150,7 +2150,7 @@ def test_simulation_nested_classes_errors():
         BaseSimulation.SourceSampling(None, stable_ctr=False)
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(max=261)
 def test_check_job_no_stop_condition_direct(speos: Speos):
     """Test _check_job warns and applies defaults when direct simulation has no stop condition.
 
@@ -2187,7 +2187,7 @@ def test_check_job_no_stop_condition_direct(speos: Speos):
     assert sim.stop_condition_duration == default_params.stop_condition_duration
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(max=261)
 def test_check_job_no_stop_condition_inverse(speos: Speos):
     """Test _check_job warns and applies defaults when inverse simulation has no stop condition.
 

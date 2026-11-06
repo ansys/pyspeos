@@ -1849,6 +1849,7 @@ class Project:
         restored_job_paths = set()
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
+                restored_job_paths.add(sim_inst.name)
                 continue
             sim_feat = None
             loaded_job = self._loaded_jobs.get(sim_inst.name)
