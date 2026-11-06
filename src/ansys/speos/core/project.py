@@ -177,19 +177,9 @@ class Project:
                 self._warn_if_job_load_is_unsupported(loaded_job)
                 self._fill_features(context=context)
             case LightBoxFileInstance():
-                loaded_job = self.scene_link.load_file(
-                    file_uri=str(path.file), password=path.password
-                )
-                self._register_loaded_job(loaded_job)
+                self.scene_link.load_file(file_uri=str(path.file), password=path.password)
                 scene_data = self.scene_link.get()
-                self._warn_if_job_load_is_unsupported(loaded_job, scene_data=scene_data)
-                if (
-                    scene_data.sources
-                    or scene_data.part_guid != ""
-                    or scene_data.materials
-                    or scene_data.simulations
-                    or loaded_job is not None
-                ):
+                if scene_data.sources or scene_data.part_guid != "" or scene_data.materials:
                     self._fill_features(context=context)
             case _:
                 raise TypeError(f"Unsupported path type: {type(path)}")
@@ -204,14 +194,11 @@ class Project:
             raise ValueError(f"More than one loaded job refers to {job.simulation_path!r}.")
         self._loaded_jobs[job.simulation_path] = job
 
-    def _warn_if_job_load_is_unsupported(
-        self, job: Optional[ProtoJob], scene_data: Optional[ProtoScene] = None
-    ) -> None:
+    def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
         """Warn when the server cannot return saved job properties."""
         if job is not None or server_version_checker.is_version_supported(*MIN_JOB_LOAD_VERSION):
             return
-        if scene_data is None:
-            scene_data = self.scene_link.get()
+        scene_data = self.scene_link.get()
         if scene_data.simulations:
             warnings.warn(
                 "Restoring saved simulation job properties requires Speos 2027 R1 or newer. "
