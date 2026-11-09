@@ -2508,8 +2508,6 @@ def test_load_intensity_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorXMPIntensity)
     assert isinstance(sensor_radio, SensorXMPIntensity)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2558,7 +2556,6 @@ def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     else:
@@ -2598,8 +2595,6 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2709,8 +2704,6 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     else:
@@ -4556,7 +4549,6 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_ver
     assert sensor.sensor_template_link is not None
     assert has_immersive_template(sensor)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor._sensor_template, ProtoSensorTemplate)
     else:
@@ -5297,8 +5289,6 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
         sensor_iesna_a_params.integration_angle
     )
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
     else:
