@@ -34,6 +34,8 @@ while ``validate()`` and ``save()`` require complete data.
 
 Use ``MaterialType`` to select the volume material model. Use ``MaterialOpticalClass``
 to classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+Use ``FluorescentPigmentFile`` and ``FluorescentPigment`` to add dye data to a fluorescent
+material.
 Use ``SimpleScatteringMode`` to select which side of a surface scatters light.
 
 """
@@ -50,6 +52,11 @@ from ansys.speos.core.input_files.bsdf import (
     create_spectral_brdf,
 )
 from ansys.speos.core.input_files.coated_surface import CoatedSurfaceFile, CoatedSurfaceSample
+from ansys.speos.core.input_files.fluorescence import (
+    FluorescentPigment,
+    FluorescentPigmentFile,
+    FluorescentSpectrum,
+)
 from ansys.speos.core.input_files.material import (
     MaterialBirefringentCurve,
     MaterialBirefringentKettlerHelmholtz,
@@ -85,6 +92,9 @@ __all__ = [
     "BxdfDatapoint",
     "CoatedSurfaceFile",
     "CoatedSurfaceSample",
+    "FluorescentPigment",
+    "FluorescentPigmentFile",
+    "FluorescentSpectrum",
     "InterpolationEnhancement",
     "MaterialBirefringentCurve",
     "MaterialBirefringentKettlerHelmholtz",

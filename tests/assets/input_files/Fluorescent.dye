@@ -1,0 +1,35 @@
+OPTIS - Fluorescent pigment file v3.000000
+Fluorescent pigment
+ISOTROPIC
+1
+1
+OPTIS - Spectrum file v1
+0
+Default spectrum : edit or load -->
+3
+350	0
+360	0.1
+370	0
+OPTIS - Spectrum file v1
+0
+Default spectrum : edit or load -->
+3
+350	95
+360	95
+370	95
+OPTIS - Spectrum file v1
+0
+Default spectrum : edit or load -->
+3
+350	0
+360	0.095
+370	0
+OPTIS - Spectrum file v1
+0
+Default spectrum : edit or load -->
+3
+400	0
+500	100
+600	0
+0
+0

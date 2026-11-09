@@ -41,6 +41,9 @@ from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.input_files import (
     CoatedSurfaceFile,
     CoatedSurfaceSample,
+    FluorescentPigment,
+    FluorescentPigmentFile,
+    FluorescentSpectrum,
     MaterialBirefringentCurve,
     MaterialBirefringentKettlerHelmholtz,
     MaterialBirefringentSellmeier,
