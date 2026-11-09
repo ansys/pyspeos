@@ -20,12 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Dependency-independent numeric and collection validation helpers."""
+"""Shared numeric, collection, and path validation helpers."""
 
 from __future__ import annotations
 
+from collections.abc import Collection, Sequence
 import math
-from typing import List, Sequence
+from pathlib import Path
+from typing import List, Union
+
+import numpy as np
 
 
 def check_percentage(name: str, value: float) -> None:
@@ -45,6 +49,18 @@ def check_percentage(name: str, value: float) -> None:
     """
     if not 0.0 <= value <= 100.0:
         raise ValueError(f"{name} must be between 0 and 100, got {value}.")
+
+
+def _finite_float(value: float, name: str, *, include_value: bool = False) -> float:
+    """Convert a value to a finite float with a caller-specific error message."""
+    try:
+        number = float(value)
+    except OverflowError as error:
+        raise ValueError(f"{name} must be finite.") from error
+    if not math.isfinite(number):
+        suffix = f", got {number}" if include_value else ""
+        raise ValueError(f"{name} must be finite{suffix}.")
+    return number
 
 
 def _finite_number(name: str, value: float) -> float:
@@ -69,10 +85,7 @@ def _finite_number(name: str, value: float) -> float:
     ValueError
         If ``value`` cannot be parsed as a float or is not finite.
     """
-    value = float(value)
-    if not math.isfinite(value):
-        raise ValueError(f"{name} must be finite, got {value}.")
-    return value
+    return _finite_float(value, name, include_value=True)
 
 
 def _percentage(name: str, value: float) -> float:
@@ -160,3 +173,56 @@ def _numeric_tuple(name: str, values: Sequence[float], count: int = 3) -> tuple[
     if len(values) != count:
         raise ValueError(f"{name} must hold {count} coordinates, got {len(values)}.")
     return values
+
+
+def _validate_numeric_sequence(
+    value: Collection[float], expected_length: int, noun: str, article: str = "A"
+) -> np.ndarray:
+    """Validate and convert a finite numeric sequence."""
+    length_words = {2: "two", 3: "three", 9: "nine", 12: "twelve"}
+    expected_text = length_words.get(expected_length, str(expected_length))
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise TypeError(
+            f"{article} {noun} must be a list or tuple of {expected_text} finite numbers."
+        )
+    if len(value) != expected_length:
+        raise ValueError(f"{article} {noun} must contain exactly {expected_text} values.")
+    if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
+        raise TypeError(f"{noun.capitalize()} values must be numeric.")
+    return np.asarray(
+        [_finite_float(item, f"{noun.capitalize()} values") for item in value],
+        dtype=float,
+    )
+
+
+def _validate_vector3(value: Collection[float]) -> np.ndarray:
+    """Validate and convert a three-dimensional vector."""
+    return _validate_numeric_sequence(value, 3, "vector")
+
+
+def _validate_axis_system12(value: Collection[float]) -> np.ndarray:
+    """Validate and convert a twelve-value axis system."""
+    return _validate_numeric_sequence(value, 12, "axis system", article="An")
+
+
+def _validate_scalar(value: float) -> float:
+    """Validate and convert a finite scalar."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError("A scalar must be a finite number.")
+    return _finite_float(value, "A scalar")
+
+
+def _validate_positive_int(value: int) -> int:
+    """Validate a positive integer value."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError("Value must be an integer.")
+    if value <= 0:
+        raise ValueError("Value must be greater than 0.")
+    return value
+
+
+def _validate_pathlike(value: Union[str, Path], name: str) -> str:
+    """Validate and convert a string or path-like value to a string."""
+    if not isinstance(value, (str, Path)):
+        raise TypeError(f"{name} must be a string or Path.")
+    return str(value)

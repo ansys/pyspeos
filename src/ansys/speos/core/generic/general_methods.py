@@ -27,7 +27,7 @@ this includes decorator and methods
 
 from __future__ import annotations
 
-from collections.abc import Collection, Sequence
+from collections.abc import Collection
 from functools import lru_cache, wraps
 import math
 import os
@@ -38,10 +38,18 @@ import warnings
 from ansys.tools.common.path import get_available_ansys_installations
 import numpy as np
 
+from ansys.speos.core.generic import validation as _validation
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.speos.core.generic.version_checker import server_version_checker
 
 _GRAPHICS_AVAILABLE = None
+
+_validate_numeric_sequence = _validation._validate_numeric_sequence
+_validate_vector3 = _validation._validate_vector3
+_validate_axis_system12 = _validation._validate_axis_system12
+_validate_scalar = _validation._validate_scalar
+_validate_positive_int = _validation._validate_positive_int
+_validate_pathlike = _validation._validate_pathlike
 
 GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
@@ -166,68 +174,6 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
     if magnitude == 0:
         raise ValueError("Cannot normalize a zero vector")
     return cast(List[float], (vector_np / magnitude).tolist())
-
-
-def _validate_numeric_sequence(
-    value: Collection[float], expected_length: int, noun: str, article: str = "A"
-) -> np.ndarray:
-    """Validate and convert a finite numeric sequence."""
-    length_words = {2: "two", 3: "three", 9: "nine", 12: "twelve"}
-    expected_text = length_words.get(expected_length, str(expected_length))
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-        raise TypeError(
-            f"{article} {noun} must be a list or tuple of {expected_text} finite numbers."
-        )
-    if len(value) != expected_length:
-        raise ValueError(f"{article} {noun} must contain exactly {expected_text} values.")
-    if any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value):
-        raise TypeError(f"{noun.capitalize()} values must be numeric.")
-    try:
-        array = np.asarray(value, dtype=float)
-    except OverflowError as error:
-        raise ValueError(f"{noun.capitalize()} values must be finite.") from error
-    if not np.all(np.isfinite(array)):
-        raise ValueError(f"{noun.capitalize()} values must be finite.")
-    return array
-
-
-def _validate_vector3(value: Collection[float]) -> np.ndarray:
-    """Validate and convert a three-dimensional vector."""
-    return _validate_numeric_sequence(value, 3, "vector")
-
-
-def _validate_axis_system12(value: Collection[float]) -> np.ndarray:
-    """Validate and convert a twelve-value axis system."""
-    return _validate_numeric_sequence(value, 12, "axis system", article="An")
-
-
-def _validate_scalar(value: float) -> float:
-    """Validate and convert a finite scalar."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError("A scalar must be a finite number.")
-    try:
-        scalar = float(value)
-    except OverflowError as error:
-        raise ValueError("A scalar must be finite.") from error
-    if not math.isfinite(scalar):
-        raise ValueError("A scalar must be finite.")
-    return scalar
-
-
-def _validate_positive_int(value: int) -> int:
-    """Validate a positive integer value."""
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError("Value must be an integer.")
-    if value <= 0:
-        raise ValueError("Value must be greater than 0.")
-    return value
-
-
-def _validate_pathlike(value: Union[str, Path], name: str) -> str:
-    """Validate and convert a string or path-like value to a string."""
-    if not isinstance(value, (str, Path)):
-        raise TypeError(f"{name} must be a string or Path.")
-    return str(value)
 
 
 def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
