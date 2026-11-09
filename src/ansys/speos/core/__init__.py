@@ -57,7 +57,7 @@ LATEST_EOL_PYTHON_VERSION = (3, 10)
 _eol = ".".join(map(str, LATEST_EOL_PYTHON_VERSION))
 PYTHON_EOL_WARNING = (
     f"Python {_eol} has reached its end of life. Support for Python {_eol} will be removed "
-    "in an upcoming PyAEDT release. Please upgrade to a supported Python version. For "
+    "in an upcoming PySpeos release. Please upgrade to a supported Python version. For "
     "more information on Python versions, please refer to the official Python "
     "documentation (https://devguide.python.org/versions/#status-of-python-versions)."
 )
@@ -75,7 +75,7 @@ PYTHON_VERSION_WARNING = (
 
 
 def deprecation_warning() -> None:
-    """Warning message informing users that some Python versions are deprecated in PyAEDT."""
+    """Warning message informing users that some Python versions are deprecated in PySpeos."""
     # Store warnings showwarning
     existing_showwarning = warnings.showwarning
 
