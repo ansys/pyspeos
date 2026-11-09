@@ -331,7 +331,7 @@ def test_energy_density_face_parameters(speos: Speos):
     assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
 
 
-@pytest.mark.supported_speos_versions(max=270)
+@pytest.mark.supported_speos_versions(min=261, max=270)
 def test_energy_density_unsupported_server(speos: Speos):
     """Reject the v2-only sensor on a real server predating sensor v2."""
     if server_version_checker.is_version_supported(2027, 1, 0):
@@ -1634,7 +1634,7 @@ def test_camera_spectrum_file_uri_getter_has_no_side_effect(speos: Speos):
     assert not color._red_spectrum._spectrum.HasField("library")
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_template_version):
     """Test the distortion file fallback also applies when committing the project."""
     p = Project(speos=speos)
@@ -1648,7 +1648,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     )
 
     with pytest.warns(UserWarning, match="over written"):
-        p.commit()
+        sensor.commit()
 
     assert sensor.focal_length == 0
     assert sensor.imager_distance == 0
@@ -1656,7 +1656,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     sensor.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
@@ -1961,7 +1961,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
@@ -2508,8 +2508,6 @@ def test_load_intensity_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorXMPIntensity)
     assert isinstance(sensor_radio, SensorXMPIntensity)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2558,7 +2556,6 @@ def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     else:
@@ -2598,8 +2595,6 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2709,8 +2704,6 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     else:
@@ -2937,7 +2930,14 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sim.delete()
 
 
-@pytest.mark.parametrize("sensor_type", [SensorIrradiance, SensorRadiance, SensorXMPIntensity])
+@pytest.mark.parametrize(
+    "sensor_type",
+    [
+        pytest.param(SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)),
+        SensorIrradiance,
+        SensorRadiance,
+    ],
+)
 def test_sensor_result_file_name(speos: Speos, sensor_type: type[BaseSensor]):
     """Persist and reset the shared result filename on real sensor instances."""
     p = Project(speos=speos)
@@ -4556,7 +4556,6 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_ver
     assert sensor.sensor_template_link is not None
     assert has_immersive_template(sensor)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor._sensor_template, ProtoSensorTemplate)
     else:
@@ -5297,8 +5296,6 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
         sensor_iesna_a_params.integration_angle
     )
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
     else:
@@ -6282,7 +6279,7 @@ def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with radiometric type and planar integration."""
     p = Project(
@@ -6311,7 +6308,7 @@ def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and planar integration."""
     p = Project(
@@ -6341,7 +6338,7 @@ def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and radial integration."""
     p = Project(
@@ -6371,7 +6368,7 @@ def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with colorimetric type."""
     p = Project(
@@ -6406,7 +6403,7 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_colorimetric_has_no_wavelengths_sampling(
     speos: Speos, sensor_template_version
 ):
