@@ -31,6 +31,7 @@ import numpy as np
 import pytest
 
 from ansys.speos.core import Project, Speos, body, component, face, part, sensor, source
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.workflow import axis_to_axis_feature, move_feature, rotate_feature
 from ansys.speos.core.workflow.transform import (
     _copy_feature,
@@ -42,6 +43,8 @@ from ansys.speos.core.workflow.transform import (
 )
 from tests.conftest import test_path
 
+pytestmark = pytest.mark.supported_speos_versions(min=261)
+
 
 def _load_workflow_transform_project(speos: Speos):
     """Load the real workflow transform asset used to validate feature transforms."""
@@ -51,7 +54,7 @@ def _load_workflow_transform_project(speos: Speos):
     )
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 def test_move_feature_matches_loaded_body_translation(speos: Speos):
     """Translate a real body from the workflow file without mutating the original."""
     project = _load_workflow_transform_project(speos)
@@ -65,7 +68,7 @@ def test_move_feature_matches_loaded_body_translation(speos: Speos):
     assert list(original.faces[0].vertices) == original_vertices
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 def test_rotate_feature_matches_loaded_rayfile_rotation(speos: Speos):
     """Rotate a real rayfile source to the same pose as the reference workflow asset."""
     project = _load_workflow_transform_project(speos)
@@ -85,7 +88,7 @@ def test_rotate_feature_matches_loaded_rayfile_rotation(speos: Speos):
     )
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 def test_axis_to_axis_matches_loaded_reference_frames(speos: Speos):
     """Map a real source pose between the workflow file's reference frames."""
     project = _load_workflow_transform_project(speos)
@@ -101,7 +104,7 @@ def test_axis_to_axis_matches_loaded_reference_frames(speos: Speos):
     )
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 def test_move_surface_source(speos: Speos):
     """Translate a real body from the workflow file without mutating the original."""
     project = _load_workflow_transform_project(speos)
@@ -123,7 +126,7 @@ def test_move_surface_source(speos: Speos):
     assert moved is source1
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize(
     ("transform", "args", "rotation", "translation"),
     [
@@ -167,7 +170,7 @@ def test_surface_source_transform_in_place(speos: Speos, transform, args, rotati
     )
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize("copy", [False, True])
 @pytest.mark.parametrize(
     ("transform", "args", "rotation", "translation"),
@@ -259,6 +262,39 @@ def rigid_transform(request):
     return transform, args, np.asarray(rotation), np.asarray(translation)
 
 
+@pytest.mark.parametrize("version", ["2025.2.0", "2026.0.0", "2026.1.0", "2027.1.0"])
+def test_transform_requires_speos_2026_r1(monkeypatch, rigid_transform, version):
+    """Reject older servers before preparing or applying any transform."""
+    monkeypatch.setattr(server_version_checker, "_version", version)
+    feature = object()
+    prepared = []
+    applied = []
+
+    def prepare_transform(*args):
+        prepared.append(args)
+        return feature
+
+    def apply_transform(*args):
+        applied.append(args)
+        return feature
+
+    monkeypatch.setattr("ansys.speos.core.workflow.transform._prepare_transform", prepare_transform)
+    monkeypatch.setattr("ansys.speos.core.workflow.transform._apply_transform", apply_transform)
+    transform, args, _, _ = rigid_transform
+
+    if version in ("2025.2.0", "2026.0.0"):
+        with pytest.raises(
+            NotImplementedError, match="needs a Speos Version of 2026 R1 SP0 or higher"
+        ):
+            transform(feature, *args)
+        assert not prepared
+        assert not applied
+    else:
+        assert transform(feature, *args) is feature
+        assert len(prepared) == 1
+        assert len(applied) == 1
+
+
 def _without_pose_and_identity(message):
     """Snapshot all protobuf configuration except the transform and instance identity."""
     result = deepcopy(message)
@@ -331,22 +367,22 @@ def _create_mesh(parent, name):
 @pytest.mark.parametrize(
     "feature_type",
     [
-        pytest.param(source.SourceLuminaire, marks=pytest.mark.supported_speos_versions(min=252)),
-        pytest.param(source.SourceRayFile, marks=pytest.mark.supported_speos_versions(min=252)),
-        pytest.param(source.SourceDisplay, marks=pytest.mark.supported_speos_versions(min=252)),
-        pytest.param(sensor.SensorCamera, marks=pytest.mark.supported_speos_versions(min=252)),
-        pytest.param(sensor.SensorIrradiance, marks=pytest.mark.supported_speos_versions(min=251)),
-        pytest.param(sensor.SensorRadiance, marks=pytest.mark.supported_speos_versions(min=251)),
+        pytest.param(source.SourceLuminaire, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(source.SourceRayFile, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(source.SourceDisplay, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(sensor.SensorCamera, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(sensor.SensorIrradiance, marks=pytest.mark.supported_speos_versions(min=261)),
+        pytest.param(sensor.SensorRadiance, marks=pytest.mark.supported_speos_versions(min=261)),
         pytest.param(
-            sensor.SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)
+            sensor.SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=261)
         ),
         pytest.param(
-            sensor.SensorPolarIntensity, marks=pytest.mark.supported_speos_versions(min=252)
+            sensor.SensorPolarIntensity, marks=pytest.mark.supported_speos_versions(min=261)
         ),
         pytest.param(sensor.SensorImmersive, marks=pytest.mark.supported_speos_versions(min=261)),
         pytest.param(sensor.SensorObserver, marks=pytest.mark.supported_speos_versions(min=261)),
         pytest.param(sensor.SensorHumanEye, marks=pytest.mark.supported_speos_versions(min=271)),
-        pytest.param(part.Part.SubPart, marks=pytest.mark.supported_speos_versions(min=251)),
+        pytest.param(part.Part.SubPart, marks=pytest.mark.supported_speos_versions(min=261)),
         pytest.param(component.LightBox, marks=pytest.mark.supported_speos_versions(min=261)),
     ],
     ids=lambda feature_type: feature_type.__name__,
@@ -481,7 +517,7 @@ def test_transform_axis_feature_preserves_contents(
             assert original._scene_instance == initial_instance
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
 @pytest.mark.parametrize("surface_source", [False, True], ids=["body", "constant-surface"])
 def test_transform_mesh_feature_preserves_faces(
@@ -564,7 +600,7 @@ def test_transform_mesh_feature_preserves_faces(
         )
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize("copy", [False, True], ids=["in-place", "copy"])
 @pytest.mark.parametrize("feature_kind", ["body", "surface", "subpart"])
 @pytest.mark.parametrize("assignment", ["body", "face", "parent", "all", "none"])
@@ -673,7 +709,7 @@ def test_transform_lightbox_preserves_material_assignments(
         assert project.client[guid].get() == template
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize("variable", [False, True], ids=["constant", "variable"])
 def test_surface_transform_rejects_name_without_copy(speos: Speos, rigid_transform, variable: bool):
     """Reject copy-only naming before modifying either surface source configuration."""
@@ -692,7 +728,7 @@ def test_surface_transform_rejects_name_without_copy(speos: Speos, rigid_transfo
     assert original._source_template == template
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=261)
 def test_surface_copy_rejects_missing_face(speos: Speos):
     """Never replace an unmapped emissive face with the entire copied body."""
     project = Project(speos)

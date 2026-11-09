@@ -46,6 +46,7 @@ from ansys.speos.core.generic.general_methods import (
     _validate_axis_system12,
     _validate_scalar,
     _validate_vector3,
+    min_speos_version,
     normalize_vector,
 )
 from ansys.speos.core.kernel import ProtoScene
@@ -442,6 +443,7 @@ def _prepare_transform(
     return _copy_feature(feature, copied_name)
 
 
+@min_speos_version(26, 1, 0)
 def move_feature(
     feature: TransformableFeature,
     direction: list[float],
@@ -474,6 +476,8 @@ def move_feature(
 
     Raises
     ------
+    NotImplementedError
+        If the Speos server version is older than 2026 R1.
     TypeError
         If the feature or an input vector has an unsupported type.
     ValueError
@@ -485,6 +489,7 @@ def move_feature(
     return _apply_transform(target, np.eye(3), displacement)
 
 
+@min_speos_version(26, 1, 0)
 def rotate_feature(
     feature: TransformableFeature,
     point: list[float],
@@ -520,6 +525,8 @@ def rotate_feature(
 
     Raises
     ------
+    NotImplementedError
+        If the Speos server version is older than 2026 R1.
     TypeError
         If the feature or an input vector has an unsupported type.
     ValueError
@@ -532,6 +539,7 @@ def rotate_feature(
     return _apply_transform(target, rotation, translation)
 
 
+@min_speos_version(26, 1, 0)
 def axis_to_axis_feature(
     feature: TransformableFeature,
     reference_axis: list[float],
@@ -564,6 +572,8 @@ def axis_to_axis_feature(
 
     Raises
     ------
+    NotImplementedError
+        If the Speos server version is older than 2026 R1.
     TypeError
         If the feature or axis-system input has an unsupported type.
     ValueError
