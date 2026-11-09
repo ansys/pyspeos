@@ -49,6 +49,7 @@ import uuid
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameters,
@@ -383,7 +384,9 @@ class BaseSop:
             TypeError
                 If the current SOP is not of library type.
             """
-            self._parent._sop_template.library.sop_file_uri = str(value)
+            self._parent._sop_template.library.sop_file_uri = general_methods._validate_pathlike(
+                value, "file_uri"
+            )
 
     def set_surface_library(self) -> BaseSop.SopLibrary:
         """Configure SOP to use a library file.
@@ -477,6 +480,9 @@ class BaseVop:
             value : float
                 Real refractive index value to store on the optic field.
             """
+            value = general_methods._validate_scalar(value)
+            if value <= 0:
+                raise ValueError("index must be greater than 0.")
             self._parent._vop_template.optic.index = value
 
         @property
@@ -493,6 +499,9 @@ class BaseVop:
             value : float
                 Absorption coefficient to store on the optic field.
             """
+            value = general_methods._validate_scalar(value)
+            if value < 0:
+                raise ValueError("absorption must be greater than or equal to 0.")
             self._parent._vop_template.optic.absorption = value
 
         @property
@@ -512,6 +521,9 @@ class BaseVop:
                 Abbe number value, or ``None`` to clear the field.
             """
             if value is not None:
+                value = general_methods._validate_scalar(value)
+                if value <= 0:
+                    raise ValueError("constringence must be greater than 0.")
                 self._parent._vop_template.optic.constringence = value
             else:
                 self._parent._vop_template.optic.ClearField("constringence")
@@ -912,7 +924,7 @@ class TextureLayer(BaseSop):
                 Twelve floats ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
             """
             self._mapping.ClearField("axis_system")
-            self._mapping.axis_system[:] = value
+            self._mapping.axis_system[:] = general_methods._validate_axis_system12(value).tolist()
 
         @property
         def u_offset(self) -> float:
@@ -1973,6 +1985,19 @@ class OptProp(BaseVop, BaseSop):
         self._project = project
         self._unique_id = None
         self._texture = None
+        self._is_pattern_material = False
+        """Whether this optical property belongs to a 3D texture pattern.
+
+        A pattern material is stored inside the 3D texture message and must not be
+        registered in the scene material instance list.
+        """
+        self._pattern_owner = None
+        """3D texture feature owning this optical property, when it is a pattern material.
+
+        Set by :meth:`ansys.speos.core.component.Texture3D.create_pattern_material`. It allows
+        :meth:`delete` to detach the material from its 3D texture, like a regular optical
+        property is removed from the scene.
+        """
 
         # Create material instance
         self._material_instance = ProtoScene.MaterialInstance(
@@ -2432,6 +2457,11 @@ class OptProp(BaseVop, BaseSop):
         # Prepare _unique_id and commit templates if needed
         self._prepare_commit()
 
+        # A 3D texture pattern material is owned by its 3D texture feature:
+        # it must not be added to the scene material instance list.
+        if self._is_pattern_material:
+            return self
+
         # Handle instance
         if self._project.scene_link:
             # Retrieve scene data
@@ -2461,7 +2491,11 @@ class OptProp(BaseVop, BaseSop):
         self._reset_sop_template()
 
         # Reset material instance
-        if self._project.scene_link is not None:
+        # A 3D texture pattern material is not stored in the scene material list:
+        # its local material instance is the reference.
+        if self._is_pattern_material:
+            self._reset_texture_layers()
+        elif self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
@@ -2470,16 +2504,21 @@ class OptProp(BaseVop, BaseSop):
             )
             if mat_inst is not None:
                 self._material_instance = mat_inst
-                if self._material_instance.HasField("texture"):
-                    layers = []
-                    for i, layer_msg in enumerate(self._material_instance.texture.layers):
-                        temp_layer = TextureLayer(self, name="")
-                        temp_layer._index = i
-                        temp_layer._fill(layer_msg.sop_guid, layer_msg)
-                        temp_layer._sync_texture_helpers(layer_msg)
-                        layers.append(temp_layer)
-                    self.texture = layers
+                self._reset_texture_layers()
         return self
+
+    def _reset_texture_layers(self) -> None:
+        """Rebuild the local texture layers from the local material instance."""
+        if not self._material_instance.HasField("texture"):
+            return
+        layers = []
+        for i, layer_msg in enumerate(self._material_instance.texture.layers):
+            temp_layer = TextureLayer(self, name="")
+            temp_layer._index = i
+            temp_layer._fill(layer_msg.sop_guid, layer_msg)
+            temp_layer._sync_texture_helpers(layer_msg)
+            layers.append(temp_layer)
+        self.texture = layers
 
     def delete(self) -> "OptProp":
         """Delete templates and remove the material instance from the scene.
@@ -2488,6 +2527,13 @@ class OptProp(BaseVop, BaseSop):
         -------
         ansys.speos.core.opt_prop.OptProp
             Returns self after deletion and cleanup.
+
+        Notes
+        -----
+        When the optical property is a 3D texture pattern material, it is removed from
+        its owning :class:`~ansys.speos.core.component.Texture3D` instead of the scene
+        material list. The 3D texture must then be committed to propagate the change to
+        the Speos server.
         """
         # Delete the vop template
         self._delete_vop_template()
@@ -2503,18 +2549,25 @@ class OptProp(BaseVop, BaseSop):
         self._material_instance.ClearField("sop_guids")
 
         # Remove the material instance from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
-        mat_inst = next(
-            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
-            None,
-        )
-        if mat_inst is not None:
-            scene_data.materials.remove(mat_inst)
-            self._project.scene_link.set(data=scene_data)  # update scene data
+        # A 3D texture pattern material is not registered in the scene material list:
+        # it is detached from the 3D texture feature owning it.
+        if self._is_pattern_material:
+            if self._pattern_owner is not None:
+                self._pattern_owner._remove_pattern_material(self)
+                self._pattern_owner = None
+        elif self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
+            if mat_inst is not None:
+                scene_data.materials.remove(mat_inst)
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
-        self._material_instance.metadata.pop("UniqueId")
+        self._material_instance.metadata.pop("UniqueId", None)
         return self
 
     def _fill(self, mat_inst: ProtoScene.MaterialInstance):

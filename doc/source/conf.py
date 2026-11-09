@@ -156,6 +156,7 @@ if BUILD_EXAMPLES:
         "examples/workflow/open-result": "_static/thumbnails/workflow_open_result.png",
         "examples/workflow/export-vtp": "_static/thumbnails/vtp_520x520.png",
         "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
+        "examples/workflow/transform": "_static/thumbnails/part_520x520.png",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_epilog = """
