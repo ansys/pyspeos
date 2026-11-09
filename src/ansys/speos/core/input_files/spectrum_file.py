@@ -81,11 +81,18 @@ class SpectrumFile(SpeosTextFileFormat):
     description : str, optional
         Free text written on the second line of the file. By default,
         ``"Blackbody at 5200.0 K"``.
+    percent : bool, optional
+        Whether values are percentages limited to 0 to 100. By default, ``True``. Set it to
+        ``False`` for spectra in other units, such as the absorption and excitance spectra
+        of a fluorescent dye in mm-1, whose values only need to be finite.
 
     Notes
     -----
     Called without arguments, the constructor creates the default 5200 K blackbody
     spectrum. Pass ``wavelengths`` and ``values`` together to describe another spectrum.
+
+    :attr:`SpectrumFile.percent` is a validation setting: it is not written to the file,
+    and a loaded ``*.spectrum`` file has it set to ``True``.
 
     Construction and setters validate numeric data before storing it. List getters return
     copies; assign an edited list back to change the model. Empty columns permit staged
@@ -105,9 +112,12 @@ class SpectrumFile(SpeosTextFileFormat):
         wavelengths: Sequence[float] = _DEFAULT_WAVELENGTHS,
         values: Sequence[float] = _DEFAULT_VALUES,
         description: str = _DEFAULT_DESCRIPTION,
+        *,
+        percent: bool = True,
     ) -> None:
         self._wavelengths: List[float] = []
         self._values: List[float] = []
+        self.percent = percent
         self.wavelengths = wavelengths
         self.values = values
         self.description = description
@@ -135,18 +145,49 @@ class SpectrumFile(SpeosTextFileFormat):
         self._wavelengths = values
 
     @property
+    def percent(self) -> bool:
+        """Whether values are percentages limited to 0 to 100.
+
+        Parameters
+        ----------
+        value : bool
+            ``True`` to limit values to 0 to 100, ``False`` to only require finite values.
+
+        Returns
+        -------
+        bool
+            ``True`` if values are percentages.
+
+        Raises
+        ------
+        ValueError
+            If set to ``True`` while a stored value is outside 0 to 100.
+        """
+        return self._percent
+
+    @percent.setter
+    def percent(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("percent must be a boolean.")
+        if value:
+            for sample in self._values:
+                check_percentage(_property_name(SpectrumFile.values), sample)
+        self._percent = value
+
+    @property
     def values(self) -> List[float]:
-        """Spectral values in percent, returned as a copy.
+        """Spectral values, returned as a copy.
 
         Parameters
         ----------
         values : Sequence[float]
-            New relative spectral values of the samples, in percent (0 to 100).
+            New spectral values of the samples. In percent (0 to 100) when
+            :attr:`SpectrumFile.percent` is ``True``, otherwise any finite values.
 
         Returns
         -------
         List[float]
-            Values between 0 and 100.
+            Spectral values.
         """
         return self._values.copy()
 
@@ -154,8 +195,9 @@ class SpectrumFile(SpeosTextFileFormat):
     def values(self, values: Sequence[float]) -> None:
         name = _property_name(SpectrumFile.values)
         values = _finite_values(name, values)
-        for value in values:
-            check_percentage(name, value)
+        if self._percent:
+            for value in values:
+                check_percentage(name, value)
         self._check_columns(self._wavelengths, values)
         self._values = values
 
@@ -183,6 +225,7 @@ class SpectrumFile(SpeosTextFileFormat):
         _property_name(wavelengths),
         _property_name(values),
         _property_name(description),
+        _property_name(percent),
     )
 
     @staticmethod
@@ -211,7 +254,8 @@ class SpectrumFile(SpeosTextFileFormat):
         ------
         ValueError
             If the sample lists are empty, do not have the same length, hold more than
-            32767 samples, or if a value is outside the 0 to 100 percent range.
+            32767 samples, or if :attr:`SpectrumFile.percent` is ``True`` and a value is
+            outside the 0 to 100 percent range.
         """
         if len(self.wavelengths) != len(self.values):
             raise ValueError(
@@ -225,8 +269,9 @@ class SpectrumFile(SpeosTextFileFormat):
                 f"A spectrum cannot hold more than {MAX_SPECTRUM_SAMPLES} samples, "
                 f"got {len(self.wavelengths)}."
             )
-        for wavelength, value in zip(self.wavelengths, self.values):
-            check_percentage(f"The value at {wavelength} nm", value)
+        if self.percent:
+            for wavelength, value in zip(self.wavelengths, self.values):
+                check_percentage(f"The value at {wavelength} nm", value)
 
     def _to_lines(self) -> List[str]:
         lines = [self.description, str(len(self.wavelengths))]
@@ -237,7 +282,7 @@ class SpectrumFile(SpeosTextFileFormat):
         return lines
 
     @classmethod
-    def _from_lines(cls, reader: LineReader) -> SpectrumFile:
+    def _from_lines(cls, reader: LineReader, *, percent: bool = True) -> SpectrumFile:
         description = reader.next_line()
         sample_count = reader.next_int(minimum=1)
         wavelengths, values = [], []
@@ -245,7 +290,7 @@ class SpectrumFile(SpeosTextFileFormat):
             wavelength, value = reader.next_floats(count=2)
             wavelengths.append(wavelength)
             values.append(value)
-        return cls(wavelengths=wavelengths, values=values, description=description)
+        return cls(wavelengths=wavelengths, values=values, description=description, percent=percent)
 
     @classmethod
     def from_sampled(cls, spectrum: Spectrum, description: str = "") -> SpectrumFile:

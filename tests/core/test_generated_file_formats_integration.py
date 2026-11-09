@@ -31,6 +31,7 @@ import pytest
 from ansys.speos.core import (
     CoatedSurfaceFile,
     CoatedSurfaceSample,
+    FluorescentPigment,
     GeoRef,
     MaterialBirefringentSellmeier,
     MaterialConstringence,
@@ -117,7 +118,7 @@ VOLUME_MATERIALS = {
             wavelengths=[], angles=[0.0, 90.0, 180.0], values=[[100.0], [50.0], [0.0]]
         ),
     ),
-    # The metallic and the birefringent flavors of the format, which lay out differently.
+    # Material flavors that use a distinct file layout.
     "metallic": MaterialFile(
         material_type=MaterialType.metallic,
         dispersion=MaterialMetallicCurve(
@@ -138,6 +139,10 @@ VOLUME_MATERIALS = {
         absorption_values=_ABSORPTION_VALUES,
         absorption_values_b=_ABSORPTION_VALUES,
         absorption_values_c=_ABSORPTION_VALUES,
+    ),
+    "fluorescent": MaterialFile(
+        material_type=MaterialType.fluorescent,
+        fluorescent_pigments=[FluorescentPigment()],
     ),
 }
 """One :class:`MaterialFile` per dispersion model and per scattering phase function."""
@@ -175,6 +180,7 @@ _TEST_CASES = [
     ("user_defined", "scattering"),
     ("metallic", "simple_scattering"),
     ("birefringent", None),
+    ("fluorescent", None),
 ]
 
 
@@ -308,7 +314,6 @@ def test_generated_files_are_usable_in_a_full_simulation(
 
     # Run the simulation
     simulation.compute_CPU()
-
     assert simulation.simulation_template_link is not None
     assert simulation.simulation_template_link.get().HasField("direct_mc_simulation_template")
 

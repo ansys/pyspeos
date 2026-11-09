@@ -31,6 +31,8 @@ import tempfile
 from ansys.speos.core import (
     CoatedSurfaceFile,
     CoatedSurfaceSample,
+    FluorescentPigment,
+    FluorescentPigmentFile,
     MaterialConstringence,
     MaterialFile,
     MaterialType,
@@ -129,6 +131,17 @@ diffuser = MaterialFile(
 )
 diffuser_path = diffuser.save(OUTPUT_DIR / "diffusing_pmma.material")
 print(diffuser_path.read_text())
+
+# A fluorescent material uses the same default index and absorption curves, and starts with
+# an empty dye table. Add a default dye to create the single-row example shown in the Speos
+# material editor.
+
+fluorescent = MaterialFile(
+    material_type=MaterialType.fluorescent,
+    fluorescent_pigments=[FluorescentPigment(dye=FluorescentPigmentFile())],
+)
+fluorescent_path = fluorescent.save(OUTPUT_DIR / "fluorescent.material")
+print(fluorescent.description, fluorescent_path.read_text())
 
 # ## Create surface optical property files
 

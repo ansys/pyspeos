@@ -40,6 +40,7 @@ from ansys.speos.core.input_files._base import (
     _ValueComparable,
     format_number,
 )
+from ansys.speos.core.input_files.fluorescence import FluorescentPigment
 
 _VOLUMIC_HEADER = "OPTIS - Volumic Scattering file v1"
 """Header opening the volume scattering block of a ``*.material`` file."""
@@ -90,11 +91,12 @@ def _curve_column(model, name: str, values: Sequence[float], names: tuple[str, .
 
 
 class MaterialType(str, Enum):
-    """Select the refractive-index model for a volume material."""
+    """Select the volume material flavor."""
 
     isotropic = "Isotropic"
     metallic = "Metallic"
     birefringent = "Birefringent"
+    fluorescent = "Fluorescent"
 
 
 class MaterialOpticalClass(IntEnum):
@@ -2004,7 +2006,7 @@ class MaterialFile(SpeosTextFileFormat):
     Parameters
     ----------
     description : str, optional
-        Free text written on the second line of the file. By default, ``"Optical Glass"``.
+        Free text written on the second line of the file. By default, ``"Optical Glass"``
     material_type : MaterialType, optional
         Type of material. By default, ``MaterialType.isotropic``.
     dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
@@ -2049,14 +2051,18 @@ class MaterialFile(SpeosTextFileFormat):
         Absorption of a birefringent material along its ``c`` axis, one value per
         wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
         for a birefringent material, ``[]`` otherwise.
+    fluorescent_pigments : Sequence[FluorescentPigment], optional
+        Dye entries used by a fluorescent material. By default, no dyes are included;
+        at least one must be added before saving.
 
     Notes
     -----
     Called without arguments, the constructor creates an isotropic optical glass of index
     1.5 that neither absorbs nor scatters light. The defaults of the curves depend on
-    ``material_type`` and ``scattering`` only so that each flavor stays valid; the default
-    dispersion model is always an index curve, so pass a matching model for a metallic or
-    birefringent material.
+    ``material_type`` and ``scattering`` only so that each flavor stays valid; a fluorescent
+    material defaults to the Speos editor's description and empty dye list, which must be
+    populated before saving. The default dispersion model is always an index curve, so pass
+    a matching model for a metallic or birefringent material.
 
     Setters validate candidate data without partially updating the material. List getters
     return copies; dispersion and phase models remain shared with validated properties.
@@ -2097,6 +2103,7 @@ class MaterialFile(SpeosTextFileFormat):
         axis_k: Sequence[float] = _DEFAULT_AXIS_K,
         absorption_values_b: List[float] | None = None,
         absorption_values_c: List[float] | None = None,
+        fluorescent_pigments: Sequence[FluorescentPigment] | None = None,
     ) -> None:
         material_type = self._checked_type(material_type)
         dispersion = dispersion if dispersion is not None else MaterialDispersionCurve()
@@ -2144,6 +2151,7 @@ class MaterialFile(SpeosTextFileFormat):
             if absorption_values_c is not None
             else [0.0] * axis_absorption_count
         )
+        self.fluorescent_pigments = fluorescent_pigments if fluorescent_pigments is not None else []
 
     @property
     def description(self) -> str:
@@ -2177,7 +2185,7 @@ class MaterialFile(SpeosTextFileFormat):
         Returns
         -------
         MaterialType
-            Isotropic, metallic, or birefringent.
+            Isotropic, metallic, birefringent, or fluorescent.
 
         Notes
         -----
@@ -2189,6 +2197,8 @@ class MaterialFile(SpeosTextFileFormat):
     def material_type(self, value: MaterialType) -> None:
         value = self._checked_type(value)
         self._check_dispersion(value, self._dispersion)
+        if value is not MaterialType.fluorescent and self._fluorescent_pigments:
+            raise ValueError("Clear fluorescent_pigments before changing material type.")
         self._material_type = value
 
     @classmethod
@@ -2360,6 +2370,33 @@ class MaterialFile(SpeosTextFileFormat):
         self._user_concentration = _finite_number(
             _property_name(MaterialFile.user_concentration), value
         )
+
+    @property
+    def fluorescent_pigments(self) -> List[FluorescentPigment]:
+        """Fluorescent dye entries, returned as a copied list.
+
+        Parameters
+        ----------
+        values : Sequence[FluorescentPigment]
+            New dye entries. Only fluorescent materials can contain dyes.
+
+        Returns
+        -------
+        List[FluorescentPigment]
+            Dye entries whose nested models remain shared and editable.
+        """
+        return self._fluorescent_pigments.copy()
+
+    @fluorescent_pigments.setter
+    def fluorescent_pigments(self, values: Sequence[FluorescentPigment]) -> None:
+        if isinstance(values, (str, bytes)):
+            raise TypeError("fluorescent_pigments must be a sequence of FluorescentPigment items.")
+        values = list(values)
+        if any(not isinstance(value, FluorescentPigment) for value in values):
+            raise TypeError("fluorescent_pigments must contain only FluorescentPigment items.")
+        if values and self._material_type is not MaterialType.fluorescent:
+            raise ValueError("fluorescent_pigments are only supported for a fluorescent material.")
+        self._fluorescent_pigments = values
 
     @property
     def scattering_wavelengths(self) -> List[float]:
@@ -2539,6 +2576,7 @@ class MaterialFile(SpeosTextFileFormat):
         _property_name(user_concentration),
         *_DIFFUSION_NAMES,
         _property_name(scattering),
+        _property_name(fluorescent_pigments),
         _property_name(axis_j),
         _property_name(axis_k),
         *_AXIS_ABSORPTION_NAMES,
@@ -2556,6 +2594,9 @@ class MaterialFile(SpeosTextFileFormat):
 
     BIREFRINGENT: ClassVar[MaterialType] = MaterialType.birefringent
     """Material type of the birefringent flavor of the format."""
+
+    FLUORESCENT: ClassVar[MaterialType] = MaterialType.fluorescent
+    """Material type of the fluorescent flavor of the format."""
 
     DISPERSIONS: ClassVar[tuple] = (
         MaterialConstringence,
@@ -2587,10 +2628,9 @@ class MaterialFile(SpeosTextFileFormat):
         ------
         ValueError
             If the dispersion model does not match :attr:`MaterialFile.material_type`, if
-            the
-            absorption curve is empty or inconsistent, if a scattering phase function is
-            set without a matching diffusion curve, or if a metallic material carries data
-            the format cannot store.
+            the absorption curve is empty or inconsistent, if a scattering phase function
+            is set without a matching diffusion curve, if a fluorescent material has no
+            pigments, or if a material carries data the format cannot store.
         """
         if not self._has_type(self.BIREFRINGENT):
             for name in self._AXIS_ABSORPTION_NAMES:
@@ -2606,12 +2646,17 @@ class MaterialFile(SpeosTextFileFormat):
         )
         if self._has_type(self.BIREFRINGENT):
             self._validate_birefringent()
-        if self.scattering is None:
-            return
-        _matching_columns(
-            {name: getattr(self, "_" + name) for name in _DIFFUSION_NAMES}, complete=True
-        )
-        self.scattering.validate()
+        if self.scattering is not None:
+            _matching_columns(
+                {name: getattr(self, "_" + name) for name in _DIFFUSION_NAMES}, complete=True
+            )
+            self.scattering.validate()
+        if self._fluorescent_pigments and not self._has_type(MaterialType.fluorescent):
+            raise ValueError("fluorescent_pigments are only supported for a fluorescent material.")
+        if self._has_type(MaterialType.fluorescent) and not self._fluorescent_pigments:
+            raise ValueError("A fluorescent material requires at least one pigment.")
+        for pigment in self._fluorescent_pigments:
+            pigment.validate()
 
     def _has_type(self, material_type: MaterialType) -> bool:
         return self.material_type is material_type
@@ -2672,17 +2717,19 @@ class MaterialFile(SpeosTextFileFormat):
         lines.append(format_number(self.user_concentration))
         lines.append("1" if self.scattering is not None else "0")
 
-        if self.scattering is None:
-            return lines
-
-        lines.append(self.scattering.VOLUMIC_HEADER)
-        lines.append(str(self.scattering.MODEL))
-        lines.append(str(len(self.scattering_wavelengths)))
-        lines.extend(
-            f"{format_number(wavelength)} {format_number(value)}"
-            for wavelength, value in zip(self.scattering_wavelengths, self.scattering_values)
-        )
-        lines.extend(self.scattering._to_lines())
+        if self.scattering is not None:
+            lines.append(self.scattering.VOLUMIC_HEADER)
+            lines.append(str(self.scattering.MODEL))
+            lines.append(str(len(self.scattering_wavelengths)))
+            lines.extend(
+                f"{format_number(wavelength)} {format_number(value)}"
+                for wavelength, value in zip(self.scattering_wavelengths, self.scattering_values)
+            )
+            lines.extend(self.scattering._to_lines())
+        if self._has_type(MaterialType.fluorescent):
+            lines.append(str(len(self.fluorescent_pigments)))
+            for pigment in self.fluorescent_pigments:
+                lines.extend(pigment._to_lines())
         return lines
 
     @classmethod
@@ -2751,6 +2798,10 @@ class MaterialFile(SpeosTextFileFormat):
                 scattering_wavelengths.append(wavelength)
                 scattering_values.append(value)
             scattering = model_class._from_lines(reader)
+        fluorescent_pigments = []
+        if material_type is MaterialType.fluorescent:
+            for _ in range(reader.next_int(minimum=1)):
+                fluorescent_pigments.append(FluorescentPigment._from_lines(reader))
         return cls(
             description=description,
             material_type=material_type,
@@ -2766,6 +2817,7 @@ class MaterialFile(SpeosTextFileFormat):
             axis_k=axes[1] if birefringent else _DEFAULT_AXIS_K,
             absorption_values_b=absorption_values_b,
             absorption_values_c=absorption_values_c,
+            fluorescent_pigments=fluorescent_pigments,
         )
 
 
