@@ -84,7 +84,7 @@ def deprecation_warning() -> None:
         """Define and use custom warning to remove <stdin>:loc: pattern."""
         print(f"{category.__name__}: {message}")
 
-    warnings.showwarning = custom_show_warning
+    warnings.showwarning = custom_show_warning  # ty: ignore[invalid-assignment]
 
     current_python_version = sys.version_info[:2]
     if current_python_version <= LATEST_EOL_PYTHON_VERSION:
