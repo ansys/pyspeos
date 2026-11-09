@@ -53,7 +53,6 @@ import ansys.speos.core.source as source
 from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
 
-
 LATEST_EOL_PYTHON_VERSION = (3, 10)
 _eol = ".".join(map(str, LATEST_EOL_PYTHON_VERSION))
 PYTHON_EOL_WARNING = (
@@ -73,6 +72,7 @@ PYTHON_VERSION_WARNING = (
     "recommend updating the Python version being used."
 )
 """Python version warning."""
+
 
 def deprecation_warning() -> None:
     """Warning message informing users that some Python versions are deprecated in PyAEDT."""
