@@ -91,11 +91,9 @@ def _create_source_group_test_prerequisites(
     return sensor, source_1, source_2
 
 
+@pytest.mark.supported_speos_versions(min=271)
 def test_load_saved_job_properties_over_rpc(speos: Speos):
     """Test direct and inverse saved-job restoration through Speos RPC."""
-    if not server_version_checker.is_version_supported(2027, 1, 0):
-        pytest.skip("Saved job loading requires Speos 2027 R1 or newer.")
-
     project_dir = Path(test_path) / f"JobLoad.{uuid.uuid4().hex}"
     projects = []
     try:
@@ -797,7 +795,7 @@ def test_create_interactive(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(max=251)
-def test_create_virtual_bsdf_bench_unsupported(speos: Speos, monkeypatch):
+def test_create_virtual_bsdf_bench_unsupported(speos: Speos):
     """Test creation of Virtual BSDF Bench Simulation on unsupported Speos versions."""
     p = Project(speos=speos)
     with pytest.raises(NotImplementedError, match="needs a Speos Version of 25 R2 SP1 or higher."):

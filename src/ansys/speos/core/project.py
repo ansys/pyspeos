@@ -113,8 +113,6 @@ from ansys.speos.core.source import (
 )
 from ansys.speos.core.speos import Speos
 
-MIN_JOB_LOAD_VERSION = (2027, 1, 0)
-
 try:
     from ansys.speos.core.generic.general_methods import run_if_graphics_required
 
@@ -196,7 +194,7 @@ class Project:
 
     def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
         """Warn when the server cannot return saved job properties."""
-        if job is not None or server_version_checker.is_version_supported(*MIN_JOB_LOAD_VERSION):
+        if job is not None or server_version_checker.is_version_supported(2027, 1, 0):
             return
         scene_data = self.scene_link.get()
         if scene_data.simulations:
