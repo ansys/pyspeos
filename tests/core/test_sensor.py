@@ -1656,7 +1656,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     sensor.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
@@ -1961,7 +1961,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
@@ -6282,7 +6282,7 @@ def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with radiometric type and planar integration."""
     p = Project(
@@ -6311,7 +6311,7 @@ def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and planar integration."""
     p = Project(
@@ -6341,7 +6341,7 @@ def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and radial integration."""
     p = Project(
@@ -6371,7 +6371,7 @@ def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with colorimetric type."""
     p = Project(
@@ -6406,7 +6406,7 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_colorimetric_has_no_wavelengths_sampling(
     speos: Speos, sensor_template_version
 ):

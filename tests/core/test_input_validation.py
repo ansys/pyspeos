@@ -144,6 +144,7 @@ def test_white_point_and_pathlike_helpers_validate_inputs() -> None:
     )
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_source_setters_validate_inputs(speos: Speos, request: pytest.FixtureRequest) -> None:
     """Source setters validate input on features committed through Speos RPC."""
     project = Project(speos=speos)
