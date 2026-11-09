@@ -1634,7 +1634,7 @@ def test_camera_spectrum_file_uri_getter_has_no_side_effect(speos: Speos):
     assert not color._red_spectrum._spectrum.HasField("library")
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_template_version):
     """Test the distortion file fallback also applies when committing the project."""
     p = Project(speos=speos)
@@ -1648,7 +1648,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     )
 
     with pytest.warns(UserWarning, match="over written"):
-        p.commit()
+        sensor.commit()
 
     assert sensor.focal_length == 0
     assert sensor.imager_distance == 0
