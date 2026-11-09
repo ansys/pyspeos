@@ -2930,7 +2930,14 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sim.delete()
 
 
-@pytest.mark.parametrize("sensor_type", [SensorIrradiance, SensorRadiance, SensorXMPIntensity])
+@pytest.mark.parametrize(
+    "sensor_type",
+    [
+        pytest.param(SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)),
+        SensorIrradiance,
+        SensorRadiance,
+    ],
+)
 def test_sensor_result_file_name(speos: Speos, sensor_type: type[BaseSensor]):
     """Persist and reset the shared result filename on real sensor instances."""
     p = Project(speos=speos)
