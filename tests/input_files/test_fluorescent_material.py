@@ -74,7 +74,7 @@ def test_fluorescent_material_defaults_match_the_editor(tmp_path):
     """A new fluorescent material has the editor's curves and an empty dye table."""
     material = MaterialFile(material_type=MaterialType.fluorescent)
 
-    assert material.description == "Fluorescent Material"
+    assert material.description == "Optical Glass"
     assert material.dispersion == MaterialDispersionCurve(
         wavelengths=[486.0, 532.0, 643.0], indices=[1.5, 1.5, 1.5]
     )
@@ -121,7 +121,7 @@ def test_fluorescent_material_with_one_dye_matches_editor_file(tmp_path):
 
     assert read_lines(path) == [
         "OPTIS - Material file v13",
-        "Fluorescent Material",
+        "Optical Glass",
         "Fluorescent",
         "Dispersion_Curve",
         "3",

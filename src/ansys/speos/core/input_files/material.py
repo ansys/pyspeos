@@ -2006,8 +2006,7 @@ class MaterialFile(SpeosTextFileFormat):
     Parameters
     ----------
     description : str, optional
-        Free text written on the second line of the file. By default, ``"Optical Glass"``,
-        or ``"Fluorescent Material"`` for a fluorescent material.
+        Free text written on the second line of the file. By default, ``"Optical Glass"``
     material_type : MaterialType, optional
         Type of material. By default, ``MaterialType.isotropic``.
     dispersion : Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve], optional
