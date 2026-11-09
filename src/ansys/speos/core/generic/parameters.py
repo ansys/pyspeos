@@ -458,6 +458,52 @@ class Irradiance3DSensorParameters:
 
 
 @dataclass
+class EnergyDensity3DDimensionsParameters:
+    """Volume dimensions in millimeters and voxel counts for a 3D energy density sensor.
+
+    Parameters
+    ----------
+    x_size, y_size, z_size : float, optional
+        Size along each local axis, by default 50 mm.
+    x_sampling, y_sampling, z_sampling : int, optional
+        Number of voxels along each local axis, by default 100.
+    """
+
+    x_size: float = 50.0
+    x_sampling: int = 100
+    y_size: float = 50.0
+    y_sampling: int = 100
+    z_size: float = 50.0
+    z_sampling: int = 100
+
+
+@dataclass
+class EnergyDensity3DSensorParameters:
+    """Parameters for a 3D energy density sensor.
+
+    Parameters
+    ----------
+    dimensions : EnergyDensity3DDimensionsParameters, optional
+        Volume sizes and voxel sampling.
+    axis_system : list[float], optional
+        Twelve-value position and orientation, by default the global origin axes.
+    sensor_type : SensorTypes, optional
+        Photometric or radiometric mode, by default photometric.
+    layer_type : LayerTypes or LayerByFaceParameters, optional
+        No separation, separation by source, or separation by face.
+    """
+
+    dimensions: EnergyDensity3DDimensionsParameters = field(
+        default_factory=EnergyDensity3DDimensionsParameters
+    )
+    axis_system: list[float] = field(default_factory=lambda: [float(value) for value in ORIGIN])
+    sensor_type: Literal[SensorTypes.photometric, SensorTypes.radiometric] = SensorTypes.photometric
+    layer_type: Union[Literal[LayerTypes.none, LayerTypes.by_source], LayerByFaceParameters] = (
+        LayerTypes.none
+    )
+
+
+@dataclass
 class LightBoxParameters:
     """Parameters class for LightBox feature."""
 

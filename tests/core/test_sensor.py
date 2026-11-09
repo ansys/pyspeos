@@ -27,6 +27,7 @@ import math
 from pathlib import Path
 import shutil
 from typing import Any, cast
+from uuid import uuid4
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v2 import sensor_pb2 as sensor_v2_pb2
@@ -45,6 +46,9 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    EnergyDensity3DDimensionsParameters,
+    EnergyDensity3DSensorParameters,
+    GeometryLayerParameters,
     HumanEyeSensorParameters,
     HumanEyeSensorTypes,
     ImmersiveSensorParameters,
@@ -79,6 +83,7 @@ from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel import ProtoSensorTemplate, ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
     SensorHumanEye,
@@ -90,12 +95,276 @@ from ansys.speos.core.sensor import (
     SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import SimulationDirect, SimulationInverse
-from ansys.speos.core.source import SourceLuminaire
+from ansys.speos.core.source import SourceLuminaire, SourceSurface
 from tests.conftest import (
     SENSOR_TEMPLATE_V2_MIN_VERSION,
     local_test_path,
     test_path,
 )
+from tests.helper import remove_file
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_defaults_and_lifecycle(speos: Speos):
+    """Verify real energy density creation, commit, reset, discovery, and deletion."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(
+        name="EnergyDensity",
+        description="Volume sensor",
+        metadata={"purpose": "test"},
+        feature_type=Sensor3DEnergyDensity,
+    )
+    assert isinstance(ssr, Sensor3DEnergyDensity)
+    assert isinstance(ssr._sensor_template, ProtoSensorTemplateV2)
+    assert ssr.type == "Photometric"
+    assert ssr.layer == LayerTypes.none
+    assert ssr.axis_system == ORIGIN
+    assert ssr.set_dimensions() is ssr.dimensions
+    for axis in "xyz":
+        assert getattr(ssr.dimensions, axis + "_size") == 50
+        assert getattr(ssr.dimensions, axis + "_sampling") == 100
+    assert ssr._sensor_template.name == "EnergyDensity"
+    assert ssr._sensor_template.description == "Volume sensor"
+    assert ssr._sensor_template.metadata["purpose"] == "test"
+    ssr.result_file_name = "energy_volume"
+    with pytest.raises(NotImplementedError, match="Light Expert"):
+        ssr.lxp_path_number = 25
+    ssr.commit()
+    assert ssr.sensor_template_link.get().HasField("energy_density")
+    assert ssr.sensor_template_link.get().description == "Volume sensor"
+    assert ssr.sensor_template_link.get().metadata["purpose"] == "test"
+    assert ssr.get("result_file_name") == "energy_volume"
+    assert ssr.lxp_path_number is None
+    assert ssr in p.sensors
+    assert p.find(name="EnergyDensity", feature_type=Sensor3DEnergyDensity) == [ssr]
+
+    ssr.set_type_radiometric().set_layer_type_source()
+    ssr.dimensions.z_size = 75
+    ssr.reset()
+    assert ssr.type == "Photometric"
+    assert ssr.layer == LayerTypes.none
+    assert ssr.dimensions.z_size == 50
+    ssr.set_dimensions().z_size = 80
+    ssr.set_type_radiometric().set_layer_type_source().commit().reset()
+    assert ssr.type == "Radiometric"
+    assert ssr.layer == LayerTypes.by_source
+    assert ssr.dimensions.z_size == 80
+    assert ssr.sensor_template_link.get().energy_density.HasField("mode_radiometric")
+    key = ssr.sensor_template_link.key
+    ssr.delete()
+    assert key not in [link.key for link in speos.client.sensor_templates_v2().list()]
+    assert not any(item.name == "EnergyDensity" for item in p.scene_link.get().sensors)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+@pytest.mark.parametrize("mode", [SensorTypes.photometric, SensorTypes.radiometric])
+@pytest.mark.parametrize("layer", [LayerTypes.none, LayerTypes.by_source, LayerByFaceParameters()])
+def test_energy_density_save_load(speos: Speos, energy_density_export_path: Path, mode, layer):
+    """Verify every energy density field survives saving and loading a real scene."""
+    p = Project(speos=speos)
+    root = p.create_root_part().commit()
+    body = root.create_body(name="LayerBody").commit()
+    face = body.create_face(name="LayerFace")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1] * 3
+    face.commit()
+    dims = EnergyDensity3DDimensionsParameters(20, 11, 40, 13, 60, 17)
+    axes = [10, 20, 30, 0, 1, 0, -1, 0, 0, 0, 0, 1]
+    ssr = p.create_sensor(
+        name="EnergyDensityRoundTrip",
+        description="Persist all energy density fields",
+        metadata={"test": "roundtrip"},
+        feature_type=Sensor3DEnergyDensity,
+        parameters=EnergyDensity3DSensorParameters(
+            dimensions=dims, axis_system=axes, sensor_type=mode, layer_type=layer
+        ),
+    )
+    if isinstance(layer, LayerByFaceParameters):
+        config = ssr.set_layer_type_face().set_sca_filtering_mode_intersected_one_time()
+        config.layers = [BaseSensor.FaceLayer("SelectedFace", [face.geo_path])]
+    ssr.result_file_name = "energy_roundtrip"
+    source = p.create_source(name="EnergyDensitySource", feature_type=SourceSurface)
+    source.set_exitance_constant().geometries = [(face, False)]
+    source.commit()
+    ssr.commit()
+    simulation = p.create_simulation(name="EnergyDensityDirect", feature_type=SimulationDirect)
+    simulation.sensor_paths = [ssr]
+    simulation.source_paths = [source]
+    p.commit()
+    assert simulation.sensor_paths == [ssr._name]
+    if mode == SensorTypes.photometric and layer == LayerTypes.none:
+        simulation.stop_condition_rays_number = 1000
+        simulation.stop_condition_duration = None
+        results = simulation.compute_CPU(threads_number=1)
+        assert results, simulation.job_link.get_error()
+        assert all(result.path or result.upload_response.info.uri for result in results)
+        assert simulation.job_link.get_state().state == simulation._job.State.FINISHED
+    expected_template = ssr.sensor_template_link.get()
+    expected_properties = ssr._sensor_instance.energy_density_properties
+    mode_name = mode.value
+    simulation.export(energy_density_export_path.as_posix())
+    loaded_project = Project(
+        speos=speos,
+        path=(
+            energy_density_export_path / "EnergyDensityDirect.speos" / "EnergyDensityDirect.speos"
+        ).as_posix(),
+    )
+    loaded = loaded_project.find(name="EnergyDensityRoundTrip", feature_type=Sensor3DEnergyDensity)[
+        0
+    ]
+    assert loaded in loaded_project.sensors
+    assert loaded.type == mode_name.capitalize()
+    assert loaded.axis_system == axes
+    assert loaded.sensor_template_link.get().energy_density == expected_template.energy_density
+    assert loaded.get("result_file_name") == "energy_roundtrip"
+    assert loaded.result_file_name == "energy_roundtrip"
+    for axis in "xyz":
+        for suffix in ("_size", "_sampling"):
+            assert getattr(loaded.dimensions, axis + suffix) == getattr(dims, axis + suffix)
+    if isinstance(layer, LayerByFaceParameters):
+        assert isinstance(loaded.layer, BaseSensor.LayerTypeFace)
+        assert loaded.layer.layers[0].name == "SelectedFace"
+        loaded_body = loaded_project.find(name="LayerBody.*", name_regex=True, feature_type=Body)[0]
+        assert (
+            loaded.layer.layers[0].geometry[0].to_native_link()
+            == loaded_body._geom_features[0].geo_path.to_native_link()
+        )
+        assert (
+            loaded._sensor_instance.energy_density_properties.layer_type_face.sca_filtering_mode
+            == expected_properties.layer_type_face.sca_filtering_mode
+        )
+    else:
+        assert loaded._sensor_instance.energy_density_properties == expected_properties
+        assert loaded.layer == layer
+    loaded.set_dimensions().x_size = 35
+    loaded.set_type_radiometric().set_layer_type_source().commit().reset()
+    assert loaded.dimensions.x_size == 35
+    assert loaded.type == "Radiometric"
+    assert loaded.layer == LayerTypes.by_source
+    loaded.set_layer_type_face().set_sca_filtering_mode_last_impact()
+    loaded.commit().reset()
+    assert isinstance(loaded.layer, BaseSensor.LayerTypeFace)
+    loaded.set_layer_type_none().commit().reset()
+    assert loaded.layer == LayerTypes.none
+
+
+@pytest.fixture
+def energy_density_export_path():
+    """Provide a unique server-side export directory and remove it after the round trip."""
+    path = Path(test_path).parent / f"energy_density_{uuid4().hex}"
+    try:
+        yield path
+    finally:
+        remove_file(path)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_validation(speos: Speos):
+    """Reject invalid dimensions and parameters on real sensor objects."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="EnergyDensityValidation", feature_type=Sensor3DEnergyDensity)
+    for axis in "xyz":
+        for value in (0, -1, float("nan"), float("inf")):
+            with pytest.raises(ValueError):
+                setattr(ssr.dimensions, axis + "_size", value)
+        for value in (True, "50", None):
+            with pytest.raises(TypeError):
+                setattr(ssr.dimensions, axis + "_size", value)
+        for value in (0, -1, 2**32):
+            with pytest.raises(ValueError):
+                setattr(ssr.dimensions, axis + "_sampling", value)
+        for value in (True, 1.5, "100", None):
+            with pytest.raises(TypeError):
+                setattr(ssr.dimensions, axis + "_sampling", value)
+        assert getattr(ssr.dimensions, axis + "_size") == 50
+        assert getattr(ssr.dimensions, axis + "_sampling") == 100
+    with pytest.raises(ValueError):
+        ssr.axis_system = [0] * 11
+    with pytest.raises(ValueError):
+        ssr.axis_system = [float("nan")] * 12
+    with pytest.raises(ValueError, match="orthonormal"):
+        ssr.axis_system = [0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4]
+    with pytest.raises(ValueError, match="orthonormal"):
+        ssr.axis_system = [0] * 12
+    assert ssr.axis_system == ORIGIN
+    with pytest.raises(RuntimeError, match="set_dimensions"):
+        Sensor3DEnergyDensity.Dimensions3D(
+            sensor_v2_pb2.SensorTemplate.EnergyDensity.Dimensions3D()
+        )
+    with pytest.raises(TypeError, match="EnergyDensity3DSensorParameters"):
+        p.create_sensor(
+            name="WrongEnergyDensityParameters",
+            feature_type=Sensor3DEnergyDensity,
+            parameters=IrradianceSensorParameters(),
+        )
+    with pytest.raises(ValueError, match="conflict name"):
+        p.create_sensor(name=ssr._name, feature_type=Sensor3DEnergyDensity)
+    params = EnergyDensity3DSensorParameters()
+    params.axis_system[0] = 123
+    params.dimensions.x_size = 456
+    assert EnergyDensity3DSensorParameters().axis_system == ORIGIN
+    assert EnergyDensity3DSensorParameters().dimensions.x_size == 50
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_face_parameters(speos: Speos):
+    """Preserve face-layer groups configured through a real parameters dataclass."""
+    p = Project(speos=speos)
+    face = p.create_root_part().create_body(name="FaceLayerBody").create_face(name="Face")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1] * 3
+    p.root_part.commit()
+    ssr = p.create_sensor(
+        name="EnergyDensityFaceParameters",
+        feature_type=Sensor3DEnergyDensity,
+        parameters=EnergyDensity3DSensorParameters(
+            layer_type=LayerByFaceParameters(
+                geometries=[GeometryLayerParameters("FaceGroup", [face.geo_path])]
+            )
+        ),
+    )
+    assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
+    ssr.commit().reset()
+    assert ssr.layer.layers[0].name == "FaceGroup"
+    assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
+
+
+@pytest.mark.supported_speos_versions(min=261, max=270)
+def test_energy_density_unsupported_server(speos: Speos):
+    """Reject the v2-only sensor on a real server predating sensor v2."""
+    if server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("This test requires a real server older than 2027 R1.")
+    p = Project(speos=speos)
+    with pytest.raises(NotImplementedError, match="2027 R1 SP0"):
+        p.create_sensor(name="UnsupportedEnergyDensity", feature_type=Sensor3DEnergyDensity)
+    assert p.sensors == []
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_preview(speos: Speos):
+    """Verify default and rotated volume geometry using real visualization objects."""
+    pytest.importorskip("pyvista")
+    from ansys.tools.visualization_interface import Plotter
+
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="EnergyDensityPreview", feature_type=Sensor3DEnergyDensity)
+    preview = ssr.visual_data
+    assert preview.data.n_points == 8
+    assert preview.data.n_cells == 12
+    assert tuple(preview.data.bounds) == pytest.approx((-25, 25, -25, 25, -25, 25))
+    ssr.dimensions.x_size = 20
+    ssr.dimensions.y_size = 40
+    ssr.dimensions.z_size = 60
+    ssr.axis_system = [10, 20, 30, 0, 1, 0, -1, 0, 0, 0, 0, 1]
+    assert tuple(ssr.visual_data.data.bounds) == pytest.approx((-10, 30, 10, 30, 0, 60))
+    ssr.commit()
+    ssr.dimensions.z_size = 100
+    ssr.reset()
+    assert tuple(ssr.visual_data.data.bounds) == pytest.approx((-10, 30, 10, 30, 0, 60))
+    plotter = Plotter()
+    assert p._create_speos_feature_preview(plotter, ssr, 100) is plotter
 
 
 def irradiance_template(sensor_feature, local: bool = False):
@@ -1365,7 +1634,7 @@ def test_camera_spectrum_file_uri_getter_has_no_side_effect(speos: Speos):
     assert not color._red_spectrum._spectrum.HasField("library")
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_template_version):
     """Test the distortion file fallback also applies when committing the project."""
     p = Project(speos=speos)
@@ -1379,7 +1648,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     )
 
     with pytest.warns(UserWarning, match="over written"):
-        p.commit()
+        sensor.commit()
 
     assert sensor.focal_length == 0
     assert sensor.imager_distance == 0
@@ -1387,7 +1656,7 @@ def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_templ
     sensor.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
@@ -1692,7 +1961,7 @@ def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
@@ -2239,8 +2508,6 @@ def test_load_intensity_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorXMPIntensity)
     assert isinstance(sensor_radio, SensorXMPIntensity)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2289,7 +2556,6 @@ def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     else:
@@ -2329,8 +2595,6 @@ def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     else:
@@ -2440,8 +2704,6 @@ def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     else:
@@ -2666,6 +2928,44 @@ def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     sim.commit()
     assert sim._simulation_instance.sensor_paths == ["Irradiance.1:564", "3d"]
     sim.delete()
+
+
+@pytest.mark.parametrize(
+    "sensor_type",
+    [
+        pytest.param(SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)),
+        SensorIrradiance,
+        SensorRadiance,
+    ],
+)
+def test_sensor_result_file_name(speos: Speos, sensor_type: type[BaseSensor]):
+    """Persist and reset the shared result filename on real sensor instances."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="ResultFileName", feature_type=sensor_type)
+    assert ssr.result_file_name == ""
+    ssr.result_file_name = "custom_result"
+    assert ssr.result_file_name == "custom_result"
+    assert ssr._sensor_instance.result_file_name == "custom_result"
+    ssr.commit()
+    assert p.scene_link.get().sensors[0].result_file_name == "custom_result"
+    assert ssr.get("result_file_name") == "custom_result"
+
+    for value in (None, 42, True, Path("result")):
+        with pytest.raises(TypeError, match="Result file name must be a string"):
+            ssr.result_file_name = value
+        assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "uncommitted_result"
+    ssr.reset()
+    assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "updated_result"
+    ssr.commit().reset()
+    assert ssr.result_file_name == "updated_result"
+    assert p.scene_link.get().sensors[0].result_file_name == "updated_result"
+    ssr.result_file_name = ""
+    ssr.commit().reset()
+    assert ssr.result_file_name == ""
+    assert p.scene_link.get().sensors[0].result_file_name == ""
+    ssr.delete()
 
 
 def test_commit_sensor(speos: Speos, sensor_template_version):
@@ -4256,7 +4556,6 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_ver
     assert sensor.sensor_template_link is not None
     assert has_immersive_template(sensor)
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor._sensor_template, ProtoSensorTemplate)
     else:
@@ -4997,8 +5296,6 @@ def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
         sensor_iesna_a_params.integration_angle
     )
     if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
-        # @Todo adjust when V2 is supported on load
-        #  currently load forces version v1 can be changed when all sensors are migrated
         assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplateV2)
         assert not isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
     else:
@@ -5982,7 +6279,7 @@ def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with radiometric type and planar integration."""
     p = Project(
@@ -6011,7 +6308,7 @@ def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and planar integration."""
     p = Project(
@@ -6041,7 +6338,7 @@ def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with photometric type and radial integration."""
     p = Project(
@@ -6071,7 +6368,7 @@ def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_ver
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor with colorimetric type."""
     p = Project(
@@ -6106,7 +6403,7 @@ def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
     sensor_3d.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
+@pytest.mark.supported_speos_versions(min=252)
 def test_3dirradiance_colorimetric_has_no_wavelengths_sampling(
     speos: Speos, sensor_template_version
 ):

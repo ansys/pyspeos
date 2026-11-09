@@ -409,7 +409,7 @@ dev = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.1.1" },
+    { name = "trame-client", specifier = "<4.1.5" },
     { name = "ty", specifier = "==0.0.49" },
 ]
 doc = [
@@ -423,7 +423,7 @@ doc = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.0.2" },
-    { name = "trame-client", specifier = "<4.1.1" },
+    { name = "trame-client", specifier = "<4.1.5" },
 ]
 quality = [
     { name = "prek", specifier = "==0.5.0" },
@@ -5954,7 +5954,7 @@ wheels = [
 
 [[package]]
 name = "trame"
-version = "3.13.2"
+version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyyaml" },
@@ -5963,21 +5963,21 @@ dependencies = [
     { name = "trame-server" },
     { name = "wslink" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/c7/790a5f28d75ea166fd9ec0bc6545e42683dc59ddd0b15ed374d00fb8e187/trame-3.13.2.tar.gz", hash = "sha256:9868d1c2bce981ae2c66eb6a16d39e2a14f042eedb1047666266c753ecaf3f64", size = 26386, upload-time = "2026-05-15T03:50:50.626Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/1e/d76411adb59829773619a788cce2f4a09645c44bed09f180079369096033/trame-4.0.0.tar.gz", hash = "sha256:148cdd10b4636539e375a898c16df139d7a03f3cf8a186cbd5a23c42d763a6b3", size = 19091, upload-time = "2026-09-09T16:53:40.646Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/eb/4a/1474a166fa9494162779b4145b4b82adbe482cfb776efffeff59de4ba70f/trame-3.13.2-py3-none-any.whl", hash = "sha256:23e87a65a6ea9241ce1060e9cd01426e48b3b8b72cd9f3cb974fc398649280b6", size = 31514, upload-time = "2026-05-15T03:50:49.129Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/a8/137edd4bd17081244dbafd3ebcb35612d791b605eaf9a0c57e47200abd24/trame-4.0.0-py3-none-any.whl", hash = "sha256:e3c8a89f7a209fea7a595bd877301c851cd0db18cc7620f11b08d4d7966e5dcc", size = 27303, upload-time = "2026-09-09T16:53:39.12Z" },
 ]
 
 [[package]]
 name = "trame-client"
-version = "3.13.6"
+version = "4.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "trame-common" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/a5/15eba4898effd6d74e356c6e508ba290f3efffb48c8e95ec2940996fd3a1/trame_client-3.13.6.tar.gz", hash = "sha256:1ba7d1528ad082195c03b29c876db07817da741e2c9a50a32914534b24f31332", size = 456658, upload-time = "2026-08-08T21:56:23.531Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/01/dd/3ccc6562fc59b3a98f76c2705d8a34679d40b8009220f5408c36770d2876/trame_client-4.1.4.tar.gz", hash = "sha256:d615a6a624a8a4d8911869b25d4fa9c5a39c90a4457a091ae86a9bb33ea8c018", size = 553158, upload-time = "2026-10-06T21:42:14.808Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/9b/8eea3b98d84300e3fe104ec179246b29f993e6a0da53c7e2549284d99cbb/trame_client-3.13.6-py3-none-any.whl", hash = "sha256:b4acf325d037a3d118c00a89ebbb32418dea9064844cc23e45c9deddea0628a4", size = 468618, upload-time = "2026-08-08T21:56:21.643Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/7f/dc3b12c0cde2523b72cea905e0fc421e50a4f5d0decea73175969c9f60e0/trame_client-4.1.4-py3-none-any.whl", hash = "sha256:6e1d3e20770f5852ac924d8494515700d9906085ecfcb788f0f504ce998be88f", size = 568271, upload-time = "2026-10-06T21:42:13.215Z" },
 ]
 
 [[package]]
@@ -6003,7 +6003,7 @@ wheels = [
 
 [[package]]
 name = "trame-server"
-version = "3.15.0"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "more-itertools", version = "11.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -6011,21 +6011,21 @@ dependencies = [
     { name = "trame-common" },
     { name = "wslink" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/62/5120c93cf606e0ba7c172e2808db1a8f2649bcbef42f2c77fb573108574c/trame_server-3.15.0.tar.gz", hash = "sha256:eadf8a9153cb2ba79d8dd5f747247aa52eb77a3afc024fd63ba49d657c1e01fd", size = 39175, upload-time = "2026-09-04T22:13:25.552Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b4/f0/119dd2c85c1788d5b0b6ba6cb9c1e1b15a3d747b94e77cddce3eabb59308/trame_server-4.1.0.tar.gz", hash = "sha256:cad870dd0c63e7df143cf315b00a4c0c6da11965f26abb31c2a86b1bb0de3e2b", size = 40284, upload-time = "2026-10-09T15:31:07.962Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/5b/ed8ee40a4285c62ac0b5171de8eaee0644588ef3d089357ab45f0f535fda/trame_server-3.15.0-py3-none-any.whl", hash = "sha256:b0acb06f1124995409adcbc8fa17775e8bfd9bdea8b72dccfa80abec695db135", size = 45646, upload-time = "2026-09-04T22:13:23.705Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/30/d6ee48a182e09ca6d66f2e48e91ac7c3efbc5f323d6a50c591a2b4f27840/trame_server-4.1.0-py3-none-any.whl", hash = "sha256:7b23147a77d9616d9c787bd60fe77c3c683a38e193d7f9a4d0aac3e601dd453b", size = 46872, upload-time = "2026-10-09T15:31:06.642Z" },
 ]
 
 [[package]]
 name = "trame-vtk"
-version = "2.11.8"
+version = "2.8.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "trame-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/de/b72ec543cf8f70ee0ef4645d04e911155db3dcba545a9cf35d6c80e849c9/trame_vtk-2.11.8.tar.gz", hash = "sha256:bef4a35d86d57bf9b4af44dda8f361f917b141e4f624c9ab7278b6c48d171e74", size = 810254, upload-time = "2026-04-24T00:28:17.494Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/e8/6bb3b0512ade062fce540e531cc86d91564ac5d779b7f2196fcf08e43e40/trame-vtk-2.8.13.tar.gz", hash = "sha256:b7438744c3a790a1c13c082b887f5abcd5132fe791ff631239a2cdce131dbcca", size = 733929, upload-time = "2025-01-07T18:04:35.215Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/11/aff660ffcc0f65546da4340902cd064cafda26e0a7750f6468a27378c717/trame_vtk-2.11.8-py3-none-any.whl", hash = "sha256:31c8220f59dcc3b5f2fcfe6de8b9796e8bdb7db5dcf790ee01df83d44e79a413", size = 831787, upload-time = "2026-04-24T00:28:15.317Z" },
+    { url = "https://files.pythonhosted.org/packages/49/52/4aff1c912b389cbf84336853fc8631105fcda1f99056f8c5e8257dfb7bed/trame_vtk-2.8.13-py3-none-any.whl", hash = "sha256:ba2a51c4dfad369e1c31e8a9676c8e9c69ebd677daa2c45dd54f94dfd3c91136", size = 749285, upload-time = "2025-01-07T18:04:32.315Z" },
 ]
 
 [[package]]

@@ -49,6 +49,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
+    EnergyDensity3DSensorParameters,
     HumanEyeSensorParameters,
     ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
@@ -80,6 +81,7 @@ import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
     BaseSensor,
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
     SensorHumanEye,
@@ -293,6 +295,7 @@ class Project:
         self,
     ) -> List[
         Union[
+            Sensor3DEnergyDensity,
             Sensor3DIrradiance,
             SensorCamera,
             SensorHumanEye,
@@ -308,7 +311,8 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
+        List[Union[ansys.speos.core.sensor.Sensor3DEnergyDensity, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorHumanEye, \
         ansys.speos.core.sensor.SensorImmersive, \
@@ -845,6 +849,7 @@ class Project:
                 ObserverSensorParameters,
                 PolarIntensitySensorParameters,
                 HumanEyeSensorParameters,
+                EnergyDensity3DSensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -857,6 +862,7 @@ class Project:
         SensorObserver,
         SensorPolarIntensity,
         SensorHumanEye,
+        Sensor3DEnergyDensity,
     ]:
         """Create a new Sensor feature.
 
@@ -878,7 +884,7 @@ class Project:
             ansys.speos.core.sensor.SensorObserver, \
             ansys.speos.core.sensor.SensorImmersive, \
             ansys.speos.core.sensor.SensorPolarIntensity, \
-            ansys.speos.core.sensor.SensorHumanEye].
+            ansys.speos.core.sensor.SensorHumanEye,].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -891,7 +897,9 @@ class Project:
         ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
         ansys.speos.core.generic.parameters.ObserverSensorParameters,\
         ansys.speos.core.generic.parameters.PolarIntensitySensorParameters,\
-        ansys.speos.core.generic.parameters.HumanEyeSensorParameters]]
+        ansys.speos.core.generic.parameters.HumanEyeSensorParameters,\
+        ansys.speos.core.generic.parameters.EnergyDensity3DSensorParameters]]
+
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -900,7 +908,8 @@ class Project:
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity, \
-        ansys.speos.core.sensor.SensorObserver, ansys.speos.core.sensor.SensorHumanEye]
+        ansys.speos.core.sensor.SensorObserver, ansys.speos.core.sensor.SensorHumanEye, \
+        ansys.speos.core.sensor.Sensor3DEnergyDensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -1019,6 +1028,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "Sensor3DEnergyDensity":
+                if parameters is None:
+                    parameters = EnergyDensity3DSensorParameters()
+                elif not isinstance(parameters, EnergyDensity3DSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of EnergyDensity3DSensorParameters"
+                    )
+                feature = Sensor3DEnergyDensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SensorPolarIntensity":
                 if parameters is None:
                     parameters = PolarIntensitySensorParameters()
@@ -1061,6 +1085,7 @@ class Project:
                         SensorImmersive,
                         SensorObserver,
                         SensorPolarIntensity,
+                        Sensor3DEnergyDensity,
                         SensorHumanEye,
                     ],
                 )
@@ -1249,6 +1274,7 @@ class Project:
             Sensor3DIrradiance,
             SensorXMPIntensity,
             SensorPolarIntensity,
+            Sensor3DEnergyDensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
@@ -1290,6 +1316,7 @@ class Project:
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.sensor.SensorPolarIntensity, \
+        ansys.speos.core.sensor.Sensor3DEnergyDensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
@@ -1809,6 +1836,13 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_parameters=None,
                 )
+            elif ssr_inst.HasField("energy_density_properties"):
+                ssr_feat = Sensor3DEnergyDensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
             elif ssr_inst.HasField("observer_properties"):
                 ssr_feat = SensorObserver(
                     project=self,
@@ -1950,6 +1984,7 @@ class Project:
         self,
         plotter: Plotter,
         speos_feature: Union[
+            Sensor3DEnergyDensity,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -1970,6 +2005,7 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[\
+            ansys.speos.core.sensor.Sensor3DEnergyDensity, \
             ansys.speos.core.source.LightBox, \
             ansys.speos.core.sensor.SensorCamera, \
             ansys.speos.core.sensor.SensorRadiance, \
@@ -1997,6 +2033,7 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                Sensor3DEnergyDensity,
                 SensorXMPIntensity,
                 SensorHumanEye,
                 SourceLuminaire,
@@ -2075,6 +2112,7 @@ class Project:
                     plotter.plot(display_coordinates.y_axis, color="green")
                 case (
                     SensorIrradiance()
+                    | Sensor3DEnergyDensity()
                     | SensorXMPIntensity()
                     | SensorCamera()
                     | SourceLuminaire()
