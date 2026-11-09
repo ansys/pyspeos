@@ -30,13 +30,12 @@ from ansys.speos.core.input_files._base import (
     LineReader,
     SpeosTextFileFormat,
     _finite_number,
-    _finite_values,
-    _matching_columns,
     _property_name,
     _single_line,
     _ValueComparable,
     format_number,
 )
+from ansys.speos.core.input_files.spectrum_file import SpectrumFile
 
 _DEFAULT_SPECTRUM_DESCRIPTION = "Default spectrum : edit or load -->"
 _DEFAULT_ABSORPTION_WAVELENGTHS = (350.0, 360.0, 370.0)
@@ -49,159 +48,37 @@ _DEFAULT_EMISSION_WAVELENGTHS = (400.0, 500.0, 600.0)
 _DEFAULT_EMISSION_VALUES = (0.0, 100.0, 0.0)
 
 
-def _pigment_spectrum(value: FluorescentSpectrum) -> FluorescentSpectrum:
-    if not isinstance(value, FluorescentSpectrum):
-        raise TypeError("Pigment spectra must be FluorescentSpectrum instances.")
+def _pigment_spectrum(value: SpectrumFile, *, percent: bool) -> SpectrumFile:
+    if not isinstance(value, SpectrumFile):
+        raise TypeError("Pigment spectra must be SpectrumFile instances.")
+    value.percent = percent
     return value
 
 
-class FluorescentSpectrum(_ValueComparable):
-    """A sampled spectrum embedded in a fluorescent pigment.
-
-    Unlike :class:`ansys.speos.core.input_files.spectrum_file.SpectrumFile`, this model
-    allows values outside the 0-to-100 percent range because absorption and excitance
-    spectra use inverse millimeters.
-
-    Parameters
-    ----------
-    wavelengths : Sequence[float], optional
-        Sample wavelengths, in nm. Defaults to the values used by the Speos dye editor.
-    values : Sequence[float], optional
-        Sample values in the units of the spectrum. Defaults to the values used by the
-        Speos dye editor.
-    description : str, optional
-        Description written in the embedded spectrum block.
-    """
-
-    def __init__(
-        self,
-        wavelengths: Sequence[float] = _DEFAULT_ABSORPTION_WAVELENGTHS,
-        values: Sequence[float] = _DEFAULT_ABSORPTION_VALUES,
-        description: str = _DEFAULT_SPECTRUM_DESCRIPTION,
-    ) -> None:
-        self._wavelengths: List[float] = []
-        self._values: List[float] = []
-        self.wavelengths = wavelengths
-        self.values = values
-        self.description = description
-
-    @property
-    def wavelengths(self) -> List[float]:
-        """Sample wavelengths in nm, returned as a copy.
-
-        Parameters
-        ----------
-        values : Sequence[float]
-            Finite wavelengths in nm.
-
-        Returns
-        -------
-        List[float]
-            Sample wavelengths.
-        """
-        return self._wavelengths.copy()
-
-    @wavelengths.setter
-    def wavelengths(self, values: Sequence[float]) -> None:
-        values = _finite_values(_property_name(FluorescentSpectrum.wavelengths), values)
-        _matching_columns(
-            {
-                _property_name(FluorescentSpectrum.wavelengths): values,
-                _property_name(FluorescentSpectrum.values): self._values,
-            }
-        )
-        self._wavelengths = values
-
-    @property
-    def values(self) -> List[float]:
-        """Sample values, returned as a copy.
-
-        Parameters
-        ----------
-        values : Sequence[float]
-            Finite values in the units of the spectrum.
-
-        Returns
-        -------
-        List[float]
-            Sample values.
-        """
-        return self._values.copy()
-
-    @values.setter
-    def values(self, values: Sequence[float]) -> None:
-        values = _finite_values(_property_name(FluorescentSpectrum.values), values)
-        _matching_columns(
-            {
-                _property_name(FluorescentSpectrum.wavelengths): self._wavelengths,
-                _property_name(FluorescentSpectrum.values): values,
-            }
-        )
-        self._values = values
-
-    @property
-    def description(self) -> str:
-        """Single-line description of the spectrum.
-
-        Parameters
-        ----------
-        value : str
-            New description.
-
-        Returns
-        -------
-        str
-            Spectrum description.
-        """
-        return self._description
-
-    @description.setter
-    def description(self, value: str) -> None:
-        self._description = _single_line(value)
-
-    _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
-        _property_name(wavelengths),
-        _property_name(values),
-        _property_name(description),
+def _default_spectrum(wavelengths: Sequence[float], values: Sequence[float]) -> SpectrumFile:
+    return SpectrumFile(
+        wavelengths=wavelengths, values=values, description=_DEFAULT_SPECTRUM_DESCRIPTION
     )
 
-    def validate(self) -> None:
-        """Check that the spectrum contains matching, nonempty finite samples."""
-        _matching_columns(
-            {
-                _property_name(FluorescentSpectrum.wavelengths): self.wavelengths,
-                _property_name(FluorescentSpectrum.values): self.values,
-            },
-            complete=True,
-        )
 
-    def _to_lines(self, *, standalone_dye: bool = False) -> List[str]:
-        lines = ["OPTIS - Spectrum file v1"]
-        if standalone_dye:
-            lines.append("0")
-        lines.extend((self.description, str(len(self.wavelengths))))
-        lines.extend(
-            f"{format_number(wavelength)}\t{format_number(value)}"
-            for wavelength, value in zip(self.wavelengths, self.values)
-        )
-        return lines
+def _spectrum_to_lines(spectrum: SpectrumFile, *, standalone_dye: bool) -> List[str]:
+    # Standalone .dye files insert a "0" record after each spectrum header.
+    return [SpectrumFile.HEADER, *(["0"] if standalone_dye else []), *spectrum._to_lines()]
 
-    @classmethod
-    def _from_lines(
-        cls, reader: LineReader, *, standalone_dye: bool = False
-    ) -> FluorescentSpectrum:
-        header = reader.next_data_line()
-        if header.lower() != "optis - spectrum file v1":
-            raise reader.error(f"expected a spectrum header, got {header!r}.")
-        if standalone_dye and reader.next_int() != 0:
-            raise reader.error("unsupported standalone dye spectrum option.")
-        description = reader.next_line()
-        wavelengths, values = [], []
-        for _ in range(reader.next_int(minimum=1)):
-            wavelength, value = reader.next_floats(count=2)
-            wavelengths.append(wavelength)
-            values.append(value)
-        return cls(wavelengths=wavelengths, values=values, description=description)
+
+def _spectrum_from_lines(
+    reader: LineReader, *, standalone_dye: bool, percent: bool = True
+) -> SpectrumFile:
+    header = reader.next_data_line()
+    if header.lower() != SpectrumFile.HEADER.lower():
+        raise reader.error(f"expected a spectrum header, got {header!r}.")
+    if standalone_dye and reader.next_int() != 0:
+        raise reader.error("unsupported standalone dye spectrum option.")
+    return SpectrumFile._from_lines(reader, percent=percent)
+
+
+# Absorption and excitance spectra are in mm-1; efficiency and emission are percentages.
+_SPECTRUM_PERCENT = (False, True, False, True)
 
 
 class FluorescentPigmentFile(SpeosTextFileFormat):
@@ -212,17 +89,23 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
     Other scattering and emission-distribution models are not yet represented. Changing
     a spectrum does not recalculate the other spectra; keep derived data consistent.
 
+    Each spectrum is a :class:`ansys.speos.core.input_files.spectrum_file.SpectrumFile`,
+    so an existing ``*.spectrum`` file can be loaded and assigned directly. Assigning a
+    spectrum sets its :attr:`SpectrumFile.percent` attribute to match its role: ``False``
+    for the absorption and excitance spectra, in mm-1, whose values may exceed 100, and
+    ``True`` for the efficiency and emission spectra, in percent.
+
     Parameters
     ----------
     description : str, optional
         Pigment description. Defaults to ``"Fluorescent pigment"``.
-    absorption_spectrum : FluorescentSpectrum, optional
-        Absorption spectrum, in mm-1.
-    efficiency_spectrum : FluorescentSpectrum, optional
+    absorption_spectrum : SpectrumFile, optional
+        Absorption spectrum, in mm-1. Values may exceed 100.
+    efficiency_spectrum : SpectrumFile, optional
         Quantum-efficiency spectrum, in percent.
-    excitance_spectrum : FluorescentSpectrum, optional
-        Excitance spectrum, in mm-1.
-    emission_spectrum : FluorescentSpectrum, optional
+    excitance_spectrum : SpectrumFile, optional
+        Excitance spectrum, in mm-1. Values may exceed 100.
+    emission_spectrum : SpectrumFile, optional
         Emission spectrum, in percent.
     measured_concentration : float, optional
         Concentration at which the dye was measured. Defaults to ``1.0``.
@@ -234,10 +117,10 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
     def __init__(
         self,
         description: str = "Fluorescent pigment",
-        absorption_spectrum: FluorescentSpectrum | None = None,
-        efficiency_spectrum: FluorescentSpectrum | None = None,
-        excitance_spectrum: FluorescentSpectrum | None = None,
-        emission_spectrum: FluorescentSpectrum | None = None,
+        absorption_spectrum: SpectrumFile | None = None,
+        efficiency_spectrum: SpectrumFile | None = None,
+        excitance_spectrum: SpectrumFile | None = None,
+        emission_spectrum: SpectrumFile | None = None,
         measured_concentration: float = 1.0,
         spectrum_selection_code: int = 0,
     ) -> None:
@@ -247,22 +130,22 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
         self.absorption_spectrum = (
             absorption_spectrum
             if absorption_spectrum is not None
-            else FluorescentSpectrum(_DEFAULT_ABSORPTION_WAVELENGTHS, _DEFAULT_ABSORPTION_VALUES)
+            else _default_spectrum(_DEFAULT_ABSORPTION_WAVELENGTHS, _DEFAULT_ABSORPTION_VALUES)
         )
         self.efficiency_spectrum = (
             efficiency_spectrum
             if efficiency_spectrum is not None
-            else FluorescentSpectrum(_DEFAULT_EFFICIENCY_WAVELENGTHS, _DEFAULT_EFFICIENCY_VALUES)
+            else _default_spectrum(_DEFAULT_EFFICIENCY_WAVELENGTHS, _DEFAULT_EFFICIENCY_VALUES)
         )
         self.excitance_spectrum = (
             excitance_spectrum
             if excitance_spectrum is not None
-            else FluorescentSpectrum(_DEFAULT_EXCITANCE_WAVELENGTHS, _DEFAULT_EXCITANCE_VALUES)
+            else _default_spectrum(_DEFAULT_EXCITANCE_WAVELENGTHS, _DEFAULT_EXCITANCE_VALUES)
         )
         self.emission_spectrum = (
             emission_spectrum
             if emission_spectrum is not None
-            else FluorescentSpectrum(_DEFAULT_EMISSION_WAVELENGTHS, _DEFAULT_EMISSION_VALUES)
+            else _default_spectrum(_DEFAULT_EMISSION_WAVELENGTHS, _DEFAULT_EMISSION_VALUES)
         )
 
     @property
@@ -332,84 +215,84 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
         self._spectrum_selection_code = value
 
     @property
-    def absorption_spectrum(self) -> FluorescentSpectrum:
+    def absorption_spectrum(self) -> SpectrumFile:
         """Shared absorption spectrum, in mm-1.
 
         Parameters
         ----------
-        value : FluorescentSpectrum
+        value : SpectrumFile
             New absorption spectrum.
 
         Returns
         -------
-        FluorescentSpectrum
+        SpectrumFile
             Absorption spectrum.
         """
         return self._absorption_spectrum
 
     @absorption_spectrum.setter
-    def absorption_spectrum(self, value: FluorescentSpectrum) -> None:
-        self._absorption_spectrum = _pigment_spectrum(value)
+    def absorption_spectrum(self, value: SpectrumFile) -> None:
+        self._absorption_spectrum = _pigment_spectrum(value, percent=False)
 
     @property
-    def efficiency_spectrum(self) -> FluorescentSpectrum:
+    def efficiency_spectrum(self) -> SpectrumFile:
         """Shared quantum-efficiency spectrum, in percent.
 
         Parameters
         ----------
-        value : FluorescentSpectrum
+        value : SpectrumFile
             New efficiency spectrum.
 
         Returns
         -------
-        FluorescentSpectrum
+        SpectrumFile
             Efficiency spectrum.
         """
         return self._efficiency_spectrum
 
     @efficiency_spectrum.setter
-    def efficiency_spectrum(self, value: FluorescentSpectrum) -> None:
-        self._efficiency_spectrum = _pigment_spectrum(value)
+    def efficiency_spectrum(self, value: SpectrumFile) -> None:
+        self._efficiency_spectrum = _pigment_spectrum(value, percent=True)
 
     @property
-    def excitance_spectrum(self) -> FluorescentSpectrum:
+    def excitance_spectrum(self) -> SpectrumFile:
         """Shared excitance spectrum, in mm-1.
 
         Parameters
         ----------
-        value : FluorescentSpectrum
+        value : SpectrumFile
             New excitance spectrum.
 
         Returns
         -------
-        FluorescentSpectrum
+        SpectrumFile
             Excitance spectrum.
         """
         return self._excitance_spectrum
 
     @excitance_spectrum.setter
-    def excitance_spectrum(self, value: FluorescentSpectrum) -> None:
-        self._excitance_spectrum = _pigment_spectrum(value)
+    def excitance_spectrum(self, value: SpectrumFile) -> None:
+        self._excitance_spectrum = _pigment_spectrum(value, percent=False)
 
     @property
-    def emission_spectrum(self) -> FluorescentSpectrum:
+    def emission_spectrum(self) -> SpectrumFile:
         """Shared emission spectrum, in percent.
 
         Parameters
         ----------
-        value : FluorescentSpectrum
+        value : SpectrumFile
             New emission spectrum.
 
         Returns
         -------
-        FluorescentSpectrum
+        SpectrumFile
             Emission spectrum.
         """
         return self._emission_spectrum
 
     @emission_spectrum.setter
-    def emission_spectrum(self, value: FluorescentSpectrum) -> None:
-        self._emission_spectrum = _pigment_spectrum(value)
+    def emission_spectrum(self, value: SpectrumFile) -> None:
+        self._emission_spectrum = _pigment_spectrum(value, percent=True)
 
     _EQUALITY_FIELDS: ClassVar[tuple[str, ...]] = (
         "description",
@@ -449,7 +332,7 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
             self.excitance_spectrum,
             self.emission_spectrum,
         ):
-            lines.extend(spectrum._to_lines(standalone_dye=not embedded))
+            lines.extend(_spectrum_to_lines(spectrum, standalone_dye=not embedded))
         lines.extend(("0", "0"))
         return lines
 
@@ -462,7 +345,8 @@ class FluorescentPigmentFile(SpeosTextFileFormat):
         measured_concentration = reader.next_floats(count=1)[0]
         spectrum_selection_code = reader.next_int(minimum=0)
         spectra = [
-            FluorescentSpectrum._from_lines(reader, standalone_dye=not embedded) for _ in range(4)
+            _spectrum_from_lines(reader, standalone_dye=not embedded, percent=percent)
+            for percent in _SPECTRUM_PERCENT
         ]
         if reader.next_int() != 0 or reader.next_int() != 0:
             raise reader.error("unsupported fluorescent pigment scattering or emission settings.")

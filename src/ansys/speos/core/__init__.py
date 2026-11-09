@@ -43,7 +43,6 @@ from ansys.speos.core.input_files import (
     CoatedSurfaceSample,
     FluorescentPigment,
     FluorescentPigmentFile,
-    FluorescentSpectrum,
     MaterialBirefringentCurve,
     MaterialBirefringentKettlerHelmholtz,
     MaterialBirefringentSellmeier,

@@ -27,10 +27,10 @@ import pytest
 from ansys.speos.core import (
     FluorescentPigment,
     FluorescentPigmentFile,
-    FluorescentSpectrum,
     MaterialDispersionCurve,
     MaterialFile,
     MaterialType,
+    SpectrumFile,
     VolumeScatteringHenyeyGreenstein,
 )
 from tests.input_files import ASSETS_DIR, read_lines
@@ -142,16 +142,59 @@ def test_fluorescent_material_with_one_dye_matches_editor_file(tmp_path):
     assert MaterialFile.load(path) == material
 
 
-def test_fluorescent_spectrum_allows_absorption_values_above_percent_range():
-    """Absorption and excitance spectra use units that are not percentages."""
-    spectrum = FluorescentSpectrum(
-        wavelengths=[400.0, 500.0],
-        values=[125.0, 200.0],
-    )
-    spectrum.validate()
+def test_dye_spectra_are_spectrum_files(tmp_path):
+    """A saved spectrum file can be loaded and used as a dye spectrum."""
+    spectrum = SpectrumFile(wavelengths=[400.0, 450.0, 500.0], values=[0.0, 80.0, 0.0])
+    loaded = SpectrumFile.load(spectrum.save(tmp_path / "emission.spectrum"))
+    dye = FluorescentPigmentFile(emission_spectrum=loaded)
+    path = dye.save(tmp_path / "custom.dye")
+    assert FluorescentPigmentFile.load(path).emission_spectrum == spectrum
+    assert isinstance(FluorescentPigmentFile().absorption_spectrum, SpectrumFile)
 
+
+def test_dye_absorption_and_excitance_allow_values_above_percent_range(tmp_path):
+    """Absorption and excitance spectra use mm-1, so values above 100 are kept."""
+    dye = FluorescentPigmentFile()
+    dye.absorption_spectrum.values = [0.0, 125.0, 0.0]
+    dye.excitance_spectrum.values = [0.0, 200.0, 0.0]
+    dye.validate()
+    with pytest.raises(ValueError):
+        dye.emission_spectrum.values = [0.0, 125.0, 0.0]
+
+    loaded = FluorescentPigmentFile.load(dye.save(tmp_path / "strong.dye"))
+    assert loaded == dye
+    assert loaded.absorption_spectrum.values == [0.0, 125.0, 0.0]
+    assert loaded.excitance_spectrum.percent is False
+    assert loaded.emission_spectrum.percent is True
+
+    loaded_spectrum = SpectrumFile(wavelengths=[400.0, 500.0], values=[10.0, 20.0])
+    dye.absorption_spectrum = loaded_spectrum
+    assert loaded_spectrum.percent is False
+    loaded_spectrum.values = [150.0, 300.0]
+    with pytest.raises(ValueError):
+        dye.emission_spectrum = SpectrumFile([400.0], [150.0], percent=False)
+
+    material = MaterialFile(
+        material_type=MaterialType.fluorescent,
+        fluorescent_pigments=[FluorescentPigment(dye=dye)],
+    )
+    assert MaterialFile.load(material.save(tmp_path / "strong.material")) == material
+
+
+def test_spectrum_file_percent_option():
+    """Non-percent spectra accept any finite values; restoring percent rechecks them."""
+    spectrum = SpectrumFile(wavelengths=[400.0, 500.0], values=[125.0, 200.0], percent=False)
+    spectrum.validate()
+    assert spectrum == SpectrumFile([400.0, 500.0], [125.0, 200.0], percent=False)
     with pytest.raises(ValueError, match="same length"):
         spectrum.values = [1.0]
+    with pytest.raises(ValueError):
+        spectrum.percent = True
+    assert spectrum.percent is False
+    with pytest.raises(ValueError):
+        SpectrumFile(wavelengths=[400.0], values=[125.0])
+    with pytest.raises(TypeError, match="boolean"):
+        SpectrumFile(percent=1)
 
 
 def test_speos_multiple_dye_file_round_trips(tmp_path):
@@ -199,7 +242,7 @@ def test_default_dye_spectra_are_independent():
     second = FluorescentPigmentFile()
     first.absorption_spectrum.values = [0, 3, 0]
     assert second.absorption_spectrum.values == [0, 0.1, 0]
-    with pytest.raises(TypeError, match="FluorescentSpectrum"):
+    with pytest.raises(TypeError, match="SpectrumFile"):
         first.absorption_spectrum = None
     with pytest.raises(ValueError, match="selection codes"):
         first.spectrum_selection_code = 4

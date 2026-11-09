@@ -55,7 +55,6 @@ from ansys.speos.core.input_files.coated_surface import CoatedSurfaceFile, Coate
 from ansys.speos.core.input_files.fluorescence import (
     FluorescentPigment,
     FluorescentPigmentFile,
-    FluorescentSpectrum,
 )
 from ansys.speos.core.input_files.material import (
     MaterialBirefringentCurve,
@@ -94,7 +93,6 @@ __all__ = [
     "CoatedSurfaceSample",
     "FluorescentPigment",
     "FluorescentPigmentFile",
-    "FluorescentSpectrum",
     "InterpolationEnhancement",
     "MaterialBirefringentCurve",
     "MaterialBirefringentKettlerHelmholtz",

@@ -57,7 +57,6 @@ from ansys.speos.core import (
     VolumeScatteringHenyeyGreenstein,
     VolumeScatteringUserDefined,
 )
-from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceLuminaire, SourceRayFile
