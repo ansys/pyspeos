@@ -331,7 +331,7 @@ def test_energy_density_face_parameters(speos: Speos):
     assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
 
 
-@pytest.mark.supported_speos_versions(max=270)
+@pytest.mark.supported_speos_versions(min=261, max=270)
 def test_energy_density_unsupported_server(speos: Speos):
     """Reject the v2-only sensor on a real server predating sensor v2."""
     if server_version_checker.is_version_supported(2027, 1, 0):
