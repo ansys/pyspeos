@@ -1007,7 +1007,9 @@ class BaseSimulation:
                 stop_condition_error = True
 
         if stop_condition_error:
-            if self._job_loaded_from_file:
+            if self._job_loaded_from_file or server_version_checker.is_version_supported(
+                2027, 1, 0
+            ):
                 warnings.warn(
                     "You have not defined a valid simulation stop condition. This creates and "
                     "infinite simulation. Please define a stop condition explicitly. Default stop "
