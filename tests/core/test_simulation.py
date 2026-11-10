@@ -2185,6 +2185,54 @@ def test_check_job_no_stop_condition_direct(speos: Speos):
     assert sim.stop_condition_duration == default_params.stop_condition_duration
 
 
+@pytest.mark.supported_speos_versions(min=271)
+@pytest.mark.parametrize(
+    ("feature_type", "stop_condition"),
+    [
+        (SimulationDirect, "stop_condition_rays_number"),
+        (SimulationInverse, "stop_condition_passes_number"),
+    ],
+)
+def test_check_job_missing_stop_condition_warning(
+    speos: Speos, monkeypatch, feature_type, stop_condition
+):
+    """Test the warning for explicitly cleared stop conditions using real Speos RPC."""
+    project = Project(speos=speos)
+    sensor, source, _ = _create_source_group_test_prerequisites(project)
+    sensor.set_type_colorimetric()
+    sensor.commit()
+    sim = project.create_simulation(name="NoStopCondition", feature_type=feature_type)
+    sim.sensor_paths = [sensor]
+    sim.source_paths = [source]
+    sim.commit()
+    sim.stop_condition_duration = None
+    setattr(sim, stop_condition, None)
+
+    warning_message = (
+        "You have not defined a valid simulation stop condition. This creates and "
+        "infinite simulation. Please define a stop condition explicitly. Default stop "
+        "conditions have been applied so the simulation does not run infinitely."
+    )
+    with pytest.warns(UserWarning, match=re.escape(warning_message)):
+        sim._check_job()
+
+    assert getattr(sim, stop_condition) is not None
+
+    sim.stop_condition_duration = None
+    setattr(sim, stop_condition, None)
+
+    warning_message = (
+        "Before version 2027R1, simulation stop condition information is lost when "
+        "loading a .speos file. Please define a stop condition explicitly. Default "
+        "stop conditions have been applied so the simulation does not run infinitely."
+    )
+    monkeypatch.setattr(server_version_checker, "_version", "2026.1.3")
+    with pytest.warns(UserWarning, match=re.escape(warning_message)):
+        sim._check_job()
+
+    assert getattr(sim, stop_condition) is not None
+
+
 @pytest.mark.supported_speos_versions(max=261)
 def test_check_job_no_stop_condition_inverse(speos: Speos):
     """Test _check_job warns and applies defaults when inverse simulation has no stop condition.
