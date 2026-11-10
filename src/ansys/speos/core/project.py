@@ -174,7 +174,8 @@ class Project:
             case str() | Path():
                 loaded_job = self.scene_link.load_file(str(path))
                 self._warn_if_job_load_is_unsupported(loaded_job)
-                self._loaded_jobs[loaded_job.simulation_path] = loaded_job
+                if loaded_job is not None:
+                    self._loaded_jobs[loaded_job.simulation_path] = loaded_job
                 self._fill_features(context=context)
             case LightBoxFileInstance():
                 self.scene_link.load_file(file_uri=str(path.file), password=path.password)
@@ -183,12 +184,6 @@ class Project:
                     self._fill_features(context=context)
             case _:
                 raise TypeError(f"Unsupported path type: {type(path)}")
-
-    def _register_loaded_job(self, job: Optional[ProtoJob]) -> None:
-        """Associate a job returned while loading a file with its simulation path."""
-        if job is None:
-            return
-        self._loaded_jobs[job.simulation_path] = job
 
     def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
         """Warn when the server cannot return saved job properties."""
