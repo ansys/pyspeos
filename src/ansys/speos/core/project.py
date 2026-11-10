@@ -173,8 +173,8 @@ class Project:
                 pass
             case str() | Path():
                 loaded_job = self.scene_link.load_file(str(path))
-                self._register_loaded_job(loaded_job)
                 self._warn_if_job_load_is_unsupported(loaded_job)
+                self._loaded_jobs[loaded_job.simulation_path] = loaded_job
                 self._fill_features(context=context)
             case LightBoxFileInstance():
                 self.scene_link.load_file(file_uri=str(path.file), password=path.password)
@@ -188,10 +188,6 @@ class Project:
         """Associate a job returned while loading a file with its simulation path."""
         if job is None:
             return
-        if not job.simulation_path:
-            raise ValueError("The loaded simulation job does not identify its simulation path.")
-        if job.simulation_path in self._loaded_jobs:
-            raise ValueError(f"More than one loaded job refers to {job.simulation_path!r}.")
         self._loaded_jobs[job.simulation_path] = job
 
     def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
@@ -1604,16 +1600,6 @@ class Project:
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
-        for simulation_path in self._loaded_jobs:
-            simulation_matches = sum(
-                sim_inst.name == simulation_path for sim_inst in scene_data.simulations
-            )
-            if simulation_matches != 1:
-                raise ValueError(
-                    f"Saved job properties refer to {simulation_path!r}, but the loaded scene "
-                    f"contains {simulation_matches} simulations with that path."
-                )
-
         root_part_link = self.client[scene_data.part_guid]
         root_part = root_part_link.get()
         update_rp = False
@@ -1871,6 +1857,8 @@ class Project:
         # 3D textures: the Texture3D message carries no name, so the name of the pattern
         # body is used as feature name.
         for texture_3d_inst in scene_data.textures_3d:
+            if texture_3d_inst.name in [_._name for _ in self._features]:
+                continue
             texture_3d_feat = Texture3D(
                 project=self,
                 name=self.client[texture_3d_inst.pattern.body_guid].get().name,
@@ -1878,10 +1866,8 @@ class Project:
             )
             self._features.append(texture_3d_feat)
 
-        restored_job_paths = set()
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
-                restored_job_paths.add(sim_inst.name)
                 continue
             sim_feat = None
             loaded_job = self._loaded_jobs.get(sim_inst.name)
@@ -1919,15 +1905,7 @@ class Project:
                     job=loaded_job,
                 )
             if sim_feat is not None:
-                if loaded_job is not None:
-                    restored_job_paths.add(sim_inst.name)
                 self._features.append(sim_feat)
-        missing_jobs = self._loaded_jobs.keys() - restored_job_paths
-        if missing_jobs:
-            raise ValueError(
-                "Could not associate saved job properties with a reconstructed simulation: "
-                + ", ".join(sorted(missing_jobs))
-            )
 
     def __extract_part_mesh_info(
         self,

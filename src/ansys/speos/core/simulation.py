@@ -1008,13 +1008,19 @@ class BaseSimulation:
 
         if stop_condition_error:
             if self._job_loaded_from_file:
-                return
-            warnings.warn(
-                "In the current RPC version, simulation stop condition information may be lost "
-                "when loading a .speos file. Please define a stop condition explicitly. Default "
-                "stop conditions have been applied so the simulation does not run infinitely.",
-                stacklevel=2,
-            )
+                warnings.warn(
+                    "You have not defined a valid simulation stop condition. This creates and "
+                    "infinite simulation. Please define a stop condition explicitly. Default stop "
+                    "conditions have been applied so the simulation does not run infinitely.",
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    "Before version 2027R1, simulation stop condition information is lost when "
+                    "loading a .speos file. Please define a stop condition explicitly. Default "
+                    "stop conditions have been applied so the simulation does not run infinitely.",
+                    stacklevel=2,
+                )
             if self._job.HasField("direct_mc_simulation_properties"):
                 default_sim_paras = DirectSimulationParameters()
                 self.stop_condition_duration = default_sim_paras.stop_condition_duration
