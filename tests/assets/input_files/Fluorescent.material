@@ -1,0 +1,113 @@
+OPTIS - Material file v13
+Optical Glass
+Fluorescent
+Dispersion_Curve
+3
+486 1.5
+532 1.5
+643 1.5
+3
+486 0
+532 0
+643 0
+1
+1
+0
+3
+1
+OPTIS - Fluorescent pigment file v3.0
+Fluorescent pigment
+ISOTROPIC
+1
+0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	0
+360	0.1
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	95
+360	95
+370	95
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	0
+360	0.095
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+400	0
+500	100
+600	0
+0
+0
+2
+OPTIS - Fluorescent pigment file v3.0
+Fluorescent pigment
+ISOTROPIC
+2
+2
+OPTIS - Spectrum file v1
+This spectrum has been computed using the two other spectrum
+4
+350	0
+360	0
+366	0.11875
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	95
+360	80
+370	80
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	0
+366	0.095
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+400	0
+500	100
+600	50
+0
+0
+7
+OPTIS - Fluorescent pigment file v3.0
+Fluorescent pigment
+ISOTROPIC
+3
+0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	0
+360	0.1
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	95
+360	95
+370	95
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+350	0
+360	0.095
+370	0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load -->
+3
+400	0
+500	100
+600	0
+0
+0
