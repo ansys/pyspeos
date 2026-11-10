@@ -1852,8 +1852,6 @@ class Project:
         # 3D textures: the Texture3D message carries no name, so the name of the pattern
         # body is used as feature name.
         for texture_3d_inst in scene_data.textures_3d:
-            if texture_3d_inst.name in [_._name for _ in self._features]:
-                continue
             texture_3d_feat = Texture3D(
                 project=self,
                 name=self.client[texture_3d_inst.pattern.body_guid].get().name,
@@ -1862,6 +1860,8 @@ class Project:
             self._features.append(texture_3d_feat)
 
         for sim_inst in scene_data.simulations:
+            if sim_inst.name in [_._name for _ in self._features]:
+                continue
             sim_feat = None
             loaded_job = self._loaded_jobs.get(sim_inst.name)
             simulation_template_link = self.client[sim_inst.simulation_guid].get()
