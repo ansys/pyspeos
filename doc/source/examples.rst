@@ -39,6 +39,7 @@ Examples
         examples/core/lpf-preview
         examples/core/prism-example
         examples/core/bsdf
+        examples/core/file-formats
         examples/core/timeline
 
 
