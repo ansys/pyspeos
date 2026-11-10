@@ -100,6 +100,10 @@ It is designed to be representative of a classic Speos UI usage.
 
 For instance, users can create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries, and compute simulations.
 
+When opening a saved project, simulation job properties included in the file are restored on
+Speos 2027 R1 or newer. This includes stop conditions and other job options, which remain available
+through the simulation's public properties and subsequent execution or export.
+
 Workflow
 --------
 

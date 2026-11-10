@@ -29,6 +29,7 @@ from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
+import warnings
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
@@ -67,10 +68,12 @@ from ansys.speos.core.generic.parameters import (
     ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
+from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
@@ -164,11 +167,15 @@ class Project:
         self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
+        self._loaded_jobs: dict[str, ProtoJob] = {}
         match path:
             case None | "":
                 pass
             case str() | Path():
-                self.scene_link.load_file(str(path))
+                loaded_job = self.scene_link.load_file(str(path))
+                self._warn_if_job_load_is_unsupported(loaded_job)
+                if loaded_job is not None:
+                    self._loaded_jobs[loaded_job.simulation_path] = loaded_job
                 self._fill_features(context=context)
             case LightBoxFileInstance():
                 self.scene_link.load_file(file_uri=str(path.file), password=path.password)
@@ -177,6 +184,19 @@ class Project:
                     self._fill_features(context=context)
             case _:
                 raise TypeError(f"Unsupported path type: {type(path)}")
+
+    def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
+        """Warn when the server cannot return saved job properties."""
+        if job is not None or server_version_checker.is_version_supported(2027, 1, 0):
+            return
+        scene_data = self.scene_link.get()
+        if scene_data.simulations:
+            warnings.warn(
+                "Restoring saved simulation job properties requires Speos 2027 R1 or newer. "
+                "This server did not return job properties; configure job options explicitly "
+                "if needed.",
+                stacklevel=2,
+            )
 
     def remove_mesh_protection(self):
         """Remove mesh protection from the project loaded from *.speos file.
@@ -1575,7 +1595,6 @@ class Project:
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
-
         root_part_link = self.client[scene_data.part_guid]
         root_part = root_part_link.get()
         update_rp = False
@@ -1844,6 +1863,7 @@ class Project:
             if sim_inst.name in [_._name for _ in self._features]:
                 continue
             sim_feat = None
+            loaded_job = self._loaded_jobs.get(sim_inst.name)
             simulation_template_link = self.client[sim_inst.simulation_guid].get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
                 sim_feat = SimulationDirect(
@@ -1851,6 +1871,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
                 sim_feat = SimulationInverse(
@@ -1858,6 +1879,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
@@ -1865,6 +1887,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
                 sim_feat = SimulationVirtualBSDF(
@@ -1872,6 +1895,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             if sim_feat is not None:
                 self._features.append(sim_feat)
