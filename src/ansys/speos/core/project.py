@@ -1443,13 +1443,14 @@ class Project:
             found_features.clear()
             for feats in tmp:
                 found_features.extend(feats)
+
         for lb in self.components:
             if isinstance(lb, LightBox):
                 found_features.extend(
                     lb.find(
                         name=orig_name,
                         name_regex=name_regex,
-                        feature_type=orig_feature_type,
+                        feature_type=feature_type,
                     )
                 )
         return found_features

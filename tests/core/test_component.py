@@ -61,7 +61,7 @@ def _normalize_json_value(value):
 
 @pytest.mark.supported_speos_versions(min=261)
 def test_create_lightbox(speos: Speos):
-    """Test creation of LightBox."""
+    """Test LightBox creation and access to its features through project properties."""
     p = Project(speos=speos)
 
     # Default value
@@ -85,10 +85,16 @@ def test_create_lightbox(speos: Speos):
         lightbox.trajectory_file_uri = 42
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 1
+    assert p.find(name=".*", name_regex=True, feature_type=OptProp) == lightbox_material
+    assert p.optical_properties == lightbox_material
+    assert p.optical_properties[0] is lightbox_material[0]
     assert lightbox_material[0].get(key="name") == "Material.2"
     assert lightbox_material[0].sop_mirror.reflectance == 100
     lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceSurface)
     assert len(lightbox_source) == 1
+    assert p.find(name=".*", name_regex=True, feature_type=SourceSurface) == lightbox_source
+    assert p.sources == lightbox_source
+    assert p.sources[0] is lightbox_source[0]
     assert lightbox_source[0]._name == "Surface.2:1"
     lightbox_part = lightbox.find(name="", feature_type=part.Part)
     assert len(lightbox_part) == 1
@@ -105,15 +111,22 @@ def test_create_lightbox(speos: Speos):
     lightbox_material[0].commit()
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     assert lightbox_material.sop_mirror.reflectance == 90
+    assert p.optical_properties == [lightbox_material]
+    assert p.optical_properties[0].sop_mirror.reflectance == 90
+    assert p.sources == lightbox_source
     assert lightbox.trajectory_file_uri == ""
 
     lightbox.create_optical_property(name="new material")
     lightbox_material = lightbox.find(name=".*", name_regex=True, feature_type=OptProp)
     assert len(lightbox_material) == 2
+    assert p.optical_properties == lightbox_material
 
     lightbox.create_source(name="new rayfile", feature_type=SourceRayFile)
     lightbox_source = lightbox.find(name=".*", name_regex=True, feature_type=SourceRayFile)
     assert len(lightbox_source) == 1
+    assert len(p.sources) == 2
+    assert lightbox_source[0] in p.sources
+    assert p.find(name=".*", name_regex=True, feature_type=SourceRayFile) == lightbox_source
 
     ### Create Lightbox without given lightbox file path
 
@@ -122,6 +135,8 @@ def test_create_lightbox(speos: Speos):
     assert len(lightbox_2.project._features) == 0
     lightbox_part = lightbox_2.find(name="", feature_type=part.Part)
     assert len(lightbox_part) == 0
+    assert p.optical_properties == lightbox.project.optical_properties
+    assert p.sources == lightbox.project.sources
 
     lightbox_2.create_optical_property(name="new material")
     lightbox_material = lightbox_2.find(name=".*", name_regex=True, feature_type=OptProp)
@@ -129,6 +144,21 @@ def test_create_lightbox(speos: Speos):
     lightbox_2.create_source(name="new rayfile", feature_type=SourceRayFile)
     lightbox_source = lightbox_2.find(name=".*", name_regex=True, feature_type=SourceRayFile)
     assert len(lightbox_source) == 1
+    assert len(p.optical_properties) == 3
+    assert p.optical_properties == [
+        *lightbox.project.optical_properties,
+        *lightbox_2.project.optical_properties,
+    ]
+    assert len(p.sources) == 3
+    assert p.sources == [*lightbox.project.sources, *lightbox_2.project.sources]
+    assert p.find(name="new material", feature_type=OptProp) == [
+        *lightbox.find(name="new material", feature_type=OptProp),
+        *lightbox_2.find(name="new material", feature_type=OptProp),
+    ]
+    assert p.find(name="new rayfile", feature_type=SourceRayFile) == [
+        *lightbox.find(name="new rayfile", feature_type=SourceRayFile),
+        *lightbox_2.find(name="new rayfile", feature_type=SourceRayFile),
+    ]
     lightbox_2.create_root_part()
     lightbox_part = lightbox_2.find(name="", feature_type=part.Part)
     assert len(lightbox_part) == 1
@@ -195,6 +225,18 @@ def test_create_lightbox(speos: Speos):
     assert len(p.client[lightbox3._scene_instance.scene_guid].get().materials) == 1
 
     assert len(lightbox3.project._features) == 4
+    assert len(p.optical_properties) == 4
+    assert p.optical_properties == [
+        *lightbox.project.optical_properties,
+        *lightbox_2.project.optical_properties,
+        *lightbox3.project.optical_properties,
+    ]
+    assert len(p.sources) == 5
+    assert p.sources == [
+        *lightbox.project.sources,
+        *lightbox_2.project.sources,
+        *lightbox3.project.sources,
+    ]
 
     lightbox_material = lightbox3.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     assert lightbox_material.get(key="name") == "Material.1"
@@ -213,6 +255,7 @@ def test_create_lightbox(speos: Speos):
 
     ## Add features from lightbox to simulation
     sensor = p.create_sensor(name="sensor_helper", feature_type=SensorIrradiance)
+    assert p.sensors == [sensor]
     sim = p.create_simulation(name="sim_helper", feature_type=SimulationDirect)
     sim.sensor_paths = [sensor]
     sim.source_paths = lightbox3.source_paths
@@ -224,6 +267,14 @@ def test_create_lightbox(speos: Speos):
     assert len(sim.source_paths) == 1
 
     lightbox.delete()
+    assert len(p.optical_properties) == 2
+    assert p.optical_properties == [
+        *lightbox_2.project.optical_properties,
+        *lightbox3.project.optical_properties,
+    ]
+    assert len(p.sources) == 3
+    assert p.sources == [*lightbox_2.project.sources, *lightbox3.project.sources]
+    assert p.sensors == [sensor]
 
 
 def test_compare_json_strings_ignoring_list_order():
@@ -251,6 +302,8 @@ def test_create_balck_lightbox(speos: Speos):
     assert lightbox.axis_system == ORIGIN
     assert len(lightbox.project._features) == 0
     assert len(lightbox.source_paths) == 0
+    assert p.optical_properties == []
+    assert p.sources == []
 
 
 @pytest.mark.supported_speos_versions(min=261)
@@ -479,12 +532,23 @@ def test_delete_lightbox(speos: Speos):
     )
     assert lightbox_1.project.scene_link is not None
     assert len(lightbox_1.project._features) == 3
+    assert p.optical_properties == lightbox_1.project.optical_properties
+    assert p.sources == lightbox_1.project.sources
+
+    project_material = p.create_optical_property(name="project material")
+    project_source = p.create_source(name="project source", feature_type=SourceSurface)
+    assert len(p.optical_properties) == 2
+    assert project_material in p.optical_properties
+    assert len(p.sources) == 2
+    assert project_source in p.sources
 
     # Delete
     lightbox_1.delete()
     assert len(p.scene_link.get().scenes) == 0
     assert len(lightbox_1.project._features) == 0
     assert lightbox_1.project.scene_link is None
+    assert p.optical_properties == [project_material]
+    assert p.sources == [project_source]
 
     lightbox = p.find(name=".*", name_regex=True, feature_type=LightBox)
     assert len(lightbox) == 0
