@@ -600,7 +600,12 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             self._remote_instance.delete()
         elif self.__speos_exec:
             self.__close_local_speos_rpc_server()
-            while self.healthy and wait_time < 15:
+            healthy = True
+            while healthy and wait_time < 15:
+                try:
+                    healthy = grpc.channel_ready_future(self.channel).result(timeout=5)
+                except BaseException:
+                    healthy = False
                 time.sleep(1)
                 wait_time += 1  # takes some seconds to close rpc server
         self._channel.close()
