@@ -339,8 +339,6 @@ class Project:
         for feature in self._features:
             if isinstance(feature, BaseSensor):
                 ssrs.append(feature)
-            if isinstance(feature, LightBox):
-                ssrs.extend(feature.project.sensors)
         return ssrs
 
     @property
@@ -1448,7 +1446,7 @@ class Project:
             if isinstance(lb, LightBox):
                 found_features.extend(
                     lb.find(
-                        name=orig_name,
+                        name=name,
                         name_regex=name_regex,
                         feature_type=feature_type,
                     )
