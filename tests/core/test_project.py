@@ -494,6 +494,7 @@ def test_from_file_threads_limited(speos: Speos):
     ] == "int::" + str(threads_nb)
 
 
+@pytest.mark.supported_speos_versions(min=271)
 def test_from_gltf_file(speos: Speos):
     """Test create a project from a gltf (binary ``.glb``) file."""
     # Create a project from a gltf file
