@@ -530,7 +530,7 @@ def test_from_gltf_file(speos: Speos):
 
     body_feats = p.find(name="cute-love-heart/.*", name_regex=True, feature_type=Body)
     assert len(body_feats) == 1
-    assert body_feats[0].name == "cute-love-heart"
+    assert body_feats[0]._name == "cute-love-heart"
     assert type(body_feats[0]) is Body
 
     face_feats = p.find(
