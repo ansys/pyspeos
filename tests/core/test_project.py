@@ -538,6 +538,7 @@ def test_from_gltf_file(speos: Speos):
     )
     assert len(face_feats) == 1
     assert type(face_feats[0]) is Face
+    assert len(face_feats[0].vertices_data) !=0
 
     # The gltf material is loaded as an optical property pointing to a svbrdf file
     assert len(scene_data.materials) == 1
