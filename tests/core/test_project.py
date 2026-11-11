@@ -494,6 +494,64 @@ def test_from_file_threads_limited(speos: Speos):
     ] == "int::" + str(threads_nb)
 
 
+def test_from_gltf_file(speos: Speos):
+    """Test create a project from a gltf (binary ``.glb``) file."""
+    # Create a project from a gltf file
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "simulations" / "cute-love-heart.glb"),
+    )
+
+    scene_data = p.scene_link.get()
+
+    # A gltf file only carries geometry and its materials
+    assert scene_data.part_guid != ""
+    assert len(scene_data.sources) == 0
+    assert len(scene_data.sensors) == 0
+    assert len(scene_data.simulations) == 0
+
+    # The gltf scene node is loaded as a sub part of the root part
+    root_part_data = speos.client[scene_data.part_guid].get()
+    assert len(root_part_data.body_guids) == 0
+    assert len(root_part_data.parts) == 1
+    assert root_part_data.parts[0].name == "cute-love-heart"
+
+    sub_part_feats = p.find(name=".*", name_regex=True, feature_type=Part)
+    assert len(sub_part_feats) == 1
+    assert type(sub_part_feats[0]) is Part.SubPart
+    assert sub_part_feats[0]._name == "cute-love-heart"
+
+    # The sub part holds the meshed body and its faces
+    sub_part_data = speos.client[root_part_data.parts[0].part_guid].get()
+    assert len(sub_part_data.body_guids) == 1
+    body_data = speos.client[sub_part_data.body_guids[0]].get()
+    assert body_data.name == "cute-love-heart"
+    assert len(body_data.face_guids) == 1
+
+    body_feats = p.find(name="cute-love-heart/.*", name_regex=True, feature_type=Body)
+    assert len(body_feats) == 1
+    assert body_feats[0].name == "cute-love-heart"
+    assert type(body_feats[0]) is Body
+
+    face_feats = p.find(
+        name="cute-love-heart/cute-love-heart/.*", name_regex=True, feature_type=Face
+    )
+    assert len(face_feats) == 1
+    assert type(face_feats[0]) is Face
+
+    # The gltf material is loaded as an optical property pointing to a svbrdf file
+    assert len(scene_data.materials) == 1
+    op_feats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert len(op_feats) == 1
+    assert op_feats[0]._name == "Material_0_instance"
+    # Texture layers are not created: coordinates are stored inside the svbrdf file
+    assert op_feats[0].texture is None
+    assert op_feats[0].sop_library.file_uri.endswith("gltfsvbrdf")
+    # The material is applied on the body loaded from the gltf file
+    assert len(op_feats[0].geometries) == 1
+    assert op_feats[0].geometries[0].startswith("cute-love-heart/cute-love-heart/")
+
+
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
     # Create a project from a file
