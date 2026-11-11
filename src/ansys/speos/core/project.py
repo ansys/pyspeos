@@ -231,6 +231,22 @@ class Project:
         return None
 
     @property
+    def components(self) -> List[Union[LightBox, Texture3D]]:
+        """Property of components inside the project.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.light_box.LightBox, ansys.speos.core.texture_3d.Texture3D]]
+            List of component features.
+
+        """
+        comps = []
+        for feature in self._features:
+            if isinstance(feature, (LightBox, Texture3D)):
+                comps.append(feature)
+        return comps
+
+    @property
     def optical_properties(self) -> List[opt_prop.OptProp]:
         """Property of optical properties inside the project.
 
@@ -244,6 +260,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, opt_prop.OptProp):
                 props.append(feature)
+            if isinstance(feature, LightBox):
+                props.extend(feature.project.optical_properties)
         return props
 
     @property
@@ -279,6 +297,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, BaseSource):
                 srs.append(feature)
+            if isinstance(feature, LightBox):
+                srs.extend(feature.project.sources)
         return srs
 
     @property
@@ -319,6 +339,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, BaseSensor):
                 ssrs.append(feature)
+            if isinstance(feature, LightBox):
+                ssrs.extend(feature.project.sensors)
         return ssrs
 
     @property
@@ -1421,7 +1443,15 @@ class Project:
             found_features.clear()
             for feats in tmp:
                 found_features.extend(feats)
-
+        for lb in self.components:
+            if isinstance(lb, LightBox):
+                found_features.extend(
+                    lb.find(
+                        name=orig_name,
+                        name_regex=name_regex,
+                        feature_type=orig_feature_type,
+                    )
+                )
         return found_features
 
     # def action(self, name: str):
