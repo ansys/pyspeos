@@ -2086,7 +2086,7 @@ class OptProp(BaseVop, BaseSop):
         -----
         When OptProp was created from loading a gltf file with svbrdf
         file, the texture layers are not created as coordinate information is stored
-        inside the relevant geometry object and texture normal map and images 
+        inside the relevant geometry object and texture normal map and images
         are the stored svbrdf file. In this case, the texture layers will be ``None``
         and the svbrdf file will be used as a single texture layer.
 
