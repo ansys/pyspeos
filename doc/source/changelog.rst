@@ -40,8 +40,8 @@ This document contains the release notes for the PySpeos project.
           - `#1050 <https://github.com/ansys/pyspeos/pull/1050>`_
 
         * - Add workflow helpers to move and rotate features, including aligning one axis system to another.
-  Full surface sources can be transformed through their referenced body, unless another source uses
-  that body or one of its faces.
+            Full surface sources can be transformed through their referenced body, unless another source uses
+            that body or one of its faces.
           - `#1054 <https://github.com/ansys/pyspeos/pull/1054>`_
 
         * - Sp3 diffractiveeffects
