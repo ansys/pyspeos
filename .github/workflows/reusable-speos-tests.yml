@@ -12,7 +12,7 @@ on:
         description: 'JSON array of Speos versions to test, e.g. ["261","dev"]'
         required: false
         type: string
-        default: '["251", "252", "261", "271","dev"]'
+        default: '["251", "252", "261", "271", "dev"]'
     secrets:
       LICENSE_SERVER:
         required: true
