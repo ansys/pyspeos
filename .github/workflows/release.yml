@@ -152,7 +152,7 @@ jobs:
           check-links: false
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
-          dependencies: "pandoc texlive-latex-extra latexmk texlive-luatex texlive-fonts-extra"
+          dependencies: "pandoc"
           needs-quarto: true
           optional-dependencies-name: 'graphics'
           group-dependencies-name: 'doc'
