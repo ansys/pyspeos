@@ -9,6 +9,346 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.10.0 <https://github.com/ansys/pyspeos/releases/tag/v0.10.0>`_ - November 12, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Workflow - Export to vtp - Add possibility to export results retrieved via Speos HPC computation
+          - `#1028 <https://github.com/ansys/pyspeos/pull/1028>`_
+
+        * - Diffraction effects
+          - `#1038 <https://github.com/ansys/pyspeos/pull/1038>`_
+
+        * - Add cie overcast
+          - `#1047 <https://github.com/ansys/pyspeos/pull/1047>`_
+
+        * - Add ambient us standard
+          - `#1048 <https://github.com/ansys/pyspeos/pull/1048>`_
+
+        * - Observer sensor
+          - `#1049 <https://github.com/ansys/pyspeos/pull/1049>`_
+
+        * - Polar intensity
+          - `#1050 <https://github.com/ansys/pyspeos/pull/1050>`_
+
+        * - Add workflow helpers to move and rotate features, including aligning one axis system to another.
+  Full surface sources can be transformed through their referenced body, unless another source uses
+  that body or one of its faces.
+          - `#1054 <https://github.com/ansys/pyspeos/pull/1054>`_
+
+        * - Sp3 diffractiveeffects
+          - `#1062 <https://github.com/ansys/pyspeos/pull/1062>`_
+
+        * - Kernel implementation sensor v2
+          - `#1085 <https://github.com/ansys/pyspeos/pull/1085>`_
+
+        * - Core implementation irrad sensor v2
+          - `#1102 <https://github.com/ansys/pyspeos/pull/1102>`_
+
+        * - Adding public file formats to PySpeos to help with creating input files
+          - `#1124 <https://github.com/ansys/pyspeos/pull/1124>`_
+
+        * - Sensor template migration
+          - `#1126 <https://github.com/ansys/pyspeos/pull/1126>`_
+
+        * - #1090 radiance sensor
+          - `#1132 <https://github.com/ansys/pyspeos/pull/1132>`_
+
+        * - 1091 sensor3dirradiance
+          - `#1138 <https://github.com/ansys/pyspeos/pull/1138>`_
+
+        * - Add fast_transmission_gathering property
+          - `#1139 <https://github.com/ansys/pyspeos/pull/1139>`_
+
+        * - #1092 sensorxmpintensity migration
+          - `#1140 <https://github.com/ansys/pyspeos/pull/1140>`_
+
+        * - Implement Intensity sensors
+          - `#1141 <https://github.com/ansys/pyspeos/pull/1141>`_
+
+        * - 1093 immersive sensor
+          - `#1143 <https://github.com/ansys/pyspeos/pull/1143>`_
+
+        * - Implement new sensor template to observer sensor
+          - `#1144 <https://github.com/ansys/pyspeos/pull/1144>`_
+
+        * - Implement camera sensor
+          - `#1145 <https://github.com/ansys/pyspeos/pull/1145>`_
+
+        * - Add workflow feature transforms
+          - `#1157 <https://github.com/ansys/pyspeos/pull/1157>`_
+
+        * - Add texture3d
+          - `#1165 <https://github.com/ansys/pyspeos/pull/1165>`_
+
+        * - Improve type validation
+          - `#1168 <https://github.com/ansys/pyspeos/pull/1168>`_
+
+        * - Humen eye sensor implementation
+          - `#1184 <https://github.com/ansys/pyspeos/pull/1184>`_
+
+        * - 3d energy density sensor
+          - `#1185 <https://github.com/ansys/pyspeos/pull/1185>`_
+
+        * - Load job properties
+          - `#1186 <https://github.com/ansys/pyspeos/pull/1186>`_
+
+        * - Improve client close
+          - `#1192 <https://github.com/ansys/pyspeos/pull/1192>`_
+
+        * - Supporting gltf import
+          - `#1195 <https://github.com/ansys/pyspeos/pull/1195>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Core - sensor - fix private attribute when reset
+          - `#1154 <https://github.com/ansys/pyspeos/pull/1154>`_
+
+        * - Nightly for immersive, observer, 3d irrad, intensity sensor test version
+          - `#1160 <https://github.com/ansys/pyspeos/pull/1160>`_
+
+        * - Nightly transform failure
+          - `#1190 <https://github.com/ansys/pyspeos/pull/1190>`_
+
+        * - Project properties
+          - `#1194 <https://github.com/ansys/pyspeos/pull/1194>`_
+
+        * - Input creation run tests
+          - `#1198 <https://github.com/ansys/pyspeos/pull/1198>`_
+
+        * - Ty check
+          - `#1199 <https://github.com/ansys/pyspeos/pull/1199>`_
+
+        * - Adjust requirements on doc built for release
+          - `#1201 <https://github.com/ansys/pyspeos/pull/1201>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Frequent ask questions
+          - `#1051 <https://github.com/ansys/pyspeos/pull/1051>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump astral-sh/setup-uv from 8.1.0 to 8.2.0
+          - `#1012 <https://github.com/ansys/pyspeos/pull/1012>`_, `#1030 <https://github.com/ansys/pyspeos/pull/1030>`_
+
+        * - Bump codecov/codecov-action from 6.0.1 to 7.0.0
+          - `#1013 <https://github.com/ansys/pyspeos/pull/1013>`_, `#1029 <https://github.com/ansys/pyspeos/pull/1029>`_
+
+        * - Bump ansys-tools-common from 0.5.0 to 0.5.1 in the core-deps group
+          - `#1014 <https://github.com/ansys/pyspeos/pull/1014>`_
+
+        * - Bump ruff from 0.15.15 to 0.15.16
+          - `#1015 <https://github.com/ansys/pyspeos/pull/1015>`_
+
+        * - Bump prek from 0.4.3 to 0.4.4
+          - `#1016 <https://github.com/ansys/pyspeos/pull/1016>`_
+
+        * - Bump jupyter-server from 2.19.0 to 2.20.0
+          - `#1018 <https://github.com/ansys/pyspeos/pull/1018>`_
+
+        * - Bump ty from 0.0.44 to 0.0.49
+          - `#1019 <https://github.com/ansys/pyspeos/pull/1019>`_
+
+        * - Bump ruff from 0.15.16 to 0.15.17
+          - `#1020 <https://github.com/ansys/pyspeos/pull/1020>`_
+
+        * - Bump msgpack from 1.2.0 to 1.2.1
+          - `#1021 <https://github.com/ansys/pyspeos/pull/1021>`_
+
+        * - Bump jupyterlab from 4.5.8 to 4.5.9
+          - `#1022 <https://github.com/ansys/pyspeos/pull/1022>`_
+
+        * - Bump actions/checkout from 6.0.3 to 7.0.0
+          - `#1031 <https://github.com/ansys/pyspeos/pull/1031>`_
+
+        * - Bump ruff from 0.15.17 to 0.15.18
+          - `#1035 <https://github.com/ansys/pyspeos/pull/1035>`_
+
+        * - Bump ansys-api-speos from 0.16.2 to 0.16.3
+          - `#1036 <https://github.com/ansys/pyspeos/pull/1036>`_
+
+        * - Bump the optional-deps group with 2 updates
+          - `#1043 <https://github.com/ansys/pyspeos/pull/1043>`_
+
+        * - Bump pytest from 9.0.3 to 9.1.1 in the dev-dependencies group
+          - `#1044 <https://github.com/ansys/pyspeos/pull/1044>`_
+
+        * - Bump actions/setup-python from 6.2.0 to 6.3.0 in the actions group
+          - `#1052 <https://github.com/ansys/pyspeos/pull/1052>`_
+
+        * - Bump mistune from 3.2.1 to 3.3.0 in the security-updates group across 1 directory
+          - `#1058 <https://github.com/ansys/pyspeos/pull/1058>`_
+
+        * - Bump docker/login-action from 4.2.0 to 4.4.0 in the actions group
+          - `#1059 <https://github.com/ansys/pyspeos/pull/1059>`_
+
+        * - Bump the actions group with 2 updates
+          - `#1063 <https://github.com/ansys/pyspeos/pull/1063>`_, `#1155 <https://github.com/ansys/pyspeos/pull/1155>`_
+
+        * - Bump grpcio from 1.81.1 to 1.82.1 in the grpc-deps group
+          - `#1064 <https://github.com/ansys/pyspeos/pull/1064>`_
+
+        * - Bump ruff-pre-commit from v0.15.20 to 0.15.21 in the precommit group
+          - `#1065 <https://github.com/ansys/pyspeos/pull/1065>`_
+
+        * - Bump pillow from 12.2.0 to 12.3.0 in the security-updates group across 1 directory
+          - `#1070 <https://github.com/ansys/pyspeos/pull/1070>`_
+
+        * - Bump jupyterlab from 4.6.1 to 4.6.2 in the security-updates group across 1 directory
+          - `#1072 <https://github.com/ansys/pyspeos/pull/1072>`_
+
+        * - Bump actions/labeler from 6.2.0 to 7.0.0 in the actions group
+          - `#1073 <https://github.com/ansys/pyspeos/pull/1073>`_
+
+        * - Bump ansys-tools-visualization-interface from 0.13.3 to 0.14.0 in the optional-deps group
+          - `#1074 <https://github.com/ansys/pyspeos/pull/1074>`_
+
+        * - Bump the security-updates group across 1 directory with 2 updates
+          - `#1142 <https://github.com/ansys/pyspeos/pull/1142>`_, `#1175 <https://github.com/ansys/pyspeos/pull/1175>`_
+
+        * - Bump soupsieve from 2.8.4 to 2.9 in the security-updates group across 1 directory
+          - `#1146 <https://github.com/ansys/pyspeos/pull/1146>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.6 to 0.16.7 in the precommit group
+          - `#1148 <https://github.com/ansys/pyspeos/pull/1148>`_
+
+        * - Bump trame-client from 3.13.2 to 4.0.1
+          - `#1149 <https://github.com/ansys/pyspeos/pull/1149>`_
+
+        * - Bump the actions group across 1 directory with 4 updates
+          - `#1150 <https://github.com/ansys/pyspeos/pull/1150>`_
+
+        * - Bump grpcio from 1.83.0 to 1.84.0 in the grpc-deps group
+          - `#1151 <https://github.com/ansys/pyspeos/pull/1151>`_
+
+        * - Bump numpydoc from 1.10.0 to 1.11.0 in the dev-dependencies group
+          - `#1152 <https://github.com/ansys/pyspeos/pull/1152>`_
+
+        * - Bump trame-client from 4.0.1 to 4.1.0
+          - `#1153 <https://github.com/ansys/pyspeos/pull/1153>`_
+
+        * - Bump the security-updates group across 1 directory with 4 updates
+          - `#1158 <https://github.com/ansys/pyspeos/pull/1158>`_
+
+        * - Bump ansys/actions/check-vulnerabilities from ab294614ec4f901eb9d4b6459d864764c11444b6 to d45dd1af95c2319b639d3f26c602cd5fe802ca7d in the actions group
+          - `#1161 <https://github.com/ansys/pyspeos/pull/1161>`_
+
+        * - Bump multidict from 6.7.1 to 6.9.1 in the security-updates group across 1 directory
+          - `#1162 <https://github.com/ansys/pyspeos/pull/1162>`_
+
+        * - Bump astral-sh/setup-uv from 10.2.0 to 10.3.0 in the actions group
+          - `#1166 <https://github.com/ansys/pyspeos/pull/1166>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.10 to 0.17.0 in the precommit group
+          - `#1167 <https://github.com/ansys/pyspeos/pull/1167>`_
+
+        * - Bump aiohttp from 3.14.3 to 3.14.4 in the security-updates group across 1 directory
+          - `#1172 <https://github.com/ansys/pyspeos/pull/1172>`_
+
+        * - Bump certifi from 2026.5.20 to 2026.10.19 in the security-updates group across 1 directory
+          - `#1174 <https://github.com/ansys/pyspeos/pull/1174>`_
+
+        * - Bump ruff from 0.16.0 to 0.17.1 in the dev-dependencies group
+          - `#1176 <https://github.com/ansys/pyspeos/pull/1176>`_
+
+        * - Bump typing-extensions from 4.15.0 to 4.16.0
+          - `#1177 <https://github.com/ansys/pyspeos/pull/1177>`_
+
+        * - Bump msgpack from 1.2.1 to 1.2.3 in the security-updates group across 1 directory
+          - `#1180 <https://github.com/ansys/pyspeos/pull/1180>`_
+
+        * - Bump the actions group with 3 updates
+          - `#1181 <https://github.com/ansys/pyspeos/pull/1181>`_
+
+        * - Bump trame-client from 3.13.6 to 4.1.4
+          - `#1187 <https://github.com/ansys/pyspeos/pull/1187>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Type check bsdf and lxp
+          - `#912 <https://github.com/ansys/pyspeos/pull/912>`_
+
+        * - Leverage group dependencies (PEP 735) and uv lock file
+          - `#1001 <https://github.com/ansys/pyspeos/pull/1001>`_
+
+        * - Update CHANGELOG for v0.9.0
+          - `#1010 <https://github.com/ansys/pyspeos/pull/1010>`_
+
+        * - Improve release process
+          - `#1011 <https://github.com/ansys/pyspeos/pull/1011>`_
+
+        * - Bump dev version into v0.10.dev0
+          - `#1017 <https://github.com/ansys/pyspeos/pull/1017>`_
+
+        * - Update missing or outdated files
+          - `#1023 <https://github.com/ansys/pyspeos/pull/1023>`_, `#1046 <https://github.com/ansys/pyspeos/pull/1046>`_
+
+        * - Update copyright headers
+          - `#1024 <https://github.com/ansys/pyspeos/pull/1024>`_
+
+        * - Fix reusable action's python setup
+          - `#1026 <https://github.com/ansys/pyspeos/pull/1026>`_
+
+        * - Update dependabot configuration
+          - `#1037 <https://github.com/ansys/pyspeos/pull/1037>`_
+
+        * - Pre-commit autoupdate
+          - `#1045 <https://github.com/ansys/pyspeos/pull/1045>`_, `#1053 <https://github.com/ansys/pyspeos/pull/1053>`_, `#1060 <https://github.com/ansys/pyspeos/pull/1060>`_, `#1075 <https://github.com/ansys/pyspeos/pull/1075>`_, `#1131 <https://github.com/ansys/pyspeos/pull/1131>`_, `#1156 <https://github.com/ansys/pyspeos/pull/1156>`_, `#1164 <https://github.com/ansys/pyspeos/pull/1164>`_, `#1178 <https://github.com/ansys/pyspeos/pull/1178>`_, `#1182 <https://github.com/ansys/pyspeos/pull/1182>`_, `#1191 <https://github.com/ansys/pyspeos/pull/1191>`_
+
+        * - Use 26r1 sp3
+          - `#1057 <https://github.com/ansys/pyspeos/pull/1057>`_
+
+        * - Update CHANGELOG for v0.9.2
+          - `#1136 <https://github.com/ansys/pyspeos/pull/1136>`_
+
+        * - Bump jupyter-server in lockfile
+          - `#1169 <https://github.com/ansys/pyspeos/pull/1169>`_
+
+        * - Add missing dependency and update deprecated logic
+          - `#1171 <https://github.com/ansys/pyspeos/pull/1171>`_
+
+        * - Update grpcio dependency version to 1.84.1
+          - `#1173 <https://github.com/ansys/pyspeos/pull/1173>`_
+
+        * - Bump ansys actions
+          - `#1179 <https://github.com/ansys/pyspeos/pull/1179>`_
+
+        * - Notify future drop of python support
+          - `#1188 <https://github.com/ansys/pyspeos/pull/1188>`_
+
+        * - Add 271 to reusable workflows
+          - `#1196 <https://github.com/ansys/pyspeos/pull/1196>`_
+
+
 `0.9.2 <https://github.com/ansys/pyspeos/releases/tag/v0.9.2>`_ - September 16, 2026
 ====================================================================================
 
