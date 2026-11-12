@@ -139,7 +139,7 @@ class Project:
     speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
     path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = None
-        The project will be loaded from this speos file or lightbox instance.
+        The project will be loaded from this speos file, gltf file or lightbox instance.
        By default, ``None``, means create from empty.
     context : Optional[str]
         For internal use only.
