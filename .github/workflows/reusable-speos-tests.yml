@@ -13,6 +13,11 @@ on:
         required: false
         type: string
         default: '["251", "252", "261", "271", "dev"]'
+      report-matrix-results:
+        description: 'Publish a combined matrix results report'
+        required: false
+        type: boolean
+        default: false
     secrets:
       LICENSE_SERVER:
         required: true
@@ -25,7 +30,7 @@ permissions: {}
 
 jobs:
   testing:
-    name: Testing and coverage
+    name: Testing and coverage (Speos ${{ matrix.speos-version }} / Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
@@ -111,4 +116,27 @@ jobs:
         run: |
           docker kill speos-rpc
           docker rm speos-rpc
+
+      - name: Record matrix job result
+        if: always() && inputs.report-matrix-results
+        shell: bash
+        env:
+          JOB_RESULT: ${{ job.status }}
+        run: |
+          mkdir -p matrix-results
+          printf '%s|%s|%s\n' \
+            '${{ matrix.speos-version }}' \
+            '${{ matrix.python-version }}' \
+            "$JOB_RESULT" \
+            > "matrix-results/${{ matrix.speos-version }}-${{ matrix.python-version }}.txt"
+
+      - name: Upload matrix job result
+        if: always() && inputs.report-matrix-results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        continue-on-error: true
+        with:
+          path: matrix-results/${{ matrix.speos-version }}-${{ matrix.python-version }}.txt
+          name: speos-matrix-result-${{ matrix.speos-version }}-${{ matrix.python-version }}
+          retention-days: 7
+
 

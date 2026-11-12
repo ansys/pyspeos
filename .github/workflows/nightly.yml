@@ -20,7 +20,89 @@ jobs:
     permissions:
       contents: read   # Required to read repository content for testing
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
+    with:
+      report-matrix-results: true
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     uses: $/.github/workflows/reusable-speos-tests.yml
+
+  notify:
+    name: Send nightly matrix feedback to Teams
+    if: always()
+    needs: testing
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Download matrix job results
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          pattern: speos-matrix-result-*
+          path: matrix-results
+          merge-multiple: true
+
+      - name: Send matrix results to Teams
+        shell: bash
+        env:
+          WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TESTING_RESULT: ${{ needs.testing.result }}
+          REPORT_BRANCH: ${{ github.ref_name }}
+          REPORT_RUN_ID: ${{ github.run_id }}
+        run: |
+          shopt -s nullglob
+          result_files=(matrix-results/*.txt)
+          result_lines=()
+          for file in "${result_files[@]}"; do
+            IFS='|' read -r speos_version python_version result < "$file"
+            case "$result" in
+              success) icon='✅' ;;
+              failure) icon='❌' ;;
+              cancelled) icon='🚫' ;;
+              *) icon='❔' ;;
+            esac
+            result_lines+=("$icon Speos $speos_version / Python $python_version — $result")
+          done
+
+          if [[ ${#result_lines[@]} -eq 0 ]]; then
+            matrix_results='No matrix job results were recorded.'
+          else
+            matrix_results=$(printf '%s\n' "${result_lines[@]}")
+          fi
+
+          report_date=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          report_title="PySpeos nightly matrix: ${TESTING_RESULT^^}"
+          jq -n \
+            --arg title "$report_title" \
+            --arg date "$report_date" \
+            --arg branch "$REPORT_BRANCH" \
+            --arg results "$matrix_results" \
+            --arg run_url "https://github.com/ansys/pyspeos/actions/runs/${REPORT_RUN_ID}" \
+            '{
+              type: "message",
+              summary: $title,
+              attachments: [{
+                contentType: "application/vnd.microsoft.card.adaptive",
+                contentUrl: null,
+                content: {
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  type: "AdaptiveCard",
+                  version: "1.4",
+                  body: [
+                    {type: "TextBlock", text: $title, weight: "Bolder", size: "Large", wrap: true},
+                    {type: "TextBlock", text: $date, isSubtle: true, spacing: "None", size: "Small", wrap: true},
+                    {type: "TextBlock", text: ("Branch: " + $branch), isSubtle: true, separator: true, wrap: true},
+                    {type: "TextBlock", text: "Speos / Python combinations", weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
+                    {type: "TextBlock", text: $results, spacing: "Small", wrap: true}
+                  ],
+                  actions: [{type: "Action.OpenUrl", title: "View Workflow Run", url: $run_url}]
+                }
+              }]
+            }' > payload.json
+
+          # Send to Teams webhook
+          curl --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data @payload.json \
+            "$WEBHOOK_URL"
+
