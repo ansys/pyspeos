@@ -139,7 +139,7 @@ class Project:
     speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
     path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = None
-        The project will be loaded from this speos file or lightbox instance.
+        The project will be loaded from this speos file, gltf file or lightbox instance.
        By default, ``None``, means create from empty.
     context : Optional[str]
         For internal use only.
@@ -231,6 +231,22 @@ class Project:
         return None
 
     @property
+    def components(self) -> List[Union[LightBox, Texture3D]]:
+        """Property of components inside the project.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.light_box.LightBox, ansys.speos.core.texture_3d.Texture3D]]
+            List of component features.
+
+        """
+        comps = []
+        for feature in self._features:
+            if isinstance(feature, (LightBox, Texture3D)):
+                comps.append(feature)
+        return comps
+
+    @property
     def optical_properties(self) -> List[opt_prop.OptProp]:
         """Property of optical properties inside the project.
 
@@ -244,6 +260,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, opt_prop.OptProp):
                 props.append(feature)
+            if isinstance(feature, LightBox):
+                props.extend(feature.project.optical_properties)
         return props
 
     @property
@@ -279,6 +297,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, BaseSource):
                 srs.append(feature)
+            if isinstance(feature, LightBox):
+                srs.extend(feature.project.sources)
         return srs
 
     @property
@@ -1422,6 +1442,15 @@ class Project:
             for feats in tmp:
                 found_features.extend(feats)
 
+        for lb in self.components:
+            if isinstance(lb, LightBox):
+                found_features.extend(
+                    lb.find(
+                        name=name,
+                        name_regex=name_regex,
+                        feature_type=feature_type,
+                    )
+                )
         return found_features
 
     # def action(self, name: str):
