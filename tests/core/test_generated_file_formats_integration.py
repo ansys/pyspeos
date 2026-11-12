@@ -242,6 +242,7 @@ def _create_cube_body(root_part, name: str):
     return body
 
 
+@pytest.mark.supported_speos_versions(min=261)
 @pytest.mark.parametrize(
     ("volume_name", "surface_name"), _TEST_CASES, ids=[f"{v}-{s}" for v, s in _TEST_CASES]
 )
