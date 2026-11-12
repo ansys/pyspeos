@@ -177,7 +177,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen --only-group quality --no-install-project
+          uv sync --frozen --only-group quality
 
       # NOTE: At the moment this will only run on a subset of files like ansys/speos/core/speos.py
       # See the pyproject.toml configuration for more information on excluded files/folders

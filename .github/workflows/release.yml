@@ -72,41 +72,16 @@ jobs:
           enable-cache: false
           prune-cache: true
 
-      - name: Create virtual environment
-        run: uv venv .venv
-
       - name: Install dependencies
         run: |
-          source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement ansys-speos-core[graphics]
+          uv sync --frozen --only-group quality
 
-      # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
+      # NOTE: At the moment this will only run on a subset of files like ansys/speos/core/speos.py
+      # See the pyproject.toml configuration for more information on excluded files/folders
       - name: Run Ty on selected files
         run: |
           source .venv/bin/activate
-          ty check src/ansys/speos/core/ examples/ \
-            --exclude src/ansys/speos/core/body.py \
-            --exclude src/ansys/speos/core/component.py \
-            --exclude src/ansys/speos/core/face.py \
-            --exclude src/ansys/speos/core/launcher.py \
-            --exclude src/ansys/speos/core/intensity.py \
-            --exclude src/ansys/speos/core/ground_plane.py \
-            --exclude src/ansys/speos/core/geo_ref.py \
-            --exclude src/ansys/speos/core/logger.py \
-            --exclude src/ansys/speos/core/part.py \
-            --exclude src/ansys/speos/core/opt_prop.py \
-            --exclude src/ansys/speos/core/project.py \
-            --exclude src/ansys/speos/core/proto_message_utils.py \
-            --exclude src/ansys/speos/core/source.py \
-            --exclude src/ansys/speos/core/spectrum.py \
-            --exclude src/ansys/speos/core/simulation.py \
-            --exclude src/ansys/speos/core/sensor.py \
-            --exclude src/ansys/speos/core/__init__.py \
-            --exclude src/ansys/speos/core/kernel \
-            --exclude src/ansys/speos/core/workflow \
-            --exclude examples/core \
-            --exclude examples/kernel \
-            --exclude examples/workflow \
+          ty check
 
   doc-style:
     name: Documentation Style Check
