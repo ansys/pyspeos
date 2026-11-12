@@ -56,7 +56,7 @@ jobs:
           for file in "${result_files[@]}"; do
             IFS='|' read -r speos_version python_version result < "$file"
             case "$result" in
-              success) icon='✅' ;;
+              success) continue ;;
               failure) icon='❌' ;;
               cancelled) icon='🚫' ;;
               *) icon='❔' ;;
@@ -65,7 +65,7 @@ jobs:
           done
 
           if [[ ${#result_lines[@]} -eq 0 ]]; then
-            matrix_results='No matrix job results were recorded.'
+            matrix_results='No failed job 🎉'
           else
             matrix_results=$(printf '%s\n' "${result_lines[@]}")
           fi
@@ -92,7 +92,7 @@ jobs:
                     {type: "TextBlock", text: $title, weight: "Bolder", size: "Large", wrap: true},
                     {type: "TextBlock", text: $date, isSubtle: true, spacing: "None", size: "Small", wrap: true},
                     {type: "TextBlock", text: ("Branch: " + $branch), isSubtle: true, separator: true, wrap: true},
-                    {type: "TextBlock", text: "Speos / Python combinations", weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
+                    {type: "TextBlock", text: "Failed Speos / Python job", weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
                     {type: "TextBlock", text: $results, spacing: "Small", wrap: true}
                   ],
                   actions: [{type: "Action.OpenUrl", title: "View Workflow Run", url: $run_url}]
