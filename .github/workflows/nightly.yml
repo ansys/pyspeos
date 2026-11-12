@@ -47,7 +47,6 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           TESTING_RESULT: ${{ needs.testing.result }}
-          REPORT_BRANCH: ${{ github.ref_name }}
           REPORT_RUN_ID: ${{ github.run_id }}
         run: |
           shopt -s nullglob
@@ -71,11 +70,10 @@ jobs:
           fi
 
           report_date=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          report_title="PySpeos nightly matrix: ${TESTING_RESULT^^}"
+          report_title="Nightly CI: ${TESTING_RESULT^^}"
           jq -n \
             --arg title "$report_title" \
             --arg date "$report_date" \
-            --arg branch "$REPORT_BRANCH" \
             --arg results "$matrix_results" \
             --arg run_url "https://github.com/ansys/pyspeos/actions/runs/${REPORT_RUN_ID}" \
             '{
@@ -91,9 +89,7 @@ jobs:
                   body: [
                     {type: "TextBlock", text: $title, weight: "Bolder", size: "Large", wrap: true},
                     {type: "TextBlock", text: $date, isSubtle: true, spacing: "None", size: "Small", wrap: true},
-                    {type: "TextBlock", text: ("Branch: " + $branch), isSubtle: true, separator: true, wrap: true},
-                    {type: "TextBlock", text: "Failed Speos / Python job", weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
-                    {type: "TextBlock", text: $results, spacing: "Small", wrap: true}
+                    {type: "TextBlock", text: $results, weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
                   ],
                   actions: [{type: "Action.OpenUrl", title: "View Workflow Run", url: $run_url}]
                 }
