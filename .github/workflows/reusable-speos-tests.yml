@@ -122,13 +122,19 @@ jobs:
         shell: bash
         env:
           JOB_RESULT: ${{ job.status }}
+          SPEOS_VERSION: ${{ matrix.speos-version }}
+          PYTHON_VERSION: ${{ matrix.python-version }}
         run: |
           mkdir -p matrix-results
+          if [[ ! "$SPEOS_VERSION" =~ ^[A-Za-z0-9._-]+$ || ! "$PYTHON_VERSION" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "Invalid matrix value for result filename" >&2
+            exit 1
+          fi
           printf '%s|%s|%s\n' \
-            '${{ matrix.speos-version }}' \
-            '${{ matrix.python-version }}' \
+            "$SPEOS_VERSION" \
+            "$PYTHON_VERSION" \
             "$JOB_RESULT" \
-            > "matrix-results/${{ matrix.speos-version }}-${{ matrix.python-version }}.txt"
+            > "matrix-results/${SPEOS_VERSION}-${PYTHON_VERSION}.txt"
 
       - name: Upload matrix job result
         if: always() && inputs.report-matrix-results
