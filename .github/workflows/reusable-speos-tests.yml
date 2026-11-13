@@ -41,10 +41,108 @@ jobs:
         python-version: ${{ fromJSON(inputs.python-versions) }}
         speos-version: ${{ fromJSON(inputs.speos-versions) }}
     steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
-      - name: Fake job
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@10e6efb97af3cd1523828f0e22c39f0e4567f3e4 # v5.2.0
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: false
+          prune-cache: true
+
+      - name: Install package with test dependencies
+        run: |
+          uv sync --frozen --group tests --extra graphics --no-dev
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io/ansys
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start container for Speos ${{ matrix.speos-version }}
+        shell: bash
+        env:
+          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          SPEOS_VERSION: ${{ matrix.speos-version }}
+        run: |
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:${SPEOS_VERSION} -m 25000000 --transport_insecure --host 0.0.0.0
+
+      - name: Run pytest for Speos ${{ matrix.speos-version }}
+        shell: bash
+        env:
+          SPEOS_VERSION: ${{ matrix.speos-version }}
+        run: |
+          . .venv/bin/activate
+          maximal_absolute=999
+
+          if [[ "$SPEOS_VERSION" == "dev" ]]; then
+            echo "run pytest for all available features"
+            pytest -s --supported-features=$maximal_absolute
+          else
+            echo "run pytest for Speos ${SPEOS_VERSION} supported features"
+            pytest -s --supported-features=$SPEOS_VERSION
+          fi
+
+      - name: Upload Coverage Results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          path: .cov/html
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: .cov/xml
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}
+
+      - name: Stop container
         shell: bash
         run: |
-          echo "Starting tests for Speos ${{ matrix.speos-version }} with Python ${{ matrix.python-version }}"
-          exit 1
+          docker kill speos-rpc
+          docker rm speos-rpc
+
+      - name: Record matrix job result
+        if: always() && inputs.report-matrix-results
+        shell: bash
+        env:
+          JOB_RESULT: ${{ job.status }}
+          SPEOS_VERSION: ${{ matrix.speos-version }}
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: |
+          mkdir -p matrix-results
+          if [[ ! "$SPEOS_VERSION" =~ ^[A-Za-z0-9._-]+$ || ! "$PYTHON_VERSION" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "Invalid matrix value for result filename" >&2
+            exit 1
+          fi
+          printf '%s|%s|%s\n' \
+            "$SPEOS_VERSION" \
+            "$PYTHON_VERSION" \
+            "$JOB_RESULT" \
+            > "matrix-results/${SPEOS_VERSION}-${PYTHON_VERSION}.txt"
+
+      - name: Upload matrix job result
+        if: always() && inputs.report-matrix-results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        continue-on-error: true
+        with:
+          path: matrix-results/${{ matrix.speos-version }}-${{ matrix.python-version }}.txt
+          name: speos-matrix-result-${{ matrix.speos-version }}-${{ matrix.python-version }}
+          retention-days: 7
+
 
