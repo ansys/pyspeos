@@ -24,3 +24,21 @@ jobs:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     uses: $/.github/workflows/reusable-speos-tests.yml
+
+  notify:
+    name: Notify through Teams
+    if: always() && needs.testing.result == 'failure'
+    needs: testing
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Trigger Teams notification
+        shell: bash
+        env:
+          WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary '{"event":"nightly-failure"}' \
+            "$WEBHOOK_URL"
+
