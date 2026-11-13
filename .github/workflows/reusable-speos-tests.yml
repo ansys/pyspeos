@@ -13,11 +13,6 @@ on:
         required: false
         type: string
         default: '["251", "252", "261", "271", "dev"]'
-      report-matrix-results:
-        description: 'Publish a combined matrix results report'
-        required: false
-        type: boolean
-        default: false
     secrets:
       LICENSE_SERVER:
         required: true
@@ -116,33 +111,3 @@ jobs:
         run: |
           docker kill speos-rpc
           docker rm speos-rpc
-
-      - name: Record matrix job result
-        if: always() && inputs.report-matrix-results
-        shell: bash
-        env:
-          JOB_RESULT: ${{ job.status }}
-          SPEOS_VERSION: ${{ matrix.speos-version }}
-          PYTHON_VERSION: ${{ matrix.python-version }}
-        run: |
-          mkdir -p matrix-results
-          if [[ ! "$SPEOS_VERSION" =~ ^[A-Za-z0-9._-]+$ || ! "$PYTHON_VERSION" =~ ^[A-Za-z0-9._-]+$ ]]; then
-            echo "Invalid matrix value for result filename" >&2
-            exit 1
-          fi
-          printf '%s|%s|%s\n' \
-            "$SPEOS_VERSION" \
-            "$PYTHON_VERSION" \
-            "$JOB_RESULT" \
-            > "matrix-results/${SPEOS_VERSION}-${PYTHON_VERSION}.txt"
-
-      - name: Upload matrix job result
-        if: always() && inputs.report-matrix-results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        continue-on-error: true
-        with:
-          path: matrix-results/${{ matrix.speos-version }}-${{ matrix.python-version }}.txt
-          name: speos-matrix-result-${{ matrix.speos-version }}-${{ matrix.python-version }}
-          retention-days: 7
-
-
