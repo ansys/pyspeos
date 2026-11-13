@@ -71,7 +71,7 @@ class _MyInner:
 
 ## Coding Standards
 
-- **Python ≥ 3.10** — use `match`/`case`, `|` in type hints, `from __future__ import annotations`.
+- **Python ≥ 3.12** — use `match`/`case`, `|` in type hints, `from __future__ import annotations`.
 - **Linting**: `ruff` (see `pyproject.toml`). Run `ruff check --fix` and `ruff format` before
   committing. Fix all warnings — CI enforces zero violations.
 - **Docstrings**: NumPy style on every public class, method, and property.
