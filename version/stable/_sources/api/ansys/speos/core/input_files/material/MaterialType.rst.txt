@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`MaterialType`
+=====================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Select the volume material flavor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~isotropic`
+            - 
+          * - :py:attr:`~metallic`
+            - 
+          * - :py:attr:`~birefringent`
+            - 
+          * - :py:attr:`~fluorescent`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: isotropic
+   :value: 'Isotropic'
+
+
+.. py:attribute:: metallic
+   :value: 'Metallic'
+
+
+.. py:attribute:: birefringent
+   :value: 'Birefringent'
+
+
+.. py:attribute:: fluorescent
+   :value: 'Fluorescent'
+
+
+
+
+
+

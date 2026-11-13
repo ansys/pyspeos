@@ -1,0 +1,87 @@
+
+
+
+
+
+
+The ``ray_file.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.input_files.ray_file
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: ray_file
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.ray_file.Ray`
+            - Single ray of a Speos ray file.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.ray_file.RayFile`
+            - Speos ray file, holding the rays emitted by a measured or simulated source.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Ray</api/ansys/speos/core/input_files/ray_file/Ray>
+    <span class="nf nf-cod-symbol_class"></span> RayFile</api/ansys/speos/core/input_files/ray_file/RayFile>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.ray`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

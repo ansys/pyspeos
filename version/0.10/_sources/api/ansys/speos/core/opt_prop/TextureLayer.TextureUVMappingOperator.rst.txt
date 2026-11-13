@@ -1,0 +1,440 @@
+
+
+
+
+
+
+:class:`TextureUVMappingOperator`
+=================================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator(mapping, default_parameters = None)
+
+   
+   Texture mapping operator for a texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+.. py:currentmodule:: TextureUVMappingOperator
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~axis_system`
+            - Reference axis system for the mapping operator.
+          * - :py:attr:`~u_offset`
+            - Shift on U direction (mm).
+          * - :py:attr:`~v_offset`
+            - Shift on V direction (mm).
+          * - :py:attr:`~u_scale`
+            - Scale factor on U dimension.
+          * - :py:attr:`~v_scale`
+            - Scale factor on V dimension.
+          * - :py:attr:`~u_length`
+            - Dimension on U direction (mm).
+          * - :py:attr:`~v_length`
+            - Dimension on V direction (mm).
+          * - :py:attr:`~rotation`
+            - Rotation of UVs in degrees, in range ]-360, 360[.
+          * - :py:attr:`~perimeter`
+            - Sphere perimeter for spherical mapping (mm).
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__todict__`
+            - Convert the mapping operator properties to a dictionary for comparison.
+          * - :py:attr:`~__eq__`
+            - Override equality to compare mapping operator properties.
+          * - :py:attr:`~__str__`
+            - Represent the mapping operator as string.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import TextureUVMappingOperator
+
+Property detail
+---------------
+
+.. py:property:: axis_system
+   :type: list
+
+
+   
+   Reference axis system for the mapping operator.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Twelve floats ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: u_offset
+   :type: float
+
+
+   
+   Shift on U direction (mm).
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           U offset value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: v_offset
+   :type: float
+
+
+   
+   Shift on V direction (mm).
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           V offset value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: u_scale
+   :type: float
+
+
+   
+   Scale factor on U dimension.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           U scale factor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: v_scale
+   :type: float
+
+
+   
+   Scale factor on V dimension.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           V scale factor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: u_length
+   :type: float
+
+
+   
+   Dimension on U direction (mm).
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           U length value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: v_length
+   :type: Optional[float]
+
+
+   
+   Dimension on V direction (mm).
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:float`]
+           V length value, or ``None`` when not set (image ratio is used instead).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: rotation
+   :type: float
+
+
+   
+   Rotation of UVs in degrees, in range ]-360, 360[.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Rotation angle in degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: perimeter
+   :type: Optional[float]
+
+
+   
+   Sphere perimeter for spherical mapping (mm).
+
+
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:float`]
+           Sphere perimeter when mapping type is ``'spherical'``, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: __todict__()
+
+   
+   Convert the mapping operator properties to a dictionary for comparison.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __eq__(other)
+
+   
+   Override equality to compare mapping operator properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Represent the mapping operator as string.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

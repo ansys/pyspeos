@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``face.py`` module
+======================
+
+.. py:module:: ansys.speos.core.face
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: face
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.face.Face`
+            - Feature : Face.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Face</api/ansys/speos/core/face/Face>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with feature: Face.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

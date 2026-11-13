@@ -1,0 +1,392 @@
+
+
+
+
+
+
+:class:`CoatedSurfaceFile`
+==========================
+
+
+.. py:class:: ansys.speos.core.input_files.coated_surface.CoatedSurfaceFile(wavelengths = _DEFAULT_WAVELENGTHS, incident_angles = _DEFAULT_INCIDENT_ANGLES, samples = None, description = _DEFAULT_DESCRIPTION)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
+
+   The file holds one
+   :class:`ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample` per angle of
+   incidence and per wavelength, stored in ``samples[incidence_index][wavelength_index]``.
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the samples, in nm, sorted in increasing order. By default,
+           ``[400.0, 550.0, 700.0]``.
+
+       **incident_angles** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Angles of incidence of the samples, in degrees, sorted in increasing order.
+           By default, ``[0.0, 60.0, 90.0]``.
+
+       **samples** : :obj:`List`\[:obj:`List`\[:obj:`CoatedSurfaceSample`]], :obj:`optional`
+           Coating responses, one row per angle of incidence and one column per wavelength.
+           By default, a 3 x 3 grid of independent default
+           :class:`ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample` objects,
+           which reflect all the light.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default, ``"Coating surface"``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Called without arguments, the constructor creates a 3 x 3 grid of perfect reflectors.
+   Pass ``wavelengths``, ``incident_angles`` and ``samples`` together to describe another
+   grid, since each default only matches the other ones.
+
+   A Speos coating is only valid for the rays crossing the interface in one direction.
+   List getters copy the containers, while sample objects remain shared and editable
+   through validated properties. To resize a populated grid, clear
+   :attr:`CoatedSurfaceFile.samples`, set the axes, then assign the new grid. Empty lists
+   allow drafts; ``save()`` requires complete axes and samples.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.coated_surface import (
+   ...     CoatedSurfaceFile,
+   ...     CoatedSurfaceSample,
+   ... )
+   >>> sample = CoatedSurfaceSample(31.9, 68.1, 31.9, 68.1)
+   >>> CoatedSurfaceFile(
+   ...     wavelengths=[480.0, 780.0],
+   ...     incident_angles=[0.0, 90.0],
+   ...     samples=[[sample, sample], [sample, sample]],
+   ... ).save("mirror.coated")
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CoatedSurfaceFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the coating against the constraints of the ``*.coated`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Sorted wavelengths in nm, returned as a copy.
+          * - :py:attr:`~incident_angles`
+            - Sorted incidence angles in degrees, returned as a copy.
+          * - :py:attr:`~samples`
+            - Sample grid with copied containers and shared samples.
+          * - :py:attr:`~description`
+            - Single-line description.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+          * - :py:attr:`~HEADER`
+            - First line of the file. Empty when the format has no header line.
+          * - :py:attr:`~HEADER_PREFIX`
+            - Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.coated_surface import CoatedSurfaceFile
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Sorted wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths of the samples, in nm, sorted in increasing order.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite wavelengths, or an empty draft column.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: incident_angles
+   :type: List[float]
+
+
+   
+   Sorted incidence angles in degrees, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New angles of incidence of the samples, in degrees, sorted in increasing order.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Angles between 0 and 90, or an empty draft column.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: samples
+   :type: List[List[CoatedSurfaceSample]]
+
+
+   
+   Sample grid with copied containers and shared samples.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:obj:`List`\[:obj:`CoatedSurfaceSample`]]
+           New coating responses, one row per angle of incidence and one column per wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`List`\[:obj:`CoatedSurfaceSample`]]
+           Rows per incidence and columns per wavelength.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: description
+   :type: str
+
+
+   
+   Single-line description.
+
+
+   :Parameters:
+
+       **value** : :class:`python:str`
+           New free text written on the second line of the file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Free text written after the header.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.coated'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER
+   :value: 'OPTIS - Coated surface file v1.0'
+
+
+   
+   First line of the file. Empty when the format has no header line.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER_PREFIX
+   :value: 'OPTIS - Coated surface file'
+
+
+   
+   Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the coating against the constraints of the ``*.coated`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If no wavelength or angle of incidence is given, they are not sorted, the
+           sample grid does not match them, or a sample holds invalid values.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,303 @@
+
+
+
+
+
+
+:class:`VolumeScatteringUserDefined`
+====================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.VolumeScatteringUserDefined(wavelengths = (), angles = _DEFAULT_PHASE_ANGLES, values = _DEFAULT_PHASE_VALUES)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Scattering phase function given as a scattering efficiency per angle.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+           function does not depend on the wavelength, in which case each row of ``values``
+           holds a single entry. By default, ``[]``.
+
+       **angles** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Scattering angles theta, in degrees. By default, ``[0.0, 90.0, 180.0]``.
+
+       **values** : :obj:`Sequence`\[:obj:`Sequence`\[:class:`python:float`]], :obj:`optional`
+           Relative scattering intensity, one row per angle and one column per wavelength.
+           By default, ``[[100.0], [100.0], [100.0]]``, an isotropic phase function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VolumeScatteringUserDefined
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the phase function.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Spectral wavelengths in nm, returned as a copy.
+          * - :py:attr:`~angles`
+            - Scattering angles in degrees, returned as a copy.
+          * - :py:attr:`~values`
+            - Relative intensities, returned with copied row containers.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~MODEL`
+            - Identifier of the model in a ``*.material`` file.
+          * - :py:attr:`~VOLUMIC_HEADER`
+            - Header of the scattering block holding the model.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import VolumeScatteringUserDefined
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Spectral wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths the efficiency is given at, in nm. Leave it empty when the phase
+           function does not depend on the wavelength, in which case each row of ``values``
+           holds a single entry.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Empty for a nonspectral function, otherwise at least two wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: angles
+   :type: List[float]
+
+
+   
+   Scattering angles in degrees, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New scattering angles theta, in degrees.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite scattering angles.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: values
+   :type: List[List[float]]
+
+
+   
+   Relative intensities, returned with copied row containers.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:obj:`Sequence`\[:class:`python:float`]]
+           New relative scattering intensity, one row per angle and one column per wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`List`\[:class:`python:float`]]
+           One row per angle, one column per wavelength or one nonspectral value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: MODEL
+   :type:  ClassVar[int]
+   :value: 0
+
+
+   
+   Identifier of the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: VOLUMIC_HEADER
+   :type:  ClassVar[str]
+   :value: 'OPTIS - Volumic Scattering file v1'
+
+
+   
+   Header of the scattering block holding the model.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the phase function.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If no angle is given, or the value grid does not match the angles and the
+           wavelengths.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

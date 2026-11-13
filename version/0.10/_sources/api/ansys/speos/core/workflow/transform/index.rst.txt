@@ -1,0 +1,264 @@
+
+
+
+
+
+
+The ``transform.py`` module
+===========================
+
+.. py:module:: ansys.speos.core.workflow.transform
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: transform
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~move_feature`
+            - Translate a source, sensor, LightBox, SubPart, or Body.
+
+
+          * - :py:obj:`~rotate_feature`
+            - Rotate a source, sensor, LightBox, SubPart, or Body around an axis.
+
+
+          * - :py:obj:`~axis_to_axis_feature`
+            - Move and rotate a feature by mapping one rigid coordinate frame onto another.
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~TransformableFeature`
+            - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Workflow helpers for transforming Speos features.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: move_feature(feature, direction, distance, *, copy = False, name = None)
+
+   
+   Translate a source, sensor, LightBox, SubPart, or Body.
+
+
+   :Parameters:
+
+       **feature** : :obj:`TransformableFeature`
+           Feature to translate.
+
+       **direction** : :class:`python:list`\[:class:`python:float`]
+           Direction of translation. The vector is normalized before use.
+
+       **distance** : :class:`python:float`
+           Translation distance.
+
+       **copy** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           If ``True``, return a transformed duplicate instead of changing the input.
+
+       **name** : :class:`python:str`, :obj:`optional`
+           Name for the duplicate. Only valid when ``copy=True``.
+
+
+
+   :Returns:
+
+       :obj:`TransformableFeature`
+           The original feature when ``copy=False``, or its transformed duplicate.
+           For a surface source, the referenced body geometry (constant exitance)
+           or XMP map plane (variable exitance) is transformed.
+
+
+
+
+   :Raises:
+
+       :obj:`NotImplementedError`
+           If the Speos server version is older than 2026 R1.
+
+       :obj:`TypeError`
+           If the feature or an input vector has an unsupported type.
+
+       :obj:`ValueError`
+           If an input is invalid or a standalone Face is provided.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: rotate_feature(feature, point, axis, angle, *, copy = False, name = None)
+
+   
+   Rotate a source, sensor, LightBox, SubPart, or Body around an axis.
+
+
+   :Parameters:
+
+       **feature** : :obj:`TransformableFeature`
+           Feature to rotate.
+
+       **point** : :class:`python:list`\[:class:`python:float`]
+           A point on the rotation axis.
+
+       **axis** : :class:`python:list`\[:class:`python:float`]
+           Rotation axis.
+
+       **angle** : :class:`python:float`
+           Rotation angle in degrees.
+
+       **copy** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           If ``True``, return a transformed duplicate instead of changing the input.
+
+       **name** : :class:`python:str`, :obj:`optional`
+           Name for the duplicate. Only valid when ``copy=True``.
+
+
+
+   :Returns:
+
+       :obj:`TransformableFeature`
+           The original feature when ``copy=False``, or its transformed duplicate.
+           For a surface source, the referenced body geometry (constant exitance)
+           or XMP map plane (variable exitance) is transformed.
+
+
+
+
+   :Raises:
+
+       :obj:`NotImplementedError`
+           If the Speos server version is older than 2026 R1.
+
+       :obj:`TypeError`
+           If the feature or an input vector has an unsupported type.
+
+       :obj:`ValueError`
+           If an input is invalid or a standalone Face is provided.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: axis_to_axis_feature(feature, reference_axis, target_axis, *, copy = False, name = None)
+
+   
+   Move and rotate a feature by mapping one rigid coordinate frame onto another.
+
+
+   :Parameters:
+
+       **feature** : :obj:`TransformableFeature`
+           Feature to transform.
+
+       **reference_axis** : :class:`python:list`\[:class:`python:float`]
+           Source frame in twelve-value ``[O, X, Y, Z]`` representation.
+
+       **target_axis** : :class:`python:list`\[:class:`python:float`]
+           Destination frame in twelve-value ``[O, X, Y, Z]`` representation.
+
+       **copy** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           If ``True``, return a transformed duplicate instead of changing the input.
+
+       **name** : :class:`python:str`, :obj:`optional`
+           Name for the duplicate. Only valid when ``copy=True``.
+
+
+
+   :Returns:
+
+       :obj:`TransformableFeature`
+           The original feature when ``copy=False``, or its transformed duplicate.
+           For a surface source, the referenced body geometry (constant exitance)
+           or XMP map plane (variable exitance) is transformed.
+
+
+
+
+   :Raises:
+
+       :obj:`NotImplementedError`
+           If the Speos server version is older than 2026 R1.
+
+       :obj:`TypeError`
+           If the feature or axis-system input has an unsupported type.
+
+       :obj:`ValueError`
+           If an axis system is invalid or a standalone Face is provided.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: TransformableFeature
+
+
+

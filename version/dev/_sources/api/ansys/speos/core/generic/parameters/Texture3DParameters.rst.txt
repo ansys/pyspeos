@@ -1,0 +1,235 @@
+
+
+
+
+
+
+:class:`Texture3DParameters`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.Texture3DParameters
+
+   
+   Store default values for a 3D texture.
+
+
+   :Parameters:
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Anchor of the 3D texture pattern ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+           By default, the global origin axis system.
+
+       **support_body_geo_path** : :class:`python:str`, :obj:`optional`
+           Geometry path of the body supporting the 3D texture.
+           By default, ``""``.
+
+       **pattern_body_guid** : :class:`python:str`, :obj:`optional`
+           Guid of the body used as 3D texture pattern.
+           By default, ``""``.
+
+       **pattern_operation** : :obj:`ansys.speos.core.generic.parameters.Texture3DPatternOperations`, :obj:`optional`
+           Operation applied on the support body according to the pattern.
+           By default, ``Texture3DPatternOperations.add_on_same_material``.
+
+       **global_scale** : :class:`python:float`, :obj:`optional`
+           Global scale factor applied to the 3D texture pattern.
+           By default, ``1.0``.
+
+       **mapping_3d_file_uri** : :obj:`Union`\[:class:`python:str`, :obj:`pathlib.Path`], :obj:`optional`
+           Uri of the 3D mapping file (``.OPT3DMapping``) used for this 3D texture.
+           By default, ``""``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Texture3DParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~axis_system`
+            - Anchor of the 3D texture pattern.
+          * - :py:attr:`~support_body_geo_path`
+            - Geometry path of the body supporting the 3D texture.
+          * - :py:attr:`~pattern_operation`
+            - Operation applied on the support body according to the pattern.
+          * - :py:attr:`~global_scale`
+            - Global scale factor applied to the 3D texture pattern.
+          * - :py:attr:`~mapping_3d_file_uri`
+            - Uri of the 3D mapping file (``.OPT3DMapping``).
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import Texture3DParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Anchor of the 3D texture pattern.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: support_body_geo_path
+   :type:  str
+   :value: ''
+
+
+   
+   Geometry path of the body supporting the 3D texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: pattern_operation
+   :type:  Texture3DPatternOperations
+
+   
+   Operation applied on the support body according to the pattern.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: global_scale
+   :type:  float
+   :value: 1.0
+
+
+   
+   Global scale factor applied to the 3D texture pattern.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: mapping_3d_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Uri of the 3D mapping file (``.OPT3DMapping``).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

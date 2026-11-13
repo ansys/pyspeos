@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``face.py`` module
+======================
+
+.. py:module:: ansys.speos.core.kernel.face
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: face
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.face.FaceLink`
+            - Link object for job in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.face.FaceStub`
+            - Database interactions for face.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoFace`
+            - Face protobuf class : ansys.api.speos.part.v1.face_pb2.Face
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> FaceLink</api/ansys/speos/core/kernel/face/FaceLink>
+    <span class="nf nf-cod-symbol_class"></span> FaceStub</api/ansys/speos/core/kernel/face/FaceStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoFace
+
+   
+   Face protobuf class : ansys.api.speos.part.v1.face_pb2.Face
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

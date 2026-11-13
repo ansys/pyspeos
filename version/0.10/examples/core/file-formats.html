@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to create Speos input files &#8212; ansys-speos-core 0.10.0 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=e717c1d8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=e717c1d8" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=7e54ce6f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/core/file-formats';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../../_static/js/download_notebooks.js?v=b947e8ca"></script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="How to use timeline" href="timeline.html" />
+    <link rel="prev" title="How to create a anisotropic bsdf file" href="bsdf.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  
+  
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/examples/core/file-formats.html" />
+  <meta name="robots" content="noindex, follow" />
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.10.0 documentation - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.10.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.10.0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+
+  
+
+
+
+
+
+
+
+
+
+<div class="ast-announcement-wrap" role="region" aria-label="Announcement" hidden>
+    <div class="ast-announcement info">
+        <span class="ast-announcement-icon" aria-hidden="true"></span>
+        <span class="ast-announcement-text" id="ast-announcement-text"></span>
+        <!-- djlint:off H021-->
+        <!-- for inline styles -->
+        <a class="ast-announcement-details-btn" id="ast-announcement-details-btn"
+           href=""
+           data-ast-url=""
+           aria-label="View notifications"
+           style="display:none">View</a>
+        <!-- djlint:on -->
+        <!-- djlint:off H023-->
+        <!-- use entity reference for &times; -->
+        <button type="button" class="ast-announcement-close" id="ast-announcement-close" aria-label="Close announcement">&times;</button>
+        <!-- djlint:on -->
+    </div>
+</div>
+
+<!-- Modal overlay -->
+<!-- djlint:off H023-->
+<!-- use entity reference for &times; -->
+<div class="ast-announcement-overlay" id="ast-announcement-overlay" role="dialog" aria-modal="true" aria-label="Announcement details">
+    <div class="ast-announcement-modal info">
+        <div class="ast-announcement-modal-body"
+             data-ast-items='[]'>
+        </div>
+        <button type="button" class="ast-announcement-modal-close" id="ast-announcement-modal-close" aria-label="Close">&times;</button>
+    </div>
+</div>
+<!-- djlint:on -->
+
+<script src="../../_static/js/announcement_banner.js"
+        data-base-url="../../"></script>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.10.0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Examples">
+  <p class="bd-links__title" role="heading" aria-level="1">Examples</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Workflow examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../workflow/open-result.html">How to open result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/export-vtp.html">How to get vtp export from xmp or xm3 results (Windows only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/combine-speos.html">Moving car example by combining Speos files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/transform.html">Move and copy features with workflow transforms</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="project.html">How to create a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opt-prop.html">How to create an optical property</a></li>
+<li class="toctree-l1"><a class="reference internal" href="texture.html">How to create a texture property</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="source.html">How to create a source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensor.html">How to create a sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="part.html">How to create a part</a></li>
+<li class="toctree-l1"><a class="reference internal" href="component.html">How to create a component</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">How to create a simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lpf-preview.html">How to preview a light expert result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prism-example.html">Prism example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bsdf.html">How to create a anisotropic bsdf file</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">How to create Speos input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timeline.html">How to use timeline</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Kernel examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../kernel/object-link.html">Define constants</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../kernel/scene-job.html">How to use scene and job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../kernel/modify-scene.html">How to modify scene elements</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../../examples.html" class="nav-link">Examples</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to create Speos input files</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+  
+
+  
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="admonition-download-this-example admonition">
+<p class="admonition-title">Download this example</p>
+<p>Download this example as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/examples/core/file-formats.ipynb">Jupyter Notebook</a>
+or as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/examples/core/file-formats.py">Python script</a>. All assets used in the
+examples can be downloaded as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/_static/assets/download/assets.zip">ZIP archive</a>.</p>
+</div>
+</div></blockquote>
+<section id="How-to-create-Speos-input-files">
+<h1>How to create Speos input files<a class="headerlink" href="#How-to-create-Speos-input-files" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to create the files that Speos takes as inputs: materials, surface optical properties, spectra, ray files and 3D texture mappings.</p>
+<section id="What-are-Speos-input-files">
+<h2>What are Speos input files<a class="headerlink" href="#What-are-Speos-input-files" title="Link to this heading">#</a></h2>
+<p>Speos reads a handful of documented file formats to describe optical properties, spectral distributions, measured light sources and textured surfaces. They are usually authored in the Speos editors, but they can also be generated from raw measurement data or from another simulation tool.</p>
+<p>PySpeos models each of these formats with a class exposing the same three methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">save(path)</span></code> writes the model to a file,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load(path)</span></code> reads a file back into a model,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">validate()</span></code> checks the model against the constraints of the format.</p></li>
+</ul>
+<p>Unlike the rest of PySpeos, these classes work entirely offline: no connection to a Speos RPC server is needed. Once the files are written, they are handed over to the features that consume them, through their file URI.</p>
+</section>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading">#</a></h2>
+<section id="Perform-imports">
+<h3>Perform imports<a class="headerlink" href="#Perform-imports" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CoatedSurfaceFile</span><span class="p">,</span>
+    <span class="n">CoatedSurfaceSample</span><span class="p">,</span>
+    <span class="n">FluorescentPigment</span><span class="p">,</span>
+    <span class="n">FluorescentPigmentFile</span><span class="p">,</span>
+    <span class="n">MaterialConstringence</span><span class="p">,</span>
+    <span class="n">MaterialFile</span><span class="p">,</span>
+    <span class="n">MaterialType</span><span class="p">,</span>
+    <span class="n">Ray</span><span class="p">,</span>
+    <span class="n">RayFile</span><span class="p">,</span>
+    <span class="n">ScatteringSurfaceFile</span><span class="p">,</span>
+    <span class="n">ScatteringSurfaceSample</span><span class="p">,</span>
+    <span class="n">SimpleScatteringMode</span><span class="p">,</span>
+    <span class="n">SimpleScatteringSurfaceFile</span><span class="p">,</span>
+    <span class="n">SpectrumFile</span><span class="p">,</span>
+    <span class="n">Texture3DMappingFile</span><span class="p">,</span>
+    <span class="n">TexturePattern</span><span class="p">,</span>
+    <span class="n">VolumeScatteringHenyeyGreenstein</span><span class="p">,</span>
+<span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Define constants</span>
+<span class="c1"># Every file created by this example is written into a temporary directory.</span>
+<span class="n">OUTPUT_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pyspeos_file_formats_"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Create-a-spectrum-file">
+<h2>Create a spectrum file<a class="headerlink" href="#Create-a-spectrum-file" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">*.spectrum</span></code> file is a sampled spectral distribution, used by most source types and by the camera sensors. The wavelengths are given in nm and the values in percent.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spectrum</span> <span class="o">=</span> <span class="n">SpectrumFile</span><span class="p">(</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Amber LED"</span><span class="p">,</span>
+    <span class="n">wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">560.0</span><span class="p">,</span> <span class="mf">580.0</span><span class="p">,</span> <span class="mf">600.0</span><span class="p">,</span> <span class="mf">620.0</span><span class="p">,</span> <span class="mf">640.0</span><span class="p">],</span>
+    <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">45.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">55.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">spectrum_path</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"amber_led.spectrum"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">spectrum_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OPTIS - Spectrum file v1
+Amber LED
+5
+560     5
+580     45
+600     100
+620     55
+640     10
+
+</pre></div></div>
+</div>
+<p>Reading the file back gives an equivalent model, which makes it easy to adjust a file that already exists.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reloaded</span> <span class="o">=</span> <span class="n">SpectrumFile</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">spectrum_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reloaded</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">reloaded</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[560.0, 580.0, 600.0, 620.0, 640.0] [5.0, 45.0, 100.0, 55.0, 10.0]
+</pre></div></div>
+</div>
+<p>Property assignments validate immediately. List getters return copies, so assign an edited list back to update the spectrum. <code class="docutils literal notranslate"><span class="pre">validate()</span></code> and <code class="docutils literal notranslate"><span class="pre">save()</span></code> require complete, matching data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">values</span> <span class="o">=</span> <span class="n">reloaded</span><span class="o">.</span><span class="n">values</span>
+<span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">reloaded</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reloaded</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[10.0, 45.0, 100.0, 55.0, 10.0]
+</pre></div></div>
+</div>
+<p>Called without arguments, every file constructor creates a useful default. For a spectrum, this is a 5200 K blackbody.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">default_spectrum</span> <span class="o">=</span> <span class="n">SpectrumFile</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">default_spectrum</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">default_spectrum</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Blackbody at 5200.0 K [360.0, 407.0, 454.0, 501.0, 548.0, 595.0, 642.0, 689.0, 736.0, 783.0, 830.0]
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-volume-optical-property-file">
+<h2>Create a volume optical property file<a class="headerlink" href="#Create-a-volume-optical-property-file" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">*.material</span></code> file describes how light travels inside a body. It always holds a dispersion model and an absorption curve. Here the dispersion is given by the refractive index at 587.6 nm and the Abbe number, which is how most data sheets report it. Use a MaterialType member to select the material model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pmma</span> <span class="o">=</span> <span class="n">MaterialFile</span><span class="p">(</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"PMMA"</span><span class="p">,</span>
+    <span class="n">material_type</span><span class="o">=</span><span class="n">MaterialType</span><span class="o">.</span><span class="n">isotropic</span><span class="p">,</span>
+    <span class="n">dispersion</span><span class="o">=</span><span class="n">MaterialConstringence</span><span class="p">(</span><span class="n">constringence</span><span class="o">=</span><span class="mf">57.2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mf">1.49</span><span class="p">),</span>
+    <span class="n">absorption_wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">486.0</span><span class="p">,</span> <span class="mf">532.0</span><span class="p">,</span> <span class="mf">643.0</span><span class="p">],</span>
+    <span class="n">absorption_values</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.00015</span><span class="p">,</span> <span class="mf">0.0005</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">pmma_path</span> <span class="o">=</span> <span class="n">pmma</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"pmma.material"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pmma_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OPTIS - Material file v13
+PMMA
+Isotropic
+Constringence
+57.2
+1.49
+3
+486 0.0001
+532 0.00015
+643 0.0005
+1
+1
+0
+
+</pre></div></div>
+</div>
+<p>Nested models stay editable through their validated properties. Switching between an isotropic, metallic, or birefringent flavor requires constructing a new <code class="docutils literal notranslate"><span class="pre">MaterialFile</span></code> with the corresponding dispersion model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dispersion</span> <span class="o">=</span> <span class="n">pmma</span><span class="o">.</span><span class="n">dispersion</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dispersion</span><span class="p">,</span> <span class="n">MaterialConstringence</span><span class="p">)</span>
+<span class="n">dispersion</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="mf">1.5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dispersion</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+1.5
+</pre></div></div>
+</div>
+<p>Adding a scattering phase function turns the same file into a diffusing material. The diffusion coefficient is given in mm-1 for each wavelength, and the Henyey-Greenstein anisotropy factor drives how forward the scattering is.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diffuser</span> <span class="o">=</span> <span class="n">MaterialFile</span><span class="p">(</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Diffusing PMMA"</span><span class="p">,</span>
+    <span class="n">dispersion</span><span class="o">=</span><span class="n">MaterialConstringence</span><span class="p">(</span><span class="n">constringence</span><span class="o">=</span><span class="mf">57.2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mf">1.49</span><span class="p">),</span>
+    <span class="n">absorption_wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">486.0</span><span class="p">,</span> <span class="mf">643.0</span><span class="p">],</span>
+    <span class="n">absorption_values</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.0005</span><span class="p">],</span>
+    <span class="n">scattering_wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">480.0</span><span class="p">,</span> <span class="mf">555.0</span><span class="p">,</span> <span class="mf">650.0</span><span class="p">],</span>
+    <span class="n">scattering_values</span><span class="o">=</span><span class="p">[</span><span class="mf">0.016</span><span class="p">,</span> <span class="mf">0.0165</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">],</span>
+    <span class="n">scattering</span><span class="o">=</span><span class="n">VolumeScatteringHenyeyGreenstein</span><span class="p">(</span>
+        <span class="n">wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">480.0</span><span class="p">,</span> <span class="mf">555.0</span><span class="p">,</span> <span class="mf">650.0</span><span class="p">],</span> <span class="n">anisotropies</span><span class="o">=</span><span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="n">diffuser_path</span> <span class="o">=</span> <span class="n">diffuser</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"diffusing_pmma.material"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">diffuser_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OPTIS - Material file v13
+Diffusing PMMA
+Isotropic
+Constringence
+57.2
+1.49
+2
+486 0.0001
+643 0.0005
+1
+1
+1
+OPTIS - Volumic Scattering file v1
+1
+3
+480 0.016
+555 0.0165
+650 0.025
+3
+480 0.8
+555 0.9
+650 0.9
+
+</pre></div></div>
+</div>
+<p>A fluorescent material uses the same default index and absorption curves, and starts with an empty dye table. Add a default dye to create the single-row example shown in the Speos material editor.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fluorescent</span> <span class="o">=</span> <span class="n">MaterialFile</span><span class="p">(</span>
+    <span class="n">material_type</span><span class="o">=</span><span class="n">MaterialType</span><span class="o">.</span><span class="n">fluorescent</span><span class="p">,</span>
+    <span class="n">fluorescent_pigments</span><span class="o">=</span><span class="p">[</span><span class="n">FluorescentPigment</span><span class="p">(</span><span class="n">dye</span><span class="o">=</span><span class="n">FluorescentPigmentFile</span><span class="p">())],</span>
+<span class="p">)</span>
+<span class="n">fluorescent_path</span> <span class="o">=</span> <span class="n">fluorescent</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"fluorescent.material"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fluorescent</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">fluorescent_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Optical Glass OPTIS - Material file v13
+Optical Glass
+Fluorescent
+Dispersion_Curve
+3
+486 1.5
+532 1.5
+643 1.5
+3
+486 0
+532 0
+643 0
+1
+1
+0
+1
+1
+OPTIS - Fluorescent pigment file v3.0
+Fluorescent pigment
+ISOTROPIC
+1
+0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load --&gt;
+3
+350     0
+360     0.1
+370     0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load --&gt;
+3
+350     95
+360     95
+370     95
+OPTIS - Spectrum file v1
+Default spectrum : edit or load --&gt;
+3
+350     0
+360     0.095
+370     0
+OPTIS - Spectrum file v1
+Default spectrum : edit or load --&gt;
+3
+400     0
+500     100
+600     0
+0
+0
+
+</pre></div></div>
+</div>
+</section>
+<section id="Create-surface-optical-property-files">
+<h2>Create surface optical property files<a class="headerlink" href="#Create-surface-optical-property-files" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">*.simplescattering</span></code> format is the quickest way to describe a scattering surface: it does not depend on the wavelength nor on the angle of incidence. This one is a perfect white Lambertian reflector. The Gaussian part is set explicitly to keep the contributions within the 100% budget.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">white</span> <span class="o">=</span> <span class="n">SimpleScatteringSurfaceFile</span><span class="p">(</span>
+    <span class="n">mode</span><span class="o">=</span><span class="n">SimpleScatteringMode</span><span class="o">.</span><span class="n">reflection</span><span class="p">,</span> <span class="n">absorption</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambertian</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">gaussian</span><span class="o">=</span><span class="mf">0.0</span>
+<span class="p">)</span>
+<span class="n">white_path</span> <span class="o">=</span> <span class="n">white</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"white_diffuser.simplescattering"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">white_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OPTIS - Simple scattering surface file v2.0
+Scattering surface
+Reflection
+0 100 0 25
+
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">*.scattering</span></code> format describes the same physics, but every contribution can vary with the angle of incidence and the wavelength. Speos needs at least two wavelengths and expects the angles of incidence to span 0 to 90 degrees.</p>
+<p>What is left once the reflection and transmission contributions are summed is absorbed, which the <code class="docutils literal notranslate"><span class="pre">absorption</span></code> property reports.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">half_diffusing</span> <span class="o">=</span> <span class="n">ScatteringSurfaceSample</span><span class="p">(</span>
+    <span class="n">specular_reflection</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">lambertian_reflection</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+    <span class="n">specular_transmission</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+    <span class="n">lambertian_transmission</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">glazing</span> <span class="o">=</span> <span class="n">ScatteringSurfaceFile</span><span class="p">(</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Half diffusing glazing"</span><span class="p">,</span>
+    <span class="n">wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">400.0</span><span class="p">,</span> <span class="mf">700.0</span><span class="p">],</span>
+    <span class="n">incident_angles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">],</span>
+    <span class="n">samples</span><span class="o">=</span><span class="p">[[</span><span class="n">half_diffusing</span><span class="p">,</span> <span class="n">half_diffusing</span><span class="p">],</span> <span class="p">[</span><span class="n">half_diffusing</span><span class="p">,</span> <span class="n">half_diffusing</span><span class="p">]],</span>
+<span class="p">)</span>
+<span class="n">glazing_path</span> <span class="o">=</span> <span class="n">glazing</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"glazing.scattering"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Absorption at 0 degrees and 400 nm:"</span><span class="p">,</span> <span class="n">glazing</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">absorption</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">glazing_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Absorption at 0 degrees and 400 nm: 20.0 %
+OPTIS - Scattering surface file v1.0
+Half diffusing glazing
+2 2
+        400             700
+0       30      20      30      20
+        20      10      20      10
+        0       0       0       0
+        0       0       0       0
+        0       0       0       0
+90      30      20      30      20
+        20      10      20      10
+        0       0       0       0
+        0       0       0       0
+        0       0       0       0
+
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">*.coated</span></code> format describes a non-scattering coating, with the reflection and the transmission given separately for the S and P polarizations. A Speos coating is only valid for the rays crossing the interface in one direction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">coating_rows</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mf">0.0</span><span class="p">:</span> <span class="p">[(</span><span class="mf">31.9</span><span class="p">,</span> <span class="mf">68.1</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">98.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">25.7</span><span class="p">,</span> <span class="mf">74.3</span><span class="p">)],</span>
+    <span class="mf">50.0</span><span class="p">:</span> <span class="p">[(</span><span class="mf">11.3</span><span class="p">,</span> <span class="mf">88.7</span><span class="p">),</span> <span class="p">(</span><span class="mf">11.4</span><span class="p">,</span> <span class="mf">88.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">23.3</span><span class="p">,</span> <span class="mf">76.7</span><span class="p">)],</span>
+    <span class="mf">90.0</span><span class="p">:</span> <span class="p">[(</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)],</span>
+<span class="p">}</span>
+<span class="n">coating</span> <span class="o">=</span> <span class="n">CoatedSurfaceFile</span><span class="p">(</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Antireflective coating"</span><span class="p">,</span>
+    <span class="n">wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">480.0</span><span class="p">,</span> <span class="mf">580.0</span><span class="p">,</span> <span class="mf">780.0</span><span class="p">],</span>
+    <span class="n">incident_angles</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">coating_rows</span><span class="p">),</span>
+    <span class="n">samples</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">[</span>
+            <span class="n">CoatedSurfaceSample</span><span class="p">(</span><span class="n">reflection</span><span class="p">,</span> <span class="n">transmission</span><span class="p">,</span> <span class="n">reflection</span><span class="p">,</span> <span class="n">transmission</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">reflection</span><span class="p">,</span> <span class="n">transmission</span> <span class="ow">in</span> <span class="n">row</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">coating_rows</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">coating_path</span> <span class="o">=</span> <span class="n">coating</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"antireflective.coated"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">coating_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OPTIS - Coated surface file v1.0
+Antireflective coating
+3 3
+        480             580             780
+0       31.9    68.1    1.5     98.5    25.7    74.3
+        31.9    68.1    1.5     98.5    25.7    74.3
+50      11.3    88.7    11.4    88.6    23.3    76.7
+        11.3    88.7    11.4    88.6    23.3    76.7
+90      100     0       100     0       100     0
+        100     0       100     0       100     0
+
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-ray-file">
+<h2>Create a ray file<a class="headerlink" href="#Create-a-ray-file" title="Link to this heading">#</a></h2>
+<p>A ray file holds the rays emitted by a measured or simulated source. Each ray carries a start position in mm, a direction given as cosines, a wavelength in nm and a relative energy. The direction must already be a unit vector at construction or assignment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rays</span> <span class="o">=</span> <span class="n">RayFile</span><span class="p">(</span>
+    <span class="n">rays</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Ray</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">direction</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">wavelength</span><span class="o">=</span><span class="mf">633.0</span><span class="p">),</span>
+        <span class="n">Ray</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">direction</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">wavelength</span><span class="o">=</span><span class="mf">633.0</span><span class="p">),</span>
+        <span class="n">Ray</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">direction</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">wavelength</span><span class="o">=</span><span class="mf">633.0</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">radiant_flux</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">luminous_flux</span><span class="o">=</span><span class="mf">112.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rays_path</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"collimated.ray"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rays_path</span><span class="p">,</span> <span class="n">rays_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span> <span class="s2">"bytes"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/tmp/pyspeos_file_formats_zejo9u9x/collimated.ray 124 bytes
+</pre></div></div>
+</div>
+<p>The same rays can be exported to the text flavor that the Speos ray file editor reads. Beware that this flavor does not carry the flux of the file.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">text_path</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">save_text</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"collimated.txt"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">text_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3
+1 0 0 0 0 0 1 633 1
+2 0.1 0 0 0 0 1 633 1
+3 0 0.1 0 0 0 1 633 1
+
+</pre></div></div>
+</div>
+<p>The Zemax spectral source format carries millimeter coordinates, wavelengths in micrometers, and radiometric ray fluxes. PySpeos converts the units and distributes the total radiant flux using the relative ray energies. SDF does not carry luminous flux, so provide that value explicitly when it is known.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sdf_path</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">save_sdf</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"collimated.sdf"</span><span class="p">)</span>
+<span class="n">sdf_rays</span> <span class="o">=</span> <span class="n">RayFile</span><span class="o">.</span><span class="n">load_sdf</span><span class="p">(</span><span class="n">sdf_path</span><span class="p">,</span> <span class="n">luminous_flux</span><span class="o">=</span><span class="n">rays</span><span class="o">.</span><span class="n">luminous_flux</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sdf_path</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sdf_rays</span><span class="o">.</span><span class="n">rays</span><span class="p">),</span> <span class="s2">"rays"</span><span class="p">,</span> <span class="n">sdf_rays</span><span class="o">.</span><span class="n">radiant_flux</span><span class="p">,</span> <span class="s2">"W"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">ray</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">ray</span> <span class="ow">in</span> <span class="n">sdf_rays</span><span class="o">.</span><span class="n">rays</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/tmp/pyspeos_file_formats_zejo9u9x/collimated.sdf 3 rays 1.0 W
+[0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-3D-texture-mapping-file">
+<h2>Create a 3D texture mapping file<a class="headerlink" href="#Create-a-3D-texture-mapping-file" title="Link to this heading">#</a></h2>
+<p>A Speos 3D Texture is made of a mesh and of a <code class="docutils literal notranslate"><span class="pre">*.OPT3DMapping</span></code> file, which lays out where each pattern sits on the support. That mapping file is the recipe handed over to manufacture the physical part, so it is often generated or post-processed outside of Speos.</p>
+<p>Below, a rectangular grid of patterns is laid out, with a scale growing along the grid so that the light extraction increases away from the source.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">patterns</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">column</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">patterns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">TexturePattern</span><span class="p">(</span>
+                <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="n">column</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">row</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<span class="n">mapping_path</span> <span class="o">=</span> <span class="n">Texture3DMappingFile</span><span class="p">(</span><span class="n">patterns</span><span class="o">=</span><span class="n">patterns</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">OUTPUT_DIR</span> <span class="o">/</span> <span class="s2">"light_guide.OPT3DMapping"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[:</span><span class="mi">4</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+50
+0       0       0       1       0       0       0       1       0       0.5     0.5     0.5
+2       0       0       1       0       0       0       1       0       0.6     0.6     0.6
+4       0       0       1       0       0       0       1       0       0.7     0.7     0.7
+</pre></div></div>
+</div>
+<p>Reading the mapping back gives every pattern placement, ready to be inspected or converted to the format expected by a tooling supplier.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mapping</span> <span class="o">=</span> <span class="n">Texture3DMappingFile</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">mapping_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">patterns</span><span class="p">),</span> <span class="s2">"patterns"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">patterns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+50 patterns
+&lt;ansys.speos.core.input_files.texture_3d.TexturePattern object at 0x7f4ca0df6c30&gt;
+</pre></div></div>
+</div>
+</section>
+</section>
+<blockquote>
+<div><div class="admonition-download-this-example admonition">
+<p class="admonition-title">Download this example</p>
+<p>Download this example as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/examples/core/file-formats.ipynb">Jupyter Notebook</a>
+or as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/examples/core/file-formats.py">Python script</a>. All assets used in the
+examples can be downloaded as a <a class="reference external" href="https://speos.docs.pyansys.com/version/0.10/_static/assets/download/assets.zip">ZIP archive</a>.</p>
+</div>
+</div></blockquote>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#What-are-Speos-input-files">What are Speos input files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Perform-imports">Perform imports</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-spectrum-file">Create a spectrum file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-volume-optical-property-file">Create a volume optical property file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-surface-optical-property-files">Create surface optical property files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-ray-file">Create a ray file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-3D-texture-mapping-file">Create a 3D texture mapping file</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/examples/core/file-formats.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"includeMatches": true, "includeScore": true, "keys": [{"name": "section", "weight": 3}, {"name": "title", "weight": 3}, {"name": "text", "weight": 1}, {"name": "objectID", "weight": 0.5}], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<!--
+  Theme Version Footer
+  Displays the Sphinx theme version and the last updated date.
+  Accessibility and semantic improvements included.
+-->
+<footer class="theme-version" aria-label="Theme version and last update">
+  <span>
+    
+      Built with the
+      <a href="https://sphinxdocs.ansys.com/version/stable/index.html" target="_blank" rel="noopener noreferrer">
+        Ansys Sphinx Theme
+      </a>
+      1.12.1.
+    
+  </span>
+  <br />
+  <span>Last updated on <time id="ast_build_date"></time></span>
+</footer>
+<script>
+  // Set the last updated date in a readable format
+  (function() {
+    var options = { day: "numeric", month: "long", year: "numeric" };
+    var ast_lastModifiedDate = new Date(document.lastModified);
+    var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+    var dateElem = document.getElementById("ast_build_date");
+    if (dateElem) {
+      dateElem.textContent = ast_build_date;
+    }
+  })();
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

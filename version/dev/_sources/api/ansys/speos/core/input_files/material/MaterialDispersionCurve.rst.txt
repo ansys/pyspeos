@@ -1,0 +1,231 @@
+
+
+
+
+
+
+:class:`MaterialDispersionCurve`
+================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialDispersionCurve(wavelengths = _DEFAULT_WAVELENGTHS, indices = _DEFAULT_INDICES)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a volume material given by an explicit index curve.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+
+       **indices** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Refractive index at each wavelength. By default, ``[1.5, 1.5, 1.5]``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialDispersionCurve
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check that the curve is complete and its columns match.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Curve wavelengths in nm, returned as a copy.
+          * - :py:attr:`~indices`
+            - Refractive index column, returned as a copy.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialDispersionCurve
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Curve wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths of the curve, in nm.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: indices
+   :type: List[float]
+
+
+   
+   Refractive index column, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New refractive index at each wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite refractive indices.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Dispersion_Curve'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check that the curve is complete and its columns match.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If columns are empty or of unequal length.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

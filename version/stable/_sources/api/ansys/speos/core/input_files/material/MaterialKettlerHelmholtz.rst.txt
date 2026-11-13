@@ -1,0 +1,371 @@
+
+
+
+
+
+
+:class:`MaterialKettlerHelmholtz`
+=================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialKettlerHelmholtz(a0 = 1.0, a1 = 0.0, a2 = 0.0, a3 = 0.0, a4 = 0.0, a5 = 0.0)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a glass given by the Kettler-Helmholtz coefficients.
+
+
+   :Parameters:
+
+       **a0** : :class:`python:float`, :obj:`optional`
+           Constant coefficient of the Kettler-Helmholtz equation. By default, ``1.0``.
+
+       **a1, a2, a3, a4, a5** : :class:`python:float`, :obj:`optional`
+           Other coefficients of the Kettler-Helmholtz equation. By default, ``0.0``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialKettlerHelmholtz
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check all coefficients are finite.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~a0`
+            - Constant coefficient.
+          * - :py:attr:`~a1`
+            - First coefficient.
+          * - :py:attr:`~a2`
+            - Second coefficient.
+          * - :py:attr:`~a3`
+            - Third coefficient.
+          * - :py:attr:`~a4`
+            - Fourth coefficient.
+          * - :py:attr:`~a5`
+            - Fifth coefficient.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialKettlerHelmholtz
+
+Property detail
+---------------
+
+.. py:property:: a0
+   :type: float
+
+
+   
+   Constant coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: a1
+   :type: float
+
+
+   
+   First coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: a2
+   :type: float
+
+
+   
+   Second coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: a3
+   :type: float
+
+
+   
+   Third coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: a4
+   :type: float
+
+
+   
+   Fourth coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: a5
+   :type: float
+
+
+   
+   Fifth coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New coefficients of the Kettler-Helmholtz equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Kettler-Helmotz'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check all coefficients are finite.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a coefficient is nonfinite.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

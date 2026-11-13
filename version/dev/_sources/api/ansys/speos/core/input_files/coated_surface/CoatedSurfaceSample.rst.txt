@@ -1,0 +1,347 @@
+
+
+
+
+
+
+:class:`CoatedSurfaceSample`
+============================
+
+
+.. py:class:: ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample(reflection_p = 100.0, transmission_p = 0.0, reflection_s = 100.0, transmission_s = 0.0)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Coating response at one angle of incidence and one wavelength.
+
+   Called without arguments, the constructor creates a perfect reflector.
+
+   :Parameters:
+
+       **reflection_p** : :class:`python:float`, :obj:`optional`
+           Reflected part of the P polarization, in percent. By default, ``100.0``.
+
+       **transmission_p** : :class:`python:float`, :obj:`optional`
+           Transmitted part of the P polarization, in percent. By default, ``0.0``.
+
+       **reflection_s** : :class:`python:float`, :obj:`optional`
+           Reflected part of the S polarization, in percent. By default, ``100.0``.
+
+       **transmission_s** : :class:`python:float`, :obj:`optional`
+           Transmitted part of the S polarization, in percent. By default, ``0.0``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CoatedSurfaceSample
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the coating response of the sample.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflection_p`
+            - Reflected P polarization, in percent.
+          * - :py:attr:`~transmission_p`
+            - Transmitted P polarization, in percent.
+          * - :py:attr:`~reflection_s`
+            - Reflected S polarization, in percent.
+          * - :py:attr:`~transmission_s`
+            - Transmitted S polarization, in percent.
+          * - :py:attr:`~absorption_p`
+            - Absorbed part of the P polarization, in percent.
+          * - :py:attr:`~absorption_s`
+            - Absorbed part of the S polarization, in percent.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.coated_surface import CoatedSurfaceSample
+
+Property detail
+---------------
+
+.. py:property:: reflection_p
+   :type: float
+
+
+   
+   Reflected P polarization, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New reflected part of the P polarization, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: transmission_p
+   :type: float
+
+
+   
+   Transmitted P polarization, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New transmitted part of the P polarization, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reflection_s
+   :type: float
+
+
+   
+   Reflected S polarization, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New reflected part of the S polarization, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: transmission_s
+   :type: float
+
+
+   
+   Transmitted S polarization, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New transmitted part of the S polarization, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_p
+   :type: float
+
+
+   
+   Absorbed part of the P polarization, in percent.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Complement to 100 of the P reflection and transmission.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This property is read-only.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_s
+   :type: float
+
+
+   
+   Absorbed part of the S polarization, in percent.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Complement to 100 of the S reflection and transmission.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This property is read-only.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the coating response of the sample.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a value is outside the 0 to 100 range.
+
+   :Warns:
+
+       :obj:`UserWarning`
+           If computed absorption is negative, excluding rounding noise within 1e-9 percent.
+
+
+
+   .. rubric:: Notes
+
+   A negative :attr:`CoatedSurfaceSample.absorption_p` or
+   :attr:`CoatedSurfaceSample.absorption_s` is not rejected: the
+   coating samples published by Ansys do overrun 100 percent on a polarization, and
+   the Coated Surface Editor only flags it.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

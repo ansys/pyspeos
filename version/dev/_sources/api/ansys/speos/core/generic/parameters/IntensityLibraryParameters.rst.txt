@@ -1,0 +1,154 @@
+
+
+
+
+
+
+:class:`IntensityLibraryParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityLibraryParameters
+
+   
+   Intensity Library Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityLibraryParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~intensity_file_uri`
+            - Path to the intensity library file.
+          * - :py:attr:`~orientation_type`
+            - Orientation mode or explicit axis system for the library intensity.
+          * - :py:attr:`~exit_geometries`
+            - Optional list of source geometries where intensity exits.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityLibraryParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: intensity_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the intensity library file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: orientation_type
+   :type:  Union[IntensityOrientationType, IntensityOrientationAxisSystemParameters]
+
+   
+   Orientation mode or explicit axis system for the library intensity.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: exit_geometries
+   :type:  Optional[list[str]]
+   :value: None
+
+
+   
+   Optional list of source geometries where intensity exits.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

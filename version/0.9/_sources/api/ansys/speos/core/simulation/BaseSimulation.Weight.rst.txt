@@ -1,0 +1,127 @@
+
+
+
+
+
+
+:class:`Weight`
+===============
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.Weight(weight, stable_ctr = False)
+
+   
+   The Weight represents the ray energy.
+
+   In real life, a ray loses some energy (power) when it interacts with an object.
+   Activating weight means that the Weight message is present.
+   When weight is not activated, rays' energy stays constant and probability laws dictate if
+   rays continue or stop propagating. When weight is activated, the rays' energy evolves with
+   interactions until rays reach the sensors. It is highly recommended to fill this parameter
+   excepted in interactive simulation. Not filling this parameter is useful to understand
+   certain phenomena as absorption.
+
+   :Parameters:
+
+       **weight** : :obj:`ansys.api.speos.simulation.v1.simulation_template_pb2.Weight` :obj:`to` complete.
+           ..
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_weight method available in simulation
+   classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Weight
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~minimum_energy_percentage`
+            - Minimum energy percentage.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation import Weight
+
+Property detail
+---------------
+
+.. py:property:: minimum_energy_percentage
+   :type: float
+
+
+   
+   Minimum energy percentage.
+
+   This property gets or sets the minimum energy percentage
+   used by the weight.
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           The minimum energy percentage to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           The minimum energy percentage.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

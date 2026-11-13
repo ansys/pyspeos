@@ -1,0 +1,561 @@
+
+
+
+
+
+
+:class:`ScatteringSurfaceSample`
+================================
+
+
+.. py:class:: ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample(specular_reflection = 100.0, specular_transmission = 0.0, lambertian_reflection = 0.0, lambertian_transmission = 0.0, gaussian_reflection = 0.0, gaussian_transmission = 0.0, gaussian_fwhm_incidence_reflection = 0.0, gaussian_fwhm_incidence_transmission = 0.0, gaussian_fwhm_perpendicular_reflection = 0.0, gaussian_fwhm_perpendicular_transmission = 0.0)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Scattering contributions of a surface at one angle of incidence and one wavelength.
+
+   Every contribution is a percentage of the incident light. What is left once the six
+   contributions are summed is absorbed, see :attr:`ScatteringSurfaceSample.absorption`.
+   Called without arguments, the constructor gives the sample of a new file in the Speos
+   default scattering surface: a perfect specular reflector.
+
+   :Parameters:
+
+       **specular_reflection** : :class:`python:float`, :obj:`optional`
+           Specularly reflected part, in percent. By default, ``100.0``.
+
+       **specular_transmission** : :class:`python:float`, :obj:`optional`
+           Specularly transmitted part, in percent. By default, ``0.0``.
+
+       **lambertian_reflection** : :class:`python:float`, :obj:`optional`
+           Lambertian reflected part, in percent. By default, ``0.0``.
+
+       **lambertian_transmission** : :class:`python:float`, :obj:`optional`
+           Lambertian transmitted part, in percent. By default, ``0.0``.
+
+       **gaussian_reflection** : :class:`python:float`, :obj:`optional`
+           Gaussian reflected part, in percent. By default, ``0.0``.
+
+       **gaussian_transmission** : :class:`python:float`, :obj:`optional`
+           Gaussian transmitted part, in percent. By default, ``0.0``.
+
+       **gaussian_fwhm_incidence_reflection** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the reflected Gaussian lobe in the incidence plane,
+           in degrees. By default, ``0.0``.
+
+       **gaussian_fwhm_incidence_transmission** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the transmitted Gaussian lobe in the incidence
+           plane, in degrees. By default, ``0.0``.
+
+       **gaussian_fwhm_perpendicular_reflection** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the reflected Gaussian lobe in the perpendicular
+           plane, in degrees. By default, ``0.0``.
+
+       **gaussian_fwhm_perpendicular_transmission** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the transmitted Gaussian lobe in the perpendicular
+           plane, in degrees. By default, ``0.0``.
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a percentage is outside 0 to 100 or a Gaussian width is outside 0 to 90 degrees.
+
+   :Warns:
+
+       :obj:`UserWarning`
+           If computed absorption is negative, excluding rounding noise within 1e-9 percent.
+
+
+
+   .. rubric:: Notes
+
+   Construction and property assignments validate before storing a value. Negative
+   absorption from measurement or rounding errors is preserved with a warning. Set
+   ``specular_reflection`` explicitly when giving other contributions, since its default
+   already reflects all the light.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ScatteringSurfaceSample
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the contributions of the sample.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~specular_reflection`
+            - Specularly reflected part, in percent.
+          * - :py:attr:`~specular_transmission`
+            - Specularly transmitted part, in percent.
+          * - :py:attr:`~lambertian_reflection`
+            - Lambertian reflected part, in percent.
+          * - :py:attr:`~lambertian_transmission`
+            - Lambertian transmitted part, in percent.
+          * - :py:attr:`~gaussian_reflection`
+            - Gaussian reflected part, in percent.
+          * - :py:attr:`~gaussian_transmission`
+            - Gaussian transmitted part, in percent.
+          * - :py:attr:`~gaussian_fwhm_incidence_reflection`
+            - Reflected Gaussian FWHM in the incidence plane, in degrees.
+          * - :py:attr:`~gaussian_fwhm_incidence_transmission`
+            - Transmitted Gaussian FWHM in the incidence plane, in degrees.
+          * - :py:attr:`~gaussian_fwhm_perpendicular_reflection`
+            - Reflected Gaussian FWHM in the perpendicular plane, in degrees.
+          * - :py:attr:`~gaussian_fwhm_perpendicular_transmission`
+            - Transmitted Gaussian FWHM in the perpendicular plane, in degrees.
+          * - :py:attr:`~absorption`
+            - Absorbed part of the incident light, in percent.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.scattering_surface import ScatteringSurfaceSample
+
+Property detail
+---------------
+
+.. py:property:: specular_reflection
+   :type: float
+
+
+   
+   Specularly reflected part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New specularly reflected part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: specular_transmission
+   :type: float
+
+
+   
+   Specularly transmitted part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New specularly transmitted part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: lambertian_reflection
+   :type: float
+
+
+   
+   Lambertian reflected part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New lambertian reflected part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: lambertian_transmission
+   :type: float
+
+
+   
+   Lambertian transmitted part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New lambertian transmitted part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_reflection
+   :type: float
+
+
+   
+   Gaussian reflected part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New gaussian reflected part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_transmission
+   :type: float
+
+
+   
+   Gaussian transmitted part, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New gaussian transmitted part, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Contribution between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm_incidence_reflection
+   :type: float
+
+
+   
+   Reflected Gaussian FWHM in the incidence plane, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the reflected Gaussian lobe in the incidence
+           plane, in degrees.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full width at half maximum between 0 and 90 degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm_incidence_transmission
+   :type: float
+
+
+   
+   Transmitted Gaussian FWHM in the incidence plane, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the transmitted Gaussian lobe in the incidence
+           plane, in degrees.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full width at half maximum between 0 and 90 degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm_perpendicular_reflection
+   :type: float
+
+
+   
+   Reflected Gaussian FWHM in the perpendicular plane, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the reflected Gaussian lobe in the perpendicular
+           plane, in degrees.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full width at half maximum between 0 and 90 degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm_perpendicular_transmission
+   :type: float
+
+
+   
+   Transmitted Gaussian FWHM in the perpendicular plane, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the transmitted Gaussian lobe in the perpendicular
+           plane, in degrees.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Full width at half maximum between 0 and 90 degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption
+   :type: float
+
+
+   
+   Absorbed part of the incident light, in percent.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Complement to 100 of the six reflection and transmission contributions.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This property is read-only.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the contributions of the sample.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a contribution is outside the 0 to 100 range, a full width at half maximum
+           is outside the 0 to 90 degrees range.
+
+   :Warns:
+
+       :obj:`UserWarning`
+           If computed absorption is negative, excluding rounding noise within 1e-9 percent.
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

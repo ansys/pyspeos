@@ -1,0 +1,446 @@
+
+
+
+
+
+
+:class:`SpectrumFile`
+=====================
+
+
+.. py:class:: ansys.speos.core.input_files.spectrum_file.SpectrumFile(wavelengths = _DEFAULT_WAVELENGTHS, values = _DEFAULT_VALUES, description = _DEFAULT_DESCRIPTION, *, percent = True)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.spectrum`` file, holding a sampled spectral distribution.
+
+   The file is the text (``v1``) flavor of the format: a header line, a description, the
+   number of samples, then one ``wavelength<TAB>value`` line per sample. Files are read
+   and written locally, no Speos server is needed.
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the samples, in nm. By default, 11 wavelengths from 360 nm to 830 nm
+           in 47 nm steps.
+
+       **values** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Relative spectral values of the samples, in percent (0 to 100). By default, the
+           values of the default 5200 K blackbody spectrum, normalized to 100 at its sampled
+           maximum.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default,
+           ``"Blackbody at 5200.0 K"``.
+
+       **percent** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Whether values are percentages limited to 0 to 100. By default, ``True``. Set it to
+           ``False`` for spectra in other units, such as the absorption and excitance spectra
+           of a fluorescent dye in mm-1, whose values only need to be finite.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Called without arguments, the constructor creates the default 5200 K blackbody
+   spectrum. Pass ``wavelengths`` and ``values`` together to describe another spectrum.
+
+   :attr:`SpectrumFile.percent` is a validation setting: it is not written to the file,
+   and a loaded ``*.spectrum`` file has it set to ``True``.
+
+   Construction and setters validate numeric data before storing it. List getters return
+   copies; assign an edited list back to change the model. Empty columns permit staged
+   construction, while :meth:`SpectrumFile.validate` and ``save()`` require complete
+   matching columns. To resize a populated spectrum, clear :attr:`SpectrumFile.values`,
+   replace :attr:`SpectrumFile.wavelengths`, then
+   assign the new values.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.spectrum_file import SpectrumFile
+   >>> SpectrumFile(wavelengths=[400.0, 700.0], values=[100.0, 50.0]).save("led.spectrum")
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SpectrumFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+   .. tab-item:: Constructors
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~from_sampled`
+            - Build a spectrum file from a sampled spectrum feature.
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the spectrum against the constraints of the ``*.spectrum`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~percent`
+            - Whether values are percentages limited to 0 to 100.
+          * - :py:attr:`~wavelengths`
+            - Wavelengths in nm, returned as a copy.
+          * - :py:attr:`~values`
+            - Spectral values, returned as a copy.
+          * - :py:attr:`~description`
+            - Single-line description.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+          * - :py:attr:`~HEADER`
+            - First line of the file. Empty when the format has no header line.
+          * - :py:attr:`~HEADER_PREFIX`
+            - Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.spectrum_file import SpectrumFile
+
+Property detail
+---------------
+
+.. py:property:: percent
+   :type: bool
+
+
+   
+   Whether values are percentages limited to 0 to 100.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           ``True`` to limit values to 0 to 100, ``False`` to only require finite values.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ``True`` if values are percentages.
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If set to ``True`` while a stored value is outside 0 to 100.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths of the samples, in nm.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite sample wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: values
+   :type: List[float]
+
+
+   
+   Spectral values, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New spectral values of the samples. In percent (0 to 100) when
+           :attr:`SpectrumFile.percent` is ``True``, otherwise any finite values.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Spectral values.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: description
+   :type: str
+
+
+   
+   Single-line description.
+
+
+   :Parameters:
+
+       **value** : :class:`python:str`
+           New free text written on the second line of the file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Free text written after the header.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.spectrum'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER
+   :value: 'OPTIS - Spectrum file v1'
+
+
+   
+   First line of the file. Empty when the format has no header line.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER_PREFIX
+   :value: 'OPTIS - Spectrum'
+
+
+   
+   Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the spectrum against the constraints of the ``*.spectrum`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If the sample lists are empty, do not have the same length, hold more than
+           32767 samples, or if :attr:`SpectrumFile.percent` is ``True`` and a value is
+           outside the 0 to 100 percent range.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: from_sampled(spectrum, description = '')
+   :classmethod:
+
+
+   
+   Build a spectrum file from a sampled spectrum feature.
+
+   The feature is a :class:`ansys.speos.core.spectrum.Spectrum` object.
+
+   :Parameters:
+
+       **spectrum** : :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum feature configured with :meth:`Spectrum.set_sampled`.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default, ``""``, which
+           uses the name of the spectrum feature.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.input_files.spectrum_file.SpectrumFile`
+           Spectrum file model.
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If ``spectrum`` is not of sampled type.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

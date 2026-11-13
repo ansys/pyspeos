@@ -1,0 +1,93 @@
+
+
+
+
+
+
+The ``texture_3d.py`` module
+============================
+
+.. py:module:: ansys.speos.core.input_files.texture_3d
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: texture_3d
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.texture_3d.TexturePattern`
+            - Placement of one pattern of a Speos 3D Texture.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.texture_3d.Texture3DMappingFile`
+            - Speos ``*.OPT3DMapping`` file, laying out the patterns of a 3D Texture.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> TexturePattern</api/ansys/speos/core/input_files/texture_3d/TexturePattern>
+    <span class="nf nf-cod-symbol_class"></span> Texture3DMappingFile</api/ansys/speos/core/input_files/texture_3d/Texture3DMappingFile>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with the Speos 3D Texture mapping files.
+
+A Speos 3D Texture is made of a mesh, simulated by Speos, and of a ``*.OPT3DMapping``
+file, which lays out where each pattern sits on the support. That mapping file is the
+recipe handed over to manufacture the physical part, so it is often produced or
+post-processed outside of Speos. It is read and written locally, no Speos server is
+needed.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

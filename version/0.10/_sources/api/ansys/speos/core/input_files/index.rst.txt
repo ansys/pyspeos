@@ -1,0 +1,446 @@
+
+
+
+
+
+
+The ``input_files`` package
+===============================
+
+.. py:module:: ansys.speos.core.input_files
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: input_files
+.. tab-set::
+
+
+    .. tab-item:: Submodules
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.bsdf`
+            - Provides a way to interact with Speos BSDF file.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.coated_surface`
+            - Provides the Speos ``*.coated`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.fluorescence`
+            - Models Speos fluorescent pigment files and pigment data in material files.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material`
+            - Provides the Speos ``*.material`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.ray_file`
+            - Provides the Speos ``*.ray`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.scattering_surface`
+            - Provides the Speos ``*.scattering`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.simple_scattering_surface`
+            - Provides the Speos ``*.simplescattering`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.spectrum_file`
+            - Provides the Speos ``*.spectrum`` input file format.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.texture_3d`
+            - Provides a way to interact with the Speos 3D Texture mapping files.
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SpeosFileFormat`
+            - Base class for the Speos input files that PySpeos reads and writes locally.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SpeosTextFileFormat`
+            - Base class for the line-oriented text formats of Speos.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.AnisotropicBSDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.BaseBSDF`
+            - Super class for all BSDF datamodels.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.BxdfDatapoint`
+            - Class to store a BxDF data point.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.InterpolationEnhancement`
+            - Class to facilitate Specular interpolation enhancement.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SpectralBRDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.CoatedSurfaceFile`
+            - Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.CoatedSurfaceSample`
+            - Coating response at one angle of incidence and one wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.FluorescentPigment`
+            - A dye entry in the fluorescence table of a material file.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.FluorescentPigmentFile`
+            - Speos ``*.dye`` pigment, with sampled absorption and emission spectra.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialBirefringentCurve`
+            - Refractive indices of a birefringent material along its three axes.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialBirefringentKettlerHelmholtz`
+            - Dispersion of a birefringent material given by the Kettler-Helmholtz coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialBirefringentSellmeier`
+            - Dispersion of a birefringent material given by the Sellmeier coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialConstringence`
+            - Dispersion of a volume material given by its index and its Abbe number.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialDispersionCurve`
+            - Dispersion of a volume material given by an explicit index curve.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialFile`
+            - Speos ``*.material`` file, holding the volume optical properties of a body.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialKettlerHelmholtz`
+            - Dispersion of a glass given by the Kettler-Helmholtz coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialMetallicCurve`
+            - Dispersion of a metal given by its complex refractive index.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialSellmeier`
+            - Dispersion of a volume material given by the Sellmeier coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.VolumeScatteringDoubleHenyeyGreenstein`
+            - Double Henyey-Greenstein scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.VolumeScatteringGegenbauer`
+            - Gegenbauer scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.VolumeScatteringHenyeyGreenstein`
+            - Henyey-Greenstein scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.VolumeScatteringUserDefined`
+            - Scattering phase function given as a scattering efficiency per angle.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.Ray`
+            - Single ray of a Speos ray file.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.RayFile`
+            - Speos ray file, holding the rays emitted by a measured or simulated source.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.ScatteringSurfaceFile`
+            - Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.ScatteringSurfaceSample`
+            - Scattering contributions of a surface at one angle of incidence and one wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SimpleScatteringSurfaceFile`
+            - Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SpectrumFile`
+            - Speos ``*.spectrum`` file, holding a sampled spectral distribution.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.Texture3DMappingFile`
+            - Speos ``*.OPT3DMapping`` file, laying out the patterns of a 3D Texture.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.TexturePattern`
+            - Placement of one pattern of a Speos 3D Texture.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialOpticalClass`
+            - Classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.MaterialType`
+            - Select the volume material flavor.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.SimpleScatteringMode`
+            - Selects whether the surface scatters reflected light, transmitted light, or both.
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~create_anisotropic_bsdf`
+            - Create an anisotropic bsdf from anisotropic bsdf files.
+
+
+          * - :py:obj:`~create_bsdf180`
+            - Create a bsdf180 from 2 bsdf.
+
+
+          * - :py:obj:`~create_spectral_brdf`
+            - Create a brdf from multiple bsdf.
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-fa-file"></span> bsdf</api/ansys/speos/core/input_files/bsdf/index>
+    <span class="nf nf-fa-file"></span> coated_surface</api/ansys/speos/core/input_files/coated_surface/index>
+    <span class="nf nf-fa-file"></span> fluorescence</api/ansys/speos/core/input_files/fluorescence/index>
+    <span class="nf nf-fa-file"></span> material</api/ansys/speos/core/input_files/material/index>
+    <span class="nf nf-fa-file"></span> ray_file</api/ansys/speos/core/input_files/ray_file/index>
+    <span class="nf nf-fa-file"></span> scattering_surface</api/ansys/speos/core/input_files/scattering_surface/index>
+    <span class="nf nf-fa-file"></span> simple_scattering_surface</api/ansys/speos/core/input_files/simple_scattering_surface/index>
+    <span class="nf nf-fa-file"></span> spectrum_file</api/ansys/speos/core/input_files/spectrum_file/index>
+    <span class="nf nf-fa-file"></span> texture_3d</api/ansys/speos/core/input_files/texture_3d/index>
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SpeosFileFormat</api/ansys/speos/core/input_files/SpeosFileFormat>
+    <span class="nf nf-cod-symbol_class"></span> SpeosTextFileFormat</api/ansys/speos/core/input_files/SpeosTextFileFormat>
+    <span class="nf nf-cod-symbol_class"></span> AnisotropicBSDF</api/ansys/speos/core/input_files/AnisotropicBSDF>
+    <span class="nf nf-cod-symbol_class"></span> BaseBSDF</api/ansys/speos/core/input_files/BaseBSDF>
+    <span class="nf nf-cod-symbol_class"></span> BxdfDatapoint</api/ansys/speos/core/input_files/BxdfDatapoint>
+    <span class="nf nf-cod-symbol_class"></span> InterpolationEnhancement</api/ansys/speos/core/input_files/InterpolationEnhancement>
+    <span class="nf nf-cod-symbol_class"></span> SpectralBRDF</api/ansys/speos/core/input_files/SpectralBRDF>
+    <span class="nf nf-cod-symbol_class"></span> CoatedSurfaceFile</api/ansys/speos/core/input_files/CoatedSurfaceFile>
+    <span class="nf nf-cod-symbol_class"></span> CoatedSurfaceSample</api/ansys/speos/core/input_files/CoatedSurfaceSample>
+    <span class="nf nf-cod-symbol_class"></span> FluorescentPigment</api/ansys/speos/core/input_files/FluorescentPigment>
+    <span class="nf nf-cod-symbol_class"></span> FluorescentPigmentFile</api/ansys/speos/core/input_files/FluorescentPigmentFile>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentCurve</api/ansys/speos/core/input_files/MaterialBirefringentCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentKettlerHelmholtz</api/ansys/speos/core/input_files/MaterialBirefringentKettlerHelmholtz>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentSellmeier</api/ansys/speos/core/input_files/MaterialBirefringentSellmeier>
+    <span class="nf nf-cod-symbol_class"></span> MaterialConstringence</api/ansys/speos/core/input_files/MaterialConstringence>
+    <span class="nf nf-cod-symbol_class"></span> MaterialDispersionCurve</api/ansys/speos/core/input_files/MaterialDispersionCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialFile</api/ansys/speos/core/input_files/MaterialFile>
+    <span class="nf nf-cod-symbol_class"></span> MaterialKettlerHelmholtz</api/ansys/speos/core/input_files/MaterialKettlerHelmholtz>
+    <span class="nf nf-cod-symbol_class"></span> MaterialMetallicCurve</api/ansys/speos/core/input_files/MaterialMetallicCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialSellmeier</api/ansys/speos/core/input_files/MaterialSellmeier>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringDoubleHenyeyGreenstein</api/ansys/speos/core/input_files/VolumeScatteringDoubleHenyeyGreenstein>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringGegenbauer</api/ansys/speos/core/input_files/VolumeScatteringGegenbauer>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringHenyeyGreenstein</api/ansys/speos/core/input_files/VolumeScatteringHenyeyGreenstein>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringUserDefined</api/ansys/speos/core/input_files/VolumeScatteringUserDefined>
+    <span class="nf nf-cod-symbol_class"></span> Ray</api/ansys/speos/core/input_files/Ray>
+    <span class="nf nf-cod-symbol_class"></span> RayFile</api/ansys/speos/core/input_files/RayFile>
+    <span class="nf nf-cod-symbol_class"></span> ScatteringSurfaceFile</api/ansys/speos/core/input_files/ScatteringSurfaceFile>
+    <span class="nf nf-cod-symbol_class"></span> ScatteringSurfaceSample</api/ansys/speos/core/input_files/ScatteringSurfaceSample>
+    <span class="nf nf-cod-symbol_class"></span> SimpleScatteringSurfaceFile</api/ansys/speos/core/input_files/SimpleScatteringSurfaceFile>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumFile</api/ansys/speos/core/input_files/SpectrumFile>
+    <span class="nf nf-cod-symbol_class"></span> Texture3DMappingFile</api/ansys/speos/core/input_files/Texture3DMappingFile>
+    <span class="nf nf-cod-symbol_class"></span> TexturePattern</api/ansys/speos/core/input_files/TexturePattern>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> MaterialOpticalClass</api/ansys/speos/core/input_files/MaterialOpticalClass>
+    <span class="nf nf-cod-symbol_enum"></span> MaterialType</api/ansys/speos/core/input_files/MaterialType>
+    <span class="nf nf-cod-symbol_enum"></span> SimpleScatteringMode</api/ansys/speos/core/input_files/SimpleScatteringMode>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+
+Speos input file formats and BSDF tools.
+
+Most file-format classes in this package read and write files locally without a Speos
+gRPC connection. The BSDF models and builders are an exception: importing, exporting,
+editing, interpolating, and generating BSDF data requires a live Speos gRPC connection.
+Each module covers a file format or a related set of input-file operations.
+
+Local file-format models use explicit constructors and properties that validate assignments
+before storing data. List properties return copied containers; nested model objects remain
+shared and editable through their setters. Empty collections support staged construction,
+while ``validate()`` and ``save()`` require complete data.
+
+Use ``MaterialType`` to select the volume material model. Use ``MaterialOpticalClass``
+to classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+Use ``FluorescentPigmentFile`` and ``FluorescentPigment`` to add dye data to a fluorescent
+material.
+Use ``SimpleScatteringMode`` to select which side of a surface scatters light.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+
+
+
+
+

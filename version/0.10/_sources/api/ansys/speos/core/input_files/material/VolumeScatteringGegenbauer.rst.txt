@@ -1,0 +1,299 @@
+
+
+
+
+
+
+:class:`VolumeScatteringGegenbauer`
+===================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.VolumeScatteringGegenbauer(wavelengths = (), anisotropies = _DEFAULT_ANISOTROPIES, alphas = _DEFAULT_ALPHAS)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Gegenbauer scattering phase function.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths the factors are given at, in nm. A single wavelength means that the
+           phase function does not depend on the wavelength. By default, ``[]``.
+
+       **anisotropies** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Anisotropy factor at each wavelength. By default, ``[0.9]``.
+
+       **alphas** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Alpha coefficient at each wavelength. By default, ``[0.5]``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VolumeScatteringGegenbauer
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the phase function.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Spectral wavelengths in nm, returned as a copy.
+          * - :py:attr:`~anisotropies`
+            - Anisotropy factors, returned as a copy.
+          * - :py:attr:`~alphas`
+            - Alpha coefficients, returned as a copy.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~MODEL`
+            - Identifier of the model in a ``*.material`` file.
+          * - :py:attr:`~VOLUMIC_HEADER`
+            - Header of the scattering block, which the Gegenbauer model bumps to ``v3``.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import VolumeScatteringGegenbauer
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Spectral wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths the factors are given at, in nm. A single wavelength means that the
+           phase function does not depend on the wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Empty for a nonspectral parameter set.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: anisotropies
+   :type: List[float]
+
+
+   
+   Anisotropy factors, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New anisotropy factor at each wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite factors.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: alphas
+   :type: List[float]
+
+
+   
+   Alpha coefficients, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New alpha coefficient at each wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite coefficients.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: MODEL
+   :type:  ClassVar[int]
+   :value: 6
+
+
+   
+   Identifier of the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: VOLUMIC_HEADER
+   :type:  ClassVar[str]
+   :value: 'OPTIS - Volumic Scattering file v3'
+
+
+   
+   Header of the scattering block, which the Gegenbauer model bumps to ``v3``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the phase function.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If no factor is given or the lists do not match.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

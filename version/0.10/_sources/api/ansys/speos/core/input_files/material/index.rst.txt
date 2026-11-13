@@ -1,0 +1,285 @@
+
+
+
+
+
+
+The ``material.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.input_files.material
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: material
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialConstringence`
+            - Dispersion of a volume material given by its index and its Abbe number.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialDispersionCurve`
+            - Dispersion of a volume material given by an explicit index curve.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialSellmeier`
+            - Dispersion of a volume material given by the Sellmeier coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialKettlerHelmholtz`
+            - Dispersion of a glass given by the Kettler-Helmholtz coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialMetallicCurve`
+            - Dispersion of a metal given by its complex refractive index.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialBirefringentCurve`
+            - Refractive indices of a birefringent material along its three axes.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialBirefringentSellmeier`
+            - Dispersion of a birefringent material given by the Sellmeier coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialBirefringentKettlerHelmholtz`
+            - Dispersion of a birefringent material given by the Kettler-Helmholtz coefficients.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.VolumeScatteringUserDefined`
+            - Scattering phase function given as a scattering efficiency per angle.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.VolumeScatteringHenyeyGreenstein`
+            - Henyey-Greenstein scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.VolumeScatteringDoubleHenyeyGreenstein`
+            - Double Henyey-Greenstein scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.VolumeScatteringGegenbauer`
+            - Gegenbauer scattering phase function.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialFile`
+            - Speos ``*.material`` file, holding the volume optical properties of a body.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialType`
+            - Select the volume material flavor.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.material.MaterialOpticalClass`
+            - Classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~MaterialDispersion`
+            - Dispersion models accepted by :class:`ansys.speos.core.input_files.material.MaterialFile`.
+
+
+          * - :py:obj:`~MaterialBirefringence`
+            - Dispersion models accepted by a birefringent
+
+
+          * - :py:obj:`~VolumeScattering`
+            - Scattering phase functions accepted by
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> MaterialConstringence</api/ansys/speos/core/input_files/material/MaterialConstringence>
+    <span class="nf nf-cod-symbol_class"></span> MaterialDispersionCurve</api/ansys/speos/core/input_files/material/MaterialDispersionCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialSellmeier</api/ansys/speos/core/input_files/material/MaterialSellmeier>
+    <span class="nf nf-cod-symbol_class"></span> MaterialKettlerHelmholtz</api/ansys/speos/core/input_files/material/MaterialKettlerHelmholtz>
+    <span class="nf nf-cod-symbol_class"></span> MaterialMetallicCurve</api/ansys/speos/core/input_files/material/MaterialMetallicCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentCurve</api/ansys/speos/core/input_files/material/MaterialBirefringentCurve>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentSellmeier</api/ansys/speos/core/input_files/material/MaterialBirefringentSellmeier>
+    <span class="nf nf-cod-symbol_class"></span> MaterialBirefringentKettlerHelmholtz</api/ansys/speos/core/input_files/material/MaterialBirefringentKettlerHelmholtz>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringUserDefined</api/ansys/speos/core/input_files/material/VolumeScatteringUserDefined>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringHenyeyGreenstein</api/ansys/speos/core/input_files/material/VolumeScatteringHenyeyGreenstein>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringDoubleHenyeyGreenstein</api/ansys/speos/core/input_files/material/VolumeScatteringDoubleHenyeyGreenstein>
+    <span class="nf nf-cod-symbol_class"></span> VolumeScatteringGegenbauer</api/ansys/speos/core/input_files/material/VolumeScatteringGegenbauer>
+    <span class="nf nf-cod-symbol_class"></span> MaterialFile</api/ansys/speos/core/input_files/material/MaterialFile>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> MaterialType</api/ansys/speos/core/input_files/material/MaterialType>
+    <span class="nf nf-cod-symbol_enum"></span> MaterialOpticalClass</api/ansys/speos/core/input_files/material/MaterialOpticalClass>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.material`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: MaterialDispersion
+
+   
+   Dispersion models accepted by :class:`ansys.speos.core.input_files.material.MaterialFile`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: MaterialBirefringence
+
+   
+   Dispersion models accepted by a birefringent
+   :class:`ansys.speos.core.input_files.material.MaterialFile`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: VolumeScattering
+
+   
+   Scattering phase functions accepted by
+   :class:`ansys.speos.core.input_files.material.MaterialFile`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

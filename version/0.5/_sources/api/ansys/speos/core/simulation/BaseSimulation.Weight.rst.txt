@@ -1,0 +1,124 @@
+
+
+
+
+
+
+:class:`Weight`
+===============
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.Weight(weight, stable_ctr = False)
+
+   
+   The Weight represents the ray energy.
+
+   In real life, a ray loses some energy (power) when it interacts with an object.
+   Activating weight means that the Weight message is present.
+   When weight is not activated, rays' energy stays constant and probability laws dictate if
+   rays continue or stop propagating. When weight is activated, the rays' energy evolves with
+   interactions until rays reach the sensors. It is highly recommended to fill this parameter
+   excepted in interactive simulation. Not filling this parameter is useful to understand
+   certain phenomena as absorption.
+
+   :Parameters:
+
+       **weight** : :obj:`ansys.api.speos.simulation.v1.simulation_template_pb2.Weight` :obj:`to` complete.
+           ..
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_weight method available in simulation
+   classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Weight
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_minimum_energy_percentage`
+            - Set the minimum energy percentage.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation import Weight
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_minimum_energy_percentage(value = 0.005)
+
+   
+   Set the minimum energy percentage.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           The Minimum energy percentage parameter defines the minimum energy ratio to continue
+           to propagate a ray with weight. By default, ``0.005``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.Weight`
+           Weight.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,685 @@
+
+
+
+
+
+
+:class:`SimpleScatteringSurfaceFile`
+====================================
+
+
+.. py:class:: ansys.speos.core.input_files.simple_scattering_surface.SimpleScatteringSurfaceFile(mode = SimpleScatteringMode.reflection, absorption = 10.0, lambertian = 10.0, gaussian = 80.0, gaussian_fwhm = 25.0, lambertian_transmission = 0.0, gaussian_transmission = 0.0, gaussian_fwhm_transmission = 0.0, reflection = None, description = 'Scattering surface')
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
+
+   The incident light is split into an absorbed part and, on each active side of the
+   surface, a Lambertian, a Gaussian and a specular part. The specular part is the
+   complement to 100 percent of the Lambertian and Gaussian ones.
+
+   :Parameters:
+
+       **mode** : :obj:`SimpleScatteringMode`, :obj:`optional`
+           Sides of the surface that scatter light. By default,
+           ``SimpleScatteringMode.reflection``.
+
+       **absorption** : :class:`python:float`, :obj:`optional`
+           Absorbed part of the incident light, in percent. By default, ``10.0``.
+
+       **lambertian** : :class:`python:float`, :obj:`optional`
+           Lambertian part in percent. In ``"Both"`` mode this is the reflection side.
+           By default, ``10.0``.
+
+       **gaussian** : :class:`python:float`, :obj:`optional`
+           Gaussian part in percent. In ``"Both"`` mode this is the reflection side.
+           By default, ``80.0``.
+
+       **gaussian_fwhm** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the Gaussian lobe, in degrees. In ``"Both"`` mode
+           this is the reflection side. By default, ``25.0``.
+
+       **lambertian_transmission** : :class:`python:float`, :obj:`optional`
+           Lambertian part of the transmission side, in percent. ``"Both"`` mode only.
+           By default, ``0.0``.
+
+       **gaussian_transmission** : :class:`python:float`, :obj:`optional`
+           Gaussian part of the transmission side, in percent. ``"Both"`` mode only.
+           By default, ``0.0``.
+
+       **gaussian_fwhm_transmission** : :class:`python:float`, :obj:`optional`
+           Full width at half maximum of the transmission Gaussian lobe, in degrees.
+           ``"Both"`` mode only. By default, ``0.0``.
+
+       **reflection** : :obj:`Optional`\[:class:`python:float`], :obj:`optional`
+           Reflected part in percent, the transmitted part being its complement to 100.
+           ``"Both"`` mode only. By default, ``None``, which makes the split follow the
+           Fresnel laws.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default,
+           ``"Scattering surface"``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Called without arguments, the constructor creates a surface with absorption 10%,
+   Lambertian reflection 10%, and Gaussian reflection 80%. These contributions fill the
+   side budget.
+
+   Setters reject invalid values before changing the model. Lower an outgoing contribution
+   before increasing another in a fully allocated side budget. Transmission-side values
+   remain stored outside Both mode; enabling Both validates their combined budget.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.simple_scattering_surface import (
+   ...     SimpleScatteringMode,
+   ...     SimpleScatteringSurfaceFile,
+   ... )
+   >>> diffuser = SimpleScatteringSurfaceFile(
+   ...     mode=SimpleScatteringMode.reflection, lambertian=100.0, gaussian=0.0
+   ... )
+   >>> diffuser.save("white_diffuser.simplescattering")
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SimpleScatteringSurfaceFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the surface against the constraints of the ``*.simplescattering`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~mode`
+            - Active sides of the surface.
+          * - :py:attr:`~absorption`
+            - Absorbed contribution, in percent.
+          * - :py:attr:`~lambertian`
+            - Lambertian contribution of the first side, in percent.
+          * - :py:attr:`~gaussian`
+            - Gaussian contribution of the first side, in percent.
+          * - :py:attr:`~gaussian_fwhm`
+            - Gaussian width of the first side, in degrees.
+          * - :py:attr:`~lambertian_transmission`
+            - Lambertian contribution of the second side, in percent.
+          * - :py:attr:`~gaussian_transmission`
+            - Gaussian contribution of the second side, in percent.
+          * - :py:attr:`~gaussian_fwhm_transmission`
+            - Gaussian width of the second side, in degrees.
+          * - :py:attr:`~reflection`
+            - Explicit reflection share or Fresnel splitting.
+          * - :py:attr:`~description`
+            - Single-line description.
+          * - :py:attr:`~fresnel`
+            - Whether the reflection and transmission split follows the Fresnel laws.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+          * - :py:attr:`~HEADER`
+            - First line of the file. Empty when the format has no header line.
+          * - :py:attr:`~HEADER_PREFIX`
+            - Version-agnostic start of ``HEADER``, used to validate a file being read.
+          * - :py:attr:`~MODES`
+            - Accepted values of :attr:`SimpleScatteringSurfaceFile.mode`.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.simple_scattering_surface import SimpleScatteringSurfaceFile
+
+Property detail
+---------------
+
+.. py:property:: mode
+   :type: SimpleScatteringMode
+
+
+   
+   Active sides of the surface.
+
+
+   :Parameters:
+
+       **value** : :obj:`SimpleScatteringMode`
+           New sides of the surface that scatter light.
+
+
+
+   :Returns:
+
+       :obj:`SimpleScatteringMode`
+           Reflection, Transmission, or Both.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption
+   :type: float
+
+
+   
+   Absorbed contribution, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New absorbed part of the incident light, in percent.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Percentage between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: lambertian
+   :type: float
+
+
+   
+   Lambertian contribution of the first side, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New lambertian part in percent. In ``"Both"`` mode this is the reflection side.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Percentage within the side's light budget.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian
+   :type: float
+
+
+   
+   Gaussian contribution of the first side, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New gaussian part in percent. In ``"Both"`` mode this is the reflection side.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Percentage within the side's light budget.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm
+   :type: float
+
+
+   
+   Gaussian width of the first side, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the Gaussian lobe, in degrees. In ``"Both"`` mode
+           this is the reflection side.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite full width at half maximum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: lambertian_transmission
+   :type: float
+
+
+   
+   Lambertian contribution of the second side, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New lambertian part of the transmission side, in percent. ``"Both"`` mode only.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Percentage used in Both mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_transmission
+   :type: float
+
+
+   
+   Gaussian contribution of the second side, in percent.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New gaussian part of the transmission side, in percent. ``"Both"`` mode only.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Percentage used in Both mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: gaussian_fwhm_transmission
+   :type: float
+
+
+   
+   Gaussian width of the second side, in degrees.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New full width at half maximum of the transmission Gaussian lobe, in degrees.
+           ``"Both"`` mode only.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite full width at half maximum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reflection
+   :type: Optional[float]
+
+
+   
+   Explicit reflection share or Fresnel splitting.
+
+
+   :Parameters:
+
+       **value** : :obj:`Optional`\[:class:`python:float`]
+           New reflected part in percent, the transmitted part being its complement to 100.
+           ``"Both"`` mode only. Use ``None`` to follow the Fresnel laws.
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:class:`python:float`]
+           Percentage, or None to use Fresnel laws.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: description
+   :type: str
+
+
+   
+   Single-line description.
+
+
+   :Parameters:
+
+       **value** : :class:`python:str`
+           New free text written on the second line of the file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Free text written after the header.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: fresnel
+   :type: bool
+
+
+   
+   Whether the reflection and transmission split follows the Fresnel laws.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           ``True`` when :attr:`SimpleScatteringSurfaceFile.reflection` is ``None``.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This property is read-only.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.simplescattering'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER
+   :value: 'OPTIS - Simple scattering surface file v2.0'
+
+
+   
+   First line of the file. Empty when the format has no header line.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER_PREFIX
+   :value: 'OPTIS - Simple scattering surface file'
+
+
+   
+   Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: MODES
+   :type:  ClassVar[tuple[SimpleScatteringMode, ...]]
+
+   
+   Accepted values of :attr:`SimpleScatteringSurfaceFile.mode`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the surface against the constraints of the ``*.simplescattering`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If :attr:`SimpleScatteringSurfaceFile.mode` is unknown, a percentage is outside
+           the 0 to 100 range, or the
+           Lambertian and Gaussian parts of a side sum to more than 100 percent.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

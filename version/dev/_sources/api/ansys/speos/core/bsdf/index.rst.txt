@@ -1,0 +1,136 @@
+
+
+
+
+
+
+The ``bsdf.py`` module
+======================
+
+.. py:module:: ansys.speos.core.bsdf
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: bsdf
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.AnisotropicBSDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.BaseBSDF`
+            - Super class for all BSDF datamodels.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.BxdfDatapoint`
+            - Class to store a BxDF data point.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.InterpolationEnhancement`
+            - Class to facilitate Specular interpolation enhancement.
+
+
+          * - :py:obj:`~ansys.speos.core.bsdf.SpectralBRDF`
+            - BSDF - Bidirectional scattering distribution function.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~create_anisotropic_bsdf`
+            - Create an anisotropic bsdf from anisotropic bsdf files.
+
+
+          * - :py:obj:`~create_bsdf180`
+            - Create a bsdf180 from 2 bsdf.
+
+
+          * - :py:obj:`~create_spectral_brdf`
+            - Create a brdf from multiple bsdf.
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> AnisotropicBSDF</api/ansys/speos/core/bsdf/AnisotropicBSDF>
+    <span class="nf nf-cod-symbol_class"></span> BaseBSDF</api/ansys/speos/core/bsdf/BaseBSDF>
+    <span class="nf nf-cod-symbol_class"></span> BxdfDatapoint</api/ansys/speos/core/bsdf/BxdfDatapoint>
+    <span class="nf nf-cod-symbol_class"></span> InterpolationEnhancement</api/ansys/speos/core/bsdf/InterpolationEnhancement>
+    <span class="nf nf-cod-symbol_class"></span> SpectralBRDF</api/ansys/speos/core/bsdf/SpectralBRDF>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Backward-compatible imports for Speos BSDF functionality.
+
+The implementation is available from :mod:`ansys.speos.core.input_files.bsdf`.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+
+
+
+
+

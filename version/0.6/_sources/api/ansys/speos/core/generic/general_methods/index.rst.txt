@@ -1,0 +1,407 @@
+
+
+
+
+
+
+The ``general_methods.py`` module
+=================================
+
+.. py:module:: ansys.speos.core.generic.general_methods
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: general_methods
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~deprecate_kwargs`
+            - Issues deprecation warnings for arguments.
+
+
+          * - :py:obj:`~run_if_graphics_required`
+            - Check if graphics are available.
+
+
+          * - :py:obj:`~graphics_required`
+            - Decorate a method as requiring graphics.
+
+
+          * - :py:obj:`~magnitude_vector`
+            - Compute the magnitude (length) of a 2D or 3D vector using NumPy.
+
+
+          * - :py:obj:`~normalize_vector`
+            - Normalize a 2D or 3D vector to have a length of 1 using NumPy.
+
+
+          * - :py:obj:`~error_no_install`
+            - Raise error that installation was not found at a location.
+
+
+          * - :py:obj:`~retrieve_speos_install_dir`
+            - Retrieve Speos install location based on Path or Environment.
+
+
+          * - :py:obj:`~wavelength_to_rgb`
+            - Convert a given wavelength of light to an approximate RGB color value.
+
+
+          * - :py:obj:`~min_speos_version`
+            - Raise version warning.
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~GRAPHICS_ERROR`
+            - 
+
+
+          * - :py:obj:`~VERSION_ERROR`
+            - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+General methods and helpers collection.
+
+this includes decorator and methods
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: deprecate_kwargs(old_arguments, removed_version='0.3.0')
+
+   
+   Issues deprecation warnings for arguments.
+
+
+   :Parameters:
+
+       **old_arguments** : :class:`python:dict`
+           key old argument value new argument name
+
+       **removed_version** : :class:`python:str`
+           Release version with which argument support will be removed
+           By Default, next major release
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: run_if_graphics_required(warning=False)
+
+   
+   Check if graphics are available.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: graphics_required(method)
+
+   
+   Decorate a method as requiring graphics.
+
+
+   :Parameters:
+
+       **method** : :func:`python:callable`
+           Method to decorate.
+
+
+
+   :Returns:
+
+       :func:`python:callable`
+           Decorated method.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: magnitude_vector(vector)
+
+   
+   Compute the magnitude (length) of a 2D or 3D vector using NumPy.
+
+
+   :Parameters:
+
+       **vector: List[float]**
+           A 2D or 3D vector as a list [x, y] or [x, y, z].
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           The magnitude (length) of the vector.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: normalize_vector(vector)
+
+   
+   Normalize a 2D or 3D vector to have a length of 1 using NumPy.
+
+
+   :Parameters:
+
+       **vector: List[float]**
+           A vector as a list [x, y] for 2D or [x, y, z] for 3D.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           The normalized vector.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: error_no_install(install_path, version)
+
+   
+   Raise error that installation was not found at a location.
+
+
+   :Parameters:
+
+       **install_path** : :obj:`Union`\[:obj:`Path`, :class:`python:str`]
+           Installation Path
+
+       **version** : :obj:`Union`\[:class:`python:int`, :class:`python:str`]
+           Version
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: retrieve_speos_install_dir(speos_rpc_path = None, version = DEFAULT_VERSION)
+
+   
+   Retrieve Speos install location based on Path or Environment.
+
+
+   :Parameters:
+
+       **speos_rpc_path** : :obj:`Optional`\[:class:`python:str`, :obj:`Path`]
+           location of Speos rpc executable
+
+       **version** : :obj:`Union`\[:class:`python:str`, :class:`python:int`]
+           The Speos server version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen as
+           ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: wavelength_to_rgb(wavelength, gamma = 0.8)
+
+   
+   Convert a given wavelength of light to an approximate RGB color value.
+
+   The wavelength must be given in nanometers in the range from 380 nm to 750 nm.
+   Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
+
+   :Parameters:
+
+       **wavelength** : :class:`python:float`
+           Wavelength in nanometer between 380-750 nm
+
+       **gamma** : :class:`python:float`
+           Gamma value.
+           By default : ``0.8``
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: min_speos_version(major, minor, service_pack)
+
+   
+   Raise version warning.
+
+
+   :Parameters:
+
+       **major** : :class:`python:int`
+           Major release version, e.g. 25
+
+       **minor** : :class:`python:int`
+           Minor release version e.g. 1
+
+       **service_pack** : :class:`python:int`
+           Service Pack version e.g. 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: GRAPHICS_ERROR
+   :value: "Preview unsupported without 'ansys-tools-visualization_interface' installed. You can install...
+
+
+.. py:data:: VERSION_ERROR
+   :value: 'The pySpeos feature : {feature_name} needs a Speos Version of {version} or higher.'
+
+
+
+

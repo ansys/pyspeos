@@ -1,0 +1,351 @@
+
+
+
+
+
+
+:class:`SourceAmbientNaturalLight`
+==================================
+
+
+.. py:class:: ansys.speos.core.source.SourceAmbientNaturalLight(project, name, description = '', metadata = None, source_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSourceAmbient`
+
+
+   
+   Natural light ambient source.
+
+   By default, turbidity is set to be 3 with Sky.
+   [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+   Sun type is set to be automatic type.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceAmbientNaturalLight
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sun_automatic`
+            - Set natural light sun type as automatic.
+          * - :py:attr:`~set_sun_manual`
+            - Set natural light sun type as manual.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~turbidity`
+            - Get turbidity of the natural light source.
+          * - :py:attr:`~with_sky`
+            - Bool of whether activated using sky in the natural light source.
+          * - :py:attr:`~zenith_direction`
+            - Get zenith direction of the natural light source.
+          * - :py:attr:`~reverse_zenith_direction`
+            - Get whether reverse zenith direction of the natural light source.
+          * - :py:attr:`~north_direction`
+            - Get north direction of the natural light source.
+          * - :py:attr:`~reverse_north_direction`
+            - Get whether reverse north direction of the natural light source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceAmbientNaturalLight
+
+Property detail
+---------------
+
+.. py:property:: turbidity
+   :type: float
+
+
+   
+   Get turbidity of the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           value of Turbidity the measure of the fraction of scattering.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: with_sky
+   :type: bool
+
+
+   
+   Bool of whether activated using sky in the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as using sky, while False as using natural light without the sky.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: zenith_direction
+   :type: List[float]
+
+
+   
+   Get zenith direction of the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the zenith direction of the natural light.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_zenith_direction
+   :type: bool
+
+
+   
+   Get whether reverse zenith direction of the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse zenith direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: north_direction
+   :type: List[float]
+
+
+   
+   Get north direction of the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           direction defines the north direction of the natural light.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_north_direction
+   :type: bool
+
+
+   
+   Get whether reverse north direction of the natural light source.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True as reverse north direction, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sun_automatic()
+
+   
+   Set natural light sun type as automatic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`BaseSourceAmbient.AutomaticSun`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sun_manual()
+
+   
+   Set natural light sun type as manual.
+
+
+
+
+
+   :Returns:
+
+       :obj:`BaseSourceAmbient.Manual`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

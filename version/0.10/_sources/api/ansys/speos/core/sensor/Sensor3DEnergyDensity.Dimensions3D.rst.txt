@@ -1,0 +1,271 @@
+
+
+
+
+
+
+:class:`Dimensions3D`
+=====================
+
+
+.. py:class:: ansys.speos.core.sensor.Sensor3DEnergyDensity.Dimensions3D(dimensions, default_parameters = None, stable_ctr = False)
+
+   
+   Dimensions and voxel counts of an energy density volume.
+
+
+   :Parameters:
+
+       **dimensions** : :obj:`sensor_v2_pb2.SensorTemplate.EnergyDensity.Dimensions3D`
+           Protobuf dimensions to modify.
+
+       **default_parameters** : :obj:`EnergyDensity3DDimensionsParameters`, :obj:`optional`
+           Values to apply, or ``None`` to preserve existing dimensions.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Internal constructor guard.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Use the parent sensor's ``set_dimensions()`` method.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Dimensions3D
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_size`
+            - Size along the local X axis in millimeters.
+          * - :py:attr:`~y_size`
+            - Size along the local Y axis in millimeters.
+          * - :py:attr:`~z_size`
+            - Size along the local Z axis in millimeters.
+          * - :py:attr:`~x_sampling`
+            - Number of voxels along the local X axis.
+          * - :py:attr:`~y_sampling`
+            - Number of voxels along the local Y axis.
+          * - :py:attr:`~z_sampling`
+            - Number of voxels along the local Z axis.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.Sensor3DEnergyDensity import Dimensions3D
+
+Property detail
+---------------
+
+.. py:property:: x_size
+   :type: float
+
+
+   
+   Size along the local X axis in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           X size.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_size
+   :type: float
+
+
+   
+   Size along the local Y axis in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Y size.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: z_size
+   :type: float
+
+
+   
+   Size along the local Z axis in millimeters.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Z size.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_sampling
+   :type: int
+
+
+   
+   Number of voxels along the local X axis.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           X voxel count.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_sampling
+   :type: int
+
+
+   
+   Number of voxels along the local Y axis.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Y voxel count.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: z_sampling
+   :type: int
+
+
+   
+   Number of voxels along the local Z axis.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Z voxel count.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,374 @@
+
+
+
+
+
+
+:class:`MaterialSellmeier`
+==========================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialSellmeier(b1 = 1.03961, c1 = 0.0060007, b2 = 0.231792, c2 = 0.0200179, b3 = 1.01047, c3 = 103.561)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a volume material given by the Sellmeier coefficients.
+
+   The default coefficients describe glass.
+
+   :Parameters:
+
+       **b1, b2, b3** : :class:`python:float`, :obj:`optional`
+           Numerator coefficients of the Sellmeier equation, dimensionless. By default,
+           ``1.03961``, ``0.231792`` and ``1.01047``.
+
+       **c1, c2, c3** : :class:`python:float`, :obj:`optional`
+           Denominator coefficients of the Sellmeier equation, in square micrometers. By
+           default, ``0.00600070``, ``0.0200179`` and ``103.561``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialSellmeier
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check all coefficients are finite.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~b1`
+            - First numerator coefficient.
+          * - :py:attr:`~c1`
+            - First denominator coefficient.
+          * - :py:attr:`~b2`
+            - Second numerator coefficient.
+          * - :py:attr:`~c2`
+            - Second denominator coefficient.
+          * - :py:attr:`~b3`
+            - Third numerator coefficient.
+          * - :py:attr:`~c3`
+            - Third denominator coefficient.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialSellmeier
+
+Property detail
+---------------
+
+.. py:property:: b1
+   :type: float
+
+
+   
+   First numerator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New numerator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: c1
+   :type: float
+
+
+   
+   First denominator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New denominator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: b2
+   :type: float
+
+
+   
+   Second numerator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New numerator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: c2
+   :type: float
+
+
+   
+   Second denominator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New denominator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: b3
+   :type: float
+
+
+   
+   Third numerator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New numerator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: c3
+   :type: float
+
+
+   
+   Third denominator coefficient.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New denominator coefficients of the Sellmeier equation.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite coefficient.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'SellMeier'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check all coefficients are finite.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a coefficient is nonfinite.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
