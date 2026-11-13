@@ -89,7 +89,7 @@ jobs:
                   body: [
                     {type: "TextBlock", text: $title, weight: "Bolder", size: "Large", wrap: true},
                     {type: "TextBlock", text: $date, isSubtle: true, spacing: "None", size: "Small", wrap: true},
-                    {type: "TextBlock", text: $results, weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true},
+                    {type: "TextBlock", text: $results, weight: "Bolder", size: "Medium", spacing: "Medium", wrap: true}
                   ],
                   actions: [{type: "Action.OpenUrl", title: "View Workflow Run", url: $run_url}]
                 }
