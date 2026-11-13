@@ -4,10 +4,10 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-speos-core"
-version = "0.10.dev0"
+version = "0.11.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "Synopsys, Inc. and ANSYS, Inc.", email = "pyansys.core@ansys.com"}]
@@ -18,8 +18,6 @@ classifiers=[
     "Intended Audience :: Science/Research",
     "Intended Audience :: Manufacturing",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
