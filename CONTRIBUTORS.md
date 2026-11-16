@@ -13,6 +13,7 @@
 
 * [Alex Fernandez](https://github.com/AlejandroFernandezLuces)
 * [Alex Kaszynski](https://github.com/akaszynski)
+* [DavidVilleneuveAnsys](https://github.com/DavidVilleneuveAnsys)
 * [dco](https://github.com/dcoansys)
 * [Devin](https://github.com/Devin-Crawford)
 * [EricHumbertAnsys](https://github.com/EricHumbertAnsys)
