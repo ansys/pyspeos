@@ -21,6 +21,7 @@ Examples
         examples/workflow/open-result
         examples/workflow/export-vtp
         examples/workflow/combine-speos
+        examples/workflow/transform
 
     The series of basic examples below explains how to use different PySpeos core methods.
 
@@ -38,6 +39,7 @@ Examples
         examples/core/lpf-preview
         examples/core/prism-example
         examples/core/bsdf
+        examples/core/file-formats
         examples/core/timeline
 
 

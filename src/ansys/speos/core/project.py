@@ -29,13 +29,15 @@ from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
+import warnings
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFileInstance, Texture3D
 import ansys.speos.core.face as face
+from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     AmbientCieStandardGeneralSkyParameters,
@@ -47,6 +49,8 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     DirectSimulationParameters,
     DisplayParameters,
+    EnergyDensity3DSensorParameters,
+    HumanEyeSensorParameters,
     ImmersiveSensorParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
@@ -60,14 +64,16 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    Texture3DParameters,
     ThermicSourceParameters,
     VirtualBSDFSimulationParameters,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel import SpeosClient
 from ansys.speos.core.kernel.body import BodyLink
-from ansys.speos.core.kernel.face import FaceLink
+from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
@@ -75,8 +81,10 @@ import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
     BaseSensor,
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorHumanEye,
     SensorImmersive,
     SensorIrradiance,
     SensorObserver,
@@ -131,7 +139,7 @@ class Project:
     speos : Union[ansys.speos.core.speos.Speos, ansys.speos.core.kernel.client.SpeosClient]
         Speos session (connected to gRPC server).
     path : Optional[Union[str, Path,  ansys.speos.core.component.LightBoxFileInstance]] = None
-        The project will be loaded from this speos file or lightbox instance.
+        The project will be loaded from this speos file, gltf file or lightbox instance.
        By default, ``None``, means create from empty.
     context : Optional[str]
         For internal use only.
@@ -159,11 +167,15 @@ class Project:
         self.scene_link = self.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
+        self._loaded_jobs: dict[str, ProtoJob] = {}
         match path:
             case None | "":
                 pass
             case str() | Path():
-                self.scene_link.load_file(str(path))
+                loaded_job = self.scene_link.load_file(str(path))
+                self._warn_if_job_load_is_unsupported(loaded_job)
+                if loaded_job is not None:
+                    self._loaded_jobs[loaded_job.simulation_path] = loaded_job
                 self._fill_features(context=context)
             case LightBoxFileInstance():
                 self.scene_link.load_file(file_uri=str(path.file), password=path.password)
@@ -172,6 +184,19 @@ class Project:
                     self._fill_features(context=context)
             case _:
                 raise TypeError(f"Unsupported path type: {type(path)}")
+
+    def _warn_if_job_load_is_unsupported(self, job: Optional[ProtoJob]) -> None:
+        """Warn when the server cannot return saved job properties."""
+        if job is not None or server_version_checker.is_version_supported(2027, 1, 0):
+            return
+        scene_data = self.scene_link.get()
+        if scene_data.simulations:
+            warnings.warn(
+                "Restoring saved simulation job properties requires Speos 2027 R1 or newer. "
+                "This server did not return job properties; configure job options explicitly "
+                "if needed.",
+                stacklevel=2,
+            )
 
     def remove_mesh_protection(self):
         """Remove mesh protection from the project loaded from *.speos file.
@@ -206,6 +231,22 @@ class Project:
         return None
 
     @property
+    def components(self) -> List[Union[LightBox, Texture3D]]:
+        """Property of components inside the project.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.light_box.LightBox, ansys.speos.core.texture_3d.Texture3D]]
+            List of component features.
+
+        """
+        comps = []
+        for feature in self._features:
+            if isinstance(feature, (LightBox, Texture3D)):
+                comps.append(feature)
+        return comps
+
+    @property
     def optical_properties(self) -> List[opt_prop.OptProp]:
         """Property of optical properties inside the project.
 
@@ -219,6 +260,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, opt_prop.OptProp):
                 props.append(feature)
+            if isinstance(feature, LightBox):
+                props.extend(feature.project.optical_properties)
         return props
 
     @property
@@ -254,6 +297,8 @@ class Project:
         for feature in self._features:
             if isinstance(feature, BaseSource):
                 srs.append(feature)
+            if isinstance(feature, LightBox):
+                srs.extend(feature.project.sources)
         return srs
 
     @property
@@ -261,10 +306,13 @@ class Project:
         self,
     ) -> List[
         Union[
+            Sensor3DEnergyDensity,
             Sensor3DIrradiance,
             SensorCamera,
+            SensorHumanEye,
             SensorImmersive,
             SensorIrradiance,
+            SensorObserver,
             SensorPolarIntensity,
             SensorRadiance,
             SensorXMPIntensity,
@@ -274,10 +322,13 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
+        List[Union[ansys.speos.core.sensor.Sensor3DEnergyDensity, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorHumanEye, \
         ansys.speos.core.sensor.SensorImmersive, \
         ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorObserver, \
         ansys.speos.core.sensor.SensorPolarIntensity, \
         ansys.speos.core.sensor.SensorRadiance, \
         ansys.speos.core.sensor.SensorXMPIntensity]]
@@ -808,6 +859,8 @@ class Project:
                 ImmersiveSensorParameters,
                 ObserverSensorParameters,
                 PolarIntensitySensorParameters,
+                HumanEyeSensorParameters,
+                EnergyDensity3DSensorParameters,
             ]
         ] = None,
     ) -> Union[
@@ -819,6 +872,8 @@ class Project:
         SensorImmersive,
         SensorObserver,
         SensorPolarIntensity,
+        SensorHumanEye,
+        Sensor3DEnergyDensity,
     ]:
         """Create a new Sensor feature.
 
@@ -839,7 +894,8 @@ class Project:
             ansys.speos.core.sensor.SensorXMPIntensity, \
             ansys.speos.core.sensor.SensorObserver, \
             ansys.speos.core.sensor.SensorImmersive, \
-            ansys.speos.core.sensor.SensorPolarIntensity].
+            ansys.speos.core.sensor.SensorPolarIntensity, \
+            ansys.speos.core.sensor.SensorHumanEye,].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -851,7 +907,10 @@ class Project:
         ansys.speos.core.generic.parameters.IntensityXMPSensorParameters,\
         ansys.speos.core.generic.parameters.ImmersiveSensorParameters,\
         ansys.speos.core.generic.parameters.ObserverSensorParameters,\
-        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters]]
+        ansys.speos.core.generic.parameters.PolarIntensitySensorParameters,\
+        ansys.speos.core.generic.parameters.HumanEyeSensorParameters,\
+        ansys.speos.core.generic.parameters.EnergyDensity3DSensorParameters]]
+
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -859,7 +918,9 @@ class Project:
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
-        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity]
+        ansys.speos.core.sensor.SensorImmersive, ansys.speos.core.sensor.SensorPolarIntensity, \
+        ansys.speos.core.sensor.SensorObserver, ansys.speos.core.sensor.SensorHumanEye, \
+        ansys.speos.core.sensor.Sensor3DEnergyDensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -978,6 +1039,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "Sensor3DEnergyDensity":
+                if parameters is None:
+                    parameters = EnergyDensity3DSensorParameters()
+                elif not isinstance(parameters, EnergyDensity3DSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of EnergyDensity3DSensorParameters"
+                    )
+                feature = Sensor3DEnergyDensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SensorPolarIntensity":
                 if parameters is None:
                     parameters = PolarIntensitySensorParameters()
@@ -987,6 +1063,21 @@ class Project:
                         f"{str(type(parameters))} instead of PolarIntensitySensorParameters"
                     )
                 feature = SensorPolarIntensity(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorHumanEye":
+                if parameters is None:
+                    parameters = HumanEyeSensorParameters()
+                elif not isinstance(parameters, HumanEyeSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of HumanEyeSensorParameters"
+                    )
+                feature = SensorHumanEye(
                     project=self,
                     name=name,
                     description=description,
@@ -1005,6 +1096,8 @@ class Project:
                         SensorImmersive,
                         SensorObserver,
                         SensorPolarIntensity,
+                        Sensor3DEnergyDensity,
+                        SensorHumanEye,
                     ],
                 )
                 raise TypeError(msg)
@@ -1065,6 +1158,28 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_fast_transmission_gathering(
+        self,
+    ) -> FastTransmissionGathering:
+        """Create the fast transmission gathering feature.
+
+        Only one fast transmission gathering feature per project. If the feature already
+        exists in the project, it is returned.
+
+        Returns
+        -------
+        ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering
+            Fast transmission gathering feature.
+        """
+        existing_features = self.find(name="", feature_type=FastTransmissionGathering)
+        if len(existing_features) != 0:
+            feature = existing_features[0]
+        else:
+            feature = FastTransmissionGathering(project=self)
+            self._features.append(feature)
+
+        return feature
+
     def create_lightbox(
         self,
         name: str,
@@ -1097,6 +1212,57 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_3d_texture(
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[Texture3DParameters] = None,
+    ) -> Texture3D:
+        """Create a new 3D texture feature.
+
+        A 3D texture repeats a pattern body on a support body of the project geometry,
+        following a 3D mapping file.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.Texture3DParameters]
+            Allows to provide parameters to overwrite default parameters.
+
+        Returns
+        -------
+        ansys.speos.core.component.Texture3D
+            3D texture feature.
+
+        Notes
+        -----
+        The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+        """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                Texture3D, name
+            )
+            raise ValueError(msg)
+
+        feature = Texture3D(
+            project=self,
+            name=name,
+            description=description,
+            metadata=metadata,
+            default_parameters=parameters,
+        )
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -1119,16 +1285,19 @@ class Project:
             Sensor3DIrradiance,
             SensorXMPIntensity,
             SensorPolarIntensity,
+            Sensor3DEnergyDensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
             SimulationVirtualBSDF,
             LightBox,
+            Texture3D,
             part.Part,
             body.Body,
             face.Face,
             part.Part.SubPart,
             GroundPlane,
+            FastTransmissionGathering,
         ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
@@ -1158,15 +1327,18 @@ class Project:
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.sensor.SensorPolarIntensity, \
+        ansys.speos.core.sensor.Sensor3DEnergyDensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
         ansys.speos.core.simulation.SimulationInverse, \
         ansys.speos.core.component.LightBox, \
+        ansys.speos.core.component.Texture3D, \
         ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
-        ansys.speos.core.ground_plane.GroundPlane]]
+        ansys.speos.core.ground_plane.GroundPlane, \
+        ansys.speos.core.fast_transmission_gathering.FastTransmissionGathering]]
             Found features.
 
         Examples
@@ -1270,6 +1442,15 @@ class Project:
             for feats in tmp:
                 found_features.extend(feats)
 
+        for lb in self.components:
+            if isinstance(lb, LightBox):
+                found_features.extend(
+                    lb.find(
+                        name=name,
+                        name_regex=name_regex,
+                        feature_type=feature_type,
+                    )
+                )
         return found_features
 
     # def action(self, name: str):
@@ -1439,28 +1620,10 @@ class Project:
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
 
-            f_links = self.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
-            face_db = self.client.faces()
-            if face_db._is_batch_available:
-                f_data_list = face_db.read_batch(refs=f_links)
-                for f_data, f_link in zip(f_data_list, f_links):
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
-            else:
-                for f_link in f_links:
-                    f_data = f_link.get()
-                    f_feat = b_feat.create_face(name=f_data.name)
-                    f_feat.face_link = f_link
-                    f_feat._face = (
-                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                    )
+            b_feat._fill_faces()
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
-
         root_part_link = self.client[scene_data.part_guid]
         root_part = root_part_link.get()
         update_rp = False
@@ -1619,9 +1782,16 @@ class Project:
         # ground plane
         if scene_data.HasField("ground"):
             ground_feat = GroundPlane(project=self, ground=scene_data.ground)
-
             if ground_feat is not None:
                 self._features.append(ground_feat)
+
+        # fast transmission gathering
+        if scene_data.HasField("fast_transmission_gathering"):
+            ftg_feat = FastTransmissionGathering(
+                project=self,
+                fast_transmission_gathering=scene_data.fast_transmission_gathering,
+            )
+            self._features.append(ftg_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.name in [_._name for _ in self._features]:
@@ -1676,8 +1846,22 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_parameters=None,
                 )
+            elif ssr_inst.HasField("energy_density_properties"):
+                ssr_feat = Sensor3DEnergyDensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
             elif ssr_inst.HasField("observer_properties"):
                 ssr_feat = SensorObserver(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
+            elif ssr_inst.HasField("human_eye_properties"):
+                ssr_feat = SensorHumanEye(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
@@ -1694,10 +1878,21 @@ class Project:
             )
             self._features.append(lightbox_scene)
 
+        # 3D textures: the Texture3D message carries no name, so the name of the pattern
+        # body is used as feature name.
+        for texture_3d_inst in scene_data.textures_3d:
+            texture_3d_feat = Texture3D(
+                project=self,
+                name=self.client[texture_3d_inst.pattern.body_guid].get().name,
+                texture_3d_instance=texture_3d_inst,
+            )
+            self._features.append(texture_3d_feat)
+
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
                 continue
             sim_feat = None
+            loaded_job = self._loaded_jobs.get(sim_inst.name)
             simulation_template_link = self.client[sim_inst.simulation_guid].get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
                 sim_feat = SimulationDirect(
@@ -1705,6 +1900,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
                 sim_feat = SimulationInverse(
@@ -1712,6 +1908,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
@@ -1719,6 +1916,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
                 sim_feat = SimulationVirtualBSDF(
@@ -1726,6 +1924,7 @@ class Project:
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_parameters=None,
+                    job=loaded_job,
                 )
             if sim_feat is not None:
                 self._features.append(sim_feat)
@@ -1785,13 +1984,17 @@ class Project:
         self,
         plotter: Plotter,
         speos_feature: Union[
-            SensorCamera,
-            SensorRadiance,
+            Sensor3DEnergyDensity,
             SensorIrradiance,
+            SensorRadiance,
+            SensorCamera,
             Sensor3DIrradiance,
+            SensorXMPIntensity,
+            SensorHumanEye,
             SourceLuminaire,
             SourceRayFile,
-            SourceLuminaire,
+            SourceSurface,
+            LightBox,
         ],
         scene_seize: float,
     ) -> Plotter:
@@ -1802,14 +2005,17 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[\
+            ansys.speos.core.sensor.Sensor3DEnergyDensity, \
+            ansys.speos.core.source.LightBox, \
             ansys.speos.core.sensor.SensorCamera, \
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
             ansys.speos.core.sensor.Sensor3DIrradiance, \
             ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SensorHumanEye, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceRayFile, \
-            ansys.speos.core.source.SourceLuminaire
+            ansys.speos.core.source.SourceSurface
         ]
             speos feature whose visual data will be added.
         scene_seize: float
@@ -1827,7 +2033,9 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                Sensor3DEnergyDensity,
                 SensorXMPIntensity,
+                SensorHumanEye,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
@@ -1904,10 +2112,12 @@ class Project:
                     plotter.plot(display_coordinates.y_axis, color="green")
                 case (
                     SensorIrradiance()
+                    | Sensor3DEnergyDensity()
                     | SensorXMPIntensity()
                     | SensorCamera()
                     | SourceLuminaire()
                     | SourceRayFile()
+                    | SensorHumanEye()
                     | LightBox()
                 ):
                     plotter.plot(display_coordinates.x_axis, color="red")

@@ -14,18 +14,27 @@ from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
+    EnergyDensity3DDimensionsParameters,
+    EnergyDensity3DSensorParameters,
+    HumanEyeSensorParameters,
+    HumanEyeSensorTypes,
+    LayerTypes,
     ObserverSensorParameters,
     PhotometricCameraParameters,
     PolarIntensityDimensionsParameters,
     PolarIntensityFormatTypes,
     PolarIntensitySensorParameters,
+    SensorTypes,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.sensor import (
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorHumanEye,
     SensorImmersive,
     SensorIrradiance,
     SensorObserver,
@@ -412,6 +421,66 @@ print(sensor8)
 sensor7.delete()
 print(sensor7)
 
+# ### Human eye sensor
+#
+# A human eye sensor simulates what a human eye perceives when looking from an observer point
+# to a target point. The spectral range is fixed from 360 nm to 830 nm; only the wavelength
+# sampling can be changed. This sensor requires a Speos server 2027 R1 or above.
+#
+# **Default values**
+#
+# Colorimetric, wavelength sampling 13, pupil diameter 4 mm, horizontal field of view +/- 20 deg
+# (sampling 2352), vertical field of view +/- 10 deg (sampling 1176), no layer separation,
+# origin axis system and no focal (the target point is not defined yet).
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    sensor_eye = p.create_sensor(name="HumanEye.1", feature_type=SensorHumanEye)
+    print(sensor_eye)  # local: not yet on server
+
+    # The focal must be defined before committing (here by giving the target point)
+    sensor_eye.target_point = [0, 0, 100]
+    sensor_eye.commit()
+    print(sensor_eye)  # now on server
+
+    # **Customise the sensor**
+    #
+    # The sensor is positioned with an observer point, a target point and a top direction.
+    # The focal length is the distance between the observer and the target points.
+
+    sensor_eye.set_type_spectral()
+    sensor_eye.wavelength_sampling = 25
+    sensor_eye.pupil_diameter = 6.0
+    eye_fov = sensor_eye.set_dimensions()
+    eye_fov.x_sampling = 1200
+    eye_fov.y_sampling = 600
+    sensor_eye.observer_point = [0, 0, 0]
+    sensor_eye.target_point = [0, 0, 500]
+    sensor_eye.top_direction = [0, 1, 0]
+    sensor_eye.set_layer_type_source()
+    sensor_eye.commit()
+    print(sensor_eye)
+    print(sensor_eye.focal, sensor_eye.target_point)
+
+    # **Create from parameter dataclass**
+    #
+    # The dataclass defines the axis system (observer, top direction Y, sight direction Z)
+    # and the focal length.
+
+    eye_params = HumanEyeSensorParameters(
+        sensor_type=HumanEyeSensorTypes.colorimetric,
+        pupil_diameter=5.0,
+        axis_system=[0, 50, -200, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        focal=200.0,
+    )
+    sensor_eye2 = p.create_sensor(
+        name="HumanEye.Parameters", feature_type=SensorHumanEye, parameters=eye_params
+    )
+    sensor_eye2.commit()
+    print(sensor_eye2)
+
+    sensor_eye2.delete()
+    sensor_eye.delete()
+
 # ### Polar intensity sensor
 #
 # A polar intensity sensor generates an IES/Eulumdat photometric file from the simulation.
@@ -454,5 +523,61 @@ print(sensor_polar_param)
 
 sensor_polar_param.delete()
 sensor_polar.delete()
+
+# ### 3D energy density sensor (Speos 2027 R1 or later)
+#
+# This sensor records energy density inside a volume, rather than on a surface.
+# The default is a photometric 50 mm cube centered on the axis-system origin,
+# with 100 voxels along each edge and no layer separation.
+# Only photometric and radiometric modes and none/source/face layers are supported.
+# Light Expert and result-file readers/VTP exporters are not supported.
+
+if server_version_checker.is_version_supported(2027, 1, 0):
+    energy = p.create_sensor(name="EnergyDensity.1", feature_type=Sensor3DEnergyDensity)
+    print(energy)
+    energy.commit()
+    print(energy)
+
+    energy.set_type_radiometric().set_layer_type_source()
+    volume = energy.set_dimensions()
+    volume.x_size = 60.0
+    volume.y_size = 40.0
+    volume.z_size = 20.0
+    volume.x_sampling = 60
+    volume.y_sampling = 40
+    volume.z_sampling = 20
+    energy.axis_system = [10, 0, 25, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    energy.result_file_name = "EnergyDensityVolume"
+    energy.commit()
+    print(energy)
+
+    # The same volume can be configured through parameter dataclasses.
+    energy_parameters = EnergyDensity3DSensorParameters(
+        dimensions=EnergyDensity3DDimensionsParameters(
+            x_size=60,
+            x_sampling=60,
+            y_size=40,
+            y_sampling=40,
+            z_size=20,
+            z_sampling=20,
+        ),
+        sensor_type=SensorTypes.radiometric,
+        layer_type=LayerTypes.by_source,
+    )
+    energy_from_parameters = p.create_sensor(
+        name="EnergyDensity.Parameters",
+        feature_type=Sensor3DEnergyDensity,
+        parameters=energy_parameters,
+    ).commit()
+    print(energy_from_parameters)
+
+    # With the graphics extra installed, p.preview() includes the oriented volume.
+    # Export a simulation containing the sensor to save it in a .speos project;
+    # lightbox exports do not retain sensors. Speos export also omits template metadata.
+    energy.dimensions.z_size = 100
+    energy.reset()
+    print(energy)
+    energy_from_parameters.delete()
+    energy.delete()
 
 speos.close()

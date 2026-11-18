@@ -458,6 +458,52 @@ class Irradiance3DSensorParameters:
 
 
 @dataclass
+class EnergyDensity3DDimensionsParameters:
+    """Volume dimensions in millimeters and voxel counts for a 3D energy density sensor.
+
+    Parameters
+    ----------
+    x_size, y_size, z_size : float, optional
+        Size along each local axis, by default 50 mm.
+    x_sampling, y_sampling, z_sampling : int, optional
+        Number of voxels along each local axis, by default 100.
+    """
+
+    x_size: float = 50.0
+    x_sampling: int = 100
+    y_size: float = 50.0
+    y_sampling: int = 100
+    z_size: float = 50.0
+    z_sampling: int = 100
+
+
+@dataclass
+class EnergyDensity3DSensorParameters:
+    """Parameters for a 3D energy density sensor.
+
+    Parameters
+    ----------
+    dimensions : EnergyDensity3DDimensionsParameters, optional
+        Volume sizes and voxel sampling.
+    axis_system : list[float], optional
+        Twelve-value position and orientation, by default the global origin axes.
+    sensor_type : SensorTypes, optional
+        Photometric or radiometric mode, by default photometric.
+    layer_type : LayerTypes or LayerByFaceParameters, optional
+        No separation, separation by source, or separation by face.
+    """
+
+    dimensions: EnergyDensity3DDimensionsParameters = field(
+        default_factory=EnergyDensity3DDimensionsParameters
+    )
+    axis_system: list[float] = field(default_factory=lambda: [float(value) for value in ORIGIN])
+    sensor_type: Literal[SensorTypes.photometric, SensorTypes.radiometric] = SensorTypes.photometric
+    layer_type: Union[Literal[LayerTypes.none, LayerTypes.by_source], LayerByFaceParameters] = (
+        LayerTypes.none
+    )
+
+
+@dataclass
 class LightBoxParameters:
     """Parameters class for LightBox feature."""
 
@@ -564,7 +610,7 @@ class PolarIntensitySensorParameters:
         By default, ``None``.
     integration_angle : float, optional
         Far-field integration angle in degrees. Used only when ``near_field`` is ``None``.
-        By default, ``5.0``.
+        By default, ``1.0``.
     axis_system : list[float], optional
         Position of the sensor ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
@@ -747,6 +793,72 @@ class ObserverSensorParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     layer_type: LayerTypes = LayerTypes.none
+    """Layer separation type."""
+
+
+class HumanEyeSensorTypes(str, Enum):
+    """Sensor types available for the human eye sensor."""
+
+    colorimetric = "colorimetric"
+    spectral = "spectral"
+
+
+@dataclass
+class HumanEyeSensorParameters:
+    """Parameters for :class:`~ansys.speos.core.sensor.SensorHumanEye`.
+
+    Parameters
+    ----------
+    sensor_type : ansys.speos.core.generic.parameters.HumanEyeSensorTypes, optional
+        Sensor type, colorimetric or spectral.
+        By default, ``HumanEyeSensorTypes.colorimetric``.
+    wavelength_sampling : int, optional
+        Number of wavelengths between the fixed 360 nm and 830 nm bounds.
+        By default, ``13``.
+    pupil_diameter : float, optional
+        Diameter of the pupil in mm.
+        By default, ``4.0``.
+    dimensions : ansys.speos.core.generic.parameters.AngularRangeParameters, optional
+        Field of view and sampling of the sensor. X is the horizontal direction, Y the vertical
+        direction. By default, horizontal field of view from -20 to 20 degrees with a sampling of
+        2352, vertical field of view from -10 to 10 degrees with a sampling of 1176.
+    axis_system : list[float], optional
+        Sensor axis system ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``. O corresponds to the
+        observer (eye point), Y to the top direction and Z to the sight direction.
+        By default, ``ORIGIN``.
+    focal : float, optional
+        Focal length in mm, distance between the observer point and the target point.
+        By default, ``None``: the focal length (thus the target point) is not defined.
+    layer_type : Union[LayerTypes.none, LayerTypes.by_source], optional
+        Layer separation type.
+        By default, ``LayerTypes.none``.
+    """
+
+    sensor_type: HumanEyeSensorTypes = HumanEyeSensorTypes.colorimetric
+    """Sensor type."""
+    wavelength_sampling: int = 13
+    """Number of wavelengths between 360 nm and 830 nm."""
+    pupil_diameter: float = 4.0
+    """Pupil diameter in mm."""
+    dimensions: AngularRangeParameters = field(
+        default_factory=lambda: AngularRangeParameters(
+            x_start=-20.0,
+            x_end=20.0,
+            x_sampling=2352,
+            y_start=-10.0,
+            y_end=10.0,
+            y_sampling=1176,
+        )
+    )
+    """Field of view and sampling."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor: observer point, top direction (Y) and sight direction (Z)."""
+    focal: Optional[float] = None
+    """Focal length in mm."""
+    layer_type: Union[
+        Literal[LayerTypes.none],
+        Literal[LayerTypes.by_source],
+    ] = LayerTypes.none
     """Layer separation type."""
 
 
@@ -1614,6 +1726,67 @@ class OptPropParameters:
         VopTypes.none
     )
     """VOP parameters used for optical properties."""
+
+
+# =============================================================================
+# 3D texture parameters
+# =============================================================================
+
+
+class Texture3DPatternOperations(Enum):
+    """Operations that can be applied on the support body according to the pattern.
+
+    The values match the ``ProtoScene.Texture3D.PatternOperation`` protobuf enumeration.
+    """
+
+    remove = 1
+    """Subtract the pattern from the support body."""
+    add_on_same_material = 2
+    """Add the pattern on the support body and keep the support body material."""
+    add_on_different_material = 3
+    """Add the pattern on the support body and use the pattern material."""
+    add_in = 4
+    """Add the pattern into the support body and use the pattern material."""
+    insert = 5
+    """Insert the pattern in the support body and use the pattern material."""
+
+
+@dataclass
+class Texture3DParameters:
+    """Store default values for a 3D texture.
+
+    Parameters
+    ----------
+    axis_system : list[float], optional
+        Anchor of the 3D texture pattern ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+        By default, the global origin axis system.
+    support_body_geo_path : str, optional
+        Geometry path of the body supporting the 3D texture.
+        By default, ``""``.
+    pattern_body_guid : str, optional
+        Guid of the body used as 3D texture pattern.
+        By default, ``""``.
+    pattern_operation : ansys.speos.core.generic.parameters.Texture3DPatternOperations, optional
+        Operation applied on the support body according to the pattern.
+        By default, ``Texture3DPatternOperations.add_on_same_material``.
+    global_scale : float, optional
+        Global scale factor applied to the 3D texture pattern.
+        By default, ``1.0``.
+    mapping_3d_file_uri : Union[str, pathlib.Path], optional
+        Uri of the 3D mapping file (``.OPT3DMapping``) used for this 3D texture.
+        By default, ``""``.
+    """
+
+    axis_system: list[float] = field(default_factory=lambda: list(ORIGIN))
+    """Anchor of the 3D texture pattern."""
+    support_body_geo_path: str = ""
+    """Geometry path of the body supporting the 3D texture."""
+    pattern_operation: Texture3DPatternOperations = Texture3DPatternOperations.add_on_same_material
+    """Operation applied on the support body according to the pattern."""
+    global_scale: float = 1.0
+    """Global scale factor applied to the 3D texture pattern."""
+    mapping_3d_file_uri: Union[str, Path] = ""
+    """Uri of the 3D mapping file (``.OPT3DMapping``)."""
 
 
 @dataclass

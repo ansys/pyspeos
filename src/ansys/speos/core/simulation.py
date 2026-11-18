@@ -36,6 +36,7 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ColorimetricStandardTypes,
@@ -80,6 +81,9 @@ class BaseSimulation:
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
 
     Notes
     -----
@@ -158,7 +162,7 @@ class BaseSimulation:
 
             @adaptive_uri.setter
             def adaptive_uri(self, uri: Union[Path, str]) -> None:
-                self._adaptive.file_uri = str(uri)
+                self._adaptive.file_uri = general_methods._validate_pathlike(uri, "adaptive_uri")
 
         class Uniform:
             """Uniform sampling mode.
@@ -209,7 +213,9 @@ class BaseSimulation:
 
             @theta_sampling.setter
             def theta_sampling(self, theta_sampling: int) -> None:
-                self._uniform.theta_sampling = theta_sampling
+                self._uniform.theta_sampling = general_methods._validate_positive_int(
+                    theta_sampling
+                )
 
         def __init__(
             self,
@@ -341,6 +347,9 @@ class BaseSimulation:
 
         @minimum_energy_percentage.setter
         def minimum_energy_percentage(self, value: float) -> None:
+            value = general_methods._validate_scalar(value)
+            if not 0 <= value <= 1:
+                raise ValueError("minimum_energy_percentage must be between 0 and 1.")
             self._weight.minimum_energy_percentage = value
 
     class SourceGroup:
@@ -418,6 +427,7 @@ class BaseSimulation:
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         self._project = project
         self._name = name
@@ -426,6 +436,7 @@ class BaseSimulation:
         """Link object for the simulation template in database."""
         self.job_link = None
         """Link object for the job in database."""
+        self._job_loaded_from_file = job is not None
         self.result_list = []
         """List of results created after a simulation compute."""
 
@@ -455,13 +466,20 @@ class BaseSimulation:
             ]
             self.reset()
 
-        # Create local Job
-        self._job = ProtoJob(
-            name=self._name,
-            description=description,
-            metadata=metadata,
-            simulation_path=self._simulation_instance.name,
-        )
+        if job is None:
+            self._job = ProtoJob(
+                name=self._name,
+                description=description,
+                metadata=metadata,
+                simulation_path=self._simulation_instance.name,
+            )
+        else:
+            if job.simulation_path != self._simulation_instance.name:
+                raise ValueError(
+                    f"Job for simulation {job.simulation_path!r} cannot be loaded into "
+                    f"simulation {self._simulation_instance.name!r}."
+                )
+            self._job = job
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
@@ -977,21 +995,34 @@ class BaseSimulation:
             job_props = self._job.inverse_mc_simulation_properties
             if not (
                 job_props.HasField("stop_condition_duration")
+                or job_props.HasField("optimized_propagation_relative")
+                or job_props.HasField("optimized_propagation_absolute")
                 or (
-                    job_props.optimized_propagation_none.HasField("stop_condition_passes_number")
-                    or job_props.optimized_propagation_relative.min_pass_number != 0
-                    or job_props.optimized_propagation_absolute.min_pass_number != 0
+                    job_props.HasField("optimized_propagation_none")
+                    and job_props.optimized_propagation_none.HasField(
+                        "stop_condition_passes_number"
+                    )
                 )
             ):
                 stop_condition_error = True
 
         if stop_condition_error:
-            warnings.warn(
-                "In the current RPC version, simulation stop condition information may be lost "
-                "when loading a .speos file. Please define a stop condition explicitly. Default "
-                "stop conditions have been applied so the simulation does not run infinitely.",
-                stacklevel=2,
-            )
+            if self._job_loaded_from_file or server_version_checker.is_version_supported(
+                2027, 1, 0
+            ):
+                warnings.warn(
+                    "You have not defined a valid simulation stop condition. This creates and "
+                    "infinite simulation. Please define a stop condition explicitly. Default stop "
+                    "conditions have been applied so the simulation does not run infinitely.",
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    "Before version 2027R1, simulation stop condition information is lost when "
+                    "loading a .speos file. Please define a stop condition explicitly. Default "
+                    "stop conditions have been applied so the simulation does not run infinitely.",
+                    stacklevel=2,
+                )
             if self._job.HasField("direct_mc_simulation_properties"):
                 default_sim_paras = DirectSimulationParameters()
                 self.stop_condition_duration = default_sim_paras.stop_condition_duration
@@ -1306,6 +1337,9 @@ class SimulationDirect(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.DirectSimulationParameters, optional
         If defined the values in the direct simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class SourceSampling:
@@ -1322,6 +1356,7 @@ class SimulationDirect(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[DirectSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1332,6 +1367,7 @@ class SimulationDirect(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "direct_mc_simulation_template"
 
@@ -1426,6 +1462,36 @@ class SimulationDirect(BaseSimulation):
     @dispersion.setter
     def dispersion(self, value: bool) -> None:
         self._simulation_template.direct_mc_simulation_template.dispersion = value
+
+    @property
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(self) -> bool:
+        """Activate/Deactivate the fast transmission gathering.
+
+        To accelerate the simulation by neglecting the light refraction that occurs when
+        the light is being transmitted through a transparent surface.
+
+        The geometries on which the fast transmission gathering is applied are defined at
+        project level with
+        :meth:`ansys.speos.core.project.Project.create_fast_transmission_gathering`.
+
+        Returns
+        -------
+        bool
+            ``True`` if the fast transmission gathering is activated.
+
+        Notes
+        -----
+        Activating this property has no effect if no geometry is selected in the
+        project fast transmission gathering feature.
+        """
+        return self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering
+
+    @fast_transmission_gathering.setter
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(self, value: bool) -> None:
+        template = self._simulation_template.direct_mc_simulation_template
+        template.fast_transmission_gathering = value
 
     @property
     def ambient_material_file_uri(self) -> str:
@@ -1526,7 +1592,7 @@ class SimulationDirect(BaseSimulation):
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
@@ -1593,6 +1659,9 @@ class SimulationInverse(BaseSimulation):
     default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
         If defined the values in the inverse simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
 
     Notes
     -----
@@ -1759,6 +1828,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[InverseSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1769,6 +1839,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "inverse_mc_simulation_template"
         self._optimized = None
@@ -1991,26 +2062,35 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
     def maximum_gathering_error(self, value: int) -> None:
         self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
 
-    # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
-    #     """Activate/Deactivate the fast transmission gathering.
-    #
-    #     To accelerate the simulation by neglecting the light refraction that occurs when the light
-    #     is being transmitted through a transparent surface.
-    #
-    #     Parameters
-    #     ----------
-    #     value : bool
-    #         Activate/Deactivate.
-    #         By default, ``False``, means deactivate
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.simulation.Inverse
-    #         Inverse simulation
-    #     """
-    #     template = self._simulation_template.inverse_mc_simulation_template
-    #     template.fast_transmission_gathering = value
-    #     return self
+    @property
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(self) -> bool:
+        """Activate/Deactivate the fast transmission gathering.
+
+        To accelerate the simulation by neglecting the light refraction that occurs when
+        the light is being transmitted through a transparent surface.
+
+        The geometries on which the fast transmission gathering is applied are defined at
+        project level with
+        :meth:`ansys.speos.core.project.Project.create_fast_transmission_gathering`.
+
+        Returns
+        -------
+        bool
+            ``True`` if the fast transmission gathering is activated.
+
+        Notes
+        -----
+        Activating this property has no effect if no geometry is selected in the
+        project fast transmission gathering feature.
+        """
+        return self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering
+
+    @fast_transmission_gathering.setter
+    @min_speos_version(27, 1, 0)
+    def fast_transmission_gathering(self, value: bool) -> None:
+        template = self._simulation_template.inverse_mc_simulation_template
+        template.fast_transmission_gathering = value
 
     @property
     def ambient_material_file_uri(self) -> str:
@@ -2044,7 +2124,9 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         int
         """
         props = self._job.inverse_mc_simulation_properties
-        if props.HasField("optimized_propagation_none"):
+        if props.HasField(
+            "optimized_propagation_none"
+        ) and props.optimized_propagation_none.HasField("stop_condition_passes_number"):
             return props.optimized_propagation_none.stop_condition_passes_number
         return None
 
@@ -2207,7 +2289,7 @@ ansys.speos.core.generic.parameters.OptimizedPropagationAbsoluteParameters, opti
         if isinstance(value, bool):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
-                    item.lxp_path_number = 10e6 if value else None
+                    item.lxp_path_number = int(10e6) if value else None
         elif isinstance(value, list):
             for value_item in value:
                 ssr, ray_number = value_item
@@ -2271,6 +2353,9 @@ class SimulationInteractive(BaseSimulation):
     ansys.speos.core.generic.parameters.InteractiveSimulationParameters] = None
         If defined the values in the interactive simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class RaysNumberPerSource:
@@ -2304,6 +2389,7 @@ class SimulationInteractive(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[InteractiveSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2314,6 +2400,7 @@ class SimulationInteractive(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "interactive_simulation_template"
 
@@ -2494,6 +2581,9 @@ class SimulationVirtualBSDF(BaseSimulation):
     ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters] = None
         If defined the values in the virtual bsdf simulation instance will be overwritten by the
         values of the data class.
+    job : ansys.speos.core.kernel.job.ProtoJob, optional
+        Saved simulation job to restore, shared by reference. If omitted, a new local job
+        is created.
     """
 
     class RoughnessOnly(BaseSimulation.SourceSampling):
@@ -2695,7 +2785,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @theta_sampling.setter
                     def theta_sampling(self, theta_sampling: int) -> None:
-                        self._uniform.theta_sampling = theta_sampling
+                        self._uniform.theta_sampling = general_methods._validate_positive_int(
+                            theta_sampling
+                        )
 
                     @property
                     def phi_sampling(self) -> int:
@@ -2716,7 +2808,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @phi_sampling.setter
                     def phi_sampling(self, phi_sampling: int) -> None:
-                        self._uniform.phi_sampling = phi_sampling
+                        self._uniform.phi_sampling = general_methods._validate_positive_int(
+                            phi_sampling
+                        )
 
                     def set_symmetric_none(
                         self,
@@ -3135,7 +3229,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @theta_sampling.setter
         def theta_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.theta_sampling = value
+            self._sensor_uniform_mode.theta_sampling = general_methods._validate_positive_int(value)
 
         @property
         def phi_sampling(self) -> int:
@@ -3156,7 +3250,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @phi_sampling.setter
         def phi_sampling(self, value: int) -> None:
-            self._sensor_uniform_mode.phi_sampling = value
+            self._sensor_uniform_mode.phi_sampling = general_methods._validate_positive_int(value)
 
     def __init__(
         self,
@@ -3166,6 +3260,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_parameters: Optional[VirtualBSDFSimulationParameters] = None,
+        job: Optional[ProtoJob] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3176,6 +3271,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             description=description,
             metadata=metadata,
             simulation_instance=simulation_instance,
+            job=job,
         )
         self._template_class = "virtual_bsdf_bench_simulation_template"
 
@@ -3280,7 +3376,9 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @axis_system.setter
     def axis_system(self, value: List[float]) -> None:
-        self._simulation_instance.vbb_properties.axis_system[:] = value
+        self._simulation_instance.vbb_properties.axis_system[:] = (
+            general_methods._validate_axis_system12(value).tolist()
+        )
 
     @property
     def analysis_x_ratio(self) -> float:

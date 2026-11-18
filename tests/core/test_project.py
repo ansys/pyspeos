@@ -29,11 +29,14 @@ from unittest.mock import MagicMock
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.fast_transmission_gathering import FastTransmissionGathering
 from ansys.speos.core.generic.parameters import (
     IrradianceSensorParameters,
     RadianceSensorParameters,
 )
 from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel.sensor_template_v2 import ProtoSensorTemplateV2, SensorTemplateLinkV2
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
@@ -371,8 +374,12 @@ def test_commit(speos: Speos):
     assert [source_instance.name for source_instance in scene_data.sources] == [source._name]
     assert [sensor_instance.name for sensor_instance in scene_data.sensors] == [sensor._name]
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_photometric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_photometric")
 
     # Modify a feature and commit again -
     # this time no scene update is needed (only template change)
@@ -380,8 +387,12 @@ def test_commit(speos: Speos):
     p.commit()
 
     sensor_data = speos.client[p.scene_link.get().sensors[0].sensor_guid].get()
-    assert sensor_data.HasField("irradiance_sensor_template")
-    assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    if isinstance(sensor_data, ProtoSensorTemplateV2):
+        assert sensor_data.HasField("irradiance")
+        assert sensor_data.irradiance.HasField("mode_colorimetric")
+    else:
+        assert sensor_data.HasField("irradiance_sensor_template")
+        assert sensor_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
 
 
 def test_from_file(speos: Speos):
@@ -395,8 +406,16 @@ def test_from_file(speos: Speos):
     )
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 4
-    assert len(p.optical_properties) == 4
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert len(p.scene_link.get().materials) == 3
+        assert len(p.optical_properties) == 3
+    else:
+        assert len(p.scene_link.get().materials) == 4
+        assert len(p.optical_properties) == 4
+        # Check that ambient mat has no sop
+        feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
+        assert len(feat_op_ambients) == 1
+        assert feat_op_ambients[0].sop_template_link is None
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.sensors) == 1
     assert len(p.scene_link.get().sources) == 2
@@ -425,11 +444,6 @@ def test_from_file(speos: Speos):
         assert speos.client[mat2.sop_guids[0]].get().HasField("mirror")
         assert speos.client[mat2.sop_guids[0]].get().mirror.reflectance == 60
 
-    # Check that ambient mat has no sop
-    feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
-    assert len(feat_op_ambients) == 1
-    assert feat_op_ambients[0].sop_template_link is None
-
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
@@ -440,16 +454,19 @@ def test_from_file(speos: Speos):
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
-    assert ssr_data.HasField("irradiance_sensor_template")
-    assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
-    assert (
-        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
-    )
-    assert (
-        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == 25
-    )
-    assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
+    if isinstance(ssr_link, SensorTemplateLinkV2):
+        assert ssr_data.HasField("irradiance")
+        irradiance_data = ssr_data.irradiance
+        colorimetric_data = irradiance_data.mode_colorimetric
+        assert irradiance_data.HasField("mode_colorimetric")
+    else:
+        assert ssr_data.HasField("irradiance_sensor_template")
+        irradiance_data = ssr_data.irradiance_sensor_template
+        colorimetric_data = irradiance_data.sensor_type_colorimetric
+        assert irradiance_data.HasField("sensor_type_colorimetric")
+    assert colorimetric_data.wavelengths_range.w_end == 800
+    assert colorimetric_data.wavelengths_range.w_sampling == 25
+    assert irradiance_data.dimensions.x_sampling == 500
 
 
 def test_from_file_threads_limited(speos: Speos):
@@ -475,6 +492,66 @@ def test_from_file_threads_limited(speos: Speos):
     assert feat_sims[0].simulation_template_link.get().metadata[
         "SimulationSetting::OPTThreadNumber"
     ] == "int::" + str(threads_nb)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_from_gltf_file(speos: Speos):
+    """Test create a project from a gltf (binary ``.glb``) file."""
+    # Create a project from a gltf file
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "simulations" / "cute-love-heart.glb"),
+    )
+
+    scene_data = p.scene_link.get()
+
+    # A gltf file only carries geometry and its materials
+    assert scene_data.part_guid != ""
+    assert len(scene_data.sources) == 0
+    assert len(scene_data.sensors) == 0
+    assert len(scene_data.simulations) == 0
+
+    # The gltf scene node is loaded as a sub part of the root part
+    root_part_data = speos.client[scene_data.part_guid].get()
+    assert len(root_part_data.body_guids) == 0
+    assert len(root_part_data.parts) == 1
+    assert root_part_data.parts[0].name == "cute-love-heart"
+
+    sub_part_feats = p.find(name=".*", name_regex=True, feature_type=Part)
+    assert len(sub_part_feats) == 1
+    assert type(sub_part_feats[0]) is Part.SubPart
+    assert sub_part_feats[0]._name == "cute-love-heart"
+
+    # The sub part holds the meshed body and its faces
+    sub_part_data = speos.client[root_part_data.parts[0].part_guid].get()
+    assert len(sub_part_data.body_guids) == 1
+    body_data = speos.client[sub_part_data.body_guids[0]].get()
+    assert body_data.name == "cute-love-heart"
+    assert len(body_data.face_guids) == 1
+
+    body_feats = p.find(name="cute-love-heart/.*", name_regex=True, feature_type=Body)
+    assert len(body_feats) == 1
+    assert body_feats[0]._name == "cute-love-heart"
+    assert type(body_feats[0]) is Body
+
+    face_feats = p.find(
+        name="cute-love-heart/cute-love-heart/.*", name_regex=True, feature_type=Face
+    )
+    assert len(face_feats) == 1
+    assert type(face_feats[0]) is Face
+    assert len(face_feats[0].vertices_data) != 0
+
+    # The gltf material is loaded as an optical property pointing to a svbrdf file
+    assert len(scene_data.materials) == 1
+    op_feats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert len(op_feats) == 1
+    assert op_feats[0]._name == "Material_0_instance"
+    # Texture layers are not created: coordinates are stored inside the svbrdf file
+    assert op_feats[0].texture is None
+    assert op_feats[0].sop_library.file_uri.endswith("gltfsvbrdf")
+    # The material is applied on the body loaded from the gltf file
+    assert len(op_feats[0].geometries) == 1
+    assert op_feats[0].geometries[0].startswith("cute-love-heart/cute-love-heart/")
 
 
 def test_find_geom(speos: Speos):
@@ -837,13 +914,18 @@ def test_create_speos_feature_preview_sensor_camera(speos: Speos):
     """Test _create_speos_feature_preview for SensorCamera (case _: branch, 3-axis coords)."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Camera.Preview", feature_type=SensorCamera)
-    sensor.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    mode_photometric = sensor.set_mode_photometric()
+    mode_photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    mode_color = mode_photometric.set_mode_color()
+    mode_color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
-    sensor.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    mode_color.green_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
-    sensor.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    mode_color.blue_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor.commit()
@@ -953,8 +1035,6 @@ def test_create_speos_feature_preview_lightbox(speos: Speos):
     - When ``data.data`` is a PolyData mesh → mesh is plotted with edge/color kwargs.
     The coordinate system (3-axis) is then drawn from the first visual_data entry.
     """
-    from ansys.speos.core.component import LightBox
-
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
@@ -979,8 +1059,6 @@ def test_create_speos_feature_preview_lightbox_ray_data(speos: Speos):
     Uses the second lightbox in Direct.1.speos which contains a ray-file source,
     exercising the ``isinstance(data.data, list)`` inner branch.
     """
-    from ansys.speos.core.component import LightBox
-
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "lightbox" / "Direct.1.speos"),
@@ -1070,7 +1148,8 @@ def test_change_loaded_mesh(speos: Speos):
 
     # load change model
     p = Project(
-        speos=speos, path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos")
+        speos=speos,
+        path=str(Path(test_path) / "changed" / "MeshChange.speos" / "MeshChange.speos"),
     )
     # remove portection
     p.remove_mesh_protection()
@@ -1117,3 +1196,215 @@ def test_change_loaded_mesh(speos: Speos):
         assert face_1._face != orig_value
     else:
         assert face_1._face != orig_value
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_fast_transmission_gathering(speos: Speos):
+    """Test creation of the fast transmission gathering feature."""
+    p = Project(speos=speos)
+    root_part = p.create_root_part()
+    body = root_part.create_body(name="TheBodyB")
+    face = body.create_face(name="TheFaceF")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    body2 = root_part.create_body(name="TheBodyC")
+    face = body2.create_face(name="TheFaceG")
+    face.vertices = [0, 0, 0, -1, 0, 0, 0, -1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    ftg = p.create_fast_transmission_gathering()
+    assert isinstance(ftg, FastTransmissionGathering)
+    assert ftg.geometries == []
+
+    # Only one fast transmission gathering feature per project
+    assert p.create_fast_transmission_gathering() is ftg
+    assert len(p.find(name="", feature_type=FastTransmissionGathering)) == 1
+
+    # Geometries can be given as GeoRef
+    ftg.geometries = [GeoRef.from_native_link("TheBodyB"), GeoRef.from_native_link("TheBodyC")]
+    assert ftg.geometries == ["TheBodyB", "TheBodyC"]
+
+    # Unsupported geometry input
+    with pytest.raises(TypeError, match="is not supported as fast transmission gathering"):
+        ftg.geometries = [42]
+
+    # Commit -> the scene is updated
+    ftg.commit()
+    scene_data = p.scene_link.get()
+    assert scene_data.HasField("fast_transmission_gathering")
+    assert scene_data.fast_transmission_gathering.geometries.geo_paths == [
+        "TheBodyB",
+        "TheBodyC",
+    ]
+
+    # Clean the geometries -> the geometry field is removed
+    ftg.geometries = None
+    assert not ftg._fast_transmission_gathering.HasField("geometries")
+    assert ftg.geometries is None
+
+    # Local modification then reset -> server data is retrieved back
+    ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
+    assert ftg.geometries == ["TheBodyB"]
+    ftg.reset()
+    assert ftg.geometries == ["TheBodyB", "TheBodyC"]
+
+    # get / __str__
+    assert ftg.get(key="geo_paths") == ["TheBodyB", "TheBodyC"]
+    assert isinstance(str(ftg), str)
+
+    # Delete -> the field is removed from the scene
+    ftg.delete()
+    assert p.scene_link.get().HasField("fast_transmission_gathering") is False
+
+    # Test export and verify import of a lightbox with fast transmission gathering
+    lb = p.create_lightbox(name="Lightbox.FTG")
+    lb_root = lb.create_root_part()
+    lb_body = lb_root.create_body(name="TheBodyB")
+    lb_face = lb_body.create_face(name="TheFaceF")
+    lb_face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    lb_face.facets = [0, 1, 2]
+    lb_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    lb_root.commit()
+    lb_opt = lb.create_optical_property(name="TheOpticalProperty_lightbox")
+    lb_opt.geometries = [GeoRef.from_native_link("TheBodyB")]
+
+    lb_ftg = lb.create_fast_transmission_gathering()
+    lb_ftg.geometries = [GeoRef.from_native_link("TheBodyB")]
+    lb_ftg.commit()
+    lb.export(Path(test_path) / "simulations" / "Lightbox_FTG_export.SPEOSLightBox")
+
+    p2 = Project(
+        speos=speos,
+    )
+    lb2 = p2.create_lightbox(
+        name="Lightbox.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path)
+            / "simulations"
+            / "Lightbox_FTG_export.SPEOSLightBox"
+            / "Lightbox_FTG_export.SPEOSLightBox"
+        ),
+    )
+    lb2.commit()
+    lb2_ftg = lb2.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb2_ftg, FastTransmissionGathering)
+    assert len(lb2_ftg.geometries) == 1
+    assert "TheBodyB" in str(lb2_ftg.geometries[0])
+
+    clean_all_dbs(speos.client)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_load_fast_transmission_gathering(speos: Speos):
+    """Test loading of the FTG feature from a speos file or lightbox file."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "simulations" / "Direct_FTG.speos",
+    )
+    ftg = p.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(ftg, FastTransmissionGathering)
+    assert len(ftg.geometries) == 1
+    assert ftg.geometries == ["Solid:3801360539"]
+    direct_sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    assert direct_sim.fast_transmission_gathering is True
+
+    p2 = Project(
+        speos=speos,
+        path=Path(test_path) / "simulations" / "Inverse_FTG.speos",
+    )
+    ftg2 = p2.create_fast_transmission_gathering()
+    assert isinstance(ftg2, FastTransmissionGathering)
+    assert len(ftg2.geometries) == 1
+    assert ftg2.geometries == ["Solid:3801360539"]
+    inverse_sim = p2.find(name=".*", name_regex=True, feature_type=SimulationInverse)[0]
+    assert inverse_sim.fast_transmission_gathering is True
+    inverse_sim.fast_transmission_gathering = False
+    inverse_sim.commit()
+    assert inverse_sim.fast_transmission_gathering is False
+
+    p3 = Project(
+        speos=speos,
+    )
+    lb = p3.create_lightbox(
+        name="Lightbox.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "simulations" / "Lightbox_FTG.SPEOSLightBox",
+        ),
+    )
+    lb.commit()
+    lb_ftg = lb.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb_ftg, FastTransmissionGathering)
+    assert len(lb_ftg.geometries) == 1
+    assert lb_ftg.geometries == ["Solid:3801360539"]
+
+    p4 = Project(
+        speos=speos,
+    )
+    lb2 = p4.create_lightbox(
+        name="Lightbox_password.FTG",
+        lightbox=LightBoxFileInstance(
+            file=Path(test_path) / "simulations" / "Lightbox_FTG_123456.SPEOSLightBox",
+            password="123456",
+        ),
+    )
+    lb2.commit()
+    lb2_ftg = lb2.find(name="", feature_type=FastTransmissionGathering)[0]
+    assert isinstance(lb2_ftg, FastTransmissionGathering)
+    assert len(lb2_ftg.geometries) == 1
+    assert lb2_ftg.geometries == ["Solid:3801360539"]
+
+    clean_all_dbs(speos.client)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_activate_in_simulation(speos: Speos):
+    """Test activation of the FTG in a direct and in an inverse simulation."""
+    p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body = root_part.create_body(name="TheBodyB")
+    face = body.create_face(name="TheFaceF")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    root_part.commit()
+
+    ftg = p.create_fast_transmission_gathering()
+    ftg.geometries = [body]
+    ftg.commit()
+
+    # A source and a sensor are mandatory to commit a simulation
+    source = p.create_source(name="Surface.FTG", feature_type=SourceSurface)
+    source.set_exitance_constant().geometries = [(face.geo_path, False)]
+    # A polychromatic spectrum is mandatory for the inverse simulation
+    source.spectrum.set_halogen()
+    source.commit()
+    sensor = p.create_sensor(name="Irradiance.FTG", feature_type=SensorIrradiance)
+    # A colorimetric sensor is mandatory for the inverse simulation
+    sensor.set_type_colorimetric()
+    sensor.commit()
+
+    sim = p.create_simulation(name="Simulation.FTG", feature_type=SimulationDirect)
+    sim.source_paths = [source._name]
+    sim.sensor_paths = [sensor._name]
+
+    # Deactivated by default
+    assert sim.fast_transmission_gathering is False
+
+    # Activate and commit
+    sim.fast_transmission_gathering = True
+    assert sim.fast_transmission_gathering is True
+    sim.commit()
+    direct_template = sim._simulation_template.direct_mc_simulation_template
+    assert direct_template.fast_transmission_gathering is True
+
+    # Deactivate and commit
+    sim.fast_transmission_gathering = False
+    sim.commit()
+    assert direct_template.fast_transmission_gathering is False
+
+    clean_all_dbs(speos.client)

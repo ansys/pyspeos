@@ -35,6 +35,7 @@ from ansys.speos.core.generic.visualization_methods import _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.kernel.face import FaceLink
 import ansys.speos.core.part as part
 
 
@@ -318,7 +319,7 @@ class Body:
             self.body_link.delete()
             self.body_link = None
 
-        if self in self._parent_part._geom_features:
+        if self._parent_part is not None and self in self._parent_part._geom_features:
             self._parent_part._geom_features.remove(self)
 
         return self
@@ -357,3 +358,23 @@ class Body:
                 found_features.extend([x for x in self._geom_features if x._name == name])
 
         return found_features
+
+    def _fill_faces(self):
+        f_links = self._speos_client.get_items(keys=self._body.face_guids, item_type=FaceLink)
+        face_db = self._speos_client.faces()
+        if face_db._is_batch_available:
+            f_data_list = face_db.read_batch(refs=f_links)
+            for f_data, f_link in zip(f_data_list, f_links):
+                f_feat = self.create_face(name=f_data.name)
+                f_feat.face_link = f_link
+                f_feat._face = (
+                    f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                )
+        else:
+            for f_link in f_links:
+                f_data = f_link.get()
+                f_feat = self.create_face(name=f_data.name)
+                f_feat.face_link = f_link
+                f_feat._face = (
+                    f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                )

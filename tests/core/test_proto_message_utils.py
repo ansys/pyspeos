@@ -268,7 +268,10 @@ def test_replace_guid_elt_complex(speos: Speos):
 
     # vop/sops correctly replaced
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="vop")
-    assert len(find) == 3
+    if server_version_checker.is_version_supported(2027, 1, 0):
+        assert len(find) == 2  # starting 27.1, no ambient vop anymore: useless
+    else:
+        assert len(find) == 3
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops")
     if len(find) != 3:
         find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="sop")
@@ -492,7 +495,6 @@ def test_flatten_dict(speos: Speos):
     if check_version(ansys_api_speos_version, 0, 16, 0):
         # repeated field appearing in v0.16.0
         expected_keys.append("sub_scene_anchor_axis_system")
-
     if check_version(ansys_api_speos_version, 0, 17):
         # repeated field appearing in v0.17.0
         expected_keys.append("textures_3d")
@@ -502,5 +504,4 @@ def test_flatten_dict(speos: Speos):
             expected_keys.append("fast_transmission_gathering")
             expected_keys.append("geometries")
             expected_keys.append("geo_paths")
-    print(res.keys())
     assert all(True if key in expected_keys else False for key in res.keys())

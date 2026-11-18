@@ -27,6 +27,7 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import OptProp, Part, Project, Speos
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
     SpeosFileInstance,
@@ -208,11 +209,15 @@ def test_insert_speos(speos: Speos):
     )
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 7
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert len(p.scene_link.get().materials) == 6
+        assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 6
+    else:
+        assert len(p.scene_link.get().materials) == 7
+        assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 7
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 2
     assert len(p.scene_link.get().simulations) == 1
-    assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 7
 
     # Insert several speos files into the project - only geometries + materials are retrieved
     insert_speos(
@@ -255,11 +260,15 @@ def test_insert_speos(speos: Speos):
         ],
     )
 
-    assert len(p.scene_link.get().materials) == 12  # 11 + 1 (ambient material)
+    if server_version_checker.is_version_supported(2027, 0, 0):
+        assert len(p.scene_link.get().materials) == 11  # 6 + 5
+        assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 11
+    else:
+        assert len(p.scene_link.get().materials) == 12  # 11 + 1 (ambient material)
+        assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 12
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 2
     assert len(p.scene_link.get().simulations) == 1
-    assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 12
 
     # Check that the root part contains one part per speos to insert
     root_part = p.find(name="", feature_type=Part)[0]
