@@ -74,11 +74,6 @@ def check_version(input_version: str, major: int, minor: int, patch: Optional[in
                     return True
             # A development patch (e.g. "dev0") is lower than any numbered patch.
 
-            if values[2].isdigit():
-                if int(values[2]) >= patch:
-                    return True
-            # A development patch (e.g. "dev0") is lower than any numbered patch.
-
     return False
 
 
