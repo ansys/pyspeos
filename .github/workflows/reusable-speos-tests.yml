@@ -25,7 +25,7 @@ permissions: {}
 
 jobs:
   testing:
-    name: Testing and coverage
+    name: Speos ${{ matrix.speos-version }} / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
@@ -111,4 +111,3 @@ jobs:
         run: |
           docker kill speos-rpc
           docker rm speos-rpc
-
