@@ -1,0 +1,444 @@
+
+
+
+
+
+
+:class:`SimulationInteractive`
+==============================
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/simulation/SimulationInteractive.RaysNumberPerSource
+
+.. py:class:: ansys.speos.core.simulation.SimulationInteractive(project, name, description = '', metadata = None, simulation_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Type of simulation : Interactive.
+
+   By default,
+   geometry distance tolerance is set to 0.01,
+   maximum number of impacts is set to 100,
+   a colorimetric standard is set to CIE 1931,
+   ambient material URI is empty,
+   and weight's minimum energy percentage is set to 0.005.
+   By default, each source will send 100 rays.
+   By default, the simulation deactivates both light expert and impact report.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which simulation shall be created.
+
+       **name** : :class:`python:str`
+           Name of the simulation.
+
+       **description** : :class:`python:str`
+           Description of the Simulation.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **simulation_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance`, :obj:`optional`
+           Simulation instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SimulationInteractive
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_geom_distance_tolerance`
+            - Set the geometry distance tolerance.
+          * - :py:attr:`~set_max_impact`
+            - Define a value to determine the maximum number of ray impacts during propagation.
+          * - :py:attr:`~set_weight`
+            - Activate weight. Highly recommended to fill.
+          * - :py:attr:`~set_weight_none`
+            - Deactivate weight.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1931`
+            - Set the colorimetric standard to CIE 1931.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1964`
+            - Set the colorimetric standard to CIE 1964.
+          * - :py:attr:`~set_ambient_material_file_uri`
+            - To define the environment in which the light will propagate (water, fog, smoke etc.).
+          * - :py:attr:`~set_rays_number_per_sources`
+            - Select the number of rays emitted for each source.
+          * - :py:attr:`~set_light_expert`
+            - Activate/Deactivate the generation of light expert file.
+          * - :py:attr:`~set_impact_report`
+            - Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation import SimulationInteractive
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_geom_distance_tolerance(value = 0.01)
+
+   
+   Set the geometry distance tolerance.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum distance in mm to consider two faces as tangent.
+           By default, ``0.01``
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_max_impact(value = 100)
+
+   
+   Define a value to determine the maximum number of ray impacts during propagation.
+
+   When a ray has interacted N times with the geometry, the propagation of the ray stops.
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The maximum number of impacts.
+           By default, ``100``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_weight()
+
+   
+   Activate weight. Highly recommended to fill.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.Weight`
+           Simulation.Weight
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_weight_none()
+
+   
+   Deactivate weight.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1931()
+
+   
+   Set the colorimetric standard to CIE 1931.
+
+   2 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1964()
+
+   
+   Set the colorimetric standard to CIE 1964.
+
+   10 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_ambient_material_file_uri(uri = '')
+
+   
+   To define the environment in which the light will propagate (water, fog, smoke etc.).
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           The ambient material, expressed in a .material file.
+           By default, ``""``, means air as ambient material.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_rays_number_per_sources(values)
+
+   
+   Select the number of rays emitted for each source.
+
+   If a source is present in the simulation but not referenced here, it will send by default 100 rays.
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:obj:`ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource`]
+           List of rays number emitted by source.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_light_expert(value = False)
+
+   
+   Activate/Deactivate the generation of light expert file.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           Activate/Deactivate.
+           By default, ``False``, means deactivate.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_impact_report(value = False)
+
+   
+   Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           Activate/Deactivate.
+           By default, ``False``, means deactivate.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationInteractive`
+           Interactive simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource
+
+
+
+

@@ -1,0 +1,191 @@
+
+
+
+
+
+
+:class:`Flux`
+=============
+
+
+.. py:class:: ansys.speos.core.source.BaseSource.Flux(flux, default_parameters = None, stable_ctr = False)
+
+   
+   Type of flux.
+
+   By default, Luminous flux value is set with value 683 lm.
+
+   :Parameters:
+
+       **flux** : :obj:`ansys.api.speos.source.v1.source_pb2`
+           flux protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[                :obj:`ansys.speos.core.generic.parameters.LuminousFluxParameters`,                :obj:`ansys.speos.core.generic.parameters.RadiantFluxParameters`,                :obj:`ansys.speos.core.generic.parameters.FluxFromFileParameters`,                :obj:`ansys.speos.core.generic.parameters.IntensityFluxParameters`] = :data:`python:None`
+           If defined the values in the Flux instance will be
+           overwritten by the values of the data class.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_flux method available in source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Flux
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_luminous`
+            - Set flux type luminous.
+          * - :py:attr:`~set_radiant`
+            - Set flux type radiant.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~value`
+            - Property of flux type's value.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSource import Flux
+
+Property detail
+---------------
+
+.. py:property:: value
+   :type: float
+
+
+   
+   Property of flux type's value.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Value of the flux.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Flux type value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_luminous()
+
+   
+   Set flux type luminous.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource.Flux`
+           Flux object
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_radiant()
+
+   
+   Set flux type radiant.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.BaseSource.Flux`
+           Flux object
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

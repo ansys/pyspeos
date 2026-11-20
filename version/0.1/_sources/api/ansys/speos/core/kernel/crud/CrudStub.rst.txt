@@ -1,0 +1,198 @@
+
+
+
+
+
+
+:class:`CrudStub`
+=================
+
+.. py:class:: ansys.speos.core.kernel.crud.CrudStub(stub)
+
+   
+   Wraps a speos gRPC CRUD connection.
+   This class is used as base class for all Speos databases interactions.
+   Better use directly those inherited classes like SOPTemplateStub, SpectrumStub, ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CrudStub
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create`
+            - Create a new entry.
+          * - :py:attr:`~read`
+            - Get an existing entry.
+          * - :py:attr:`~update`
+            - Change an existing entry.
+          * - :py:attr:`~delete`
+            - Remove an existing entry.
+          * - :py:attr:`~list`
+            - List existing entries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.crud import CrudStub
+
+
+
+Method detail
+-------------
+
+.. py:method:: create(request)
+
+   
+   Create a new entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: read(request)
+
+   
+   Get an existing entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: update(request)
+
+   
+   Change an existing entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete(request)
+
+   
+   Remove an existing entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: list(request)
+
+   
+   List existing entries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

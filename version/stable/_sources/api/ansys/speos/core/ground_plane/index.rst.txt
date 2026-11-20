@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``ground_plane.py`` module
+==============================
+
+.. py:module:: ansys.speos.core.ground_plane
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: ground_plane
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.ground_plane.GroundPlane`
+            - Speos feature: ground plane.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> GroundPlane</api/ansys/speos/core/ground_plane/GroundPlane>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: ground plane.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

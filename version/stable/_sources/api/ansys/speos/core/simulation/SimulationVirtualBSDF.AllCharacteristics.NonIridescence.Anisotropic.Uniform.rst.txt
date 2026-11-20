@@ -1,0 +1,250 @@
+
+
+
+
+
+
+:class:`Uniform`
+================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform(uniform, default_values = True, stable_ctr = False)
+
+   
+   Anisotorpic Uniform sampling mode.
+
+
+   :Parameters:
+
+       **uniform** : :obj:`simulation_template_pb2.SourceSamplingUniformAnisotropic` :obj:`to` complete.
+           ..
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           True to uses default source sampling values for theta, phi and symmetric.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Uniform
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_symmetric_none`
+            - Set symmetric type as non-specified.
+          * - :py:attr:`~set_symmetric_1_plane_symmetric`
+            - Set symmetric type as plane symmetric.
+          * - :py:attr:`~set_symmetric_2_plane_symmetric`
+            - Set symmetric type as 2 planes symmetric.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~theta_sampling`
+            - Theta sampling of uniform sampling mode.
+          * - :py:attr:`~phi_sampling`
+            - Phi sampling of uniform sampling mode.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic import Uniform
+
+Property detail
+---------------
+
+.. py:property:: theta_sampling
+   :type: int
+
+
+   
+   Theta sampling of uniform sampling mode.
+
+
+   :Parameters:
+
+       **theta_sampling: int**
+           theta sampling to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           theta sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: phi_sampling
+   :type: int
+
+
+   
+   Phi sampling of uniform sampling mode.
+
+
+   :Parameters:
+
+       **phi_sampling: int**
+           phi sampling to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           phi sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_symmetric_none()
+
+   
+   Set symmetric type as non-specified.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform`
+           Anisotropic type uniform source sampling settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_symmetric_1_plane_symmetric()
+
+   
+   Set symmetric type as plane symmetric.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform`
+           Anisotropic type uniform source sampling settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_symmetric_2_plane_symmetric()
+
+   
+   Set symmetric type as 2 planes symmetric.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform`
+           Anisotropic type uniform source sampling settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

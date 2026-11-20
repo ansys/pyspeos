@@ -1,0 +1,369 @@
+
+
+
+
+
+
+:class:`AutomaticSun`
+=====================
+
+
+.. py:class:: ansys.speos.core.source.BaseSourceAmbient.AutomaticSun(sun, default_parameters = None, stable_ctr = False)
+
+   
+   Sun type Automatic.
+
+   By default, user's current time and Ansys France is used a time zone.
+
+   :Parameters:
+
+       **sun** : :obj:`ansys.api.speos.scene.v2.scene_pb2.AutomaticSun`
+           Wavelengths range protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.AutomaticSunParameters`] = None,
+           If defined the values in the AutomaticSun instance will be
+           overwritten by the values of the data class.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_sun_automatic method available in
+   source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AutomaticSun
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~year`
+            - Property of year info of the automatic sun.
+          * - :py:attr:`~month`
+            - Property of month info of the automatic sun.
+          * - :py:attr:`~day`
+            - Property of day info of the automatic sun.
+          * - :py:attr:`~hour`
+            - Get hour info of the automatic sun.
+          * - :py:attr:`~minute`
+            - Property of minute info of the automatic sun.
+          * - :py:attr:`~longitude`
+            - Property of longitude info of the automatic sun.
+          * - :py:attr:`~latitude`
+            - Property of latitude info of the automatic sun.
+          * - :py:attr:`~time_zone`
+            - Property of time zone info of the automatic sun.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSourceAmbient import AutomaticSun
+
+Property detail
+---------------
+
+.. py:property:: year
+   :type: int
+
+
+   
+   Property of year info of the automatic sun.
+
+
+   :Parameters:
+
+       **year** : :class:`python:int`
+           year information.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           year info.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: month
+   :type: int
+
+
+   
+   Property of month info of the automatic sun.
+
+
+   :Parameters:
+
+       **month** : :class:`python:int`
+           month information.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           month information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: day
+   :type: int
+
+
+   
+   Property of day info of the automatic sun.
+
+
+   :Parameters:
+
+       **day** : :class:`python:int`
+           day information.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           day information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: hour
+   :type: int
+
+
+   
+   Get hour info of the automatic sun.
+
+
+   :Parameters:
+
+       **hour** : :class:`python:int`
+           hour information.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           hour information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: minute
+   :type: int
+
+
+   
+   Property of minute info of the automatic sun.
+
+
+   :Parameters:
+
+       **minute** : :class:`python:int`
+           minute information.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           minute information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: longitude
+   :type: float
+
+
+   
+   Property of longitude info of the automatic sun.
+
+
+   :Parameters:
+
+       **longitude** : :class:`python:float`
+           longitude information.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           longitude information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: latitude
+   :type: float
+
+
+   
+   Property of latitude info of the automatic sun.
+
+
+   :Parameters:
+
+       **latitude** : :class:`python:float`
+           latitude information.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           latitude information.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: time_zone
+   :type: str
+
+
+   
+   Property of time zone info of the automatic sun.
+
+       default value to be "CET".
+
+   :Parameters:
+
+       **timezone** : :class:`python:str`
+           timezone abbreviation.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           time zone abbreviation.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,149 @@
+
+
+
+
+
+
+:class:`Manual`
+===============
+
+
+.. py:class:: ansys.speos.core.source.BaseSourceAmbient.Manual(sun, default_values = True, stable_ctr = False)
+
+   
+   Sun type Manual>.
+
+   By default, z-axis [0, 0, 1] is used as sun direction.
+
+   :Parameters:
+
+       **sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun**
+           Wavelengths range protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_sun_manual method available in
+   source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Manual
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~direction`
+            - Get direction of the manual sun.
+          * - :py:attr:`~reverse_sun`
+            - Get whether reverse direction of the manual sun.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSourceAmbient import Manual
+
+Property detail
+---------------
+
+.. py:property:: direction
+   :type: List[float]
+
+
+   
+   Get direction of the manual sun.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list` :obj:`of` :class:`python:float`
+           list describing the direction of the manual sun.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reverse_sun
+   :type: bool
+
+
+   
+   Get whether reverse direction of the manual sun.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True to reverse direction, False to not reverse direction
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

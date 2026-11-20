@@ -1,0 +1,251 @@
+
+
+
+
+
+
+:class:`AngularRange`
+=====================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.AngularRange(angular_range, default_parameters = None, stable_ctr = False)
+
+   
+   Angular range for Observer sensor locations on a sphere.
+
+   By default, horizontal angles range from -45.0 to 45.0 with a sampling of 5,
+   and vertical angles range from -30.0 to 30.0 with a sampling of 3.
+
+   :Parameters:
+
+       **angular_range** : :obj:`ansys.api.speos.sensor.v1.common_pb2.AngularRange`
+           AngularRange protobuf object to modify.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.AngularRangeParameters`, :obj:`optional`
+           If defined, the values in the sensor instance are overwritten by the values
+           of the dataclass.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use ``set_angular_range``
+   method available in sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AngularRange
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_start`
+            - Minimum value on x axis in degrees.
+          * - :py:attr:`~x_end`
+            - Maximum value on x axis in degrees.
+          * - :py:attr:`~x_sampling`
+            - Sampling value on x axis.
+          * - :py:attr:`~y_start`
+            - Minimum value on y axis in degrees.
+          * - :py:attr:`~y_end`
+            - Maximum value on y axis in degrees.
+          * - :py:attr:`~y_sampling`
+            - Sampling value on y axis.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import AngularRange
+
+Property detail
+---------------
+
+.. py:property:: x_start
+   :type: float
+
+
+   
+   Minimum value on x axis in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_end
+   :type: float
+
+
+   
+   Maximum value on x axis in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_sampling
+   :type: int
+
+
+   
+   Sampling value on x axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_start
+   :type: float
+
+
+   
+   Minimum value on y axis in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_end
+   :type: float
+
+
+   
+   Maximum value on y axis in degrees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_sampling
+   :type: int
+
+
+   
+   Sampling value on y axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

@@ -1,0 +1,98 @@
+
+
+
+
+
+
+:class:`MTLSOptions`
+====================
+
+
+.. py:class:: ansys.speos.core.kernel.grpc.transport_options.MTLSOptions
+
+   
+   Options for mTLS transport mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MTLSOptions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~certs_dir`
+            - 
+          * - :py:attr:`~host`
+            - 
+          * - :py:attr:`~port`
+            - 
+          * - :py:attr:`~allow_remote_host`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.grpc.transport_options import MTLSOptions
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: certs_dir
+   :type:  str | pathlib.Path | None
+   :value: None
+
+
+.. py:attribute:: host
+   :type:  str
+   :value: 'localhost'
+
+
+.. py:attribute:: port
+   :type:  int
+
+.. py:attribute:: allow_remote_host
+   :type:  bool
+   :value: False
+
+
+
+
+
+

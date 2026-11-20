@@ -1,0 +1,93 @@
+
+
+
+
+
+
+:class:`MaterialOpticalClass`
+=============================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialOpticalClass
+
+   Bases: :py:obj:`enum.IntEnum`
+
+
+   
+   Classify a birefringent material as negative uniaxial, positive uniaxial, or biaxial.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialOpticalClass
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~negative_uniaxial`
+            - 
+          * - :py:attr:`~positive_uniaxial`
+            - 
+          * - :py:attr:`~biaxial`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialOpticalClass
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: negative_uniaxial
+   :value: 0
+
+
+.. py:attribute:: positive_uniaxial
+   :value: 1
+
+
+.. py:attribute:: biaxial
+   :value: 2
+
+
+
+
+
+

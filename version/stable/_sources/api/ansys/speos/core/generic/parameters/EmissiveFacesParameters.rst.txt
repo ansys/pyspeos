@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`EmissiveFacesParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.EmissiveFacesParameters
+
+   
+   Emissive Faces Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: EmissiveFacesParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~emissive_faces`
+            - List of emissive faces.
+          * - :py:attr:`~temperature`
+            - Temperature of the faces.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import EmissiveFacesParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: emissive_faces
+   :type:  list[str]
+   :value: []
+
+
+   
+   List of emissive faces.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: temperature
+   :type:  float
+   :value: 2000.0
+
+
+   
+   Temperature of the faces.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

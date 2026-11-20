@@ -1,0 +1,146 @@
+
+
+
+
+
+
+:class:`LightBoxFileInstance`
+=============================
+
+
+.. py:class:: ansys.speos.core.component.LightBoxFileInstance(file, password = None, axis_system = None)
+
+   
+   Represent a LightBox file containing geometries and sources.
+
+   The LightBox content is imported as a scene inside a project scene.
+
+   :Parameters:
+
+       **file** : :obj:`pathlib.Path` | :class:`python:str`
+           SpeosLightBox file to load.
+
+       **password** : :class:`python:str`, :obj:`optional`
+           Password for the imported SpeosLightBox file.
+           By default, ``None``, which reads ``PYSPEOS_ENCRYPTED_PASSWORD`` environment variable
+           or falls back to an empty string.
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Axis system used to position the LightBox in the parent scene.
+           By default, ``None``, which uses the global origin axis system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LightBoxFileInstance
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~file`
+            - SPEOS file.
+          * - :py:attr:`~password`
+            - Password for the imported lightbox.
+          * - :py:attr:`~axis_system`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.component import LightBoxFileInstance
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: file
+   :value: ''
+
+
+   
+   SPEOS file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: password
+   :value: None
+
+
+   
+   Password for the imported lightbox.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+
+
+
+

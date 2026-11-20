@@ -1,0 +1,148 @@
+
+
+
+
+
+
+The ``version_checker.py`` module
+=================================
+
+.. py:module:: ansys.speos.core.generic.version_checker
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: version_checker
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.version_checker.VersionChecker`
+            - Class to check version.
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~check_version`
+            - Check that the input version is greater than or equal to the major.minor.patch.
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~server_version_checker`
+            - 
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> VersionChecker</api/ansys/speos/core/generic/version_checker/VersionChecker>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Module to ease version checks.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: check_version(input_version, major, minor, patch)
+
+   
+   Check that the input version is greater than or equal to the major.minor.patch.
+
+
+   :Parameters:
+
+       **input_version: str**
+           Input version written as "major.minor.patch", e.g. "2026.1.0"
+
+       **major** : :class:`python:int`
+           Major release version, e.g. 2025
+
+       **minor** : :class:`python:int`
+           Minor release version e.g. 2
+
+       **patch** : :class:`python:int`
+           Service Pack version e.g. 3
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if the input version is >= to the major.minor.patch
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: server_version_checker
+
+
+

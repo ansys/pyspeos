@@ -1,0 +1,182 @@
+
+
+
+
+
+
+:class:`TextureLayerParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.TextureLayerParameters
+
+   
+   Texture Layer Parameters Dataclass.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TextureLayerParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_parameters`
+            - SOP parameters applied to the texture layer.
+          * - :py:attr:`~image_texture_parameters`
+            - Image texture parameters when ``image_texture`` is enabled.
+          * - :py:attr:`~normal_map_parameters`
+            - Normal map image parameters when ``normal_map`` is enabled.
+          * - :py:attr:`~anisotropy_map_parameters`
+            - Mapping parameters applied to the anisotropy map.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import TextureLayerParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sop_parameters
+   :type:  Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]]
+
+   
+   SOP parameters applied to the texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: image_texture_parameters
+   :type:  Optional[ImageTextureParameters]
+   :value: None
+
+
+   
+   Image texture parameters when ``image_texture`` is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: normal_map_parameters
+   :type:  Optional[NormalMapParameters]
+   :value: None
+
+
+   
+   Normal map image parameters when ``normal_map`` is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: anisotropy_map_parameters
+   :type:  Optional[Union[UVMappingPlanarParameters, UVMappingCubicParameters, UVMappingSphericalParameters, UVMappingCylindricalParameters, UVMappingByData]]
+   :value: None
+
+
+   
+   Mapping parameters applied to the anisotropy map.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

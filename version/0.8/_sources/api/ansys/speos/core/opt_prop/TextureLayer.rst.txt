@@ -1,0 +1,415 @@
+
+
+
+
+
+
+:class:`TextureLayer`
+=====================
+
+.. toctree::
+   :hidden:
+
+    TextureUVMappingOperator</api/ansys/speos/core/opt_prop/TextureLayer.TextureUVMappingOperator>
+    TextureMappingByData</api/ansys/speos/core/opt_prop/TextureLayer.TextureMappingByData>
+    BaseTextureMap</api/ansys/speos/core/opt_prop/TextureLayer.BaseTextureMap>
+    ImageTexture</api/ansys/speos/core/opt_prop/TextureLayer.ImageTexture>
+    NormalMap</api/ansys/speos/core/opt_prop/TextureLayer.NormalMap>
+    AnisotropicMap</api/ansys/speos/core/opt_prop/TextureLayer.AnisotropicMap>
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer(opt_prop, name, description = '', metadata = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSop`
+
+
+   
+   Describes the optical and texture properties of a single texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TextureLayer
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_image_texture`
+            - Activate Image texture in this texture layer.
+          * - :py:attr:`~set_image_texture_to_none`
+            - Deactivate image texture in this texture layer.
+          * - :py:attr:`~set_normal_map_from_image`
+            - Activate normal map in this texture layer.
+          * - :py:attr:`~set_normal_map_from_normal_map`
+            - Activate normal map in this texture layer.
+          * - :py:attr:`~set_normal_map_to_none`
+            - Deactivate normal map in this texture layer.
+          * - :py:attr:`~set_anisotropy_map`
+            - Activate anisotropy map in this texture layer.
+          * - :py:attr:`~set_anisotropy_map_to_none`
+            - Deactivate anisotropy map in this texture layer.
+          * - :py:attr:`~delete`
+            - Delete the SOP template layer from the server and update local state.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~image_texture`
+            - Texture Properties of the Image Texture.
+          * - :py:attr:`~normal_map`
+            - Texture properties of the normal map.
+          * - :py:attr:`~anisotropic_map`
+            - Anisotropy map mapping properties.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_template_link`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop import TextureLayer
+
+Property detail
+---------------
+
+.. py:property:: image_texture
+   :type: ImageTexture
+
+
+   
+   Texture Properties of the Image Texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: normal_map
+   :type: NormalMap
+
+
+   
+   Texture properties of the normal map.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: anisotropic_map
+   :type: AnisotropicMap
+
+
+   
+   Anisotropy map mapping properties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sop_template_link
+   :value: None
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_image_texture()
+
+   
+   Activate Image texture in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_image_texture_to_none()
+
+   
+   Deactivate image texture in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_normal_map_from_image()
+
+   
+   Activate normal map in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_normal_map_from_normal_map()
+
+   
+   Activate normal map in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_normal_map_to_none()
+
+   
+   Deactivate normal map in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_anisotropy_map()
+
+   
+   Activate anisotropy map in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_anisotropy_map_to_none()
+
+   
+   Deactivate anisotropy map in this texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete the SOP template layer from the server and update local state.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.TextureLayer`
+           Returns self after deletion.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator
+    ansys.speos.core.opt_prop.TextureLayer.TextureMappingByData
+    ansys.speos.core.opt_prop.TextureLayer.BaseTextureMap
+    ansys.speos.core.opt_prop.TextureLayer.ImageTexture
+    ansys.speos.core.opt_prop.TextureLayer.NormalMap
+    ansys.speos.core.opt_prop.TextureLayer.AnisotropicMap
+
+
+
+

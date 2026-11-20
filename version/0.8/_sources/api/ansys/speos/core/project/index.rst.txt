@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``project.py`` module
+=========================
+
+.. py:module:: ansys.speos.core.project
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: project
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.project.Project`
+            - A project describes all Speos features.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Project</api/ansys/speos/core/project/Project>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to gather Speos features.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

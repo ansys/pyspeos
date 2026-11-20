@@ -1,0 +1,154 @@
+
+
+
+
+
+
+:class:`TemperatureFieldParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.TemperatureFieldParameters
+
+   
+   Temperature Field Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TemperatureFieldParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~temperature_field_uri`
+            - Path to the temperature field file.
+          * - :py:attr:`~axis_plane`
+            - Axis system used to position temperature field.
+          * - :py:attr:`~sop`
+            - Surface optical properties parameters.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import TemperatureFieldParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: temperature_field_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to the temperature field file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_plane
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0]
+
+
+   
+   Axis system used to position temperature field.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sop
+   :type:  Union[SopMirrorParameters, SopLibraryParameters]
+
+   
+   Surface optical properties parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

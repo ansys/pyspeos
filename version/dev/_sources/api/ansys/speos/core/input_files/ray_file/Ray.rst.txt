@@ -1,0 +1,324 @@
+
+
+
+
+
+
+:class:`Ray`
+============
+
+
+.. py:class:: ansys.speos.core.input_files.ray_file.Ray(position = (0.0, 0.0, 0.0), direction = (0.0, 0.0, 1.0), wavelength = 555.0, energy = 1.0, polarization = None)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Single ray of a Speos ray file.
+
+
+   :Parameters:
+
+       **position** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Cartesian coordinates the ray starts from, in mm. By default, ``(0.0, 0.0, 0.0)``.
+
+       **direction** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Direction cosines ``(l, m, n)`` of the ray, which must be a unit vector.
+           By default, ``(0.0, 0.0, 1.0)``.
+
+       **wavelength** : :class:`python:float`, :obj:`optional`
+           Wavelength of the ray, in nm. By default, ``555.0``.
+
+       **energy** : :class:`python:float`, :obj:`optional`
+           Relative radiometric energy of the ray, between 0 and 1. The absolute flux of the
+           ray is its share of the total flux of the file. By default, ``1.0``.
+
+       **polarization** : :obj:`Optional`\[:obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`, :class:`python:float`, :class:`python:float`]], :obj:`optional`
+           Polarization ``(o, p, q, r, s)``, where ``(o, p, q)`` is the normalized big axis
+           of the polarization ellipse, ``r`` the ratio of its small axis over its big axis
+           and ``s`` the handedness, ``0`` for right and ``1`` for left. By default,
+           ``None``, for an unpolarized ray.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The direction cosines relate to the zenith angle theta and the azimuth angle phi
+   through ``l = sin(theta) * cos(phi)``, ``m = sin(theta) * sin(phi)`` and
+   ``n = cos(theta)``.
+   Vector setters store finite immutable tuples. The direction must already be normalized
+   within a tolerance of 1e-3 when constructing or updating a ray; it is not normalized
+   automatically.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Ray
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check that the ray direction retains its unit norm.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~position`
+            - Starting coordinates in mm.
+          * - :py:attr:`~direction`
+            - Direction cosines of the ray.
+          * - :py:attr:`~wavelength`
+            - Wavelength of the ray, in nm.
+          * - :py:attr:`~energy`
+            - Relative radiometric energy.
+          * - :py:attr:`~polarization`
+            - Polarization ellipse parameters.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.ray_file import Ray
+
+Property detail
+---------------
+
+.. py:property:: position
+   :type: Tuple[float, ...]
+
+
+   
+   Starting coordinates in mm.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New Cartesian coordinates the ray starts from, in mm.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite Cartesian coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: direction
+   :type: Tuple[float, ...]
+
+
+   
+   Direction cosines of the ray.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New direction cosines ``(l, m, n)`` of the ray, which must be a unit vector.
+           The norm must be within 1e-3 of one; the vector is not normalized automatically.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite coordinates with unit norm within 1e-3.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: wavelength
+   :type: float
+
+
+   
+   Wavelength of the ray, in nm.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New wavelength of the ray, in nm.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite wavelength.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: energy
+   :type: float
+
+
+   
+   Relative radiometric energy.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New relative radiometric energy of the ray, between 0 and 1. The absolute flux of
+           the ray is its share of the total flux of the file.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite relative energy.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: polarization
+   :type: Optional[Tuple[float, ...]]
+
+
+   
+   Polarization ellipse parameters.
+
+
+   :Parameters:
+
+       **values** : :obj:`Optional`\[:obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`, :class:`python:float`, :class:`python:float`]]
+           New polarization ``(o, p, q, r, s)``, where ``(o, p, q)`` is the normalized big axis
+           of the polarization ellipse, ``r`` the ratio of its small axis over its big axis and
+           ``s`` the handedness, ``0`` for right and ``1`` for left.
+           Use ``None`` for an unpolarized ray.
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`Tuple`\[:class:`python:float`, ...]]
+           Five finite parameters, or None for an unpolarized ray.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check that the ray direction retains its unit norm.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If the direction is not a unit vector.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

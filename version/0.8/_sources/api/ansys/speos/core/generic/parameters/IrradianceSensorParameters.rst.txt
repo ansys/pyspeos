@@ -1,0 +1,286 @@
+
+
+
+
+
+
+:class:`IrradianceSensorParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IrradianceSensorParameters
+
+   
+   Irradiance Sensor Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IrradianceSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~dimensions`
+            - Dimensions of the sensor.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~sensor_type`
+            - Type of the sensor.
+          * - :py:attr:`~integration_type`
+            - Integration type of the sensor.
+          * - :py:attr:`~integration_direction`
+            - Integration direction of the sensor.
+          * - :py:attr:`~rayfile_type`
+            - Type of rayfile stored by the sensor.
+          * - :py:attr:`~layer_type`
+            - Type of layer separation used by the sensor.
+          * - :py:attr:`~outpath_face_geometry`
+            - Outpath face used by the sensor
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IrradianceSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: dimensions
+   :type:  DimensionsParameters
+
+   
+   Dimensions of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sensor_type
+   :type:  Union[SensorTypes, ColorimetricParameters, SpectralParameters, SensorTypes]
+
+   
+   Type of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_type
+   :type:  IntegrationTypes
+
+   
+   Integration type of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: integration_direction
+   :type:  Optional[list[float]]
+   :value: None
+
+
+   
+   Integration direction of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: rayfile_type
+   :type:  Union[RayfileTypes]
+
+   
+   Type of rayfile stored by the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  Union[LayerTypes, LayerTypes, LayerTypes, LayerByFaceParameters, LayerBySequenceParameters, LayerByIncidenceAngleParameters]
+
+   
+   Type of layer separation used by the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: outpath_face_geometry
+   :type:  Optional[list]
+   :value: None
+
+
+   
+   Outpath face used by the sensor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

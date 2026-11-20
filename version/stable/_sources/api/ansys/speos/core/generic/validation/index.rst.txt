@@ -1,0 +1,109 @@
+
+
+
+
+
+
+The ``validation.py`` module
+============================
+
+.. py:module:: ansys.speos.core.generic.validation
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: validation
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~check_percentage`
+            - Check that a value is a percentage expressed between 0 and 100.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Shared numeric, collection, and path validation helpers.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: check_percentage(name, value)
+
+   
+   Check that a value is a percentage expressed between 0 and 100.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the checked value, used in the error message.
+
+       **value** : :class:`python:float`
+           Value to check.
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If ``value`` is not within ``[0, 100]``.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

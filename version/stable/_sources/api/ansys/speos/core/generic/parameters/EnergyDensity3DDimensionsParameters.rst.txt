@@ -1,0 +1,121 @@
+
+
+
+
+
+
+:class:`EnergyDensity3DDimensionsParameters`
+============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.EnergyDensity3DDimensionsParameters
+
+   
+   Volume dimensions in millimeters and voxel counts for a 3D energy density sensor.
+
+
+   :Parameters:
+
+       **x_size, y_size, z_size** : :class:`python:float`, :obj:`optional`
+           Size along each local axis, by default 50 mm.
+
+       **x_sampling, y_sampling, z_sampling** : :class:`python:int`, :obj:`optional`
+           Number of voxels along each local axis, by default 100.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: EnergyDensity3DDimensionsParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_size`
+            - 
+          * - :py:attr:`~x_sampling`
+            - 
+          * - :py:attr:`~y_size`
+            - 
+          * - :py:attr:`~y_sampling`
+            - 
+          * - :py:attr:`~z_size`
+            - 
+          * - :py:attr:`~z_sampling`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import EnergyDensity3DDimensionsParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: x_size
+   :type:  float
+   :value: 50.0
+
+
+.. py:attribute:: x_sampling
+   :type:  int
+   :value: 100
+
+
+.. py:attribute:: y_size
+   :type:  float
+   :value: 50.0
+
+
+.. py:attribute:: y_sampling
+   :type:  int
+   :value: 100
+
+
+.. py:attribute:: z_size
+   :type:  float
+   :value: 50.0
+
+
+.. py:attribute:: z_sampling
+   :type:  int
+   :value: 100
+
+
+
+
+
+

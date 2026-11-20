@@ -1,0 +1,87 @@
+
+
+
+
+
+
+The ``coated_surface.py`` module
+================================
+
+.. py:module:: ansys.speos.core.input_files.coated_surface
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: coated_surface
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.coated_surface.CoatedSurfaceSample`
+            - Coating response at one angle of incidence and one wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.coated_surface.CoatedSurfaceFile`
+            - Speos ``*.coated`` file, a non-scattering coating varying with angle and wavelength.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> CoatedSurfaceSample</api/ansys/speos/core/input_files/coated_surface/CoatedSurfaceSample>
+    <span class="nf nf-cod-symbol_class"></span> CoatedSurfaceFile</api/ansys/speos/core/input_files/coated_surface/CoatedSurfaceFile>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.coated`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

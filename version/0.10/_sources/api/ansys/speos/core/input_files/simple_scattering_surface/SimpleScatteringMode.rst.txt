@@ -1,0 +1,93 @@
+
+
+
+
+
+
+:class:`SimpleScatteringMode`
+=============================
+
+
+.. py:class:: ansys.speos.core.input_files.simple_scattering_surface.SimpleScatteringMode
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Selects whether the surface scatters reflected light, transmitted light, or both.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SimpleScatteringMode
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflection`
+            - 
+          * - :py:attr:`~transmission`
+            - 
+          * - :py:attr:`~both`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.simple_scattering_surface import SimpleScatteringMode
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: reflection
+   :value: 'Reflection'
+
+
+.. py:attribute:: transmission
+   :value: 'Transmission'
+
+
+.. py:attribute:: both
+   :value: 'Both'
+
+
+
+
+
+

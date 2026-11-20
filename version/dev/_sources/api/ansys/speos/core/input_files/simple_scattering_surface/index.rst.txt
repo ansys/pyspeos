@@ -1,0 +1,100 @@
+
+
+
+
+
+
+The ``simple_scattering_surface.py`` module
+===========================================
+
+.. py:module:: ansys.speos.core.input_files.simple_scattering_surface
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: simple_scattering_surface
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.simple_scattering_surface.SimpleScatteringSurfaceFile`
+            - Speos ``*.simplescattering`` file, a scattering surface with no spectral dependency.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.simple_scattering_surface.SimpleScatteringMode`
+            - Selects whether the surface scatters reflected light, transmitted light, or both.
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SimpleScatteringSurfaceFile</api/ansys/speos/core/input_files/simple_scattering_surface/SimpleScatteringSurfaceFile>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> SimpleScatteringMode</api/ansys/speos/core/input_files/simple_scattering_surface/SimpleScatteringMode>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.simplescattering`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

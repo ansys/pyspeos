@@ -1,0 +1,329 @@
+
+
+
+
+
+
+:class:`MaterialBirefringentKettlerHelmholtz`
+=============================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialBirefringentKettlerHelmholtz(a = None, b = None, c = None, optical_class = MaterialOpticalClass.negative_uniaxial)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a birefringent material given by the Kettler-Helmholtz coefficients.
+
+
+   :Parameters:
+
+       **a, b, c** : :obj:`MaterialKettlerHelmholtz`, :obj:`optional`
+           Coefficients of the index along the ``a``, ``b`` and ``c`` axes. By default, an
+           independent :class:`ansys.speos.core.input_files.material.MaterialKettlerHelmholtz`
+           model with its default coefficients per axis.
+
+       **optical_class** : :obj:`MaterialOpticalClass`, :obj:`optional`
+           Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialBirefringentKettlerHelmholtz
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the three coefficient models and optical class.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~a`
+            - Coefficients along the a axis.
+          * - :py:attr:`~b`
+            - Coefficients along the b axis.
+          * - :py:attr:`~c`
+            - Coefficients along the c axis.
+          * - :py:attr:`~optical_class`
+            - Optical class of the material.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+          * - :py:attr:`~COEFFICIENTS`
+            - Model holding the coefficients of a single axis.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialBirefringentKettlerHelmholtz
+
+Property detail
+---------------
+
+.. py:property:: a
+   :type: MaterialKettlerHelmholtz
+
+
+   
+   Coefficients along the a axis.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialKettlerHelmholtz`
+           New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+
+
+   :Returns:
+
+       :obj:`MaterialKettlerHelmholtz`
+           Shared validated coefficient model.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: b
+   :type: MaterialKettlerHelmholtz
+
+
+   
+   Coefficients along the b axis.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialKettlerHelmholtz`
+           New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+
+
+   :Returns:
+
+       :obj:`MaterialKettlerHelmholtz`
+           Shared validated coefficient model.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: c
+   :type: MaterialKettlerHelmholtz
+
+
+   
+   Coefficients along the c axis.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialKettlerHelmholtz`
+           New coefficients of the index along the ``a``, ``b`` and ``c`` axes.
+
+
+
+   :Returns:
+
+       :obj:`MaterialKettlerHelmholtz`
+           Shared validated coefficient model.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: optical_class
+   :type: MaterialOpticalClass
+
+
+   
+   Optical class of the material.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialOpticalClass`
+           New optical class.
+
+
+
+   :Returns:
+
+       :obj:`MaterialOpticalClass`
+           Negative uniaxial, positive uniaxial, or biaxial.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Kettler-Helmotz'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: COEFFICIENTS
+   :type:  ClassVar[type]
+
+   
+   Model holding the coefficients of a single axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the three coefficient models and optical class.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If coefficients or optical class are invalid.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

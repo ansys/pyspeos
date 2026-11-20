@@ -1,0 +1,263 @@
+
+
+
+
+
+
+:class:`InterpolationEnhancement`
+=================================
+
+
+.. py:class:: ansys.speos.core.bsdf.InterpolationEnhancement(bsdf, bsdf_namespace, index_1 = 1.0, index_2 = 1.0)
+
+   
+   Class to facilitate Specular interpolation enhancement.
+
+
+   :Parameters:
+
+       **bsdf** : :obj:`Union`\[    :obj:`ansys.speos.core.bsdf.AnisotropicBSDF`,     :obj:`ansys.speos.core.bsdf.SpectralBRDF`],
+           BSDF type object to be interpolated.
+
+       **bsdf_namespace** : :obj:`Union`\[    :obj:`ansys.api.speos.bsdf.v1.spectral_bsdf_pb2`,     :obj:`ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2`],
+           namespace for the methods.
+
+       **index_1** : :obj:`Optional`\[:class:`python:float`],
+           index on reflection side.
+
+       **index_2** : :obj:`Optional`\[:class:`python:float`],
+           index on transmission side.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: InterpolationEnhancement
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_interpolation_settings`
+            - Set interpolation obtained from bsdf Class or that modified by user.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~index1`
+            - Property of refractive index on reflection side.
+          * - :py:attr:`~index2`
+            - Refractive index on transmission side.
+          * - :py:attr:`~get_reflection_interpolation_settings`
+            - Return a fixed dictionary for reflection interpolation settings to be set by user.
+          * - :py:attr:`~get_transmission_interpolation_settings`
+            - Return a fixed dictionary for reflection interpolation settings to be set by user.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.bsdf import InterpolationEnhancement
+
+Property detail
+---------------
+
+.. py:property:: index1
+   :type: float
+
+
+   
+   Property of refractive index on reflection side.
+
+
+   :Parameters:
+
+       **value** : :obj:`refractive` index.
+           Refractive index on reflection side.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Refractive index on reflection side.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: index2
+   :type: float
+
+
+   
+   Refractive index on transmission side.
+
+
+   :Parameters:
+
+       **value** : :obj:`refractive` index.
+           Refractive index on transmission side.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Refractive index on transmission side.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: get_reflection_interpolation_settings
+   :type: Union[None, _InterpolationSettings]
+
+
+   
+   Return a fixed dictionary for reflection interpolation settings to be set by user.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:data:`python:None`, :obj:`ansys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings`]
+           A fixed dictionary for reflection interpolation settings to be set by user.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: get_transmission_interpolation_settings
+   :type: Union[None, _InterpolationSettings]
+
+
+   
+   Return a fixed dictionary for reflection interpolation settings to be set by user.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:data:`python:None`, :obj:`nsys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings`]
+           A fixed dictionary for reflection interpolation settings to be set by user.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_interpolation_settings(is_brdf, settings)
+
+   
+   Set interpolation obtained from bsdf Class or that modified by user.
+
+
+   :Parameters:
+
+       **is_brdf** : :ref:`bool <python:bltin-boolean-values>`
+           true if settings is for brdf, else for btdf
+
+       **settings** : :obj:`nsys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings`
+           interpolation settings to set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

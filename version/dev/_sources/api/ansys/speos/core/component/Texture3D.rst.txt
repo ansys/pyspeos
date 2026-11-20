@@ -1,0 +1,618 @@
+
+
+
+
+
+
+:class:`Texture3D`
+==================
+
+
+.. py:class:: ansys.speos.core.component.Texture3D(project, name, description = '', metadata = None, default_parameters = None, texture_3d_instance = None)
+
+   
+   Represent the Speos 3D texture feature.
+
+   A 3D texture repeats a pattern body on a support body of the project geometry,
+   following a 3D mapping file.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]], :obj:`optional`
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_parameters** : :obj:`Optional`\[:obj:`ansys.speos.core.generic.parameters.Texture3DParameters`], :obj:`optional`
+           Allows to provide parameters to overwrite the default parameters.
+           By default, ``None``, which uses
+           :class:`~ansys.speos.core.generic.parameters.Texture3DParameters` defaults.
+
+       **texture_3d_instance** : :obj:`Optional`\[:obj:`ansys.speos.core.kernel.scene.ProtoScene.Texture3D`], :obj:`optional`
+           3D texture protobuf message retrieved from an existing scene.
+           By default, ``None``, which creates a new 3D texture.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+   The pattern body must not be a body of the scene root part taken in the simulation.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Texture3D
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_pattern_body`
+            - Create a body in this element.
+          * - :py:attr:`~create_pattern_material`
+            - Create a new optical property applied on the 3D texture pattern body.
+          * - :py:attr:`~commit`
+            - Save the local feature data to the Speos server database.
+          * - :py:attr:`~reset`
+            - Reset local data from the Speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature data from the Speos server database.
+          * - :py:attr:`~get`
+            - Get 3D texture information from its dictionary representation - read only.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - Name of the 3D texture feature.
+          * - :py:attr:`~axis_system`
+            - Anchor of the 3D texture pattern.
+          * - :py:attr:`~support_body`
+            - Geometry path of the body supporting the 3D texture.
+          * - :py:attr:`~pattern_body`
+            - Body used as 3D texture pattern - read only.
+          * - :py:attr:`~pattern_operation`
+            - Operation applied on the support body according to the pattern.
+          * - :py:attr:`~global_scale`
+            - Global scale factor applied to the 3D texture pattern.
+          * - :py:attr:`~mapping_3d_file_uri`
+            - Uri of the 3D mapping file (``.OPT3DMapping``) used by this 3D texture.
+          * - :py:attr:`~pattern_materials`
+            - Materials applied on the pattern body.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the 3D texture.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.component import Texture3D
+
+Property detail
+---------------
+
+.. py:property:: name
+   :type: str
+
+
+   
+   Name of the 3D texture feature.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Name of the feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: List[float]
+
+
+   
+   Anchor of the 3D texture pattern.
+
+   Twelve-element list ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+   The coordinate system must be orthonormal.
+
+   :Parameters:
+
+       **value** : :class:`python:list`\[:class:`python:float`]
+           New anchor values.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Current anchor values.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: support_body
+   :type: str
+
+
+   
+   Geometry path of the body supporting the 3D texture.
+
+
+   :Parameters:
+
+       **value** : :obj:`Union`\[:class:`python:str`, :obj:`ansys.speos.core.geo_ref.GeoRef`, :obj:`ansys.speos.core.body.Body`]
+           Body supporting the 3D texture.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Geometry path of the support body.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: pattern_body
+   :type: Union[ansys.speos.core.body.Body, None]
+
+
+   
+   Body used as 3D texture pattern - read only.
+
+   Use :meth:`create_pattern_body` to create it.
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.body.Body`, :data:`python:None`]
+           Pattern body if it exists, otherwise ``None``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: pattern_operation
+   :type: ansys.speos.core.generic.parameters.Texture3DPatternOperations
+
+
+   
+   Operation applied on the support body according to the pattern.
+
+
+   :Parameters:
+
+       **value** : :obj:`ansys.speos.core.generic.parameters.Texture3DPatternOperations`
+           New pattern operation.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.generic.parameters.Texture3DPatternOperations`
+           Current pattern operation.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: global_scale
+   :type: float
+
+
+   
+   Global scale factor applied to the 3D texture pattern.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New global scale factor.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Current global scale factor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: mapping_3d_file_uri
+   :type: str
+
+
+   
+   Uri of the 3D mapping file (``.OPT3DMapping``) used by this 3D texture.
+
+
+   :Parameters:
+
+       **value** : :obj:`Union`\[:class:`python:str`, :obj:`pathlib.Path`]
+           New 3D mapping file uri.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Current 3D mapping file uri.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: pattern_materials
+   :type: List[ansys.speos.core.opt_prop.OptProp]
+
+
+   
+   Materials applied on the pattern body.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:obj:`ansys.speos.core.opt_prop.OptProp`]
+           Optical properties applied on the pattern body.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_pattern_body()
+
+   
+   Create a body in this element.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.body.Body`
+           Body feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create_pattern_material(name, description = '', metadata = None, parameters = None)
+
+   
+   Create a new optical property applied on the 3D texture pattern body.
+
+   The created optical property belongs to the 3D texture pattern: it is not
+   registered as a project feature.
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the optical property.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Description of the optical property.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]], :obj:`optional`
+           Metadata of the optical property.
+           By default, ``{}``.
+
+       **parameters** : :obj:`Optional`\[:obj:`ansys.speos.core.generic.parameters.OptPropParameters`], :obj:`optional`
+           Allows to provide parameters to overwrite default parameters.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property applied on the pattern body.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Call :meth:`ansys.speos.core.opt_prop.OptProp.delete` on the returned object to
+   remove it from the 3D texture pattern, then commit the 3D texture.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save the local feature data to the Speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.Texture3D`
+           Updated 3D texture feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset local data from the Speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.Texture3D`
+           Updated 3D texture feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature data from the Speos server database.
+
+   The local object data remain available after deletion.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.component.Texture3D`
+           Updated 3D texture feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get(key = '')
+
+   
+   Get 3D texture information from its dictionary representation - read only.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`, :obj:`optional`
+           Key prefix used to look up a value.
+           By default, ``""``, which returns the full dictionary.
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           Value found for the given key, or the full dictionary when *key* is empty.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the 3D texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

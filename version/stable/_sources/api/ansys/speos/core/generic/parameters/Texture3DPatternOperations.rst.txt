@@ -1,0 +1,211 @@
+
+
+
+
+
+
+:class:`Texture3DPatternOperations`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.Texture3DPatternOperations
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   
+   Operations that can be applied on the support body according to the pattern.
+
+   The values match the ``ProtoScene.Texture3D.PatternOperation`` protobuf enumeration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Texture3DPatternOperations
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~remove`
+            - Subtract the pattern from the support body.
+          * - :py:attr:`~add_on_same_material`
+            - Add the pattern on the support body and keep the support body material.
+          * - :py:attr:`~add_on_different_material`
+            - Add the pattern on the support body and use the pattern material.
+          * - :py:attr:`~add_in`
+            - Add the pattern into the support body and use the pattern material.
+          * - :py:attr:`~insert`
+            - Insert the pattern in the support body and use the pattern material.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import Texture3DPatternOperations
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: remove
+   :value: 1
+
+
+   
+   Subtract the pattern from the support body.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: add_on_same_material
+   :value: 2
+
+
+   
+   Add the pattern on the support body and keep the support body material.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: add_on_different_material
+   :value: 3
+
+
+   
+   Add the pattern on the support body and use the pattern material.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: add_in
+   :value: 4
+
+
+   
+   Add the pattern into the support body and use the pattern material.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: insert
+   :value: 5
+
+
+   
+   Insert the pattern in the support body and use the pattern material.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

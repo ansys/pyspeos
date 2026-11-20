@@ -1,0 +1,195 @@
+
+
+
+
+
+
+:class:`Speos`
+==============
+
+
+.. py:class:: ansys.speos.core.speos.Speos(version = DEFAULT_VERSION, channel = None, remote_instance = None, timeout = 60, logging_level = logging.INFO, logging_file = None, speos_install_path = None)
+
+   
+   Allows the Speos session (client) to interact with the SpeosRPC server.
+
+
+   :Parameters:
+
+       **version** : :class:`python:str`
+           The Speos server version to run, in the 3 digits format, such as "242".
+           If unspecified, the version will be chosen as
+           ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+
+       **channel** : :obj:`grpc.Channel`, :obj:`optional`
+           gRPC channel for server communication.
+           Can be created with ``ansys.speos.core.kernel.grpc.transport_options``
+           and ``ansys.speos.core.kernel.grpc.cyberchannel``
+           By default, ``None``.
+
+       **remote_instance** : :obj:`ansys.platform.instancemanagement.Instance`
+           The corresponding remote instance when the Speos Service
+           is launched through PyPIM. This instance will be deleted when calling
+           :func:`SpeosClient.close <ansys.speos.core.kernel.client.SpeosClient.close >`.
+
+       **timeout** : :obj:`Real`, :obj:`optional`
+           Timeout in seconds to achieve the connection.
+           By default, 60 seconds.
+
+       **logging_level** : :class:`python:int`, :obj:`optional`
+           The logging level to be applied to the client.
+           By default, ``INFO``.
+
+       **logging_file** : :obj:`Optional`\[:class:`python:str`, :obj:`Path`]
+           The file to output the log, if requested. By default, ``None``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> # Create default channel (to use when server was started with `SpeosRPC_Server.exe`)
+   >>> speos = Speos()
+   >>> # which is also equivalent to:
+   >>> from ansys.speos.core.kernel.client import default_local_channel
+   >>> channel = default_local_channel()
+   >>> speos = Speos(channel=channel)
+   >>> # Create channel with custom port and message size:
+   >>> # use when server was started with `SpeosRPC_Server.exe --port 53123`
+   >>> speos = Speos(channel=default_local_channel(port=53123, message_size=20000000))
+   >>> # Create insecure channel, to use when server was started with:
+   >>> # `SpeosRPC_Server.exe --transport-insecure`
+   >>> from ansys.speos.core.kernel.grpc.transport_options import (
+   ...     TransportOptions,
+   ...     InsecureOptions,
+   ...     TransportMode,
+   ... )
+   >>> transport = TransportOptions(
+   ...     mode=TransportMode.INSECURE,
+   ...     options=InsecureOptions(host=host, port=port, allow_remote_host=True),
+   ... )
+   >>> grpc_options = [("grpc.max_receive_message_length", message_size)]
+   >>> speos = Speos(channel=transport.create_channel(grpc_options))
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Speos
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~close`
+            - Close the channel and deletes all Speos objects from memory.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~client`
+            - The ``Speos`` instance client.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.speos import Speos
+
+Property detail
+---------------
+
+.. py:property:: client
+   :type: ansys.speos.core.kernel.client.SpeosClient
+
+
+   
+   The ``Speos`` instance client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: close()
+
+   
+   Close the channel and deletes all Speos objects from memory.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           Information if the server instance was terminated.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   If an instance of the Speos Service was started using
+   PyPIM, this instance will be deleted.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

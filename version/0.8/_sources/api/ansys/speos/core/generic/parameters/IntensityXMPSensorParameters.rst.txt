@@ -1,0 +1,258 @@
+
+
+
+
+
+
+:class:`IntensityXMPSensorParameters`
+=====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityXMPSensorParameters
+
+   
+   Intensity Sensor Parameters Dataclass.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityXMPSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~dimensions`
+            - Dimensions of the sensor.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~sensor_type`
+            - Type of the sensor.
+          * - :py:attr:`~orientation`
+            - Sensor orientation.
+          * - :py:attr:`~viewing_direction`
+            - Viewing direction used for the result.
+          * - :py:attr:`~layer_type`
+            - Layer separation type.
+          * - :py:attr:`~near_field_parameters`
+            - Parameters used when the sensor is near field.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityXMPSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: dimensions
+   :type:  Union[IntensitySensorDimensionsXAsMeridianParameters, IntensitySensorDimensionsXAsParallelParameters, IntensitySensorDimensionsConoscopicParameters]
+
+   
+   Dimensions of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Position of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sensor_type
+   :type:  Union[SensorTypes, ColorimetricParameters, SpectralParameters, SensorTypes]
+
+   
+   Type of the sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: orientation
+   :type:  IntensitySensorOrientationTypes
+
+   
+   Sensor orientation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: viewing_direction
+   :type:  IntensitySensorViewingTypes
+
+   
+   Viewing direction used for the result.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  Union[LayerTypes, LayerTypes, LayerByFaceParameters, LayerBySequenceParameters]
+
+   
+   Layer separation type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: near_field_parameters
+   :type:  Optional[NearfieldParameters]
+   :value: None
+
+
+   
+   Parameters used when the sensor is near field.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
