@@ -25,7 +25,7 @@ permissions: {}
 
 jobs:
   testing:
-    name: Speos ${{ matrix.speos-version }} / Python ${{ matrix.python-version }}
+    name: Testing and coverage
     runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
