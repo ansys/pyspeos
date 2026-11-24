@@ -256,6 +256,7 @@ all = [
 ]
 graphics = [
     { name = "ansys-tools-visualization-interface" },
+    { name = "matplotlib" },
     { name = "pyvista" },
 ]
 jupyter = [
@@ -326,6 +327,7 @@ requires-dist = [
     { name = "grpcio-health-checking", specifier = ">=1.45.0" },
     { name = "ipywidgets", marker = "extra == 'jupyter'" },
     { name = "jupyterlab", marker = "extra == 'jupyter'", specifier = ">=4.6.2" },
+    { name = "matplotlib", marker = "extra == 'graphics'" },
     { name = "matplotlib", marker = "extra == 'jupyter'" },
     { name = "notebook", marker = "extra == 'jupyter'" },
     { name = "numpy", specifier = ">=1.20.3,<3" },
