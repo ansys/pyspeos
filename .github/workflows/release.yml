@@ -42,7 +42,7 @@ jobs:
       contents: read   # Required to read repository content for quality checks
     secrets:
       PYANSYS_CI_BOT_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-    uses: ./.github/workflows/reusable-code-quality.yml
+    uses: $/.github/workflows/reusable-code-quality.yml
 
   doc-build:
     name: Documentation
@@ -51,7 +51,7 @@ jobs:
       packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
-    uses: ./.github/workflows/reusable-doc-build.yml
+    uses: $/.github/workflows/reusable-doc-build.yml
 
   # NOTE: Should this job be using ansys/actions/tests-pytest ?
   # @todo smorais: verify that smoke tests with attest-provenance: true (now shared with pull-request.yml) are correct for release
@@ -65,7 +65,7 @@ jobs:
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: ./.github/workflows/reusable-speos-tests.yml
+    uses: $/.github/workflows/reusable-speos-tests.yml
 
   build-library:
     name: Build library

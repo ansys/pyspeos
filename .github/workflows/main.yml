@@ -31,7 +31,7 @@ jobs:
       run-doc-style: false
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
-    uses: ./.github/workflows/reusable-doc-build.yml
+    uses: $/.github/workflows/reusable-doc-build.yml
 
   doc-deploy-development:
     name: Doc dev version deploy
