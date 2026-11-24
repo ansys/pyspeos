@@ -18,12 +18,14 @@ jobs:
   testing:
     name: Testing and coverage
     permissions:
-      contents: read   # Required to read repository content for testing
-      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
+      attestations: write   # Required by smoke tests to publish build attestations (SLSA provenance)
+      contents: read        # Required to read repository content for testing
+      id-token: write       # Required by smoke tests for OIDC token generation (provenance signing)
+      packages: read        # Required to pull images from GitHub Container Registry (ghcr.io)
     secrets:
       LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: $/.github/workflows/reusable-speos-tests.yml
+    uses: ./.github/workflows/reusable-speos-tests.yml
 
   notify:
     name: Notify through Teams
