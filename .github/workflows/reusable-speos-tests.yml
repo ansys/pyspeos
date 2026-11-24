@@ -111,4 +111,3 @@ jobs:
         run: |
           docker kill speos-rpc
           docker rm speos-rpc
-
