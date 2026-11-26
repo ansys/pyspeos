@@ -2,7 +2,7 @@
 #
 # This tutorial demonstrates how to create a component feature.
 #
-# Component feature includes: lightbox import.
+# Component feature includes: lightbox import and 3D texture.
 
 # ## Prerequisites
 #
@@ -12,7 +12,14 @@ import json
 from pathlib import Path
 
 from ansys.speos.core import OptProp, Project, Speos, launcher
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFileInstance, Texture3D
+from ansys.speos.core.generic.parameters import (
+    OptPropParameters,
+    SopTypes,
+    Texture3DParameters,
+    Texture3DPatternOperations,
+    VopOpticParameters,
+)
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -337,3 +344,213 @@ lightbox_3.commit()
 sim.source_paths = [lightbox_3.name]
 sim.commit()
 # -
+
+# ## 3D Texture
+#
+# A 3D texture repeats a pattern body on a support body of the project geometry,
+# following a 3D mapping file.
+#
+# > **Note:** The 3D texture feature requires a Speos server of version 2027 R1 or higher.
+
+# ### Define a helper to build a cubic body
+#
+# Both the support body and the pattern body are simple cubes in this example.
+
+
+def add_cube_faces(target_body, size):
+    """Add the six faces of a cube to a body feature.
+
+    Parameters
+    ----------
+    target_body : ansys.speos.core.body.Body
+        Body feature to fill with faces.
+    size : float
+        Edge length of the cube.
+
+    Returns
+    -------
+    ansys.speos.core.body.Body
+        Body feature filled with the six cube faces.
+    """
+    s = size
+    faces_definition = {
+        "bottom": (
+            [0, 0, 0, s, 0, 0, s, s, 0, 0, s, 0],
+            [0, 0, -1] * 4,
+        ),
+        "top": (
+            [0, 0, s, s, 0, s, s, s, s, 0, s, s],
+            [0, 0, 1] * 4,
+        ),
+        "left": (
+            [0, 0, 0, s, 0, 0, s, 0, s, 0, 0, s],
+            [0, -1, 0] * 4,
+        ),
+        "right": (
+            [0, s, 0, s, s, 0, s, s, s, 0, s, s],
+            [0, 1, 0] * 4,
+        ),
+        "front": (
+            [s, 0, 0, s, s, 0, s, s, s, s, 0, s],
+            [1, 0, 0] * 4,
+        ),
+        "back": (
+            [0, 0, 0, 0, s, 0, 0, s, s, 0, 0, s],
+            [-1, 0, 0] * 4,
+        ),
+    }
+    for face_name, (vertices, normals) in faces_definition.items():
+        new_face = target_body.create_face(name=face_name)
+        new_face.vertices = vertices
+        new_face.facets = [0, 1, 2, 0, 2, 3]
+        new_face.normals = normals
+    return target_body
+
+
+# ### Create the support geometry
+#
+# The support body must be a volume body: a volume optical property is assigned to it.
+
+# +
+p3 = Project(speos=speos)
+
+root_part = p3.create_root_part()
+support_body = add_cube_faces(root_part.create_body(name="SupportBody"), size=10)
+support_body.commit()
+root_part.commit()
+
+support_material = p3.create_optical_property(
+    name="SupportMaterial",
+    parameters=OptPropParameters(
+        vop_parameters=VopOpticParameters(index=1.5, absorption=0.0),
+        sop_parameters=SopTypes.optical_polished,
+    ),
+)
+support_material.geometries = [support_body]
+support_material.commit()
+# -
+
+# ### Create the 3D texture locally
+#
+# Like any other feature, the 3D texture is first created locally.
+# The mention "local: " is added when printing it.
+#
+# Default values can be overwritten at creation time with a
+# ``Texture3DParameters`` dataclass.
+
+# +
+texture_3d = p3.create_3d_texture(
+    name="3D Texture.1",
+    parameters=Texture3DParameters(global_scale=1.0),
+)
+print(texture_3d.axis_system)
+print(texture_3d.pattern_operation)
+print(texture_3d.global_scale)
+print(texture_3d)
+# -
+
+# ### Define the pattern body
+#
+# The pattern body is created from the 3D texture itself. It is automatically attached
+# to the 3D texture when the 3D texture is committed.
+#
+# > **Note:** The pattern body must not be a body of the scene root part taken
+# > in the simulation.
+
+# +
+pattern_body = texture_3d.create_pattern_body()
+pattern_body = add_cube_faces(pattern_body, size=1)
+pattern_body.commit()
+# -
+
+# ### Add a material on the pattern
+#
+# This material belongs to the 3D texture: it is not registered as a project feature.
+
+# +
+pattern_material = texture_3d.create_pattern_material(
+    name="PatternMaterial",
+    parameters=OptPropParameters(
+        vop_parameters=VopOpticParameters(index=1.6, absorption=0.0),
+        sop_parameters=SopTypes.optical_polished,
+    ),
+)
+pattern_material.geometries = [pattern_body]
+pattern_material.commit()
+# -
+
+# ### Configure the 3D texture
+#
+# The support body, the pattern operation, the global scale and the 3D mapping file
+# are set through properties. The pattern operations ``add_on_different_material``,
+# ``add_in`` and ``insert`` etc the material of the pattern body.
+
+# +
+texture_3d.axis_system = [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+texture_3d.support_body = support_body
+texture_3d.pattern_operation = Texture3DPatternOperations.add_in
+texture_3d.global_scale = 2.5
+texture_3d.mapping_3d_file_uri = (
+    assets_data_path / "texture3d" / "Component1.3D Texture.1.OPT3DMapping"
+)
+# -
+
+
+# ### Push it to the server
+#
+# Once committed, the mention "local: " is no more present when printing the 3D texture.
+
+# +
+texture_3d.commit()
+print(texture_3d)
+# -
+
+# ### Read
+#
+# Properties are used to retrieve the 3D texture information, and the ``get`` method
+# gives a read-only access to the server data.
+
+# +
+print(texture_3d.name)
+print(texture_3d.support_body)
+print(texture_3d.pattern_operation)
+print(texture_3d.global_scale)
+print(texture_3d.mapping_3d_file_uri)
+print([material._name for material in texture_3d.pattern_materials])
+print(texture_3d.get(key="global_scale"))
+# -
+
+# ### Update
+#
+# Modify the local data, then commit to push the modification to the server.
+
+# +
+texture_3d.global_scale = 1.5
+texture_3d.commit()
+print(texture_3d.global_scale)
+# -
+
+# The ``reset`` method discards the local modifications that were not committed.
+
+# +
+texture_3d.global_scale = 9.0
+texture_3d.reset()
+print(texture_3d.global_scale)
+# -
+
+# ### Find a 3D texture in a project
+#
+# A project loaded from a ``.speos`` file exposes its 3D textures like any other feature.
+
+# +
+textures_3d = p3.find(name=".*", name_regex=True, feature_type=Texture3D)
+print(len(textures_3d))
+print(textures_3d[0].name)
+# -
+
+# ### Delete
+#
+# Deleting the 3D texture also deletes its pattern body and the templates of its
+# pattern materials.
+
+texture_3d.delete()

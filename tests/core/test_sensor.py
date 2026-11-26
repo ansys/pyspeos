@@ -22,10 +22,16 @@
 
 """Test basic using sensor."""
 
+import json
 import math
 from pathlib import Path
+import shutil
+from typing import Any, cast
+from uuid import uuid4
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+from ansys.api.speos.sensor.v2 import sensor_pb2 as sensor_v2_pb2
+import grpc
 import numpy as np
 import pytest
 
@@ -40,6 +46,11 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    EnergyDensity3DDimensionsParameters,
+    EnergyDensity3DSensorParameters,
+    GeometryLayerParameters,
+    HumanEyeSensorParameters,
+    HumanEyeSensorTypes,
     ImmersiveSensorParameters,
     IntegrationTypes,
     IntensitySensorDimensionsConoscopicParameters,
@@ -68,10 +79,14 @@ from ansys.speos.core.generic.parameters import (
     SpectralParameters,
     WavelengthsRangeParameters,
 )
+from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel import ProtoSensorTemplate, ProtoSensorTemplateV2
 from ansys.speos.core.sensor import (
     BaseSensor,
+    Sensor3DEnergyDensity,
     Sensor3DIrradiance,
     SensorCamera,
+    SensorHumanEye,
     SensorImmersive,
     SensorIrradiance,
     SensorObserver,
@@ -79,12 +94,900 @@ from ansys.speos.core.sensor import (
     SensorRadiance,
     SensorXMPIntensity,
 )
-from ansys.speos.core.simulation import SimulationDirect
-from tests.conftest import test_path
+from ansys.speos.core.simulation import SimulationDirect, SimulationInverse
+from ansys.speos.core.source import SourceLuminaire, SourceSurface
+from tests.conftest import (
+    SENSOR_TEMPLATE_V2_MIN_VERSION,
+    local_test_path,
+    test_path,
+)
+from tests.helper import remove_file
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_defaults_and_lifecycle(speos: Speos):
+    """Verify real energy density creation, commit, reset, discovery, and deletion."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(
+        name="EnergyDensity",
+        description="Volume sensor",
+        metadata={"purpose": "test"},
+        feature_type=Sensor3DEnergyDensity,
+    )
+    assert isinstance(ssr, Sensor3DEnergyDensity)
+    assert isinstance(ssr._sensor_template, ProtoSensorTemplateV2)
+    assert ssr.type == "Photometric"
+    assert ssr.layer == LayerTypes.none
+    assert ssr.axis_system == ORIGIN
+    assert ssr.set_dimensions() is ssr.dimensions
+    for axis in "xyz":
+        assert getattr(ssr.dimensions, axis + "_size") == 50
+        assert getattr(ssr.dimensions, axis + "_sampling") == 100
+    assert ssr._sensor_template.name == "EnergyDensity"
+    assert ssr._sensor_template.description == "Volume sensor"
+    assert ssr._sensor_template.metadata["purpose"] == "test"
+    ssr.result_file_name = "energy_volume"
+    with pytest.raises(NotImplementedError, match="Light Expert"):
+        ssr.lxp_path_number = 25
+    ssr.commit()
+    assert ssr.sensor_template_link.get().HasField("energy_density")
+    assert ssr.sensor_template_link.get().description == "Volume sensor"
+    assert ssr.sensor_template_link.get().metadata["purpose"] == "test"
+    assert ssr.get("result_file_name") == "energy_volume"
+    assert ssr.lxp_path_number is None
+    assert ssr in p.sensors
+    assert p.find(name="EnergyDensity", feature_type=Sensor3DEnergyDensity) == [ssr]
+
+    ssr.set_type_radiometric().set_layer_type_source()
+    ssr.dimensions.z_size = 75
+    ssr.reset()
+    assert ssr.type == "Photometric"
+    assert ssr.layer == LayerTypes.none
+    assert ssr.dimensions.z_size == 50
+    ssr.set_dimensions().z_size = 80
+    ssr.set_type_radiometric().set_layer_type_source().commit().reset()
+    assert ssr.type == "Radiometric"
+    assert ssr.layer == LayerTypes.by_source
+    assert ssr.dimensions.z_size == 80
+    assert ssr.sensor_template_link.get().energy_density.HasField("mode_radiometric")
+    key = ssr.sensor_template_link.key
+    ssr.delete()
+    assert key not in [link.key for link in speos.client.sensor_templates_v2().list()]
+    assert not any(item.name == "EnergyDensity" for item in p.scene_link.get().sensors)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+@pytest.mark.parametrize("mode", [SensorTypes.photometric, SensorTypes.radiometric])
+@pytest.mark.parametrize("layer", [LayerTypes.none, LayerTypes.by_source, LayerByFaceParameters()])
+def test_energy_density_save_load(speos: Speos, energy_density_export_path: Path, mode, layer):
+    """Verify every energy density field survives saving and loading a real scene."""
+    p = Project(speos=speos)
+    root = p.create_root_part().commit()
+    body = root.create_body(name="LayerBody").commit()
+    face = body.create_face(name="LayerFace")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1] * 3
+    face.commit()
+    dims = EnergyDensity3DDimensionsParameters(20, 11, 40, 13, 60, 17)
+    axes = [10, 20, 30, 0, 1, 0, -1, 0, 0, 0, 0, 1]
+    ssr = p.create_sensor(
+        name="EnergyDensityRoundTrip",
+        description="Persist all energy density fields",
+        metadata={"test": "roundtrip"},
+        feature_type=Sensor3DEnergyDensity,
+        parameters=EnergyDensity3DSensorParameters(
+            dimensions=dims, axis_system=axes, sensor_type=mode, layer_type=layer
+        ),
+    )
+    if isinstance(layer, LayerByFaceParameters):
+        config = ssr.set_layer_type_face().set_sca_filtering_mode_intersected_one_time()
+        config.layers = [BaseSensor.FaceLayer("SelectedFace", [face.geo_path])]
+    ssr.result_file_name = "energy_roundtrip"
+    source = p.create_source(name="EnergyDensitySource", feature_type=SourceSurface)
+    source.set_exitance_constant().geometries = [(face, False)]
+    source.commit()
+    ssr.commit()
+    simulation = p.create_simulation(name="EnergyDensityDirect", feature_type=SimulationDirect)
+    simulation.sensor_paths = [ssr]
+    simulation.source_paths = [source]
+    p.commit()
+    assert simulation.sensor_paths == [ssr._name]
+    if mode == SensorTypes.photometric and layer == LayerTypes.none:
+        simulation.stop_condition_rays_number = 1000
+        simulation.stop_condition_duration = None
+        results = simulation.compute_CPU(threads_number=1)
+        assert results, simulation.job_link.get_error()
+        assert all(result.path or result.upload_response.info.uri for result in results)
+        assert simulation.job_link.get_state().state == simulation._job.State.FINISHED
+    expected_template = ssr.sensor_template_link.get()
+    expected_properties = ssr._sensor_instance.energy_density_properties
+    mode_name = mode.value
+    simulation.export(energy_density_export_path.as_posix())
+    loaded_project = Project(
+        speos=speos,
+        path=(
+            energy_density_export_path / "EnergyDensityDirect.speos" / "EnergyDensityDirect.speos"
+        ).as_posix(),
+    )
+    loaded = loaded_project.find(name="EnergyDensityRoundTrip", feature_type=Sensor3DEnergyDensity)[
+        0
+    ]
+    assert loaded in loaded_project.sensors
+    assert loaded.type == mode_name.capitalize()
+    assert loaded.axis_system == axes
+    assert loaded.sensor_template_link.get().energy_density == expected_template.energy_density
+    assert loaded.get("result_file_name") == "energy_roundtrip"
+    assert loaded.result_file_name == "energy_roundtrip"
+    for axis in "xyz":
+        for suffix in ("_size", "_sampling"):
+            assert getattr(loaded.dimensions, axis + suffix) == getattr(dims, axis + suffix)
+    if isinstance(layer, LayerByFaceParameters):
+        assert isinstance(loaded.layer, BaseSensor.LayerTypeFace)
+        assert loaded.layer.layers[0].name == "SelectedFace"
+        loaded_body = loaded_project.find(name="LayerBody.*", name_regex=True, feature_type=Body)[0]
+        assert (
+            loaded.layer.layers[0].geometry[0].to_native_link()
+            == loaded_body._geom_features[0].geo_path.to_native_link()
+        )
+        assert (
+            loaded._sensor_instance.energy_density_properties.layer_type_face.sca_filtering_mode
+            == expected_properties.layer_type_face.sca_filtering_mode
+        )
+    else:
+        assert loaded._sensor_instance.energy_density_properties == expected_properties
+        assert loaded.layer == layer
+    loaded.set_dimensions().x_size = 35
+    loaded.set_type_radiometric().set_layer_type_source().commit().reset()
+    assert loaded.dimensions.x_size == 35
+    assert loaded.type == "Radiometric"
+    assert loaded.layer == LayerTypes.by_source
+    loaded.set_layer_type_face().set_sca_filtering_mode_last_impact()
+    loaded.commit().reset()
+    assert isinstance(loaded.layer, BaseSensor.LayerTypeFace)
+    loaded.set_layer_type_none().commit().reset()
+    assert loaded.layer == LayerTypes.none
+
+
+@pytest.fixture
+def energy_density_export_path():
+    """Provide a unique server-side export directory and remove it after the round trip."""
+    path = Path(test_path).parent / f"energy_density_{uuid4().hex}"
+    try:
+        yield path
+    finally:
+        remove_file(path)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_validation(speos: Speos):
+    """Reject invalid dimensions and parameters on real sensor objects."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="EnergyDensityValidation", feature_type=Sensor3DEnergyDensity)
+    for axis in "xyz":
+        for value in (0, -1, float("nan"), float("inf")):
+            with pytest.raises(ValueError):
+                setattr(ssr.dimensions, axis + "_size", value)
+        for value in (True, "50", None):
+            with pytest.raises(TypeError):
+                setattr(ssr.dimensions, axis + "_size", value)
+        for value in (0, -1, 2**32):
+            with pytest.raises(ValueError):
+                setattr(ssr.dimensions, axis + "_sampling", value)
+        for value in (True, 1.5, "100", None):
+            with pytest.raises(TypeError):
+                setattr(ssr.dimensions, axis + "_sampling", value)
+        assert getattr(ssr.dimensions, axis + "_size") == 50
+        assert getattr(ssr.dimensions, axis + "_sampling") == 100
+    with pytest.raises(ValueError):
+        ssr.axis_system = [0] * 11
+    with pytest.raises(ValueError):
+        ssr.axis_system = [float("nan")] * 12
+    with pytest.raises(ValueError, match="orthonormal"):
+        ssr.axis_system = [0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4]
+    with pytest.raises(ValueError, match="orthonormal"):
+        ssr.axis_system = [0] * 12
+    assert ssr.axis_system == ORIGIN
+    with pytest.raises(RuntimeError, match="set_dimensions"):
+        Sensor3DEnergyDensity.Dimensions3D(
+            sensor_v2_pb2.SensorTemplate.EnergyDensity.Dimensions3D()
+        )
+    with pytest.raises(TypeError, match="EnergyDensity3DSensorParameters"):
+        p.create_sensor(
+            name="WrongEnergyDensityParameters",
+            feature_type=Sensor3DEnergyDensity,
+            parameters=IrradianceSensorParameters(),
+        )
+    with pytest.raises(ValueError, match="conflict name"):
+        p.create_sensor(name=ssr._name, feature_type=Sensor3DEnergyDensity)
+    params = EnergyDensity3DSensorParameters()
+    params.axis_system[0] = 123
+    params.dimensions.x_size = 456
+    assert EnergyDensity3DSensorParameters().axis_system == ORIGIN
+    assert EnergyDensity3DSensorParameters().dimensions.x_size == 50
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_face_parameters(speos: Speos):
+    """Preserve face-layer groups configured through a real parameters dataclass."""
+    p = Project(speos=speos)
+    face = p.create_root_part().create_body(name="FaceLayerBody").create_face(name="Face")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1] * 3
+    p.root_part.commit()
+    ssr = p.create_sensor(
+        name="EnergyDensityFaceParameters",
+        feature_type=Sensor3DEnergyDensity,
+        parameters=EnergyDensity3DSensorParameters(
+            layer_type=LayerByFaceParameters(
+                geometries=[GeometryLayerParameters("FaceGroup", [face.geo_path])]
+            )
+        ),
+    )
+    assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
+    ssr.commit().reset()
+    assert ssr.layer.layers[0].name == "FaceGroup"
+    assert ssr.layer.layers[0].geometry[0].to_native_link() == face.geo_path.to_native_link()
+
+
+@pytest.mark.supported_speos_versions(min=261, max=270)
+def test_energy_density_unsupported_server(speos: Speos):
+    """Reject the v2-only sensor on a real server predating sensor v2."""
+    if server_version_checker.is_version_supported(2027, 1, 0):
+        pytest.skip("This test requires a real server older than 2027 R1.")
+    p = Project(speos=speos)
+    with pytest.raises(NotImplementedError, match="2027 R1 SP0"):
+        p.create_sensor(name="UnsupportedEnergyDensity", feature_type=Sensor3DEnergyDensity)
+    assert p.sensors == []
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_energy_density_preview(speos: Speos):
+    """Verify default and rotated volume geometry using real visualization objects."""
+    pytest.importorskip("pyvista")
+    from ansys.tools.visualization_interface import Plotter
+
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="EnergyDensityPreview", feature_type=Sensor3DEnergyDensity)
+    preview = ssr.visual_data
+    assert preview.data.n_points == 8
+    assert preview.data.n_cells == 12
+    assert tuple(preview.data.bounds) == pytest.approx((-25, 25, -25, 25, -25, 25))
+    ssr.dimensions.x_size = 20
+    ssr.dimensions.y_size = 40
+    ssr.dimensions.z_size = 60
+    ssr.axis_system = [10, 20, 30, 0, 1, 0, -1, 0, 0, 0, 0, 1]
+    assert tuple(ssr.visual_data.data.bounds) == pytest.approx((-10, 30, 10, 30, 0, 60))
+    ssr.commit()
+    ssr.dimensions.z_size = 100
+    ssr.reset()
+    assert tuple(ssr.visual_data.data.bounds) == pytest.approx((-10, 30, 10, 30, 0, 60))
+    plotter = Plotter()
+    assert p._create_speos_feature_preview(plotter, ssr, 100) is plotter
+
+
+def irradiance_template(sensor_feature, local: bool = False):
+    """Get the irradiance part of a sensor template, whatever the protobuf version in use.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorIrradiance
+        Irradiance sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Irradiance sensor template sub-message.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.irradiance
+    return template.irradiance_sensor_template
+
+
+def has_irradiance_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an irradiance definition.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorIrradiance
+        Irradiance sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the irradiance field is set.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("irradiance")
+    return template.HasField("irradiance_sensor_template")
+
+
+def observer_template(sensor_feature, local: bool = False):
+    """Get the observer part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.observer
+    return template.observer_sensor_template
+
+
+def has_observer_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an observer definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("observer")
+    return template.HasField("observer_sensor_template")
+
+
+def radiance_template(sensor_feature, local: bool = False):
+    """Get the radiance part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.radiance
+    return template.radiance_sensor_template
+
+
+def has_radiance_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds a radiance definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("radiance")
+    return template.HasField("radiance_sensor_template")
+
+
+def radiance_sensor_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of a radiance template."""
+    return getattr(
+        radiance_template(sensor_feature, local), _sensor_mode_field(sensor_feature, mode)
+    )
+
+
+def has_radiance_sensor_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the radiance template currently uses the given sensor mode."""
+    return radiance_template(sensor_feature, local).HasField(
+        _sensor_mode_field(sensor_feature, mode)
+    )
+
+
+def immersive_template(sensor_feature, local: bool = False):
+    """Get the immersive part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.immersive
+    return template.immersive_sensor_template
+
+
+def has_immersive_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an immersive definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("immersive")
+    return template.HasField("immersive_sensor_template")
+
+
+def _sensor_mode_field(sensor_feature, mode: str) -> str:
+    """Get the protobuf field name of a sensor mode for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "mode_" + mode
+    return "sensor_type_" + mode
+
+
+def camera_template(sensor_feature, local: bool = False):
+    """Get the camera part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.camera
+    return template.camera_sensor_template
+
+
+def has_camera_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds a camera definition."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("camera")
+    return template.HasField("camera_sensor_template")
+
+
+def _camera_mode_field(sensor_feature, mode: str) -> str:
+    """Get the protobuf field name of a camera mode for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "mode_" + mode
+    return "sensor_mode_" + mode
+
+
+def camera_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the camera mode sub-message of a camera template."""
+    return getattr(camera_template(sensor_feature, local), _camera_mode_field(sensor_feature, mode))
+
+
+def has_camera_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the camera template currently uses the given camera mode."""
+    return camera_template(sensor_feature, local).HasField(_camera_mode_field(sensor_feature, mode))
+
+
+def _camera_color_mode_field(mode_photometric) -> dict[str, str]:
+    """Get v1/v2 protobuf field names for camera color-mode branches."""
+    if isinstance(mode_photometric, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric):
+        return {"color": "mode_color", "monochromatic": "mode_monochromatic"}
+    return {"color": "color_mode_color", "monochromatic": "color_mode_monochromatic"}
+
+
+def camera_color_mode(mode_photometric, mode: str):
+    """Get the camera color-mode sub-message."""
+    return getattr(mode_photometric, _camera_color_mode_field(mode_photometric)[mode])
+
+
+def has_camera_color_mode(mode_photometric, mode: str) -> bool:
+    """Tell if the camera photometric mode currently uses the given color mode."""
+    return mode_photometric.HasField(_camera_color_mode_field(mode_photometric)[mode])
+
+
+def _camera_white_balance_field(mode_color) -> dict[str, str]:
+    """Get v1/v2 protobuf field names for camera white-balance branches."""
+    if isinstance(mode_color, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric.ModeColor):
+        return {
+            "none": "white_balance_mode_none",
+            "grey_world": "white_balance_mode_grey_world",
+            "user_white": "white_balance_mode_user",
+            "display_primaries": "white_balance_mode_display_primaries",
+        }
+    return {
+        "none": "balance_mode_none",
+        "grey_world": "balance_mode_greyworld",
+        "user_white": "balance_mode_userwhite",
+        "display_primaries": "balance_mode_display",
+    }
+
+
+def has_camera_white_balance_mode(mode_color, mode: str) -> bool:
+    """Tell if the camera color mode currently uses the given white-balance mode."""
+    return mode_color.HasField(_camera_white_balance_field(mode_color)[mode])
+
+
+def camera_white_balance_mode(mode_color, mode: str):
+    """Get the camera white-balance sub-message."""
+    return getattr(mode_color, _camera_white_balance_field(mode_color)[mode])
+
+
+def camera_png_bits(mode_photometric, bits: str) -> int:
+    """Get the protobuf enum value for a camera PNG bit depth."""
+    if isinstance(mode_photometric, sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric):
+        return getattr(sensor_v2_pb2.SensorTemplate.Camera.ModePhotometric, "PNG_BITS_" + bits)
+    return getattr(camera_sensor_pb2.EnumSensorCameraPNGBits, "PNG_" + bits)
+
+
+def camera_library_spectrum_uri(project: Project, message, file_field: str, guid_field: str) -> str:
+    """Resolve a v1 file field or a v2 spectrum GUID field to the user-facing file path."""
+    if hasattr(message, guid_field):
+        spectrum_guid = getattr(message, guid_field)
+        if not spectrum_guid:
+            return ""
+        return project.client[spectrum_guid].get().library.file_uri
+    return getattr(message, file_field)
+
+
+def sensor_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of an irradiance template.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorIrradiance
+        Irradiance sensor feature to inspect.
+    mode : str
+        One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Sensor mode sub-message.
+    """
+    return getattr(
+        irradiance_template(sensor_feature, local), _sensor_mode_field(sensor_feature, mode)
+    )
+
+
+def has_sensor_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the irradiance template currently uses the given sensor mode.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorIrradiance
+        Irradiance sensor feature to inspect.
+    mode : str
+        One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the sensor mode is the one currently set.
+    """
+    return irradiance_template(sensor_feature, local).HasField(
+        _sensor_mode_field(sensor_feature, mode)
+    )
+
+
+def has_integration_type(sensor_feature, integration_type: str, local: bool = False) -> bool:
+    """Tell if the irradiance template currently uses the given integration type.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorIrradiance
+        Irradiance sensor feature to inspect.
+    integration_type : str
+        One of ``"planar"``, ``"radial"``, ``"hemispherical"``, ``"cylindrical"``,
+        ``"semi_cylindrical"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the integration type is the one currently set.
+    """
+    template = irradiance_template(sensor_feature, local)
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance):
+        return template.integration_type == getattr(
+            sensor_v2_pb2.SensorTemplate.Irradiance.IntegrationType,
+            "INTEGRATION_TYPE_" + integration_type.upper(),
+        )
+    return template.HasField("illuminance_type_" + integration_type)
+
+
+def intensity_template(sensor_feature, local: bool = False):
+    """Get the intensity part of a sensor template, whatever the protobuf version in use.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Intensity sensor template sub-message.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.intensity
+    return template.intensity_sensor_template
+
+
+def has_intensity_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds an intensity definition.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the intensity field is set.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("intensity")
+    return template.HasField("intensity_sensor_template")
+
+
+def polar_intensity_template(sensor_feature, local: bool = False):
+    """Get the polar intensity part of a sensor template, whatever the protobuf version in use.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorPolarIntensity
+        Polar intensity sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Polar intensity sensor template sub-message.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.polar_intensity
+    return template.polar_intensity_sensor_template
+
+
+def has_polar_intensity_template(sensor_feature, local: bool = False) -> bool:
+    """Get if the sensor template holds a polar intensity definition.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorPolarIntensity
+        Polar intensity sensor feature to inspect.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the polar_intensity field is set.
+    """
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    if isinstance(template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("polar_intensity")
+    return template.HasField("polar_intensity_sensor_template")
+
+
+def intensity_sensor_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of an intensity template.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    mode : str
+        One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Sensor mode sub-message.
+    """
+    template = intensity_template(sensor_feature, local)
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return getattr(template, "mode_" + mode)
+    return getattr(template, "sensor_type_" + mode)
+
+
+def has_intensity_sensor_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the intensity template currently uses the given sensor mode.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    mode : str
+        One of ``"photometric"``, ``"colorimetric"``, ``"radiometric"``, ``"spectral"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the sensor mode is the one currently set.
+    """
+    template = intensity_template(sensor_feature, local)
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return template.HasField("mode_" + mode)
+    return template.HasField("sensor_type_" + mode)
+
+
+def _intensity_orientation_field(sensor_feature, orientation: str) -> str:
+    """Get the protobuf field name of an intensity orientation for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "orientation_" + orientation
+    return "intensity_orientation_" + orientation
+
+
+def intensity_orientation(sensor_feature, orientation: str, local: bool = False):
+    """Get the orientation sub-message of an intensity template.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    orientation : str
+        One of ``"x_as_meridian"``, ``"x_as_parallel"``, ``"conoscopic"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Orientation sub-message.
+    """
+    return getattr(
+        intensity_template(sensor_feature, local),
+        _intensity_orientation_field(sensor_feature, orientation),
+    )
+
+
+def has_intensity_orientation(sensor_feature, orientation: str, local: bool = False) -> bool:
+    """Tell if the intensity template currently uses the given orientation.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    orientation : str
+        One of ``"x_as_meridian"``, ``"x_as_parallel"``, ``"conoscopic"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    bool
+        ``True`` if the orientation is the one currently set.
+    """
+    return intensity_template(sensor_feature, local).HasField(
+        _intensity_orientation_field(sensor_feature, orientation)
+    )
+
+
+def _intensity_dimensions_field(sensor_feature, orientation: str) -> str:
+    """Get the protobuf field name of intensity dimensions for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "dimensions"
+    if orientation == "conoscopic":
+        return "conoscopic_intensity_dimensions"
+    return "intensity_dimensions"
+
+
+def intensity_dimensions(sensor_feature, orientation: str, local: bool = False):
+    """Get the dimensions sub-message of an intensity orientation.
+
+    Parameters
+    ----------
+    sensor_feature : ansys.speos.core.sensor.SensorXMPIntensity
+        XMP Intensity sensor feature to inspect.
+    orientation : str
+        One of ``"x_as_meridian"``, ``"x_as_parallel"``, ``"conoscopic"``.
+    local : bool
+        If ``True``, the local (not committed) template is used instead of the server one.
+
+    Returns
+    -------
+    google.protobuf.message.Message
+        Dimensions sub-message.
+    """
+    orientation_msg = intensity_orientation(sensor_feature, orientation, local)
+    return getattr(orientation_msg, _intensity_dimensions_field(sensor_feature, orientation))
+
+
+def has_intensity_viewing_direction(sensor_feature, direction: str, local: bool = False) -> bool:
+    """Tell if the intensity template currently uses the given viewing direction."""
+    template = intensity_template(sensor_feature, local)
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        expected = getattr(
+            sensor_v2_pb2.SensorTemplate.Intensity,
+            "VIEWING_DIRECTION_" + direction.upper(),
+        )
+        return template.viewing_direction == expected
+    return template.HasField(direction.lower())
+
+
+def has_polar_intensity_format(sensor_feature, result_format: str, local: bool = False) -> bool:
+    """Tell if the polar intensity template currently uses the given output format."""
+    template = polar_intensity_template(sensor_feature, local)
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        expected = getattr(
+            sensor_v2_pb2.SensorTemplate.PolarIntensity,
+            "FORMAT_" + result_format.upper(),
+        )
+        return template.result_format == expected
+    return template.HasField(result_format.lower())
+
+
+def irradiance_3d_template(sensor_feature, local: bool = False):
+    """Get the 3D irradiance part of a sensor template, whatever the protobuf version in use."""
+    template = (
+        sensor_feature._sensor_template if local else sensor_feature.sensor_template_link.get()
+    )
+    return template.irradiance_3d
+
+
+def _sensor_3d_mode_field(sensor_feature, mode: str) -> str:
+    """Get the protobuf field name of a 3D irradiance mode for the template version in use."""
+    if isinstance(sensor_feature._sensor_template, sensor_v2_pb2.SensorTemplate):
+        return "mode_" + mode
+    return "type_" + mode
+
+
+def sensor_3d_mode(sensor_feature, mode: str, local: bool = False):
+    """Get the sensor mode sub-message of a 3D irradiance template."""
+    return getattr(
+        irradiance_3d_template(sensor_feature, local),
+        _sensor_3d_mode_field(sensor_feature, mode),
+    )
+
+
+def has_sensor_3d_mode(sensor_feature, mode: str, local: bool = False) -> bool:
+    """Tell if the 3D irradiance template currently uses the given sensor mode."""
+    return irradiance_3d_template(sensor_feature, local).HasField(
+        _sensor_3d_mode_field(sensor_feature, mode)
+    )
+
+
+def has_sensor_3d_integration_type(
+    sensor_feature, integration_type: str, local: bool = False
+) -> bool:
+    """Tell if the 3D irradiance template currently uses the given integration type."""
+    template = irradiance_3d_template(sensor_feature, local)
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance3D):
+        return template.integration_type == getattr(
+            sensor_v2_pb2.SensorTemplate.Irradiance3D.IntegrationType,
+            "INTEGRATION_TYPE_" + integration_type.upper(),
+        )
+
+    active_mode = (
+        "photometric" if has_sensor_3d_mode(sensor_feature, "photometric", local) else "radiometric"
+    )
+    return sensor_3d_mode(sensor_feature, active_mode, local).HasField(
+        "integration_type_" + integration_type
+    )
+
+
+def sensor_3d_planar_measures(sensor_feature, mode: str, local: bool = False):
+    """Get the protobuf object that stores planar additional measures."""
+    template = irradiance_3d_template(sensor_feature, local)
+    if isinstance(template, sensor_v2_pb2.SensorTemplate.Irradiance3D):
+        return template
+    return sensor_3d_mode(sensor_feature, mode, local).integration_type_planar
+
+
+def sensor_3d_colorimetric_wavelengths_range(sensor_feature, local: bool = False):
+    """Get the protobuf object that stores 3D colorimetric wavelength bounds."""
+    colorimetric = sensor_3d_mode(sensor_feature, "colorimetric", local)
+    if "wavelengths_range" in colorimetric.DESCRIPTOR.fields_by_name:
+        return colorimetric.wavelengths_range
+    return colorimetric
+
+
+def wavelength_range_start(wavelengths_range) -> float:
+    """Get the start field of a wavelength range object across v1/v2 layouts."""
+    if "w_start" in wavelengths_range.DESCRIPTOR.fields_by_name:
+        return wavelengths_range.w_start
+    return wavelengths_range.wavelength_start
+
+
+def wavelength_range_end(wavelengths_range) -> float:
+    """Get the end field of a wavelength range object across v1/v2 layouts."""
+    if "w_end" in wavelengths_range.DESCRIPTOR.fields_by_name:
+        return wavelengths_range.w_end
+    return wavelengths_range.wavelength_end
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_camera_sensor(speos: Speos):
+def test_create_camera_sensor(speos: Speos, sensor_template_version):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
 
@@ -92,20 +995,29 @@ def test_create_camera_sensor(speos: Speos):
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
-    sensor1.set_mode_photometric().set_mode_color().red_spectrum_file_uri = str(
+    mode_photometric = sensor1.set_mode_photometric()
+    mode_photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    mode_color = mode_photometric.set_mode_color()
+    mode_color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
-    sensor1.set_mode_photometric().set_mode_color().green_spectrum_file_uri = str(
+    mode_color.green_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
-    sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
+    mode_color.blue_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
 
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert has_camera_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.focal_length == sensor_parameters.focal_length
     assert camera_sensor_template.imager_distance == sensor_parameters.imager_distance
     assert camera_sensor_template.distortion_file_uri == ""
@@ -114,8 +1026,8 @@ def test_create_camera_sensor(speos: Speos):
     assert camera_sensor_template.vert_pixel == sensor_parameters.vert_pixel
     assert camera_sensor_template.width == sensor_parameters.width
     assert camera_sensor_template.height == sensor_parameters.height
-    assert camera_sensor_template.HasField("sensor_mode_photometric")
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
+    assert has_camera_mode(sensor1, "photometric")
+    mode_photometric = camera_mode(sensor1, "photometric")
     assert (
         mode_photometric.acquisition_integration
         == sensor_parameters.sensor_type_parameters.acquisition_integration_time
@@ -124,16 +1036,12 @@ def test_create_camera_sensor(speos: Speos):
         mode_photometric.acquisition_lag_time
         == sensor_parameters.sensor_type_parameters.acquisition_lag_time
     )
-    assert (
-        mode_photometric.transmittance_file_uri
-        == sensor_parameters.sensor_type_parameters.transmittance_file_uri
-    )
     assert math.isclose(
         a=mode_photometric.gamma_correction,
         b=sensor_parameters.sensor_type_parameters.gamma_correction,
         rel_tol=1.192092896e-07,
     )
-    assert mode_photometric.png_bits == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "16")
     assert mode_photometric.HasField("wavelengths_range")
     assert (
         mode_photometric.wavelengths_range.w_start
@@ -147,17 +1055,27 @@ def test_create_camera_sensor(speos: Speos):
         mode_photometric.wavelengths_range.w_sampling
         == sensor_parameters.sensor_type_parameters.wavelength_range.sampling
     )
-    assert mode_photometric.HasField("color_mode_color")
-    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
-    assert mode_photometric.color_mode_color.HasField("balance_mode_none")
+    assert has_camera_color_mode(mode_photometric, "color")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "green_spectrum_file_uri",
+        "green_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "blue_spectrum_file_uri",
+        "blue_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
+    assert has_camera_white_balance_mode(color_mode, "none")
     assert sensor1._sensor_instance.camera_properties.axis_system == sensor_parameters.axis_system
     assert (
         sensor1._sensor_instance.camera_properties.trajectory_file_uri
@@ -171,21 +1089,21 @@ def test_create_camera_sensor(speos: Speos):
     # focal_length
     sensor1.focal_length = 5.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.focal_length == 5.5
     assert sensor1.focal_length == 5.5
 
     # imager_distance
     sensor1.imager_distance = 10.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.imager_distance == 10.5
     assert sensor1.imager_distance == 10.5
 
     # f_number
     sensor1.f_number = 20.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.5
     assert sensor1.f_number == 20.5
 
@@ -194,46 +1112,48 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.distortion_file_uri != ""
     assert sensor1.distortion_file_uri != ""
 
     # horz_pixel
     sensor1.horz_pixel = 680
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.horz_pixel == 680
     assert sensor1.horz_pixel == 680
 
     # vert_pixel
     sensor1.vert_pixel = 500
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.vert_pixel == 500
     assert sensor1.vert_pixel == 500
 
     # width
     sensor1.width = 5.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.width == 5.5
     assert sensor1.width == 5.5
 
     # height
     sensor1.height = 5.3
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.height == 5.3
     assert sensor1.height == 5.3
 
     # sensor_mode_geometric
     sensor1.set_mode_geometric()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.HasField("sensor_mode_geometric")
+    assert has_camera_mode(sensor1, "geometric")
 
     # sensor_mode_photometric
     sensor1.set_mode_photometric()
+    sensor1.photometric.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
     color = sensor1.photometric.set_mode_color()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
@@ -245,68 +1165,56 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.HasField("sensor_mode_photometric")
+    assert has_camera_mode(sensor1, "photometric")
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            mode_photometric,
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        != ""
+    )
+    assert sensor1.photometric.transmittance_file_uri != ""
 
     # acquisition_integration
     sensor1.photometric.acquisition_integration = 0.03
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_integration == 0.03
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.acquisition_integration == 0.03
     assert sensor1.photometric.acquisition_integration == 0.03
 
     # acquisition_lag_time
     sensor1.photometric.acquisition_lag_time = 0.1
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_lag_time == 0.1
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.acquisition_lag_time == 0.1
     assert sensor1.photometric.acquisition_lag_time == 0.1
-
-    # transmittance_file_uri
-    sensor1.photometric.transmittance_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
-    )
-    sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
-    assert sensor1.photometric.transmittance_file_uri != ""
 
     # gamma_correction
     sensor1.photometric.gamma_correction = 2.5
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.gamma_correction == 2.5
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.gamma_correction == 2.5
     assert sensor1.photometric.gamma_correction == 2.5
 
     # png_bits
     sensor1.photometric.set_png_bits_08()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_08
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "08")
     sensor1.set_mode_photometric().set_png_bits_10()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_10
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "10")
     sensor1.set_mode_photometric().set_png_bits_12()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_12
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "12")
     sensor1.set_mode_photometric().set_png_bits_16()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert mode_photometric.png_bits == camera_png_bits(mode_photometric, "16")
 
     # color_mode_monochromatic
     sensor1.set_mode_photometric().set_mode_monochromatic(
@@ -315,10 +1223,17 @@ def test_create_camera_sensor(speos: Speos):
         )
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.HasField("color_mode_monochromatic")
-    assert mode_photometric.color_mode_monochromatic.spectrum_file_uri != ""
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_color_mode(mode_photometric, "monochromatic")
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_color_mode(mode_photometric, "monochromatic"),
+            "spectrum_file_uri",
+            "spectrum_guid",
+        )
+        != ""
+    )
 
     # color_mode_color
     sensor1.set_mode_photometric()
@@ -333,19 +1248,28 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_color_mode(mode_photometric, "color")
 
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "green_spectrum_file_uri",
+        "green_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        color_mode,
+        "blue_spectrum_file_uri",
+        "blue_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
     assert color.red_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
     assert color.green_spectrum_file_uri.endswith("CameraSensitivityGreen.spectrum")
     assert color.blue_spectrum_file_uri.endswith("CameraSensitivityBlue.spectrum")
@@ -353,29 +1277,20 @@ def test_create_camera_sensor(speos: Speos):
     # balance_mode_greyworld
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_grey_world()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_greyworld")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_white_balance_mode(camera_color_mode(mode_photometric, "color"), "grey_world")
 
     # balance_mode_userwhite
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_userwhite")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert has_camera_white_balance_mode(color_mode, "user_white")
+    user_white_mode = camera_white_balance_mode(color_mode, "user_white")
     default_userwhites = BalanceModeUserWhiteParameters()
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.red_gain
-        == default_userwhites.red_gain
-    )
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.green_gain
-        == default_userwhites.green_gain
-    )
-    assert (
-        mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
-        == default_userwhites.blue_gain
-    )
+    assert user_white_mode.red_gain == default_userwhites.red_gain
+    assert user_white_mode.green_gain == default_userwhites.green_gain
+    assert user_white_mode.blue_gain == default_userwhites.blue_gain
 
     balance_mode_user_white = (
         sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
@@ -384,11 +1299,13 @@ def test_create_camera_sensor(speos: Speos):
     balance_mode_user_white.green_gain = 3
     balance_mode_user_white.blue_gain = 4
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.red_gain == 2
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.green_gain == 3
-    assert mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 4
+    mode_photometric = camera_mode(sensor1, "photometric")
+    user_white_mode = camera_white_balance_mode(
+        camera_color_mode(mode_photometric, "color"), "user_white"
+    )
+    assert user_white_mode.red_gain == 2
+    assert user_white_mode.green_gain == 3
+    assert user_white_mode.blue_gain == 4
     assert balance_mode_user_white.red_gain == 2
     assert balance_mode_user_white.green_gain == 3
     assert balance_mode_user_white.blue_gain == 4
@@ -407,18 +1324,28 @@ def test_create_camera_sensor(speos: Speos):
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_display")
-    assert mode_photometric.color_mode_color.balance_mode_display.red_display_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-    assert mode_photometric.color_mode_color.balance_mode_display.green_display_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-    assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri.endswith(
-        "CameraSensitivityBlue.spectrum"
-    )
+    mode_photometric = camera_mode(sensor1, "photometric")
+    color_mode = camera_color_mode(mode_photometric, "color")
+    assert has_camera_white_balance_mode(color_mode, "display_primaries")
+    display_mode = camera_white_balance_mode(color_mode, "display_primaries")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "red_display_file_uri",
+        "red_display_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "green_display_file_uri",
+        "green_display_spectrum_guid",
+    ).endswith("CameraSensitivityGreen.spectrum")
+    assert camera_library_spectrum_uri(
+        p,
+        display_mode,
+        "blue_display_file_uri",
+        "blue_display_spectrum_guid",
+    ).endswith("CameraSensitivityBlue.spectrum")
     assert display_primaries.red_display_file_uri == str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -432,9 +1359,8 @@ def test_create_camera_sensor(speos: Speos):
     # balance_mode_none
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_none()
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_none")
+    mode_photometric = camera_mode(sensor1, "photometric")
+    assert has_camera_white_balance_mode(camera_color_mode(mode_photometric, "color"), "none")
 
     # wavelengths_range
     wavelengths_range = sensor1.photometric.set_wavelengths_range()
@@ -442,8 +1368,7 @@ def test_create_camera_sensor(speos: Speos):
     wavelengths_range.end = 750
     wavelengths_range.sampling = 15
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
+    mode_photometric = camera_mode(sensor1, "photometric")
     assert mode_photometric.wavelengths_range.w_start == 430
     assert mode_photometric.wavelengths_range.w_end == 750
     assert mode_photometric.wavelengths_range.w_sampling == 15
@@ -504,12 +1429,12 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.distortion_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2)
     )
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
@@ -519,35 +1444,220 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.focal_length = 5.0
     sensor1.imager_distance = 10.0
     sensor1.f_number = 20.0
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
     sensor1.distortion_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(4)
     )
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 20.0
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_mode(sensor1, "photometric"),
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        != ""
+    )
     sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    camera_sensor_template = camera_template(sensor1)
     assert camera_sensor_template.f_number == 0
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri == ""
+    assert (
+        camera_library_spectrum_uri(
+            p,
+            camera_mode(sensor1, "photometric"),
+            "transmittance_file_uri",
+            "transmittance_spectrum_guid",
+        )
+        == ""
+    )
 
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_create_irradiance_sensor(speos: Speos):
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectra_persist_with_project_commit(speos: Speos, sensor_template_version):
+    """Test v2 camera spectra are persisted when committing the project."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.ProjectCommit", feature_type=SensorCamera)
+    photometric_mode = sensor.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color = photometric_mode.set_mode_color()
+    color.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    color.green_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    color.blue_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+
+    p.commit()
+
+    mode_color = camera_color_mode(camera_mode(sensor, "photometric"), "color")
+    assert camera_library_spectrum_uri(
+        p, mode_color, "red_spectrum_file_uri", "red_spectrum_guid"
+    ).endswith("CameraSensitivityRed.spectrum")
+
+    color.red_spectrum_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    p.commit()
+
+    mode_color = camera_color_mode(camera_mode(sensor, "photometric"), "color")
+    assert camera_library_spectrum_uri(
+        p, mode_color, "red_spectrum_file_uri", "red_spectrum_guid"
+    ).endswith("CameraSensitivityGreen.spectrum")
+    sensor.delete()
+
+
+def _setup_camera_spectra(photometric) -> None:
+    """Fill a camera photometric mode with the spectra a v2 template requires."""
+    camera_files = Path(test_path) / "CameraInputFiles"
+    photometric.transmittance_file_uri = str(camera_files / "CameraTransmittance.spectrum")
+    color = photometric.set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectrum_error_is_not_a_distortion_conflict(speos: Speos):
+    """Test a failing spectrum does not trigger the distortion file fallbacks."""
+    camera_files = Path(test_path) / "CameraInputFiles"
+
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.BadSpectrum", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+    photometric.transmittance_file_uri = str(camera_files / "DoesNotExist.spectrum")
+
+    sensor.focal_length = 5.0
+    sensor.imager_distance = 10.0
+    sensor.f_number = 20.0
+
+    with pytest.raises(grpc.RpcError) as exc_info:
+        sensor.commit()
+    error_details = json.loads(exc_info.value.details())
+    assert error_details["ErrorName"] == "CannotOpenFile"
+
+    assert sensor.focal_length == 5.0
+    assert sensor.imager_distance == 10.0
+    assert sensor.f_number == 20.0
+    assert photometric.transmittance_file_uri.endswith("DoesNotExist.spectrum")
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectra_are_released_on_delete(speos: Speos):
+    """Test v2 camera spectra are removed from the database when the sensor is deleted."""
+    p = Project(speos=speos)
+    before = len(speos.client.spectrums().list())
+
+    sensor = p.create_sensor(name="Camera.DeleteSpectra", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    _setup_camera_spectra(photometric)
+    sensor.commit()
+    assert len(speos.client.spectrums().list()) == before + 4
+
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
+
+    # Local data is still available, so committing again recreates the spectra.
+    assert photometric.transmittance_file_uri.endswith("CameraTransmittance.spectrum")
+    sensor.commit()
+    assert len(speos.client.spectrums().list()) == before + 4
+    assert camera_library_spectrum_uri(
+        p,
+        camera_color_mode(camera_mode(sensor, "photometric"), "color"),
+        "red_spectrum_file_uri",
+        "red_spectrum_guid",
+    ).endswith("CameraSensitivityRed.spectrum")
+
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_without_transmittance_commits(speos: Speos):
+    """Test a camera with no transmittance file commits, as it does with sensor template v1."""
+    p = Project(speos=speos)
+    camera_files = Path(test_path) / "CameraInputFiles"
+    before = len(speos.client.spectrums().list())
+
+    sensor = p.create_sensor(name="Camera.NoTransmittance", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
+    color.red_spectrum_file_uri = str(camera_files / "CameraSensitivityRed.spectrum")
+    color.green_spectrum_file_uri = str(camera_files / "CameraSensitivityGreen.spectrum")
+    color.blue_spectrum_file_uri = str(camera_files / "CameraSensitivityBlue.spectrum")
+    assert photometric.transmittance_file_uri == ""
+
+    sensor.commit()
+
+    # Only the three sensitivity spectra are created, and the unused GUID stays empty.
+    assert len(speos.client.spectrums().list()) == before + 3
+    assert camera_mode(sensor, "photometric").transmittance_spectrum_guid == ""
+    sensor.delete()
+    assert len(speos.client.spectrums().list()) == before
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_camera_spectrum_file_uri_getter_has_no_side_effect(speos: Speos):
+    """Test reading a spectrum file URI does not turn the spectrum into an empty library."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.GetterSideEffect", feature_type=SensorCamera)
+    photometric = sensor.set_mode_photometric()
+    color = photometric.set_mode_color()
+
+    assert photometric.transmittance_file_uri == ""
+    assert color.red_spectrum_file_uri == ""
+
+    assert not photometric._transmittance_spectrum._spectrum.HasField("library")
+    assert not color._red_spectrum._spectrum.HasField("library")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_camera_distortion_fallback_on_project_commit(speos: Speos, sensor_template_version):
+    """Test the distortion file fallback also applies when committing the project."""
+    p = Project(speos=speos)
+    sensor = p.create_sensor(name="Camera.ProjectDistortion", feature_type=SensorCamera)
+    _setup_camera_spectra(sensor.set_mode_photometric())
+    sensor.focal_length = 5.0
+    sensor.imager_distance = 10.0
+    sensor.f_number = 20.0
+    sensor.distortion_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "distortionV2.OPTDistortion"
+    )
+
+    with pytest.warns(UserWarning, match="over written"):
+        sensor.commit()
+
+    assert sensor.focal_length == 0
+    assert sensor.imager_distance == 0
+    assert sensor.f_number == 0
+    sensor.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
 
@@ -574,11 +1684,16 @@ def test_create_irradiance_sensor(speos: Speos):
     # Default value
     sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("sensor_type_photometric")
-    assert sensor_template.HasField("illuminance_type_planar")
+    assert has_irradiance_template(sensor1)
+    sensor_template = irradiance_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    assert has_sensor_mode(sensor1, "photometric")
+    assert has_integration_type(sensor1, "planar")
     assert sensor_template.HasField("dimensions")
     assert sensor_template.dimensions.x_start == sensor_parameter.dimensions.x_start
     assert sensor_template.dimensions.x_end == sensor_parameter.dimensions.x_end
@@ -597,21 +1712,12 @@ def test_create_irradiance_sensor(speos: Speos):
     # default wavelengths range
     sensor1.set_type_colorimetric()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("sensor_type_colorimetric")
-    assert sensor_template.sensor_type_colorimetric.HasField("wavelengths_range")
-    assert (
-        sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == color_parameters.wavelength_range.start
-    )
-    assert (
-        sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
-        == color_parameters.wavelength_range.end
-    )
-    assert (
-        sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == color_parameters.wavelength_range.sampling
-    )
+    assert has_sensor_mode(sensor1, "colorimetric")
+    colorimetric = sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.HasField("wavelengths_range")
+    assert colorimetric.wavelengths_range.w_start == color_parameters.wavelength_range.start
+    assert colorimetric.wavelengths_range.w_end == color_parameters.wavelength_range.end
+    assert colorimetric.wavelengths_range.w_sampling == color_parameters.wavelength_range.sampling
     # chosen wavelengths range
     wavelengths_range = sensor1.set_type_colorimetric().set_wavelengths_range()
     wavelengths_range.start = 450
@@ -621,49 +1727,39 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor1.set_type_colorimetric().set_wavelengths_range().start == 450
     assert sensor1.set_type_colorimetric().set_wavelengths_range().end == 800
     assert sensor1.set_type_colorimetric().set_wavelengths_range().sampling == 15
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 15
+    colorimetric = sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.wavelengths_range.w_start == 450
+    assert colorimetric.wavelengths_range.w_end == 800
+    assert colorimetric.wavelengths_range.w_sampling == 15
     assert wavelengths_range.start == 450
     assert wavelengths_range.end == 800
     assert wavelengths_range.sampling == 15
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("sensor_type_radiometric")
+    assert has_sensor_mode(sensor1, "radiometric")
 
     spectral_parameters = SpectralParameters()
     # sensor_type_spectral
     # default wavelengths range
     sensor1.set_type_spectral()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("sensor_type_spectral")
-    assert sensor_template.sensor_type_spectral.HasField("wavelengths_range")
-    assert (
-        sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == spectral_parameters.wavelength_range.start
-    )
-    assert (
-        sensor_template.sensor_type_spectral.wavelengths_range.w_end
-        == spectral_parameters.wavelength_range.end
-    )
-    assert (
-        sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
-        == spectral_parameters.wavelength_range.sampling
-    )
+    assert has_sensor_mode(sensor1, "spectral")
+    spectral = sensor_mode(sensor1, "spectral")
+    assert spectral.HasField("wavelengths_range")
+    assert spectral.wavelengths_range.w_start == spectral_parameters.wavelength_range.start
+    assert spectral.wavelengths_range.w_end == spectral_parameters.wavelength_range.end
+    assert spectral.wavelengths_range.w_sampling == spectral_parameters.wavelength_range.sampling
     # chosen wavelengths range
     wavelengths_range = sensor1.set_type_spectral().set_wavelengths_range()
     wavelengths_range.start = 450
     wavelengths_range.end = 800
     wavelengths_range.sampling = 15
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+    spectral = sensor_mode(sensor1, "spectral")
+    assert spectral.wavelengths_range.w_start == 450
+    assert spectral.wavelengths_range.w_end == 800
+    assert spectral.wavelengths_range.w_sampling == 15
     assert wavelengths_range.start == 450
     assert wavelengths_range.end == 800
     assert wavelengths_range.sampling == 15
@@ -671,39 +1767,33 @@ def test_create_irradiance_sensor(speos: Speos):
     # sensor_type_photometric
     sensor1.set_type_photometric()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("sensor_type_photometric")
+    assert has_sensor_mode(sensor1, "photometric")
 
     # illuminance_type_radial
     sensor1.set_illuminance_type_radial()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("illuminance_type_radial")
+    assert has_integration_type(sensor1, "radial")
 
     # illuminance_type_hemispherical - bug to be fixed
     # sensor1.set_illuminance_type_hemispherical()
     # sensor1.commit()
-    # sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    # assert sensor_template.HasField("illuminance_type_hemispherical")
+    # assert has_integration_type(sensor1, "hemispherical")
 
     # illuminance_type_cylindrical
     sensor1.set_illuminance_type_cylindrical()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("illuminance_type_cylindrical")
+    assert has_integration_type(sensor1, "cylindrical")
 
     # illuminance_type_semi_cylindrical - bug to be fixed
     # sensor1.set_illuminance_type_semi_cylindrical(integration_direction=[1,0,0])
     # sensor1.commit()
-    # sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    # assert sensor_template.HasField("illuminance_type_semi_cylindrical")
+    # assert has_integration_type(sensor1, "semi_cylindrical")
 
     # illuminance_type_planar
     sensor1.set_illuminance_type_planar()
     sensor1.integration_direction = [0, 0, -1]
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
-    assert sensor_template.HasField("illuminance_type_planar")
+    assert has_integration_type(sensor1, "planar")
     assert sensor1.integration_direction == [0, 0, -1]
 
     sensor1.integration_direction = None  # cancel integration direction
@@ -718,7 +1808,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.dimensions.y_end = 20
     sensor1.dimensions.y_sampling = 120
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
+    sensor_template = irradiance_template(sensor1)
     assert sensor_template.HasField("dimensions")
     assert sensor_template.dimensions.x_start == -10.0
     assert sensor_template.dimensions.x_end == 10.0
@@ -871,8 +1961,8 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=251)
-def test_create_radiance_sensor(speos: Speos):
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_radiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
 
@@ -899,11 +1989,16 @@ def test_create_radiance_sensor(speos: Speos):
     # Default value
     sensor1 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
     sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
+    assert has_radiance_template(sensor1)
     assert sensor1.sensor_template_link.get().name == "Radiance.1"
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_photometric")
+    template = radiance_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    assert has_radiance_sensor_mode(sensor1, "photometric")
     assert template.focal == sensor_parameter.focal_length
     assert sensor1.focal == sensor_parameter.focal_length
     assert template.integration_angle == sensor_parameter.integration_angle
@@ -926,50 +2021,31 @@ def test_create_radiance_sensor(speos: Speos):
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_radiometric")
+    assert has_radiance_sensor_mode(sensor1, "radiometric")
 
     # sensor_type_colorimetric
-    color_parameters = SpectralParameters()
+    color_parameters = ColorimetricParameters()
     # default wavelengths range
     sensor1.set_type_colorimetric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_colorimetric")
-    assert template.sensor_type_colorimetric.HasField("wavelengths_range")
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_start
-        == color_parameters.wavelength_range.start
-    )
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_end
-        == color_parameters.wavelength_range.end
-    )
-    assert (
-        template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == color_parameters.wavelength_range.sampling
-    )
+    assert has_radiance_sensor_mode(sensor1, "colorimetric")
+    colorimetric = radiance_sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.HasField("wavelengths_range")
+    assert colorimetric.wavelengths_range.w_start == color_parameters.wavelength_range.start
+    assert colorimetric.wavelengths_range.w_end == color_parameters.wavelength_range.end
+    assert colorimetric.wavelengths_range.w_sampling == color_parameters.wavelength_range.sampling
 
     # sensor_type_spectral
     spectral_parameters = SpectralParameters()
     # default wavelengths range
     sensor1.set_type_spectral()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_spectral")
-    assert template.sensor_type_spectral.HasField("wavelengths_range")
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_start
-        == spectral_parameters.wavelength_range.start
-    )
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_end
-        == spectral_parameters.wavelength_range.end
-    )
-    assert (
-        template.sensor_type_spectral.wavelengths_range.w_sampling
-        == spectral_parameters.wavelength_range.sampling
-    )
+    assert has_radiance_sensor_mode(sensor1, "spectral")
+    spectral = radiance_sensor_mode(sensor1, "spectral")
+    assert spectral.HasField("wavelengths_range")
+    assert spectral.wavelengths_range.w_start == spectral_parameters.wavelength_range.start
+    assert spectral.wavelengths_range.w_end == spectral_parameters.wavelength_range.end
+    assert spectral.wavelengths_range.w_sampling == spectral_parameters.wavelength_range.sampling
 
     # chosen wavelengths range
     wavelengths_range = sensor1.set_type_spectral().set_wavelengths_range()
@@ -977,27 +2053,27 @@ def test_create_radiance_sensor(speos: Speos):
     wavelengths_range.end = 800
     wavelengths_range.sampling = 15
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.sensor_type_spectral.wavelengths_range.w_start == 450
-    assert template.sensor_type_spectral.wavelengths_range.w_end == 800
-    assert template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+    spectral = radiance_sensor_mode(sensor1, "spectral")
+    assert spectral.wavelengths_range.w_start == 450
+    assert spectral.wavelengths_range.w_end == 800
+    assert spectral.wavelengths_range.w_sampling == 15
 
     # sensor_type_photometric
     sensor1.set_type_photometric()
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
-    assert template.HasField("sensor_type_photometric")
+
+    assert has_radiance_sensor_mode(sensor1, "photometric")
 
     # focal
     sensor1.focal = 150.5
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.focal == 150.5
 
     # integration_angle
     sensor1.integration_angle = 4.5
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.integration_angle == 4.5
 
     # dimensions
@@ -1008,7 +2084,7 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.dimensions.y_end = 20
     sensor1.dimensions.y_sampling = 120
     sensor1.commit()
-    template = sensor1.sensor_template_link.get().radiance_sensor_template
+    template = radiance_template(sensor1)
     assert template.HasField("dimensions")
     assert template.dimensions.x_start == -10.0
     assert template.dimensions.x_end == 10.0
@@ -1122,7 +2198,7 @@ def test_create_radiance_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_xmpintensity_sensor(speos: Speos):
+def test_create_xmpintensity_sensor(speos: Speos, sensor_template_version):
     """Test creation of XMP Intensity sensor."""
     p = Project(speos=speos)
 
@@ -1149,23 +2225,22 @@ def test_create_xmpintensity_sensor(speos: Speos):
     # Default value
     sensor1 = p.create_sensor(name="Intensity.1", feature_type=SensorXMPIntensity)
     sensor1.commit()
+    assert isinstance(sensor1, SensorXMPIntensity)
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("intensity_sensor_template")
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-
-    assert sensor_template.HasField("sensor_type_photometric")
-    assert sensor_template.HasField("intensity_orientation_x_as_meridian")
-    assert sensor_template.intensity_orientation_x_as_meridian.HasField("intensity_dimensions")
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start == -45.0
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end == 45.0
-    assert (
-        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling == 180
-    )
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start == -30.0
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end == 30.0
-    assert (
-        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling == 120
-    )
+    assert has_intensity_template(sensor1)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+    assert has_intensity_sensor_mode(sensor1, "photometric")
+    assert has_intensity_orientation(sensor1, "x_as_meridian")
+    dims = intensity_dimensions(sensor1, "x_as_meridian")
+    assert dims.x_start == -45.0
+    assert dims.x_end == 45.0
+    assert dims.x_sampling == 180
+    assert dims.y_start == -30.0
+    assert dims.y_end == 30.0
+    assert dims.y_sampling == 120
 
     assert sensor1._sensor_instance.HasField("intensity_properties")
     inte_properties = sensor1._sensor_instance.intensity_properties
@@ -1190,55 +2265,53 @@ def test_create_xmpintensity_sensor(speos: Speos):
     sensor1.set_type_colorimetric()
     sensor1.commit()
 
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("sensor_type_colorimetric")
-    assert sensor_template.sensor_type_colorimetric.HasField("wavelengths_range")
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 700
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 13
+    assert has_intensity_sensor_mode(sensor1, "colorimetric")
+    colorimetric = intensity_sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.HasField("wavelengths_range")
+    assert colorimetric.wavelengths_range.w_start == 400
+    assert colorimetric.wavelengths_range.w_end == 700
+    assert colorimetric.wavelengths_range.w_sampling == 13
     # chosen wavelengths range
     wl_range = sensor1.set_type_colorimetric().set_wavelengths_range()
     wl_range.start = 450
     wl_range.end = 800
     wl_range.sampling = 15
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
-    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 15
+    colorimetric = intensity_sensor_mode(sensor1, "colorimetric")
+    assert colorimetric.wavelengths_range.w_start == 450
+    assert colorimetric.wavelengths_range.w_end == 800
+    assert colorimetric.wavelengths_range.w_sampling == 15
 
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("sensor_type_radiometric")
+    assert has_intensity_sensor_mode(sensor1, "radiometric")
 
     # sensor_type_spectral
     # default wavelengths range
     sensor1.set_type_spectral()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("sensor_type_spectral")
-    assert sensor_template.sensor_type_spectral.HasField("wavelengths_range")
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 400
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
+    assert has_intensity_sensor_mode(sensor1, "spectral")
+    spectral = intensity_sensor_mode(sensor1, "spectral")
+    assert spectral.HasField("wavelengths_range")
+    assert spectral.wavelengths_range.w_start == 400
+    assert spectral.wavelengths_range.w_end == 700
+    assert spectral.wavelengths_range.w_sampling == 13
     # chosen wavelengths range
     wl_range = sensor1.set_type_spectral().set_wavelengths_range()
     wl_range.start = 450
     wl_range.end = 800
     wl_range.sampling = 15
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+    spectral = intensity_sensor_mode(sensor1, "spectral")
+    assert spectral.wavelengths_range.w_start == 450
+    assert spectral.wavelengths_range.w_end == 800
+    assert spectral.wavelengths_range.w_sampling == 15
 
     # sensor_type_photometric
     sensor1.set_type_photometric()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("sensor_type_photometric")
+    assert has_intensity_sensor_mode(sensor1, "photometric")
 
     # dimensions: x-meridian
     """
@@ -1254,16 +2327,16 @@ def test_create_xmpintensity_sensor(speos: Speos):
     sensor1.y_sampling = 120
     sensor1.commit()
 
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.intensity_orientation_x_as_meridian.HasField("intensity_dimensions")
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start == -10.0
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end == 10.0
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling == 60
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start == -20.0
-    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end == 20.0
-    assert (
-        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling == 120
-    )
+    sensor_template = intensity_template(sensor1)
+
+    assert has_intensity_orientation(sensor1, "x_as_meridian")
+    dimensions = intensity_dimensions(sensor1, "x_as_meridian")
+    assert dimensions.x_start == -10.0
+    assert dimensions.x_end == 10.0
+    assert dimensions.x_sampling == 60
+    assert dimensions.y_start == -20.0
+    assert dimensions.y_end == 20.0
+    assert dimensions.y_sampling == 120
 
     # dimensions: x-parallel
     sensor1.set_orientation_x_as_parallel()
@@ -1275,16 +2348,14 @@ def test_create_xmpintensity_sensor(speos: Speos):
     sensor1.y_sampling = 122
     sensor1.commit()
 
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.intensity_orientation_x_as_parallel.HasField("intensity_dimensions")
-    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start == -11.0
-    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end == 11.0
-    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling == 62
-    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start == -21.0
-    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end == 21.0
-    assert (
-        sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling == 122
-    )
+    assert has_intensity_orientation(sensor1, "x_as_parallel")
+    dimensions1 = intensity_dimensions(sensor1, "x_as_parallel")
+    assert dimensions1.x_start == -11.0
+    assert dimensions1.x_end == 11.0
+    assert dimensions1.x_sampling == 62
+    assert dimensions1.y_start == -21.0
+    assert dimensions1.y_end == 21.0
+    assert dimensions1.y_sampling == 122
 
     # dimensions: conoscopic
     sensor1.set_orientation_conoscopic()
@@ -1292,18 +2363,10 @@ def test_create_xmpintensity_sensor(speos: Speos):
     sensor1.theta_sampling = 123
     sensor1.commit()
 
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.intensity_orientation_conoscopic.HasField(
-        "conoscopic_intensity_dimensions"
-    )
-    assert (
-        sensor_template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
-        == 63.0
-    )
-    assert (
-        sensor_template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
-        == 123.0
-    )
+    assert has_intensity_orientation(sensor1, "conoscopic")
+    conoscopic_dimensions = intensity_dimensions(sensor1, "conoscopic")
+    assert conoscopic_dimensions.theta_max == 63.0
+    assert conoscopic_dimensions.sampling == 123.0
 
     # dimensions: reset
     sensor1.set_orientation_x_as_meridian()
@@ -1332,31 +2395,29 @@ def test_create_xmpintensity_sensor(speos: Speos):
     # near field settings
     sensor1.near_field = True
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    sensor_template = intensity_template(sensor1)
     assert sensor_template.HasField("near_field")
 
     sensor1.cell_distance = 1
     sensor1.cell_diameter = 2
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    sensor_template = intensity_template(sensor1)
     assert sensor_template.near_field.cell_distance == 1
     assert sensor_template.near_field.cell_integration_angle == math.degrees(math.atan(2 / 2 / 1))
 
     sensor1.near_field = False
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert ~sensor_template.HasField("near_field")
+    sensor_template = intensity_template(sensor1)
+    assert not sensor_template.HasField("near_field")
 
     # viewing direction
     sensor1.set_viewing_direction_from_sensor()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("from_sensor_looking_at_source")
+    assert has_intensity_viewing_direction(sensor1, "from_sensor_looking_at_source")
 
     sensor1.set_viewing_direction_from_source()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
-    assert sensor_template.HasField("from_source_looking_at_sensor")
+    assert has_intensity_viewing_direction(sensor1, "from_source_looking_at_sensor")
 
     # layer_type_source
     sensor1.set_layer_type_source()
@@ -1430,7 +2491,7 @@ def test_create_xmpintensity_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_intensity_sensor(speos: Speos):
+def test_load_intensity_sensor(speos: Speos, sensor_template_version):
     """Test load of Intensity sensor."""
     p = Project(
         speos=speos,
@@ -1446,6 +2507,11 @@ def test_load_intensity_sensor(speos: Speos):
     assert isinstance(sensor_photo, SensorXMPIntensity)
     assert isinstance(sensor_spectral, SensorXMPIntensity)
     assert isinstance(sensor_radio, SensorXMPIntensity)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     assert sensor_color.x_start == -13
     assert sensor_color.x_end == 13
     assert sensor_color.x_sampling == 26
@@ -1470,15 +2536,9 @@ def test_load_intensity_sensor(speos: Speos):
     assert wl_range.start == 400
     assert wl_range.end == 700
     assert wl_range.sampling == 16
-    assert sensor_color._sensor_template.intensity_sensor_template.HasField(
-        "intensity_orientation_x_as_meridian"
-    )
-    assert sensor_photo._sensor_template.intensity_sensor_template.HasField(
-        "intensity_orientation_x_as_parallel"
-    )
-    assert sensor_radio._sensor_template.intensity_sensor_template.HasField(
-        "intensity_orientation_conoscopic"
-    )
+    assert has_intensity_orientation(sensor_color, "x_as_meridian", local=True)
+    assert has_intensity_orientation(sensor_photo, "x_as_parallel", local=True)
+    assert has_intensity_orientation(sensor_radio, "conoscopic", local=True)
     assert sensor_photo.near_field
     assert sensor_photo.cell_diameter == 1
     assert sensor_photo.cell_distance == 15
@@ -1487,7 +2547,7 @@ def test_load_intensity_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_3d_irradiance_sensor(speos: Speos):
+def test_load_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test load of 3d irradiance sensor."""
     p = Project(
         speos=speos,
@@ -1495,15 +2555,29 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_3d.colorimetric, Sensor3DIrradiance.Colorimetric)
     assert sensor_3d.type == "Colorimetric"
     wl = sensor_3d.colorimetric.set_wavelengths_range()
     assert wl.start == 400
     assert wl.end == 700
     assert sensor_3d.layer == LayerTypes.none
+    wavelengths_range = wl
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.start = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="start must be greater than 0."):
+        wavelengths_range.start = cast(Any, -1.0)
+    with pytest.raises(ValueError, match="A scalar must be finite."):
+        wavelengths_range.end = cast(Any, float("nan"))
+    with pytest.raises(ValueError, match="end must be greater than 0."):
+        wavelengths_range.end = cast(Any, -1.0)
 
 
-def test_load_radiance_sensor(speos: Speos):
+def test_load_radiance_sensor(speos: Speos, sensor_template_version):
     """Test load of radiance sensor."""
     p = Project(
         speos=speos,
@@ -1520,6 +2594,11 @@ def test_load_radiance_sensor(speos: Speos):
     assert isinstance(sensor_photo, SensorRadiance)
     assert isinstance(sensor_spectral, SensorRadiance)
     assert isinstance(sensor_radio, SensorRadiance)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_photo._sensor_template, ProtoSensorTemplate)
     assert sensor_color.type == "Colorimetric"
     assert sensor_photo.type == "Photometric"
     assert sensor_spectral.type == "Spectral"
@@ -1605,14 +2684,14 @@ def test_load_radiance_sensor(speos: Speos):
     )
 
 
-def test_load_irradiance_sensor(speos: Speos):
+def test_load_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test load of radiance sensor."""
     p = Project(
         speos=speos,
         path=str(Path(test_path) / "Irradiance.1.speos" / "Irradiance.1.speos"),
     )
     sensors = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
-    defaults = RadianceSensorParameters()
+    defaults = IrradianceSensorParameters()
     assert len(sensors) == 5
     sensor_default = sensors[0]
     sensor_color = sensors[2]
@@ -1624,6 +2703,11 @@ def test_load_irradiance_sensor(speos: Speos):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_color._sensor_template, ProtoSensorTemplate)
     assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
     assert isinstance(sensor_spectral.spectral, BaseSensor.Spectral)
     assert sensor_color.type == "Colorimetric"
@@ -1709,7 +2793,7 @@ def test_load_irradiance_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_3d_irradiance_sensor(speos: Speos):
+def test_create_3d_irradiance_sensor(speos: Speos, sensor_template_version):
     """Test creation of 3d irradiance sensor."""
     p = Project(
         speos=speos,
@@ -1726,18 +2810,21 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # planar integration
     # layer type none
     # measure reflection, transmission, absorption
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
     backend_photometric_info = sensor_3d.sensor_template_link.get()
     assert sensor_3d.sensor_template_link is not None
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor_3d._sensor_template, ProtoSensorTemplate)
     assert backend_photometric_info.name == "3d"
     assert backend_photometric_info.HasField("irradiance_3d")
-    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
-    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
-        "integration_type_planar"
-    )
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert photometric_info.integration_type_planar.absorption
+    assert has_sensor_3d_mode(sensor_3d, "photometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "planar")
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert photometric_info.absorption
     assert sensor_3d._sensor_instance.HasField("irradiance_3d_properties")
     assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
         "PrismBody:1130610277"
@@ -1747,22 +2834,18 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # change integration to radial
     sensor_3d.set_type_photometric().set_integration_radial()
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
-    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
-        "integration_type_radial"
-    )
+    assert has_sensor_3d_mode(sensor_3d, "photometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "radial")
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_photometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert not photometric_info.absorption
 
     # when change type into radiometric, default properties:
     # radiometric
@@ -1770,30 +2853,28 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # layer type none
     sensor_3d.set_type_radiometric()
     sensor_3d.commit()
-    backend_radiometric_info = sensor_3d.sensor_template_link.get()
-    assert backend_radiometric_info.irradiance_3d.HasField("type_radiometric")
-    radiometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
-    assert radiometric_info.HasField("integration_type_planar")
-    assert radiometric_info.integration_type_planar.reflection
-    assert radiometric_info.integration_type_planar.transmission
-    assert radiometric_info.integration_type_planar.absorption
+    assert has_sensor_3d_mode(sensor_3d, "radiometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "planar")
+    radiometric_info = sensor_3d_planar_measures(sensor_3d, "radiometric")
+    assert radiometric_info.reflection
+    assert radiometric_info.transmission
+    assert radiometric_info.absorption
 
     # change integration type
     sensor_3d.set_type_radiometric().set_integration_radial()
     sensor_3d.commit()
-    radiometric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_radiometric
-    assert radiometric_info.HasField("integration_type_radial")
+    assert has_sensor_3d_mode(sensor_3d, "radiometric")
+    assert has_sensor_3d_integration_type(sensor_3d, "radial")
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_radiometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_radiometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    radiometric_info = sensor_3d_planar_measures(sensor_3d, "radiometric")
+    assert radiometric_info.reflection
+    assert radiometric_info.transmission
+    assert not radiometric_info.absorption
 
     # when change type into colorimetric, default properties:
     # colorimetric
@@ -1802,27 +2883,26 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # layer type none
     sensor_3d.set_type_colorimetric()
     sensor_3d.commit()
-    assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
-    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
-    assert colorimetric_info.wavelength_start == color_parameters.wavelength_range.start
-    assert colorimetric_info.wavelength_end == color_parameters.wavelength_range.end
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric")
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d)
+    assert wavelength_range_start(colorimetric_info) == color_parameters.wavelength_range.start
+    assert wavelength_range_end(colorimetric_info) == color_parameters.wavelength_range.end
     wavelengths_range = sensor_3d.set_type_colorimetric().set_wavelengths_range()
     wavelengths_range.start = 500
     sensor_3d.commit()
-    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
-    assert sensor_3d.get(key="wavelength_start") == 500
-    assert colorimetric_info.wavelength_start == 500
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d)
+    assert sensor_3d.set_type_colorimetric().set_wavelengths_range().start == 500
+    assert wavelength_range_start(colorimetric_info) == 500
 
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
     sensor_3d.set_type_photometric().set_integration_planar().absorption = False
     sensor_3d.commit()
-    backend_photometric_info = sensor_3d.sensor_template_link.get()
-    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
-    assert photometric_info.integration_type_planar.reflection
-    assert photometric_info.integration_type_planar.transmission
-    assert not photometric_info.integration_type_planar.absorption
+    photometric_info = sensor_3d_planar_measures(sensor_3d, "photometric")
+    assert photometric_info.reflection
+    assert photometric_info.transmission
+    assert not photometric_info.absorption
 
     # change layer as source
     sensor_3d.set_layer_type_source()
@@ -1850,7 +2930,45 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     sim.delete()
 
 
-def test_commit_sensor(speos: Speos):
+@pytest.mark.parametrize(
+    "sensor_type",
+    [
+        pytest.param(SensorXMPIntensity, marks=pytest.mark.supported_speos_versions(min=252)),
+        SensorIrradiance,
+        SensorRadiance,
+    ],
+)
+def test_sensor_result_file_name(speos: Speos, sensor_type: type[BaseSensor]):
+    """Persist and reset the shared result filename on real sensor instances."""
+    p = Project(speos=speos)
+    ssr = p.create_sensor(name="ResultFileName", feature_type=sensor_type)
+    assert ssr.result_file_name == ""
+    ssr.result_file_name = "custom_result"
+    assert ssr.result_file_name == "custom_result"
+    assert ssr._sensor_instance.result_file_name == "custom_result"
+    ssr.commit()
+    assert p.scene_link.get().sensors[0].result_file_name == "custom_result"
+    assert ssr.get("result_file_name") == "custom_result"
+
+    for value in (None, 42, True, Path("result")):
+        with pytest.raises(TypeError, match="Result file name must be a string"):
+            ssr.result_file_name = value
+        assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "uncommitted_result"
+    ssr.reset()
+    assert ssr.result_file_name == "custom_result"
+    ssr.result_file_name = "updated_result"
+    ssr.commit().reset()
+    assert ssr.result_file_name == "updated_result"
+    assert p.scene_link.get().sensors[0].result_file_name == "updated_result"
+    ssr.result_file_name = ""
+    ssr.commit().reset()
+    assert ssr.result_file_name == ""
+    assert p.scene_link.get().sensors[0].result_file_name == ""
+    ssr.delete()
+
+
+def test_commit_sensor(speos: Speos, sensor_template_version):
     """Test commit of sensor."""
     p = Project(speos=speos)
 
@@ -1862,7 +2980,7 @@ def test_commit_sensor(speos: Speos):
     # Commit
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert has_irradiance_template(sensor1)
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0] == sensor1._sensor_instance
 
@@ -1873,7 +2991,7 @@ def test_commit_sensor(speos: Speos):
     sensor1.delete()
 
 
-def test_reset_sensor(speos: Speos):
+def test_reset_sensor(speos: Speos, sensor_template_version):
     """Test reset of sensor."""
     p = Project(speos=speos)
 
@@ -1882,22 +3000,19 @@ def test_reset_sensor(speos: Speos):
     sensor_parameter = IrradianceSensorParameters()
     sensor1.commit()
     assert (
-        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        irradiance_template(sensor1, local=True).dimensions.x_start
         == sensor_parameter.dimensions.x_start
     )  # local
     assert (
-        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start
-        == sensor_parameter.dimensions.x_start
+        irradiance_template(sensor1).dimensions.x_start == sensor_parameter.dimensions.x_start
     )  # server
     assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN  # local
     assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == ORIGIN  # server
 
     sensor1.dimensions.x_start = 0
     sensor1.axis_system = [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == 0  # local
-    assert (
-        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50
-    )  # server
+    assert irradiance_template(sensor1, local=True).dimensions.x_start == 0  # local
+    assert irradiance_template(sensor1).dimensions.x_start == -50  # server
     assert sensor1._sensor_instance.irradiance_properties.axis_system == [
         1,
         1,
@@ -1917,12 +3032,11 @@ def test_reset_sensor(speos: Speos):
     # Ask for reset
     sensor1.reset()
     assert (
-        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        irradiance_template(sensor1, local=True).dimensions.x_start
         == sensor_parameter.dimensions.x_start
     )  # local
     assert (
-        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start
-        == sensor_parameter.dimensions.x_start
+        irradiance_template(sensor1).dimensions.x_start == sensor_parameter.dimensions.x_start
     )  # server
     assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN  # local
     assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == ORIGIN  # server
@@ -1931,7 +3045,7 @@ def test_reset_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_irradiance_modify_after_reset(speos: Speos):
+def test_irradiance_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of irradiance sensor, and then modify."""
     p = Project(speos=speos)
     wl = WavelengthsRangeParameters()
@@ -1948,26 +3062,20 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_planar")
+    assert has_integration_type(sensor1, "planar", local=True)
     sensor1.set_illuminance_type_radial()
-    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_radial")
+    assert has_integration_type(sensor1, "radial", local=True)
     # Intermediate class for type : spectral
-    assert (
-        sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == wl.start
-    )
+    assert sensor_mode(sensor1, "spectral", local=True).wavelengths_range.w_start == wl.start
     sensor1.set_type_spectral().set_wavelengths_range().start = 500
-    assert (
-        sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == 500
-    )
+    assert sensor_mode(sensor1, "spectral", local=True).wavelengths_range.w_start == 500
     # Intermediate class for dimensions
     assert (
-        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        irradiance_template(sensor1, local=True).dimensions.x_start
         == sensor_parameter.dimensions.x_start
     )
     sensor1.set_dimensions().x_start = -100
-    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -100
+    assert irradiance_template(sensor1, local=True).dimensions.x_start == -100
 
     # Props
     assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN
@@ -2002,7 +3110,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_irradiance_reset_internal_attributes(speos: Speos):
+def test_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2056,7 +3164,7 @@ def test_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_radiance_reset_internal_attributes(speos: Speos):
+def test_radiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of radiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2110,7 +3218,7 @@ def test_radiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_3d_irradiance_reset_internal_attributes(speos: Speos):
+def test_3d_irradiance_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of 3D irradiance sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2161,7 +3269,7 @@ def test_3d_irradiance_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_xmp_intensity_reset_internal_attributes(speos: Speos):
+def test_xmp_intensity_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of xmp intensity sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2211,7 +3319,7 @@ def test_xmp_intensity_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_reset_internal_attributes(speos: Speos):
+def test_immersive_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of immersive sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2240,7 +3348,7 @@ def test_immersive_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_camera_reset_internal_attributes(speos: Speos):
+def test_camera_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of camera sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2250,6 +3358,9 @@ def test_camera_reset_internal_attributes(speos: Speos):
     # Create + commit
     sensor1: SensorCamera = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     mode_photo = sensor1.set_mode_photometric()
+    mode_photo.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
     mode_photo.set_mode_monochromatic(
         spectrum_file_uri=Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
     )
@@ -2273,7 +3384,7 @@ def test_camera_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_reset_internal_attributes(speos: Speos):
+def test_observer_reset_internal_attributes(speos: Speos, sensor_template_version):
     """Test reset of observer sensor, and check value of internal attributes.
 
     In this test, we check using properties (returning internal attributes), like a client would do.
@@ -2302,7 +3413,7 @@ def test_observer_reset_internal_attributes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=251)
-def test_radiance_modify_after_reset(speos: Speos):
+def test_radiance_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
     sensor_parameter = RadianceSensorParameters()
@@ -2319,59 +3430,54 @@ def test_radiance_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.radiance_sensor_template.focal == sensor_parameter.focal_length
+    template = radiance_template(sensor1, local=True)
+    assert template.focal == sensor_parameter.focal_length
     sensor1.focal = 100
-    assert sensor1._sensor_template.radiance_sensor_template.focal == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.focal == 100
     # Intermediate class for type : colorimetric
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start
         == wl.start
     )
     sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == 500
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 500
     )
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
-        == wl.end
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_end == wl.end
     )
     sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
     assert (
-        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == 500
+        radiance_sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 500
     )
     # Intermediate class for dimensions
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.x_start
-        == sensor_parameter.dimensions.x_start
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_start == sensor_parameter.dimensions.x_start
     sensor1.set_dimensions().x_start = -100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_start == -100
     assert sensor1.set_dimensions().x_start == -100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.x_end
-        == sensor_parameter.dimensions.x_end
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_end == sensor_parameter.dimensions.x_end
     sensor1.set_dimensions().x_end = 100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_end == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.x_end == 100
     assert sensor1.set_dimensions().x_end == 100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.y_start
-        == sensor_parameter.dimensions.y_start
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_start == sensor_parameter.dimensions.y_start
     sensor1.set_dimensions().y_start = -100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_start == -100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_start == -100
     assert sensor1.set_dimensions().y_start == -100
 
-    assert (
-        sensor1._sensor_template.radiance_sensor_template.dimensions.y_end
-        == sensor_parameter.dimensions.y_end
-    )
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_end == sensor_parameter.dimensions.y_end
     sensor1.set_dimensions().y_end = 100
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_end == 100
+    template = radiance_template(sensor1, local=True)
+    assert template.dimensions.y_end == 100
     assert sensor1.set_dimensions().y_end == 100
 
     ## Props
@@ -2406,15 +3512,66 @@ def test_radiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_modify_after_reset(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor, and then modify."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+
+    # Ask for reset
+    sensor_3d.reset()
+
+    # Modify after a reset
+    # Test mode change (photometric to radiometric)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+
+    # Test integration type change (planar to radial)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+
+    # Change back to planar integration
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+
+    # Test mode change to colorimetric and wavelengths modification
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    color_parameters = ColorimetricParameters()
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == color_parameters.wavelength_range.start
+
+    # Modify wavelengths after reset
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().start = 450
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == 450
+
+    sensor_3d.delete()
+
+
 @pytest.mark.supported_speos_versions(min=251)
-def test_camera_modify_after_reset(speos: Speos):
+def test_camera_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of camera sensor, and then modify."""
     p = Project(speos=speos)
     sensor_parameter = CameraSensorParameters()
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
-    color = sensor1.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor1.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color = photometric_mode.set_mode_color()
     color.set_balance_mode_user_white()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
@@ -2433,42 +3590,39 @@ def test_camera_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert (
-        sensor1._sensor_template.camera_sensor_template.focal_length
-        == sensor_parameter.focal_length
-    )
+    assert camera_template(sensor1, local=True).focal_length == sensor_parameter.focal_length
     sensor1.focal_length = 40
-    assert sensor1._sensor_template.camera_sensor_template.focal_length == 40
+    assert camera_template(sensor1, local=True).focal_length == 40
     # Intermediate class for mode : photometric + wavelengths
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
+        camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_start
         == sensor_parameter.sensor_type_parameters.wavelength_range.start
     )
     sensor1.set_mode_photometric().set_wavelengths_range().start = 500
+    assert camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_start == 500
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
-        == 500
-    )
-    assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
+        camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_end
         == sensor_parameter.sensor_type_parameters.wavelength_range.end
     )
     sensor1.set_mode_photometric().set_wavelengths_range().end = 800
-    assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
-        == 800
-    )
+    assert camera_mode(sensor1, "photometric", local=True).wavelengths_range.w_end == 800
     # Intermediate class for color mode + balance mode
     user_white = BalanceModeUserWhiteParameters()
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
+        camera_white_balance_mode(
+            camera_color_mode(camera_mode(sensor1, "photometric", local=True), "color"),
+            "user_white",
+        ).blue_gain
         == user_white.blue_gain
     )
     color = sensor1.set_mode_photometric().set_mode_color()
     white_mode = color.set_balance_mode_user_white()
     white_mode.blue_gain = 0.5
     assert (
-        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
+        camera_white_balance_mode(
+            camera_color_mode(camera_mode(sensor1, "photometric", local=True), "color"),
+            "user_white",
+        ).blue_gain
         == 0.5
     )
 
@@ -2494,7 +3648,7 @@ def test_camera_modify_after_reset(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_xmpintensity_modify_after_reset(speos: Speos):
+def test_xmpintensity_modify_after_reset(speos: Speos, sensor_template_version):
     """Test reset of intensity sensor, and then modify."""
     p = Project(speos=speos)
 
@@ -2510,33 +3664,21 @@ def test_xmpintensity_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.intensity_sensor_template.HasField(
-        "intensity_orientation_x_as_meridian"
-    )
+    assert has_intensity_orientation(sensor1, "x_as_meridian", local=True)
     sensor1.set_orientation_x_as_parallel()
-    assert sensor1._sensor_template.intensity_sensor_template.HasField(
-        "intensity_orientation_x_as_parallel"
-    )
+    assert has_intensity_orientation(sensor1, "x_as_parallel", local=True)
     # Intermediate class for type : spectral
-    assert (
-        sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == 400
-    )
+    spectral = intensity_sensor_mode(sensor1, "spectral", local=True)
+    assert spectral.wavelengths_range.w_start == 400
     sensor1.set_type_spectral().set_wavelengths_range().start = 500
-    assert (
-        sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == 500
-    )
+    spectral = intensity_sensor_mode(sensor1, "spectral", local=True)
+    assert spectral.wavelengths_range.w_start == 500
     # Intermediate class for dimensions
-    assert (
-        sensor1._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
-        == -30
-    )
+    dims = intensity_dimensions(sensor1, "x_as_parallel", local=True)
+    assert dims.x_start == -30
     sensor1.x_start = -31
-    assert (
-        sensor1._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
-        == -31
-    )
+    dims = intensity_dimensions(sensor1, "x_as_parallel", local=True)
+    assert dims.x_start == -31
 
     # Props
     assert sensor1._sensor_instance.intensity_properties.axis_system == [
@@ -2582,15 +3724,206 @@ def test_xmpintensity_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
-def test_delete_sensor(speos: Speos):
+def test_xmpintensity_dimension_setters_use_template_specific_fields(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity dimension setters against template v1 and v2 field layouts."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.Dimension.Fields",
+        feature_type=SensorXMPIntensity,
+    )
+    template = intensity_template(sensor1, local=True)
+    use_v2 = isinstance(sensor1._sensor_template, sensor_v2_pb2.SensorTemplate)
+
+    if use_v2:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplateV2)
+    else:
+        assert isinstance(sensor1._sensor_template, ProtoSensorTemplate)
+
+    sensor1.set_orientation_x_as_meridian()
+    sensor1.x_start = -12.5
+    sensor1.x_end = 12.5
+    sensor1.x_sampling = 61
+    sensor1.y_start = -22.5
+    sensor1.y_end = 22.5
+    sensor1.y_sampling = 121
+
+    meridian_orientation = intensity_orientation(sensor1, "x_as_meridian", local=True)
+    if use_v2:
+        assert meridian_orientation.HasField("dimensions")
+        meridian_dimensions = meridian_orientation.dimensions
+    else:
+        meridian_dimensions = meridian_orientation.intensity_dimensions
+    assert sensor1.x_start == -12.5
+    assert sensor1.x_end == 12.5
+    assert sensor1.x_sampling == 61
+    assert sensor1.y_start == -22.5
+    assert sensor1.y_end == 22.5
+    assert sensor1.y_sampling == 121
+    assert meridian_dimensions.x_start == -12.5
+    assert meridian_dimensions.x_end == 12.5
+    assert meridian_dimensions.x_sampling == 61
+    assert meridian_dimensions.y_start == -22.5
+    assert meridian_dimensions.y_end == 22.5
+    assert meridian_dimensions.y_sampling == 121
+
+    sensor1.set_orientation_x_as_parallel()
+    sensor1.x_start = -13.5
+    sensor1.x_end = 13.5
+    sensor1.x_sampling = 62
+    sensor1.y_start = -23.5
+    sensor1.y_end = 23.5
+    sensor1.y_sampling = 122
+
+    parallel_orientation = intensity_orientation(sensor1, "x_as_parallel", local=True)
+    if use_v2:
+        assert parallel_orientation.HasField("dimensions")
+        parallel_dimensions = parallel_orientation.dimensions
+    else:
+        parallel_dimensions = parallel_orientation.intensity_dimensions
+    assert sensor1.x_start == -13.5
+    assert sensor1.x_end == 13.5
+    assert sensor1.x_sampling == 62
+    assert sensor1.y_start == -23.5
+    assert sensor1.y_end == 23.5
+    assert sensor1.y_sampling == 122
+    assert parallel_dimensions.x_start == -13.5
+    assert parallel_dimensions.x_end == 13.5
+    assert parallel_dimensions.x_sampling == 62
+    assert parallel_dimensions.y_start == -23.5
+    assert parallel_dimensions.y_end == 23.5
+    assert parallel_dimensions.y_sampling == 122
+
+    sensor1.set_orientation_conoscopic()
+    sensor1.theta_max = 75.0
+    sensor1.theta_sampling = 123
+
+    conoscopic_orientation = intensity_orientation(sensor1, "conoscopic", local=True)
+    if use_v2:
+        assert conoscopic_orientation.HasField("dimensions")
+        conoscopic_dimensions = conoscopic_orientation.dimensions
+    else:
+        conoscopic_dimensions = conoscopic_orientation.conoscopic_intensity_dimensions
+    assert sensor1.theta_max == 75.0
+    assert sensor1.theta_sampling == 123
+    assert conoscopic_dimensions.theta_max == 75.0
+    assert conoscopic_dimensions.sampling == 123
+    assert template is intensity_template(sensor1, local=True)
+
+
+def test_xmpintensity_dimension_errors_and_resets_cover_template_versions(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity invalid dimension access and mismatch resets on both templates."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.Dimension.Errors",
+        feature_type=SensorXMPIntensity,
+    )
+
+    sensor1.set_orientation_conoscopic()
+    for attribute in [
+        "x_start",
+        "x_end",
+        "x_sampling",
+        "y_start",
+        "y_end",
+        "y_sampling",
+    ]:
+        with pytest.warns(UserWarning, match="This property doesn't exist"):
+            assert getattr(sensor1, attribute) is None
+    for attribute, value, error in [
+        ("x_start", -1.0, "x_start"),
+        ("x_end", 1.0, "x_end"),
+        ("x_sampling", 10, "x_sampling"),
+        ("y_start", -2.0, "y_start"),
+        ("y_end", 2.0, "y_end"),
+        ("y_sampling", 12, "y_sampling"),
+    ]:
+        with pytest.raises(TypeError, match=rf"Conoscopic Sensor has no {error} dimension"):
+            setattr(sensor1, attribute, value)
+
+    sensor1.set_orientation_x_as_meridian()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
+    meridian_defaults = IntensitySensorDimensionsXAsMeridianParameters()
+    assert sensor1.x_start == meridian_defaults.x_start
+    assert sensor1.x_end == meridian_defaults.x_end
+    assert sensor1.x_sampling == meridian_defaults.x_sampling
+    assert sensor1.y_start == meridian_defaults.y_start
+    assert sensor1.y_end == meridian_defaults.y_end
+    assert sensor1.y_sampling == meridian_defaults.y_sampling
+
+    sensor1.set_orientation_x_as_parallel()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
+    parallel_defaults = IntensitySensorDimensionsXAsParallelParameters()
+    assert sensor1.x_start == parallel_defaults.x_start
+    assert sensor1.x_end == parallel_defaults.x_end
+    assert sensor1.x_sampling == parallel_defaults.x_sampling
+    assert sensor1.y_start == parallel_defaults.y_start
+    assert sensor1.y_end == parallel_defaults.y_end
+    assert sensor1.y_sampling == parallel_defaults.y_sampling
+
+    with pytest.warns(UserWarning, match="This property doesn't exist"):
+        assert sensor1.theta_max is None
+    with pytest.warns(UserWarning, match="This property doesn't exist"):
+        assert sensor1.theta_sampling is None
+    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_max dimension"):
+        sensor1.theta_max = 60
+    with pytest.raises(TypeError, match="Only Conoscopic Sensor has theta_sampling dimension"):
+        sensor1.theta_sampling = 61
+
+    sensor1.set_orientation_conoscopic()
+    with pytest.warns(UserWarning, match="Mismatch of dimensions and sensor orientation"):
+        sensor1._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
+    conoscopic_defaults = IntensitySensorDimensionsConoscopicParameters()
+    assert sensor1.theta_max == conoscopic_defaults.theta_max
+    assert sensor1.theta_sampling == conoscopic_defaults.theta_sampling
+
+
+def test_xmpintensity_near_field_disabled_getters_and_setters(
+    speos: Speos, sensor_template_version
+):
+    """Test XMP intensity near-field properties when near-field is disabled."""
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(
+        name="Intensity.NearField.Disabled",
+        feature_type=SensorXMPIntensity,
+    )
+
+    assert sensor1.near_field is False
+    assert sensor1.cell_distance is None
+    assert sensor1.cell_diameter is None
+
+    with pytest.raises(TypeError, match="Sensor position is not in near field"):
+        sensor1.cell_distance = 5
+    with pytest.raises(TypeError, match="Sensor position is not in nearfield"):
+        sensor1.cell_diameter = 0.5
+
+    sensor1.near_field = True
+    assert sensor1.near_field is True
+    assert sensor1.cell_distance == NearfieldParameters().cell_distance
+    assert sensor1.cell_diameter == pytest.approx(NearfieldParameters().cell_diameter)
+
+    sensor1.near_field = False
+    assert sensor1.near_field is False
+    assert sensor1.cell_distance is None
+    assert sensor1.cell_diameter is None
+
+    sensor1.delete()
+
+
+def test_delete_sensor(speos: Speos, sensor_template_version):
     """Test delete of sensor."""
     p = Project(speos=speos)
 
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
-    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
-    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
+    assert has_irradiance_template(sensor1)
+    assert has_irradiance_template(sensor1, local=True)  # local
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
@@ -2601,13 +3934,13 @@ def test_delete_sensor(speos: Speos):
     assert len(sensor1._sensor_instance.metadata) == 0
 
     assert sensor1.sensor_template_link is None
-    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
+    assert has_irradiance_template(sensor1, local=True)  # local
 
     assert len(p.scene_link.get().sensors) == 0
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
 
 
-def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
+def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str], sensor_template_version):
     """Test get of a sensor."""
     p = Project(speos=speos)
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
@@ -2644,7 +3977,7 @@ def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_by_parameters(speos: Speos):
+def test_create_by_parameters(speos: Speos, sensor_template_version):
     """Test creating sensor with new parameter class."""
     p = Project(speos=speos)
     wavelength_params = WavelengthsRangeParameters(start=380, end=780, sampling=21)
@@ -2971,7 +4304,7 @@ def test_create_by_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor(speos: Speos):
+def test_create_immersive_sensor(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with default parameters."""
     p = Project(speos=speos)
     default_params = ImmersiveSensorParameters()
@@ -3000,12 +4333,12 @@ def test_create_immersive_sensor(speos: Speos):
     assert len(p.scene_link.get().sensors) == 0
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("immersive_sensor_template")
+    assert has_immersive_template(sensor1)
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("immersive_properties")
 
     # Verify template values on the server
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == default_params.sampling
     assert tmpl.integration_angle == default_params.integration_angle
     assert tmpl.wavelengths_range.w_start == default_params.wavelengths_range.start
@@ -3018,7 +4351,7 @@ def test_create_immersive_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_immersive_sensor_custom_parameters(speos: Speos):
+def test_create_immersive_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of an immersive sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -3064,7 +4397,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
     sensor1.commit()
 
     # Verify values on the server after commit
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 128
     assert tmpl.integration_angle == 10.0
     assert tmpl.stereo.interocular_distance == 6.5
@@ -3087,7 +4420,7 @@ def test_create_immersive_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_setters(speos: Speos):
+def test_immersive_sensor_setters(speos: Speos, sensor_template_version):
     """Test property setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -3121,7 +4454,7 @@ def test_immersive_sensor_setters(speos: Speos):
     assert sensor1.exclude_top is False
 
     sensor1.commit()
-    tmpl = sensor1.sensor_template_link.get().immersive_sensor_template
+    tmpl = immersive_template(sensor1)
     assert tmpl.sampling == 256
     assert tmpl.integration_angle == 7.5
     assert tmpl.stereo.interocular_distance == 6.5
@@ -3133,7 +4466,7 @@ def test_immersive_sensor_setters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_layer_types(speos: Speos):
+def test_immersive_sensor_layer_types(speos: Speos, sensor_template_version):
     """Test layer type setters of the immersive sensor."""
     p = Project(speos=speos)
 
@@ -3157,7 +4490,7 @@ def test_immersive_sensor_layer_types(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_commit_reset_delete(speos: Speos):
+def test_immersive_sensor_commit_reset_delete(speos: Speos, sensor_template_version):
     """Test commit, reset, and delete lifecycle of immersive sensor."""
     p = Project(speos=speos)
 
@@ -3175,7 +4508,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
     # Modify locally, not committed
     sensor1.sampling = 512
     assert sensor1.sampling == 512
-    assert sensor1.sensor_template_link.get().immersive_sensor_template.sampling == default_sampling
+    assert immersive_template(sensor1).sampling == default_sampling
 
     # Reset restores server values
     sensor1.reset()
@@ -3189,7 +4522,7 @@ def test_immersive_sensor_commit_reset_delete(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_immersive_sensor_wrong_parameters(speos: Speos):
+def test_immersive_sensor_wrong_parameters(speos: Speos, sensor_template_version):
     """Test that passing wrong parameter type raises TypeError."""
     p = Project(speos=speos)
 
@@ -3202,7 +4535,7 @@ def test_immersive_sensor_wrong_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_load_immersive_sensor_from_speos_file(speos: Speos):
+def test_load_immersive_sensor_from_speos_file(speos: Speos, sensor_template_version):
     """Test loading an immersive sensor from an existing .speos file.
 
     Verifies that the sensor settings (sampling, integration angle, wavelengths
@@ -3221,8 +4554,12 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
 
     # Verify the sensor template link was populated on load
     assert sensor.sensor_template_link is not None
-    assert sensor.sensor_template_link.get().HasField("immersive_sensor_template")
-
+    assert has_immersive_template(sensor)
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplate)
     # Template-level settings
     assert sensor.sampling == 600
     assert sensor.integration_angle == 5.0
@@ -3252,12 +4589,16 @@ def test_load_immersive_sensor_from_speos_file(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_nested_modes(speos: Speos):
+def test_load_camera_hydrates_nested_modes(speos: Speos, sensor_template_version):
     """Ensure camera load path hydrates photometric and nested color balance helpers."""
     p = Project(speos=speos)
 
     sensor_camera = p.create_sensor(name="Camera.LoadHydration", feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor_camera.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color_mode = photometric_mode.set_mode_color()
     color_mode.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -3300,7 +4641,9 @@ def test_load_camera_hydrates_nested_modes(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
+def test_load_irradiance_3d_hydrates_radial_integration_helpers(
+    speos: Speos, sensor_template_version
+):
     """Ensure 3D irradiance load path keeps radial integration helper state."""
     p = Project(
         speos=speos,
@@ -3345,7 +4688,7 @@ def test_load_irradiance_3d_hydrates_radial_integration_helpers(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_camera_hydrates_geometric_mode(speos: Speos):
+def test_load_camera_hydrates_geometric_mode(speos: Speos, sensor_template_version):
     """Ensure camera load path hydrates geometric mode branch."""
     p = Project(speos=speos)
 
@@ -3365,7 +4708,7 @@ def test_load_camera_hydrates_geometric_mode(speos: Speos):
         default_parameters=None,
     )
 
-    assert loaded_sensor._sensor_template.camera_sensor_template.HasField("sensor_mode_geometric")
+    assert has_camera_mode(loaded_sensor, "geometric", local=True)
     assert loaded_sensor._type is None
 
     sensor_camera.delete()
@@ -3373,21 +4716,22 @@ def test_load_camera_hydrates_geometric_mode(speos: Speos):
 
 @pytest.mark.supported_speos_versions(min=252)
 @pytest.mark.parametrize(
-    ("balance_setter", "expected_field", "expected_mode_type"),
+    ("balance_setter", "expected_mode", "expected_mode_type"),
     [
         (
             "set_balance_mode_display_primaries",
-            "balance_mode_display",
+            "display_primaries",
             SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries,
         ),
-        ("set_balance_mode_grey_world", "balance_mode_greyworld", None),
-        ("set_balance_mode_none", "balance_mode_none", None),
+        ("set_balance_mode_grey_world", "grey_world", None),
+        ("set_balance_mode_none", "none", None),
     ],
 )
 def test_load_camera_hydrates_other_balance_modes(
     speos: Speos,
+    sensor_template_version,
     balance_setter: str,
-    expected_field: str,
+    expected_mode: str,
     expected_mode_type: type | None,
 ):
     """Ensure camera load path hydrates all color balance mode branches."""
@@ -3395,7 +4739,11 @@ def test_load_camera_hydrates_other_balance_modes(
 
     sensor_name = f"Camera.LoadBalance.{balance_setter}"
     sensor_camera = p.create_sensor(name=sensor_name, feature_type=SensorCamera)
-    color_mode = sensor_camera.set_mode_photometric().set_mode_color()
+    photometric_mode = sensor_camera.set_mode_photometric()
+    photometric_mode.transmittance_file_uri = str(
+        Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    )
+    color_mode = photometric_mode.set_mode_color()
     color_mode.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
@@ -3432,7 +4780,7 @@ def test_load_camera_hydrates_other_balance_modes(
     )
 
     loaded_color_mode = loaded_sensor.photometric._mode
-    assert loaded_color_mode._mode_color.HasField(expected_field)
+    assert has_camera_white_balance_mode(loaded_color_mode._mode_color, expected_mode)
     if expected_mode_type is None:
         assert loaded_color_mode._mode is None
     else:
@@ -3442,7 +4790,9 @@ def test_load_camera_hydrates_other_balance_modes(
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
+def test_load_irradiance_3d_hydrates_planar_integration_helpers(
+    speos: Speos, sensor_template_version
+):
     """Ensure 3D irradiance load path keeps planar integration helper state."""
     p = Project(
         speos=speos,
@@ -3498,7 +4848,9 @@ def test_load_irradiance_3d_hydrates_planar_integration_helpers(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_default(
+    speos: Speos, sensor_template_version
+):
     """Test default value of consider_diffraction_effects is False."""
     p = Project(speos=speos)
 
@@ -3510,7 +4862,9 @@ def test_camera_photometric_consider_diffraction_effects_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_setter(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects setter and getter."""
     p = Project(speos=speos)
 
@@ -3527,7 +4881,9 @@ def test_camera_photometric_consider_diffraction_effects_setter(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_persistence(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects persists after commit and reset."""
     p = Project(speos=speos)
 
@@ -3567,7 +4923,9 @@ def test_camera_photometric_consider_diffraction_effects_persistence(speos: Speo
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: Speos):
+def test_camera_photometric_consider_diffraction_effects_from_parameters(
+    speos: Speos, sensor_template_version
+):
     """Test consider_diffraction_effects from PhotometricCameraParameters."""
     p = Project(speos=speos)
 
@@ -3603,7 +4961,7 @@ def test_camera_photometric_consider_diffraction_effects_from_parameters(speos: 
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_polar_intensity_sensor(speos: Speos):
+def test_create_polar_intensity_sensor(speos: Speos, sensor_template_version):
     """Test creation of polar intensity sensor with default and modified settings."""
     p = Project(speos=speos)
 
@@ -3613,11 +4971,11 @@ def test_create_polar_intensity_sensor(speos: Speos):
     sensor1.commit()
 
     assert sensor1.sensor_template_link is not None
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor1.sensor_template_link.get().HasField("polar_intensity_sensor_template")
+
+    sensor_template = polar_intensity_template(sensor1)
 
     # Default format: IESNA C
-    assert sensor_template.HasField("iesna_c")
+    assert has_polar_intensity_format(sensor1, "iesna_c")
 
     # Default sampling: explicit dimensions 360 x 90
     assert sensor_template.HasField("dimensions")
@@ -3643,28 +5001,27 @@ def test_create_polar_intensity_sensor(speos: Speos):
     # --- format setters ---
     sensor1.set_format_iesna_a()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template.HasField("iesna_a")
+    sensor_template = polar_intensity_template(sensor1)
+    assert has_polar_intensity_format(sensor1, "iesna_a")
 
     sensor1.set_format_iesna_b()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template.HasField("iesna_b")
+    sensor_template = polar_intensity_template(sensor1)
+    assert has_polar_intensity_format(sensor1, "iesna_b")
 
     sensor1.set_format_iesna_c()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template.HasField("iesna_c")
+    sensor_template = polar_intensity_template(sensor1)
+    assert has_polar_intensity_format(sensor1, "iesna_c")
 
     sensor1.set_format_eulumdat()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template.HasField("eulumdat")
+    assert has_polar_intensity_format(sensor1, "eulumdat")
 
     # --- sampling: explicit dimensions ---
     sensor1._set_sampling_dimensions(horizontal_sampling=180, vertical_sampling=45)
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.HasField("dimensions")
     assert sensor_template.dimensions.horizontal_sampling == 180
     assert sensor_template.dimensions.vertical_sampling == 45
@@ -3673,7 +5030,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
     sensor1.horizontal_sampling = 270
     sensor1.vertical_sampling = 60
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.dimensions.horizontal_sampling == 270
     assert sensor_template.dimensions.vertical_sampling == 60
 
@@ -3682,7 +5039,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
     sensor1.set_adaptive_sampling()
     sensor1.adaptive_sampling_file = test_path / "polar_intensity_test.1.speos" / "IESNA_A.txt"
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.HasField("adaptive_sampling_uri")
     assert sensor_template.adaptive_sampling_uri == str(
         test_path / "polar_intensity_test.1.speos" / "IESNA_A.txt"
@@ -3697,19 +5054,19 @@ def test_create_polar_intensity_sensor(speos: Speos):
     sensor1.horizontal_sampling = 5
     sensor1.vertical_sampling = 5
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.HasField("dimensions")
 
     # --- field: near field ---
     sensor1.set_near_field()
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.HasField("near_field")
 
     sensor1.cell_distance = 1.0
     sensor1.cell_diameter = 2.0
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.near_field.cell_distance == 1.0
     assert sensor_template.near_field.cell_integration_angle == math.degrees(
         math.atan(2.0 / 2.0 / 1.0)
@@ -3722,7 +5079,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
     sensor1.set_far_field()
     sensor1.integration_angle = 10.0
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.HasField("far_field")
     assert sensor_template.far_field.integration_angle == 10.0
     assert sensor1.integration_angle == 10.0
@@ -3734,7 +5091,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
     # integration_angle property setter
     sensor1.integration_angle = 7.5
     sensor1.commit()
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template = polar_intensity_template(sensor1)
     assert sensor_template.far_field.integration_angle == 7.5
 
     # --- axis system ---
@@ -3759,7 +5116,7 @@ def test_create_polar_intensity_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
+def test_create_polar_intensity_sensor_from_parameters(speos: Speos, sensor_template_version):
     """Test creation of polar intensity sensor using PolarIntensitySensorParameters."""
     p = Project(speos=speos)
 
@@ -3777,8 +5134,8 @@ def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
     )
     sensor1.commit()
 
-    sensor_template = sensor1.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template.HasField("eulumdat")
+    sensor_template = polar_intensity_template(sensor1)
+    assert has_polar_intensity_format(sensor1, "eulumdat")
     assert sensor_template.HasField("dimensions")
     assert sensor_template.dimensions.horizontal_sampling == 180
     assert sensor_template.dimensions.vertical_sampling == 45
@@ -3812,8 +5169,8 @@ def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
     )
     sensor2.commit()
 
-    sensor_template2 = sensor2.sensor_template_link.get().polar_intensity_sensor_template
-    assert sensor_template2.HasField("iesna_a")
+    sensor_template2 = polar_intensity_template(sensor2)
+    assert has_polar_intensity_format(sensor2, "iesna_a")
     assert sensor_template2.HasField("near_field")
     assert sensor_template2.near_field.cell_distance == 5.0
     assert sensor_template2.near_field.cell_integration_angle == pytest.approx(
@@ -3831,7 +5188,7 @@ def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
         parameters=params_adaptive,
     )
     sensor3.commit()
-    sensor_template3 = sensor3.sensor_template_link.get().polar_intensity_sensor_template
+    sensor_template3 = polar_intensity_template(sensor3)
     assert sensor_template3.HasField("adaptive_sampling_uri")
     assert sensor_template3.adaptive_sampling_uri == str(
         test_path / "polar_intensity_test.1.speos" / "IESNA_B.txt"
@@ -3853,7 +5210,7 @@ def test_create_polar_intensity_sensor_from_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_polar_intensity_sensor_error_paths(speos: Speos):
+def test_polar_intensity_sensor_error_paths(speos: Speos, sensor_template_version):
     """Test that polar intensity sensor raises clear errors on invalid state transitions."""
     p = Project(speos=speos)
 
@@ -3891,7 +5248,7 @@ def test_polar_intensity_sensor_error_paths(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_load_polar_intensity_from_file(speos: Speos):
+def test_load_polar_intensity_from_file(speos: Speos, sensor_template_version):
     """Test load of polar intensity sensors from Speos file and verify properties."""
     p = Project(
         speos=speos,
@@ -3938,11 +5295,14 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert sensor_iesna_a.integration_angle == pytest.approx(
         sensor_iesna_a_params.integration_angle
     )
+    if server_version_checker.is_version_supported(*SENSOR_TEMPLATE_V2_MIN_VERSION):
+        assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplateV2)
+        assert not isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
+    else:
+        assert isinstance(sensor_iesna_a._sensor_template, ProtoSensorTemplate)
     # Check format from template
-    sensor_template_iesna_a = (
-        sensor_iesna_a.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_a.HasField("iesna_a")
+    sensor_template_iesna_a = polar_intensity_template(sensor_iesna_a)
+    assert has_polar_intensity_format(sensor_iesna_a, "iesna_a")
     # Verify adaptive sampling is used
     assert sensor_template_iesna_a.HasField("adaptive_sampling_uri")
 
@@ -3952,10 +5312,8 @@ def test_load_polar_intensity_from_file(speos: Speos):
         sensor_iesna_b_params.integration_angle
     )
     # Check format from template
-    sensor_template_iesna_b = (
-        sensor_iesna_b.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_b.HasField("iesna_b")
+    sensor_template_iesna_b = polar_intensity_template(sensor_iesna_b)
+    assert has_polar_intensity_format(sensor_iesna_b, "iesna_b")
     # Verify adaptive sampling is used
     assert sensor_template_iesna_b.HasField("adaptive_sampling_uri")
     assert sensor_iesna_b.adaptive_sampling_file.suffix == ".txt"
@@ -3963,10 +5321,8 @@ def test_load_polar_intensity_from_file(speos: Speos):
     # Verify Intensity.3 (IESNA_A with explicit dimensions and near-field)
     assert isinstance(sensor_iesna_c, SensorPolarIntensity)
     # Check format from template
-    sensor_template_iesna_c = (
-        sensor_iesna_c.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_iesna_c.HasField("iesna_c")
+    sensor_template_iesna_c = polar_intensity_template(sensor_iesna_c)
+    assert has_polar_intensity_format(sensor_iesna_c, "iesna_c")
     assert sensor_template_iesna_c.HasField("near_field")
     # Verify explicit dimensions
     assert sensor_template_iesna_c.HasField("dimensions")
@@ -3980,10 +5336,8 @@ def test_load_polar_intensity_from_file(speos: Speos):
     assert isinstance(sensor_eulumdat, SensorPolarIntensity)
     assert sensor_eulumdat.cell_distance is None  # Far-field sensor (no near field)
     # Check format from template
-    sensor_template_eulumdat = (
-        sensor_eulumdat.sensor_template_link.get().polar_intensity_sensor_template
-    )
-    assert sensor_template_eulumdat.HasField("eulumdat")
+    sensor_template_eulumdat = polar_intensity_template(sensor_eulumdat)
+    assert has_polar_intensity_format(sensor_eulumdat, "eulumdat")
     # Verify explicit dimensions
     assert sensor_template_eulumdat.HasField("dimensions")
     assert sensor_eulumdat.horizontal_sampling == 360
@@ -4002,7 +5356,7 @@ def test_load_polar_intensity_from_file(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_default(speos: Speos):
+def test_create_observer_sensor_default(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with default parameters."""
     p = Project(speos=speos)
 
@@ -4019,7 +5373,7 @@ def test_create_observer_sensor_default(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_create_observer_sensor_custom_parameters(speos: Speos):
+def test_create_observer_sensor_custom_parameters(speos: Speos, sensor_template_version):
     """Test creation of Observer sensor with custom parameters."""
     p = Project(speos=speos)
 
@@ -4047,7 +5401,7 @@ def test_create_observer_sensor_custom_parameters(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_focal_property(speos: Speos):
+def test_observer_sensor_focal_property(speos: Speos, sensor_template_version):
     """Test focal distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Focal", feature_type=SensorObserver)
@@ -4061,7 +5415,7 @@ def test_observer_sensor_focal_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_integration_angle_property(speos: Speos):
+def test_observer_sensor_integration_angle_property(speos: Speos, sensor_template_version):
     """Test integration angle property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.IntAngle", feature_type=SensorObserver)
@@ -4075,7 +5429,7 @@ def test_observer_sensor_integration_angle_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_distance_property(speos: Speos):
+def test_observer_sensor_distance_property(speos: Speos, sensor_template_version):
     """Test distance property getter and setter."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Distance", feature_type=SensorObserver)
@@ -4089,7 +5443,7 @@ def test_observer_sensor_distance_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_stereo_interocular_distance(speos: Speos):
+def test_observer_sensor_stereo_interocular_distance(speos: Speos, sensor_template_version):
     """Test stereo interocular distance property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Stereo", feature_type=SensorObserver)
@@ -4104,7 +5458,7 @@ def test_observer_sensor_stereo_interocular_distance(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_wavelengths_range(speos: Speos):
+def test_observer_sensor_wavelengths_range(speos: Speos, sensor_template_version):
     """Test wavelengths range configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.WL", feature_type=SensorObserver)
@@ -4124,7 +5478,7 @@ def test_observer_sensor_wavelengths_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_dimensions(speos: Speos):
+def test_observer_sensor_dimensions(speos: Speos, sensor_template_version):
     """Test dimensions configuration."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.Dims", feature_type=SensorObserver)
@@ -4150,7 +5504,7 @@ def test_observer_sensor_dimensions(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_angular_range(speos: Speos):
+def test_observer_sensor_angular_range(speos: Speos, sensor_template_version):
     """Test angular range configuration for sensor locations."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AngularRange", feature_type=SensorObserver)
@@ -4176,7 +5530,7 @@ def test_observer_sensor_angular_range(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_axis_system(speos: Speos):
+def test_observer_sensor_axis_system(speos: Speos, sensor_template_version):
     """Test axis system property."""
     p = Project(speos=speos)
     sensor = p.create_sensor(name="Observer.AxisSys", feature_type=SensorObserver)
@@ -4191,7 +5545,7 @@ def test_observer_sensor_axis_system(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_commit_and_check_template(speos: Speos):
+def test_observer_sensor_commit_and_check_template(speos: Speos, sensor_template_version):
     """Test committing Observer sensor and checking template."""
     p = Project(speos=speos)
 
@@ -4209,20 +5563,31 @@ def test_observer_sensor_commit_and_check_template(speos: Speos):
     # Check sensor template link exists
     assert sensor.sensor_template_link is not None
 
-    # Get template and verify it has observer_sensor_template
-    template = sensor.sensor_template_link.get()
-    assert template.HasField("observer_sensor_template")
+    # Verify the local template uses the expected protobuf version and field name
+    if isinstance(sensor._sensor_template, ProtoSensorTemplateV2):
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer")
+    else:
+        assert isinstance(sensor._sensor_template, ProtoSensorTemplate)
+        assert has_observer_template(sensor, local=True)
+        assert sensor._sensor_template.HasField("observer_sensor_template")
 
-    # Verify observer template properties
-    observer_template = template.observer_sensor_template
-    assert observer_template.focal == 350.0
-    assert observer_template.integration_angle == 8.0
-    assert observer_template.distance == 120.0
-    assert observer_template.stereo.interocular_distance == 60.0
+    # Get template and verify observer properties are preserved after commit
+    template = sensor.sensor_template_link.get()
+    if isinstance(template, ProtoSensorTemplateV2):
+        assert template.HasField("observer")
+    else:
+        assert template.HasField("observer_sensor_template")
+
+    observer = observer_template(sensor)
+    assert observer.focal == 350.0
+    assert observer.integration_angle == 8.0
+    assert observer.distance == 120.0
+    assert observer.stereo.interocular_distance == 60.0
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_with_parameters_dataclass(speos: Speos):
+def test_observer_sensor_with_parameters_dataclass(speos: Speos, sensor_template_version):
     """Test Observer sensor creation with full parameter dataclass configuration."""
     p = Project(speos=speos)
 
@@ -4285,7 +5650,7 @@ def test_observer_sensor_with_parameters_dataclass(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=261)
-def test_observer_sensor_load(speos: Speos):
+def test_observer_sensor_load(speos: Speos, sensor_template_version):
     """Test loading and hydrating Observer sensor from scene."""
     p = Project(speos=speos, path=test_path / "observer_test.1.speos" / "observer_test.1.speos")
 
@@ -4347,3 +5712,720 @@ def test_observer_sensor_load(speos: Speos):
 
     assert loaded_sensor.axis_system == pytest.approx(params.axis_system)
     assert loaded_sensor.layer == params.layer_type
+
+
+def _assert_orthonormal(axis_system):
+    axis = np.asarray(axis_system, dtype=float)
+    x_dir, y_dir, z_dir = axis[3:6], axis[6:9], axis[9:12]
+    for vec in (x_dir, y_dir, z_dir):
+        assert np.linalg.norm(vec) == pytest.approx(1.0)
+    assert np.dot(x_dir, y_dir) == pytest.approx(0.0, abs=1e-12)
+    assert np.dot(y_dir, z_dir) == pytest.approx(0.0, abs=1e-12)
+    assert np.dot(x_dir, z_dir) == pytest.approx(0.0, abs=1e-12)
+    assert np.cross(y_dir, z_dir) == pytest.approx(x_dir)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_default_values(speos: Speos):
+    """Test HumanEye sensor creation with default values."""
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.Default", feature_type=SensorHumanEye)
+
+    assert isinstance(sensor_he, SensorHumanEye)
+    assert isinstance(sensor_he._sensor_template, ProtoSensorTemplateV2)
+    assert sensor_he._sensor_template.HasField("human_eye")
+    assert sensor_he._sensor_instance.HasField("human_eye_properties")
+
+    assert sensor_he.type == HumanEyeSensorTypes.colorimetric
+    assert sensor_he.wavelength_sampling == 13
+    assert sensor_he.pupil_diameter == 4.0
+
+    dims = sensor_he.set_dimensions()
+    assert dims.x_start == -20.0
+    assert dims.x_end == 20.0
+    assert dims.x_sampling == 2352
+    assert dims.y_start == -10.0
+    assert dims.y_end == 10.0
+    assert dims.y_sampling == 1176
+
+    assert sensor_he.eye_point == pytest.approx([0.0, 0.0, 0.0])
+    assert sensor_he.top_direction == pytest.approx([0.0, 1.0, 0.0])
+    assert sensor_he.axis_system == pytest.approx([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    # Focal (thus target point) is left empty by default
+    assert sensor_he.focal is None
+    assert sensor_he.target_point is None
+    assert sensor_he._sensor_instance.human_eye_properties.focal == 0.0
+    assert sensor_he.layer == LayerTypes.none
+    assert sensor_he.lxp_path_number is None
+
+    # Defining the target point sets the focal and keeps observer and top direction
+    sensor_he.target_point = [0.0, 0.0, 150.0]
+    assert sensor_he.focal == pytest.approx(150.0)
+    assert sensor_he.eye_point == pytest.approx([0.0, 0.0, 0.0])
+    assert sensor_he.axis_system == pytest.approx([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_without_focal(speos: Speos):
+    """Test HumanEye sensor positioning while the focal is not defined."""
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.NoFocal", feature_type=SensorHumanEye)
+
+    # Observer moves, orientation is kept
+    sensor_he.eye_point = [1.0, 2.0, 3.0]
+    assert sensor_he.axis_system == pytest.approx([1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor_he.focal is None
+    assert sensor_he.target_point is None
+
+    # Top direction is orthogonalized against the sight direction (Z)
+    sensor_he.top_direction = [1.0, 0.0, 1.0]
+    assert sensor_he.top_direction == pytest.approx([1.0, 0.0, 0.0])
+    assert sensor_he.axis_system[9:12] == pytest.approx([0.0, 0.0, 1.0])
+    _assert_orthonormal(sensor_he.axis_system)
+    assert sensor_he.focal is None
+    with pytest.raises(ValueError, match="parallel"):
+        sensor_he.top_direction = [0.0, 0.0, 2.0]
+
+    # Focal can be set directly
+    with pytest.raises(ValueError):
+        sensor_he.focal = 0.0
+    sensor_he.focal = 80.0
+    assert sensor_he.target_point == pytest.approx([1.0, 2.0, 83.0])
+
+    # Commit without focal is refused with a clear message (server requires focal > 0)
+    sensor_no_focal = p.create_sensor(name="HumanEye.NoFocal2", feature_type=SensorHumanEye)
+    with pytest.raises(ValueError, match="focal is not defined"):
+        sensor_no_focal.commit()
+    assert sensor_no_focal.focal is None
+    sensor_no_focal.focal = 120.0
+    sensor_no_focal.commit()
+    sensor_no_focal.reset()
+    assert sensor_no_focal.focal == pytest.approx(120.0)
+    assert sensor_no_focal.axis_system == pytest.approx([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_with_parameters_dataclass(speos: Speos):
+    """Test HumanEye sensor creation with a full parameter dataclass."""
+    p = Project(speos=speos)
+    params = HumanEyeSensorParameters(
+        sensor_type=HumanEyeSensorTypes.spectral,
+        wavelength_sampling=25,
+        pupil_diameter=6.5,
+        dimensions=AngularRangeParameters(
+            x_start=-30, x_end=25, x_sampling=300, y_start=-15, y_end=12, y_sampling=150
+        ),
+        axis_system=[10.0, 20.0, 30.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+        focal=500.0,
+        layer_type=LayerTypes.by_source,
+    )
+    sensor_he = p.create_sensor(
+        name="HumanEye.Params", feature_type=SensorHumanEye, parameters=params
+    )
+
+    assert sensor_he.type == HumanEyeSensorTypes.spectral
+    assert sensor_he.wavelength_sampling == 25
+    assert sensor_he.pupil_diameter == 6.5
+    dims = sensor_he.set_dimensions()
+    assert (dims.x_start, dims.x_end, dims.x_sampling) == (-30, 25, 300)
+    assert (dims.y_start, dims.y_end, dims.y_sampling) == (-15, 12, 150)
+    assert sensor_he.axis_system == pytest.approx(params.axis_system)
+    assert sensor_he.eye_point == pytest.approx([10.0, 20.0, 30.0])
+    assert sensor_he.target_point == pytest.approx([10.0, 20.0, 530.0])
+    assert sensor_he.top_direction == pytest.approx([0.0, 1.0, 0.0])
+    assert sensor_he.focal == pytest.approx(500.0)
+    assert sensor_he.layer == LayerTypes.by_source
+
+    with pytest.raises(TypeError, match="HumanEyeSensorParameters"):
+        p.create_sensor(
+            name="HumanEye.WrongParams",
+            feature_type=SensorHumanEye,
+            parameters=ObserverSensorParameters(),
+        )
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_type_and_wavelengths(speos: Speos):
+    """Test HumanEye sensor type switch and fixed wavelength range."""
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.Type", feature_type=SensorHumanEye)
+
+    sensor_he.wavelength_sampling = 20
+    assert sensor_he.set_type_spectral() is sensor_he
+    assert sensor_he.type == HumanEyeSensorTypes.spectral
+    assert sensor_he._sensor_template.human_eye.HasField("mode_spectral")
+    assert not sensor_he._sensor_template.human_eye.HasField("mode_colorimetric")
+    assert sensor_he.wavelength_sampling == 20
+
+    assert sensor_he.set_type_colorimetric() is sensor_he
+    assert sensor_he.type == HumanEyeSensorTypes.colorimetric
+    assert sensor_he._sensor_template.human_eye.HasField("mode_colorimetric")
+    assert sensor_he.wavelength_sampling == 20
+
+    with pytest.raises(ValueError):
+        sensor_he.wavelength_sampling = 0
+    with pytest.raises(ValueError):
+        sensor_he.pupil_diameter = 0.0
+    with pytest.raises(ValueError):
+        sensor_he.focal = -50.0
+
+    sensor_he.pupil_diameter = 3.0
+    assert sensor_he.pupil_diameter == 3.0
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_view(speos: Speos):
+    """Test HumanEye sensor positioning from observer, target and top direction."""
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.View", feature_type=SensorHumanEye)
+
+    # Non orthogonal top direction is corrected to be orthogonal to the sight direction
+    assert sensor_he._set_view([0, 0, 0], [100, 0, 0], [1, 0, 1]) is sensor_he
+    assert sensor_he.focal == pytest.approx(100.0)
+    assert sensor_he.eye_point == pytest.approx([0, 0, 0])
+    assert sensor_he.target_point == pytest.approx([100, 0, 0])
+    assert sensor_he.top_direction == pytest.approx([0, 0, 1])
+    assert sensor_he.axis_system[9:12] == pytest.approx([1, 0, 0])
+    _assert_orthonormal(sensor_he.axis_system)
+
+    # Oblique view
+    sensor_he._set_view([1, 2, 3], [4, 6, 3], [0, 0, 5])
+    assert sensor_he.focal == pytest.approx(5.0)
+    assert sensor_he.target_point == pytest.approx([4, 6, 3])
+    assert sensor_he.axis_system[9:12] == pytest.approx([0.6, 0.8, 0.0])
+    assert sensor_he.top_direction == pytest.approx([0, 0, 1])
+    _assert_orthonormal(sensor_he.axis_system)
+
+    # Individual setters keep the other parameters
+    sensor_he.eye_point = [-2, -2, 3]
+    assert sensor_he.eye_point == pytest.approx([-2, -2, 3])
+    assert sensor_he.target_point == pytest.approx([4, 6, 3])
+    assert sensor_he.focal == pytest.approx(10.0)
+    assert sensor_he.top_direction == pytest.approx([0, 0, 1])
+    _assert_orthonormal(sensor_he.axis_system)
+
+    sensor_he._set_view([0, 0, 0], [0, 0, 100], [0, 1, 0])
+    sensor_he.target_point = [0, 0, 250]
+    assert sensor_he.focal == pytest.approx(250.0)
+    assert sensor_he.eye_point == pytest.approx([0, 0, 0])
+    assert sensor_he.top_direction == pytest.approx([0, 1, 0])
+
+    sensor_he.top_direction = [1, 0, 0]
+    assert sensor_he.top_direction == pytest.approx([1, 0, 0])
+    assert sensor_he.target_point == pytest.approx([0, 0, 250])
+    _assert_orthonormal(sensor_he.axis_system)
+
+    with pytest.raises(ValueError, match="different"):
+        sensor_he._set_view([1, 1, 1], [1, 1, 1], [0, 1, 0])
+    with pytest.raises(ValueError, match="parallel"):
+        sensor_he._set_view([0, 0, 0], [0, 0, 10], [0, 0, 3])
+    # Failed calls do not modify the sensor
+    assert sensor_he.target_point == pytest.approx([0, 0, 250])
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_commit_reset_delete(speos: Speos):
+    """Test HumanEye sensor commit, reset and delete with the server."""
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.Commit", feature_type=SensorHumanEye)
+    sensor_he.set_type_spectral().wavelength_sampling = 21
+    sensor_he.pupil_diameter = 5.0
+    sensor_he.set_dimensions().x_sampling = 400
+    sensor_he._set_view([0, 0, 0], [0, 0, 300], [0, 1, 0])
+    sensor_he.set_layer_type_source()
+    sensor_he.lxp_path_number = 50
+    sensor_he.commit()
+
+    assert sensor_he.sensor_template_link is not None
+    template = sensor_he.sensor_template_link.get()
+    assert isinstance(template, ProtoSensorTemplateV2)
+    assert template.HasField("human_eye")
+    assert template.human_eye.HasField("mode_spectral")
+    assert template.human_eye.mode_spectral.wavelengths_range.w_start == 360.0
+    assert template.human_eye.mode_spectral.wavelengths_range.w_end == 830.0
+    assert template.human_eye.mode_spectral.wavelengths_range.w_sampling == 21
+    assert template.human_eye.pupil_diameter == 5.0
+    assert template.human_eye.dimensions.x_sampling == 400
+
+    scene_sensor = p.scene_link.get().sensors[0]
+    assert scene_sensor.HasField("human_eye_properties")
+    assert scene_sensor.human_eye_properties.focal == pytest.approx(300.0)
+    assert scene_sensor.human_eye_properties.HasField("layer_type_source")
+    assert scene_sensor.lxp_properties.nb_max_paths == 50
+
+    # Local modifications are discarded by reset
+    sensor_he.set_type_colorimetric()
+    sensor_he.pupil_diameter = 2.0
+    sensor_he.target_point = [0, 0, 50]
+    sensor_he.set_layer_type_none()
+    sensor_he.reset()
+    assert sensor_he.type == HumanEyeSensorTypes.spectral
+    assert sensor_he.wavelength_sampling == 21
+    assert sensor_he.pupil_diameter == 5.0
+    assert sensor_he.focal == pytest.approx(300.0)
+    assert sensor_he.layer == LayerTypes.by_source
+
+    sensor_he.delete()
+    assert sensor_he.sensor_template_link is None
+    assert len(p.scene_link.get().sensors) == 0
+    # Local data is kept after delete
+    assert sensor_he.pupil_diameter == 5.0
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_save_and_load(speos: Speos):
+    """Test saving a HumanEye sensor to a speos file and loading it back."""
+    export_dir = "human_eye_export"
+    p = Project(speos=speos)
+
+    # Minimal real scene: geometry, optical property, source, human eye sensor and simulation
+    root = p.create_root_part()
+    face = root.create_body(name="TheBody").create_face(name="TheFace")
+    face.vertices = [-50, -50, 200, 50, -50, 200, 0, 50, 200]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1]
+    root.commit()
+    opt_prop = p.create_optical_property(name="TheOpticalProperty")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.geometries = [GeoRef.from_native_link("TheBody")]
+    opt_prop.commit()
+    luminaire = p.create_source(name="TheLuminaire", feature_type=SourceLuminaire)
+    luminaire.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    luminaire.commit()
+
+    params = HumanEyeSensorParameters(
+        sensor_type=HumanEyeSensorTypes.spectral,
+        wavelength_sampling=17,
+        pupil_diameter=5.5,
+        dimensions=AngularRangeParameters(
+            x_start=-25, x_end=15, x_sampling=500, y_start=-8, y_end=12, y_sampling=250
+        ),
+        axis_system=[10.0, -5.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+        focal=400.0,
+        layer_type=LayerTypes.by_source,
+    )
+    sensor_he = p.create_sensor(
+        name="HumanEye.Saved", feature_type=SensorHumanEye, parameters=params
+    )
+    sensor_he.commit()
+
+    sim = p.create_simulation(name="HumanEyeSim", feature_type=SimulationInverse)
+    sim.sensor_paths = ["HumanEye.Saved"]
+    sim.source_paths = ["TheLuminaire"]
+    sim.geometries = [GeoRef.from_native_link("TheBody")]
+    sim.commit()
+
+    try:
+        sim.export(export_path=Path(test_path) / export_dir)
+        speos_file = Path(test_path) / export_dir / "HumanEyeSim.speos" / "HumanEyeSim.speos"
+        p_loaded = Project(speos=speos, path=str(speos_file))
+
+        loaded = p_loaded.find(name="HumanEye.Saved", feature_type=SensorHumanEye)
+        assert len(loaded) == 1
+        loaded_he = loaded[0]
+        assert isinstance(loaded_he, SensorHumanEye)
+        assert loaded_he.type == HumanEyeSensorTypes.spectral
+        assert loaded_he.wavelength_sampling == params.wavelength_sampling
+        assert loaded_he.pupil_diameter == pytest.approx(params.pupil_diameter)
+        dims = loaded_he.set_dimensions()
+        assert dims.x_start == pytest.approx(params.dimensions.x_start)
+        assert dims.x_end == pytest.approx(params.dimensions.x_end)
+        assert dims.x_sampling == params.dimensions.x_sampling
+        assert dims.y_start == pytest.approx(params.dimensions.y_start)
+        assert dims.y_end == pytest.approx(params.dimensions.y_end)
+        assert dims.y_sampling == params.dimensions.y_sampling
+        assert loaded_he.eye_point == pytest.approx([10.0, -5.0, 2.0])
+        assert loaded_he.target_point == pytest.approx([10.0, 395.0, 2.0])
+        assert loaded_he.top_direction == pytest.approx([0.0, 0.0, 1.0])
+        assert loaded_he.focal == pytest.approx(400.0)
+        assert loaded_he.axis_system == pytest.approx(sensor_he.axis_system)
+        assert loaded_he.layer == LayerTypes.by_source
+
+        # The loaded sensor can be modified and committed again
+        loaded_he.pupil_diameter = 3.0
+        loaded_he.commit()
+        assert loaded_he.sensor_template_link.get().human_eye.pupil_diameter == 3.0
+    finally:
+        shutil.rmtree(local_test_path / export_dir, ignore_errors=True)
+
+
+def test_human_eye_sensor_sphere_section_mesh():
+    """Test the viewing cone mesh used for the HumanEye sensor visualization."""
+    axis_system = [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    resolution = 4
+    vertices, facets = SensorHumanEye._sphere_section_mesh(
+        axis_system=axis_system,
+        radius=100.0,
+        x_start=-20.0,
+        x_end=20.0,
+        y_start=-10.0,
+        y_end=10.0,
+        resolution=resolution,
+    )
+    n = resolution + 1
+    assert vertices.shape == (1 + n * n, 3)
+    assert vertices[0] == pytest.approx([1, 2, 3])
+    # Every sphere section vertex lies at focal distance from the observer
+    distances = np.linalg.norm(vertices[1:] - np.asarray([1, 2, 3]), axis=1)
+    assert distances == pytest.approx(np.full(n * n, 100.0))
+    # Center vertex is on the sight direction
+    center = vertices[1 + (n // 2) * n + n // 2]
+    assert center == pytest.approx([1, 2, 103])
+    # Corners match the field of view
+    corner = vertices[1]
+    v, h = math.radians(-10.0), math.radians(-20.0)
+    expected = [
+        1 + 100 * math.cos(v) * math.sin(h),
+        2 + 100 * math.sin(v),
+        3 + 100 * math.cos(v) * math.cos(h),
+    ]
+    assert corner == pytest.approx(expected)
+    # 2 triangles per sphere quad + 4 * resolution side triangles to the observer
+    assert facets.shape == (2 * resolution * resolution + 4 * resolution, 4)
+    assert np.all(facets[:, 0] == 3)
+    assert facets[:, 1:].max() < len(vertices)
+
+
+@pytest.mark.supported_speos_versions(min=271)
+def test_human_eye_sensor_visual_data(speos: Speos):
+    """Test HumanEye sensor visual data built as a sphere section cone."""
+    pytest.importorskip("pyvista")
+    p = Project(speos=speos)
+    sensor_he = p.create_sensor(name="HumanEye.Visual", feature_type=SensorHumanEye)
+    sensor_he._set_view([0, 0, 0], [0, 0, 200], [0, 1, 0])
+
+    visual_data = sensor_he.visual_data
+    assert visual_data.updated is True
+    mesh = visual_data.data
+    assert mesh.n_points > 0
+    assert mesh.n_cells > 0
+    distances = np.linalg.norm(np.asarray(mesh.points), axis=1)
+    # Only the observer (apex) and the sphere section points at focal distance
+    assert np.count_nonzero(np.isclose(distances, 0.0)) == 1
+    assert np.count_nonzero(np.isclose(distances, 200.0)) == mesh.n_points - 1
+    assert visual_data.coordinates.origin == pytest.approx([0, 0, 0])
+    # Coordinate axes are pyvista arrows starting at origin and pointing along X / Y
+    x_arrow_bounds = np.asarray(visual_data.coordinates.x_axis.bounds)
+    y_arrow_bounds = np.asarray(visual_data.coordinates.y_axis.bounds)
+    assert x_arrow_bounds[0:2] == pytest.approx([0, 1])
+    assert y_arrow_bounds[2:4] == pytest.approx([0, 1])
+    # Visual data is cached until the sensor is modified
+    assert sensor_he.visual_data is visual_data
+
+    # Without focal, only the coordinate system is displayed
+    sensor_no_focal = p.create_sensor(name="HumanEye.VisualNoFocal", feature_type=SensorHumanEye)
+    visual_no_focal = sensor_no_focal.visual_data
+    assert visual_no_focal.updated is True
+    assert visual_no_focal.data.n_points == 0
+    assert visual_no_focal.coordinates.origin == pytest.approx([0, 0, 0])
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_radiometric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with radiometric type."""
+    p = Project(speos=speos)
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Radiometric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_radiometric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset - verify modifications work
+    assert has_sensor_mode(sensor1, "radiometric", local=True)
+    sensor1.set_dimensions().x_start = -75
+    assert irradiance_template(sensor1, local=True).dimensions.x_start == -75
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_photometric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with photometric type."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Photometric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_photometric()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_sensor_mode(sensor1, "photometric", local=True)
+    sensor1.set_illuminance_type_radial()
+    assert has_integration_type(sensor1, "radial", local=True)
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_irradiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of irradiance sensor with colorimetric type."""
+    p = Project(speos=speos)
+    color_param = ColorimetricParameters()
+    # Create + commit
+    sensor1 = p.create_sensor(name="Irradiance.Colorimetric.Reset", feature_type=SensorIrradiance)
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorIrradiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_sensor_mode(sensor1, "colorimetric", local=True)
+    assert (
+        sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start
+        == color_param.wavelength_range.start
+    )
+    sensor1.set_type_colorimetric().set_wavelengths_range().start = 480
+    assert sensor_mode(sensor1, "colorimetric", local=True).wavelengths_range.w_start == 480
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_radiometric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with radiometric type."""
+    p = Project(speos=speos)
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Radiometric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_radiometric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "radiometric", local=True)
+    sensor1.focal = 50
+    assert radiance_template(sensor1, local=True).focal == 50
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_photometric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with photometric type."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Photometric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_photometric()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "photometric", local=True)
+    sensor1.set_dimensions().x_start = -100
+    assert radiance_template(sensor1, local=True).dimensions.x_start == -100
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_radiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of radiance sensor with colorimetric type."""
+    p = Project(speos=speos)
+    wl = WavelengthsRangeParameters()
+    # Create + commit
+    sensor1 = p.create_sensor(name="Radiance.Colorimetric.Reset", feature_type=SensorRadiance)
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorRadiance)
+    # Ask for reset
+    sensor1.reset()
+    # Modify after reset
+    assert has_radiance_sensor_mode(sensor1, "colorimetric", local=True)
+    assert (
+        radiance_sensor_mode(sensor1, mode="colorimetric", local=True).wavelengths_range.w_start
+        == wl.start
+    )
+    sensor1.set_type_colorimetric().set_wavelengths_range().start = 520
+    assert (
+        radiance_sensor_mode(sensor1, mode="colorimetric", local=True).wavelengths_range.w_start
+        == 520
+    )
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_radiometric_radial(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with radiometric type and radial integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Radiometric.Radial", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+    # Change integration type
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.set_type_photometric()
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=False)
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=False)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_radiometric_planar(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with radiometric type and planar integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Radiometric.Planar", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    sensor_3d.set_type_photometric()
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=False)
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=False)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_photometric_planar(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with photometric type and planar integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Photometric.Planar", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_planar()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "planar", local=True)
+    # Switch to radiometric mode
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=False)
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=False)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_photometric_radial(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with photometric type and radial integration."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Photometric.Radial", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    assert has_sensor_3d_integration_type(sensor_3d, "radial", local=True)
+
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=False)
+    sensor_3d.set_type_colorimetric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=False)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_reset_colorimetric(speos: Speos, sensor_template_version):
+    """Test reset of 3D irradiance sensor with colorimetric type."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    color_param = ColorimetricParameters()
+    # Create + commit
+    sensor_3d = p.create_sensor(name="3D.Colorimetric", feature_type=Sensor3DIrradiance)
+    sensor_3d.geometries = [body]
+    sensor_3d.set_type_colorimetric()
+    sensor_3d.commit()
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    # Ask for reset
+    sensor_3d.set_type_radiometric().set_integration_planar()
+    sensor_3d.reset()
+    # Modify after reset
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=True)
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == color_param.wavelength_range.start
+    # Modify wavelengths
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().start = 490
+    colorimetric_info = sensor_3d_colorimetric_wavelengths_range(sensor_3d, local=True)
+    assert wavelength_range_start(colorimetric_info) == 490
+    sensor_3d.set_type_radiometric()
+    assert has_sensor_3d_mode(sensor_3d, "radiometric", local=True)
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=False)
+    sensor_3d.set_type_photometric()
+    assert has_sensor_3d_mode(sensor_3d, "colorimetric", local=False)
+    assert has_sensor_3d_mode(sensor_3d, "photometric", local=True)
+    sensor_3d.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_3dirradiance_colorimetric_has_no_wavelengths_sampling(
+    speos: Speos, sensor_template_version
+):
+    """Test 3D irradiance colorimetric exposes no sampling, whatever the template version."""
+    p = Project(speos=speos)
+    sensor_3d = p.create_sensor(name="3D.NoSampling", feature_type=Sensor3DIrradiance)
+    wavelengths_range = sensor_3d.set_type_colorimetric().set_wavelengths_range()
+
+    assert wavelengths_range.sampling is None
+    with pytest.raises(
+        AttributeError, match="Wavelength sampling is not supported for this sensor."
+    ):
+        wavelengths_range.sampling = 42
+    assert wavelengths_range.sampling is None
+
+    wavelengths_range.start = 380
+    wavelengths_range.end = 720
+    assert wavelengths_range.start == 380
+    assert wavelengths_range.end == 720
+
+    # Other sensors keep their wavelengths sampling.
+    irradiance = p.create_sensor(name="Irradiance.Sampling", feature_type=SensorIrradiance)
+    irradiance_range = irradiance.set_type_colorimetric().set_wavelengths_range()
+    irradiance_range.sampling = 25
+    assert irradiance_range.sampling == 25

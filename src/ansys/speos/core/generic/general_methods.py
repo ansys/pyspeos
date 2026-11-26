@@ -29,6 +29,7 @@ from __future__ import annotations
 
 from collections.abc import Collection
 from functools import lru_cache, wraps
+import math
 import os
 from pathlib import Path
 from typing import List, Optional, Tuple, Union, cast
@@ -37,10 +38,18 @@ import warnings
 from ansys.tools.common.path import get_available_ansys_installations
 import numpy as np
 
+from ansys.speos.core.generic import validation as _validation
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.speos.core.generic.version_checker import server_version_checker
 
 _GRAPHICS_AVAILABLE = None
+
+_validate_numeric_sequence = _validation._validate_numeric_sequence
+_validate_vector3 = _validation._validate_vector3
+_validate_axis_system12 = _validation._validate_axis_system12
+_validate_scalar = _validation._validate_scalar
+_validate_positive_int = _validation._validate_positive_int
+_validate_pathlike = _validation._validate_pathlike
 
 GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
@@ -161,12 +170,50 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
     vector_np = np.array(vector, dtype=float)
     if vector_np.size not in (2, 3):
         raise ValueError("Input vector must be either 2D or 3D")
-
-    magnitude = magnitude_vector(vector_np)
+    magnitude = magnitude_vector(cast(List[float], vector_np.tolist()))
     if magnitude == 0:
-        raise ValueError("Cannot normalize the zero vector")
-
+        raise ValueError("Cannot normalize a zero vector")
     return cast(List[float], (vector_np / magnitude).tolist())
+
+
+def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
+    """Return the rotation matrix for a right-handed rotation in degrees."""
+    x, y, z = normalize_vector(axis)
+    angle = math.radians(angle_deg)
+    cosine = math.cos(angle)
+    sine = math.sin(angle)
+    return np.array(
+        [
+            [
+                cosine + x * x * (1 - cosine),
+                x * y * (1 - cosine) - z * sine,
+                x * z * (1 - cosine) + y * sine,
+            ],
+            [
+                y * x * (1 - cosine) + z * sine,
+                cosine + y * y * (1 - cosine),
+                y * z * (1 - cosine) - x * sine,
+            ],
+            [
+                z * x * (1 - cosine) - y * sine,
+                z * y * (1 - cosine) + x * sine,
+                cosine + z * z * (1 - cosine),
+            ],
+        ]
+    )
+
+
+def _axis_frame(axis_system: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return origin and rotation matrix from a rigid axis system."""
+    origin = axis_system[:3]
+    rotation = axis_system[3:].reshape(3, 3).T
+    if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-6) or not np.isclose(
+        np.linalg.det(rotation), 1.0, atol=1e-6
+    ):
+        raise ValueError(
+            "An axis system must contain an orthonormal, right-handed coordinate frame."
+        )
+    return origin, rotation
 
 
 def error_no_install(install_path: Union[Path, str], version: Union[int, str]) -> None:
@@ -330,6 +377,7 @@ def min_speos_version(major: int, minor: int, service_pack: int):
     version = f"20{major} R{minor} SP{service_pack}"
 
     def decorator(function):
+        @wraps(function)
         def wrapper(*args, **kwargs):
             if function.__qualname__.endswith("__init__"):
                 name = function.__qualname__[:-9]

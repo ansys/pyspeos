@@ -113,6 +113,18 @@ def test_create_luminaire_source(speos: Speos):
     assert (
         source1._source_instance.luminaire_properties.axis_system == default_parameter.axis_system
     )
+    with pytest.raises(TypeError, match="intensity_file_uri must be a string or Path."):
+        source1.intensity_file_uri = 123
+    with pytest.raises(
+        TypeError,
+        match="An axis system must be a list or tuple of twelve finite numbers.",
+    ):
+        source1.axis_system = "bad-axis"
+    with pytest.raises(
+        ValueError,
+        match="An axis system must contain exactly twelve values.",
+    ):
+        source1.axis_system = [1, 2, 3]
 
     # intensity_file_uri
     source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
@@ -306,6 +318,26 @@ def test_create_luminaire_source(speos: Speos):
     else:
         # version 251
         assert source8._source_template.luminaire.HasField("flux_from_intensity_file")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_rayfile_source_validates_inputs(speos: Speos):
+    """Validate rayfile source URI and axis setters."""
+    p = Project(speos=speos)
+    source = SourceRayFile(p, "Ray.1")
+
+    with pytest.raises(TypeError, match="ray_file_uri must be a string or Path."):
+        source.ray_file_uri = 123
+    with pytest.raises(
+        TypeError,
+        match="An axis system must be a list or tuple of twelve finite numbers.",
+    ):
+        source.axis_system = None
+    with pytest.raises(
+        ValueError,
+        match="An axis system must contain exactly twelve values.",
+    ):
+        source.axis_system = [0, 0, 0]
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -645,6 +677,26 @@ def test_create_rayfile_source(speos: Speos):
     """Test creation of ray file."""
     p = Project(speos=speos)
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
+    face_2 = body_b.create_face(name="FaceB2")
+    face_2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    face_2.facets = [0, 1, 2]
+    face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_2.commit()
+    body_c = root_part.create_body(name="BodyC")
+    face_3 = body_c.create_face(name="FaceC1")
+    face_3.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_3.facets = [0, 1, 2]
+    face_3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_3.commit()
+    root_part.commit()
+
     # Default value : not committed because not valid by default due to ray_file_uri needed
     default_parameter = RayFileSourceParameters()
     source1 = SourceRayFile(
@@ -728,7 +780,7 @@ def test_create_rayfile_source(speos: Speos):
     # exit_geometries
     source1.set_exit_geometries().geometries = [
         GeoRef.from_native_link("BodyB"),
-        GeoRef.from_native_link("BodyC"),
+        body_c,
     ]
     source1.commit()
     assert len(source1.set_exit_geometries().geometries) == 2

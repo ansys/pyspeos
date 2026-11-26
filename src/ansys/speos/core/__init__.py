@@ -34,10 +34,44 @@ except ModuleNotFoundError:  # pragma: no cover
 __version__ = importlib_metadata.version("ansys-speos-core")
 
 
+import sys
+import warnings
+
 from ansys.speos.core.body import Body
 import ansys.speos.core.bsdf as bsdf
 from ansys.speos.core.face import Face
 from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.input_files import (
+    CoatedSurfaceFile,
+    CoatedSurfaceSample,
+    FluorescentPigment,
+    FluorescentPigmentFile,
+    MaterialBirefringentCurve,
+    MaterialBirefringentKettlerHelmholtz,
+    MaterialBirefringentSellmeier,
+    MaterialConstringence,
+    MaterialDispersionCurve,
+    MaterialFile,
+    MaterialKettlerHelmholtz,
+    MaterialMetallicCurve,
+    MaterialOpticalClass,
+    MaterialSellmeier,
+    MaterialType,
+    Ray,
+    RayFile,
+    ScatteringSurfaceFile,
+    ScatteringSurfaceSample,
+    SimpleScatteringMode,
+    SimpleScatteringSurfaceFile,
+    SpectrumFile,
+    SpeosFileFormat,
+    Texture3DMappingFile,
+    TexturePattern,
+    VolumeScatteringDoubleHenyeyGreenstein,
+    VolumeScatteringGegenbauer,
+    VolumeScatteringHenyeyGreenstein,
+    VolumeScatteringUserDefined,
+)
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.logger import LOG, Logger
 from ansys.speos.core.lxp import LightPathFinder, RayPath
@@ -49,3 +83,37 @@ import ansys.speos.core.simulation as simulation
 import ansys.speos.core.source as source
 from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
+
+LATEST_DEPRECATED_PYTHON_VERSION = (3, 12)
+"""Latest deprecated python version."""
+PYTHON_VERSION_WARNING = (
+    "As part of our ongoing efforts to align with the Python Scientific Community's "
+    "best practices, we are moving towards adopting SPEC 0000 "
+    "(https://scientific-python.org/specs/spec-0000/). To ensure compatibility and "
+    "take full advantage of the latest features and improvements, we strongly "
+    "recommend updating the Python version being used."
+)
+"""Python version warning."""
+
+
+def deprecation_warning() -> None:
+    """Warning message informing users that some Python versions are deprecated in PySpeos."""
+    # Store warnings showwarning
+    existing_showwarning = warnings.showwarning
+
+    # Define and use custom showwarning
+    def custom_show_warning(message, category, filename, lineno, file=None, line=None) -> None:
+        """Define and use custom warning to remove <stdin>:loc: pattern."""
+        print(f"{category.__name__}: {message}")
+
+    warnings.showwarning = custom_show_warning  # ty: ignore[invalid-assignment]
+
+    current_python_version = sys.version_info[:2]
+    if current_python_version <= LATEST_DEPRECATED_PYTHON_VERSION:
+        warnings.warn(PYTHON_VERSION_WARNING, FutureWarning)
+
+    # Restore warnings showwarning
+    warnings.showwarning = existing_showwarning
+
+
+deprecation_warning()

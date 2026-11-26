@@ -140,9 +140,9 @@ camera_t_0 = speos.client[camera_i_0.sensor_guid]
 camera_t_0_data = camera_t_0.get()
 
 # Modification on protobuf message : distortion_file_uri + focal_length
-assert camera_t_0_data.HasField("camera_sensor_template")
-camera_t_0_data.camera_sensor_template.distortion_file_uri = new_distortion_file
-camera_t_0_data.camera_sensor_template.focal_length = 4.5
+assert camera_t_0_data.HasField("camera")
+camera_t_0_data.camera.distortion_file_uri = new_distortion_file
+camera_t_0_data.camera.focal_length = 4.5
 
 # set = Update using modified datamodel (push modified data to the server)
 camera_t_0.set(camera_t_0_data)
@@ -237,6 +237,7 @@ for item in (
     speos.client.scenes().list()
     + speos.client.simulation_templates().list()
     + speos.client.sensor_templates().list()
+    + speos.client.sensor_templates_v2().list()
     + speos.client.source_templates().list()
     + speos.client.intensity_templates().list()
     + speos.client.spectrums().list()

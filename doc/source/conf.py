@@ -4,9 +4,11 @@ from datetime import datetime
 import os
 import pathlib
 import shutil
+from typing import Any
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
 import sphinx
+import sphinx.application
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
@@ -39,7 +41,7 @@ html_context = {
 }
 
 # specify the location of your github repo
-html_theme_options = {
+html_theme_options: dict[str, Any] = {
     "logo": "pyansys",
     "github_url": "https://github.com/ansys/pyspeos",
     "show_prev_next": False,
@@ -137,6 +139,7 @@ if BUILD_EXAMPLES:
     }
     nbsphinx_thumbnails = {
         "examples/core/bsdf": "_static/thumbnails/bsdf.png",
+        "examples/core/file-formats": "_static/thumbnails/file_formats520x520.png",
         "examples/core/opt-prop": "_static/thumbnails/property_520x520.png",
         "examples/core/texture": "_static/thumbnails/property_520x520.png",
         "examples/core/source": "_static/thumbnails/source_520x520.png",
@@ -154,6 +157,7 @@ if BUILD_EXAMPLES:
         "examples/workflow/open-result": "_static/thumbnails/workflow_open_result.png",
         "examples/workflow/export-vtp": "_static/thumbnails/vtp_520x520.png",
         "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
+        "examples/workflow/transform": "_static/thumbnails/part_520x520.png",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_epilog = """

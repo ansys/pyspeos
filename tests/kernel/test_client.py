@@ -24,11 +24,27 @@
 
 import platform
 
+from ansys.speos.core.generic.version_checker import server_version_checker
+from ansys.speos.core.kernel import (
+    BodyLink,
+    FaceLink,
+    IntensityTemplateLink,
+    JobLink,
+    PartLink,
+    SceneLink,
+    SensorTemplateLink,
+    SimulationTemplateLink,
+    SOPTemplateLink,
+    SourceTemplateLink,
+    SpectrumLink,
+    VOPTemplateLink,
+)
 from ansys.speos.core.kernel.client import (
     SpeosClient,
     default_docker_channel,
     default_local_channel,
 )
+from ansys.speos.core.kernel.sensor_template_v2 import SensorTemplateLinkV2
 from ansys.speos.core.speos import Speos
 from tests.conftest import IS_DOCKER, SERVER_PORT
 
@@ -57,3 +73,28 @@ def test_client_through_channel():
     assert client.channel
     assert client.close()
     assert client.healthy is False
+
+
+def test_client_datamodels(speos: Speos):
+    """Test the instantiation of a client from the default constructor."""
+    assert speos._client.healthy is True
+    type_links = [
+        SOPTemplateLink,
+        VOPTemplateLink,
+        SpectrumLink,
+        IntensityTemplateLink,
+        SourceTemplateLink,
+        SensorTemplateLink,
+        SimulationTemplateLink,
+        SceneLink,
+        JobLink,
+        PartLink,
+        BodyLink,
+        FaceLink,
+    ]
+    if server_version_checker.is_version_supported(2027, 1, 0):
+        type_links += [SensorTemplateLinkV2]
+    for link_type in type_links:
+        test = speos._client.get_items("123", link_type)
+        assert test == []
+    assert speos._client.__getitem__("123") is None
