@@ -1,0 +1,503 @@
+
+
+
+
+
+
+:class:`LightPathFinder`
+========================
+
+
+.. py:class:: ansys.speos.core.lxp.LightPathFinder(speos, path)
+
+   
+   Define an interface to read LPF files.
+
+   LPF files contain a set of simulated rays including their intersections and properties.
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           Speos Session (connected to Speos gRPC server).
+
+       **path** : :class:`python:str`
+           Path to the LPF file to be opened.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: LightPathFinder
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~filter_by_face_ids`
+            - Filter ray paths based on face IDs and populates filtered_rays property.
+          * - :py:attr:`~filter_by_body_ids`
+            - Filter ray paths based on body IDs and populates filtered_rays property.
+          * - :py:attr:`~filter_error_rays`
+            - Filter ray paths and only shows rays in error.
+          * - :py:attr:`~remove_error_rays`
+            - Filter rays and only shows rays not in error.
+          * - :py:attr:`~preview`
+            - Preview LPF file with pyvista.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~nb_traces`
+            - Number of light paths within LPF data set.
+          * - :py:attr:`~nb_xmps`
+            - Number of sensors involved within LPF data set.
+          * - :py:attr:`~has_sensor_contributions`
+            - Define if a LPF file contains information regarding the sensor contribution.
+          * - :py:attr:`~sensor_names`
+            - List of involved sensor names.
+          * - :py:attr:`~rays`
+            - List ray paths within LPF file.
+          * - :py:attr:`~filtered_rays`
+            - List of filtered ray paths.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~client`
+            - Speos instance client
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Create string representation of LightPathFinder.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.lxp import LightPathFinder
+
+Property detail
+---------------
+
+.. py:property:: nb_traces
+   :type: int
+
+
+   
+   Number of light paths within LPF data set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: nb_xmps
+   :type: int
+
+
+   
+   Number of sensors involved within LPF data set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: has_sensor_contributions
+   :type: bool
+
+
+   
+   Define if a LPF file contains information regarding the sensor contribution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sensor_names
+   :type: list[str]
+
+
+   
+   List of involved sensor names.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: rays
+   :type: list[RayPath]
+
+
+   
+   List ray paths within LPF file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: filtered_rays
+   :type: list[RayPath]
+
+
+   
+   List of filtered ray paths.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: client
+
+   
+   Speos instance client
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Create string representation of LightPathFinder.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: filter_by_face_ids(options, new=True)
+
+   
+   Filter ray paths based on face IDs and populates filtered_rays property.
+
+
+   :Parameters:
+
+       **options** : :class:`python:list`\[:class:`python:int`]
+           List of face IDs.
+
+       **new** : :ref:`bool <python:bltin-boolean-values>`
+           Define if a new filter is created or an existing filter is filtered.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.lxp.LightPathFinder`
+           LightPathFinder Instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: filter_by_body_ids(options, new=True)
+
+   
+   Filter ray paths based on body IDs and populates filtered_rays property.
+
+
+   :Parameters:
+
+       **options** : :class:`python:list`\[:class:`python:int`]
+           List of body IDs.
+
+       **new** : :ref:`bool <python:bltin-boolean-values>`
+           Define if a new filter is created or an existing filter is filtered.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.lxp.LightPathFinder`
+           LightPathFinder Instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: filter_error_rays()
+
+   
+   Filter ray paths and only shows rays in error.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.lxp.LightPathFinder`
+           LightPathFinder Instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: remove_error_rays()
+
+   
+   Filter rays and only shows rays not in error.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.lxp.LightPathFinder`
+           LightPathFinder Instance.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: preview(nb_ray = 100, max_ray_length = 50.0, ray_filter = False, project = None, screenshot = None)
+
+   
+   Preview LPF file with pyvista.
+
+
+   :Parameters:
+
+       **nb_ray** : :class:`python:int`
+           Number of rays to be visualized.
+
+       **max_ray_length** : :class:`python:float`
+           Length of last ray.
+
+       **ray_filter** : :ref:`bool <python:bltin-boolean-values>`
+           Boolean to decide if filtered rays or all rays should be shown.
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Speos Project/Geometry to be added to pyvista visualisation.
+
+       **screenshot** : :class:`python:str` or :obj:`Path` or ``None``
+           Path to save a screenshot of the plotter. If defined Plotter will only create the
+           screenshot
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.lxp.LightPathFinder`
+           LightPathFinder Instance.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Please use the ``q``-key to close the plotter as some
+   operating systems (namely Windows) will experience issues
+   saving a screenshot if the exit button in the GUI is pressed.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

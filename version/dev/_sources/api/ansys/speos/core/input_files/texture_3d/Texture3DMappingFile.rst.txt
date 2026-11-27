@@ -1,0 +1,249 @@
+
+
+
+
+
+
+:class:`Texture3DMappingFile`
+=============================
+
+
+.. py:class:: ansys.speos.core.input_files.texture_3d.Texture3DMappingFile(patterns = None, uniform_scale = False)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.OPT3DMapping`` file, laying out the patterns of a 3D Texture.
+
+   The pattern count opens the file, then each pattern takes one line,
+   ``x y z ix iy iz jx jy jz kx ky kz``.
+
+   :Parameters:
+
+       **patterns** : :obj:`List`\[:obj:`TexturePattern`], :obj:`optional`
+           Patterns of the texture. By default, ``[]``.
+
+       **uniform_scale** : :ref:`bool <python:bltin-boolean-values>`, :obj:`optional`
+           Whether to write a single scale factor per pattern instead of one per direction.
+           By default, ``False``. Reading a file sets this from the number of columns found.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The pattern list is copied on assignment and access, while pattern objects stay shared.
+   Setters check the current uniform-scale constraint before storing values, and
+   :meth:`Texture3DMappingFile.validate` rechecks
+   it after child edits. Empty lists permit drafts, not saved files.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.texture_3d import (
+   ...     Texture3DMappingFile,
+   ...     TexturePattern,
+   ... )
+   >>> patterns = [TexturePattern(position=(x * 0.5, 0.0, 0.0)) for x in range(10)]
+   >>> Texture3DMappingFile(patterns=patterns).save("prisms.OPT3DMapping")
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Texture3DMappingFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the mapping against the constraints of the ``*.OPT3DMapping`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~patterns`
+            - Pattern collection with a copied container and shared patterns.
+          * - :py:attr:`~uniform_scale`
+            - Whether the mapping writes one scale factor per pattern.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.texture_3d import Texture3DMappingFile
+
+Property detail
+---------------
+
+.. py:property:: patterns
+   :type: List[TexturePattern]
+
+
+   
+   Pattern collection with a copied container and shared patterns.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:obj:`TexturePattern`]
+           New patterns of the texture.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`TexturePattern`]
+           Validated pattern objects.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: uniform_scale
+   :type: bool
+
+
+   
+   Whether the mapping writes one scale factor per pattern.
+
+
+   :Parameters:
+
+       **value** : :ref:`bool <python:bltin-boolean-values>`
+           New whether to write a single scale factor per pattern instead of one per direction.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True when each pattern must have equal scale factors.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.OPT3DMapping'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the mapping against the constraints of the ``*.OPT3DMapping`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If the mapping holds no pattern, or if
+           :attr:`Texture3DMappingFile.uniform_scale`
+           is set while a pattern scales differently along X, Y and Z.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

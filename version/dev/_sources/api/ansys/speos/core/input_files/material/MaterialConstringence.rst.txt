@@ -1,0 +1,232 @@
+
+
+
+
+
+
+:class:`MaterialConstringence`
+==============================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialConstringence(constringence = 57.2, index = 1.49)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a volume material given by its index and its Abbe number.
+
+
+   :Parameters:
+
+       **constringence** : :class:`python:float`, :obj:`optional`
+           Abbe number, measured with the refractive index at the 587.5618 nm helium line.
+           By default, ``57.2``.
+
+       **index** : :class:`python:float`, :obj:`optional`
+           Refractive index at 587.6 nm. By default, ``1.49``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialConstringence
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the finite dispersion parameters.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~constringence`
+            - Abbe number.
+          * - :py:attr:`~index`
+            - Refractive index at 587.6 nm.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialConstringence
+
+Property detail
+---------------
+
+.. py:property:: constringence
+   :type: float
+
+
+   
+   Abbe number.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New abbe number, measured with the refractive index at the 587.5618 nm helium line.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite constringence value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: index
+   :type: float
+
+
+   
+   Refractive index at 587.6 nm.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New refractive index at 587.6 nm.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite refractive index.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Constringence'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the finite dispersion parameters.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a parameter is nonfinite.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

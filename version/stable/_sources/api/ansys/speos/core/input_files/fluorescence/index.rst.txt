@@ -1,0 +1,87 @@
+
+
+
+
+
+
+The ``fluorescence.py`` module
+==============================
+
+.. py:module:: ansys.speos.core.input_files.fluorescence
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: fluorescence
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.fluorescence.FluorescentPigmentFile`
+            - Speos ``*.dye`` pigment, with sampled absorption and emission spectra.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.fluorescence.FluorescentPigment`
+            - A dye entry in the fluorescence table of a material file.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> FluorescentPigmentFile</api/ansys/speos/core/input_files/fluorescence/FluorescentPigmentFile>
+    <span class="nf nf-cod-symbol_class"></span> FluorescentPigment</api/ansys/speos/core/input_files/fluorescence/FluorescentPigment>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Models Speos fluorescent pigment files and pigment data in material files.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

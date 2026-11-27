@@ -1,0 +1,221 @@
+
+
+
+
+
+
+The ``constants.py`` module
+===========================
+
+.. py:module:: ansys.speos.core.generic.constants
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: constants
+.. tab-set::
+
+
+
+
+
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~DEFAULT_HOST`
+            - Default host used by Speos RPC server and client
+
+
+          * - :py:obj:`~DEFAULT_PORT`
+            - Default port used by Speos RPC server and client
+
+
+          * - :py:obj:`~DEFAULT_VERSION`
+            - Latest supported Speos version of the current PySpeos Package
+
+
+          * - :py:obj:`~MAX_SERVER_MESSAGE_LENGTH`
+            - Maximum message length value accepted by the Speos RPC server,
+
+
+          * - :py:obj:`~MAX_CLIENT_MESSAGE_SIZE`
+            - Maximum message Size accepted by grpc channel,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Collection of all constants used in pySpeos.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: DEFAULT_HOST
+   :type:  str
+   :value: 'localhost'
+
+
+   
+   Default host used by Speos RPC server and client 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: DEFAULT_PORT
+   :type:  str
+   :value: '50098'
+
+
+   
+   Default port used by Speos RPC server and client 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: DEFAULT_VERSION
+   :type:  str
+   :value: '252'
+
+
+   
+   Latest supported Speos version of the current PySpeos Package
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: MAX_SERVER_MESSAGE_LENGTH
+   :type:  int
+
+   
+   Maximum message length value accepted by the Speos RPC server,
+   By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: MAX_CLIENT_MESSAGE_SIZE
+   :type:  int
+   :value: 4194304
+
+
+   
+   Maximum message Size accepted by grpc channel,
+   By default, 4194304.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

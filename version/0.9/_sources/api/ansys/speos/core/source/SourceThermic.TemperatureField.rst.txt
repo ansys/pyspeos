@@ -1,0 +1,196 @@
+
+
+
+
+
+
+:class:`TemperatureField`
+=========================
+
+
+.. py:class:: ansys.speos.core.source.SourceThermic.TemperatureField(name, project, temperature_field, temperature_field_props, default_parameters = None, stable_ctr = False)
+
+   
+   Type of thermic source exitance : temperature field.
+
+
+   :Parameters:
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **temperature_field** :            :obj:`ansys.api.speos.source.v1.source_pb2.SourceTemplate.Thermic.TemperatureField`
+           Temperature field to complete.
+
+       **temperature_field_props** :        :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.ThermicProperties.TemperatureFieldProperties`
+           Temperature field properties to complete.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.TemperatureFieldParameters`
+           ..
+
+       **] = None**
+           Uses default TemperatureFieldParameters values.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_temperature_field method available in
+   SourceThermic class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TemperatureField
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~temperature_field_uri`
+            - Property of temperature field file uri.
+          * - :py:attr:`~sop`
+            - Surface optical property of the thermic source.
+          * - :py:attr:`~axis_plane`
+            - Get axis plane.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceThermic import TemperatureField
+
+Property detail
+---------------
+
+.. py:property:: temperature_field_uri
+   :type: str
+
+
+   
+   Property of temperature field file uri.
+
+
+   :Parameters:
+
+       **temperature_field_file_uri: Union[str, Path]**
+           temperature field file uri.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           temperature field file uri.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sop
+   :type: ansys.speos.core.opt_prop.BaseSop
+
+
+   
+   Surface optical property of the thermic source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Surface optical property for the temperature field.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_plane
+   :type: List[float]
+
+
+   
+   Get axis plane.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Position of the temperature field [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

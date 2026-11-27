@@ -1,0 +1,296 @@
+
+
+
+
+
+
+:class:`CommonUVMappingParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.CommonUVMappingParameters
+
+   
+   Store all information needed to create a UV mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CommonUVMappingParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~u_length`
+            - Length of the mapping along the U axis.
+          * - :py:attr:`~v_length`
+            - Length of the mapping along the V axis.
+          * - :py:attr:`~u_offset`
+            - Offset of the mapping origin along the U axis.
+          * - :py:attr:`~v_offset`
+            - Offset of the mapping origin along the V axis.
+          * - :py:attr:`~axis_system`
+            - Axis system used to position and orient the mapping.
+          * - :py:attr:`~u_scale`
+            - Scaling factor applied along the U axis.
+          * - :py:attr:`~v_scale`
+            - Scaling factor applied along the V axis.
+          * - :py:attr:`~rotation`
+            - Rotation angle of the mapping.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import CommonUVMappingParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: u_length
+   :type:  float
+   :value: 10
+
+
+   
+   Length of the mapping along the U axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: v_length
+   :type:  Optional[float]
+   :value: None
+
+
+   
+   Length of the mapping along the V axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: u_offset
+   :type:  float
+   :value: 0
+
+
+   
+   Offset of the mapping origin along the U axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: v_offset
+   :type:  float
+   :value: 0
+
+
+   
+   Offset of the mapping origin along the V axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Axis system used to position and orient the mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: u_scale
+   :type:  float
+   :value: 1
+
+
+   
+   Scaling factor applied along the U axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: v_scale
+   :type:  float
+   :value: 1
+
+
+   
+   Scaling factor applied along the V axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: rotation
+   :type:  float
+   :value: 0
+
+
+   
+   Rotation angle of the mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

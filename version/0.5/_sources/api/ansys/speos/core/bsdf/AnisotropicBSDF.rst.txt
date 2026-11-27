@@ -1,0 +1,379 @@
+
+
+
+
+
+
+:class:`AnisotropicBSDF`
+========================
+
+
+.. py:class:: ansys.speos.core.bsdf.AnisotropicBSDF(speos, file_path = None)
+
+   Bases: :py:obj:`BaseBSDF`
+
+
+   
+   BSDF - Bidirectional scattering distribution function.
+
+   This class contains the methods and functions to load and edit existing Speos bsdf datasets.
+
+   :Parameters:
+
+       **speos** : :obj:`ansys.speos.core.speos.Speos`
+           Speos Object to connect to speos rpc server
+
+       **file_path** : :obj:`Union`\[:obj:`Path`, :class:`python:str`]
+           File path to bsdf file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: AnisotropicBSDF
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Retrieve any information from the BSDF object.
+          * - :py:attr:`~reset`
+            - Reset BSDF data to what was stored in file.
+          * - :py:attr:`~commit`
+            - Sent Data to gRPC interface.
+          * - :py:attr:`~save`
+            - Save a Speos anistropic bsdf.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~anisotropic_angles`
+            - Anisotropic angles available in bsdf data.
+          * - :py:attr:`~spectrum_incidence`
+            - Incident angle (theta) of spectrum measurement.
+          * - :py:attr:`~spectrum_anisotropy`
+            - Incident angle (phi) of spectrum measurement.
+          * - :py:attr:`~reflection_spectrum`
+            - Reflection Spectrum of the bsdf.
+          * - :py:attr:`~transmission_spectrum`
+            - Transmission  Spectrum of the bsdf.
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Create string representation of a BSDF.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.bsdf import AnisotropicBSDF
+
+Property detail
+---------------
+
+.. py:property:: anisotropic_angles
+
+   
+   Anisotropic angles available in bsdf data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: spectrum_incidence
+   :type: list[float]
+
+
+   
+   Incident angle (theta) of spectrum measurement.
+
+   First value is for reflection second for transmission
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: spectrum_anisotropy
+   :type: list[float]
+
+
+   
+   Incident angle (phi) of spectrum measurement.
+
+   First value is for reflection second for transmission
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reflection_spectrum
+
+   
+   Reflection Spectrum of the bsdf.
+
+   The spectrum is used to modulate the bsdf.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: transmission_spectrum
+
+   
+   Transmission  Spectrum of the bsdf.
+
+   The spectrum is used to modulate the bsdf.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: get(key='')
+
+   
+   Retrieve any information from the BSDF object.
+
+
+   :Parameters:
+
+       **key** : :class:`python:str`
+           Name of the property.
+
+
+
+   :Returns:
+
+       :obj:`property`
+           Values/content of the associated property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Create string representation of a BSDF.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset BSDF data to what was stored in file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Sent Data to gRPC interface.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: save(file_path, commit = True)
+
+   
+   Save a Speos anistropic bsdf.
+
+
+   :Parameters:
+
+       **file_path** : :obj:`Union`\[:obj:`Path`, :class:`python:str`]
+           Filepath to save bsdf
+
+       **commit** : :ref:`bool <python:bltin-boolean-values>`
+           commit data before saving
+
+
+
+   :Returns:
+
+       :obj:`Path`
+           File location
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

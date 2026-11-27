@@ -1,0 +1,103 @@
+
+
+
+
+
+
+:class:`UVMappingCylindricalParameters`
+=======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UVMappingCylindricalParameters
+
+   Bases: :py:obj:`CommonUVMappingParameters`
+
+
+   
+   Cylindrical uv mapping parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UVMappingCylindricalParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~base_perimeter`
+            - Perimeter value used for spherical mapping.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UVMappingCylindricalParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: base_perimeter
+   :type:  float
+   :value: 1
+
+
+   
+   Perimeter value used for spherical mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

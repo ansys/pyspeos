@@ -1,0 +1,262 @@
+
+
+
+
+
+
+:class:`VolumeScatteringHenyeyGreenstein`
+=========================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.VolumeScatteringHenyeyGreenstein(wavelengths = (), anisotropies = _DEFAULT_ANISOTROPIES)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Henyey-Greenstein scattering phase function.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+           that the phase function does not depend on the wavelength. By default, ``[]``.
+
+       **anisotropies** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Anisotropy factor g at each wavelength, between -1 and 1. By default, ``[0.9]``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VolumeScatteringHenyeyGreenstein
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the phase function.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Spectral wavelengths in nm, returned as a copy.
+          * - :py:attr:`~anisotropies`
+            - Anisotropy factors, returned as a copy.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~MODEL`
+            - Identifier of the model in a ``*.material`` file.
+          * - :py:attr:`~VOLUMIC_HEADER`
+            - Header of the scattering block holding the model.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import VolumeScatteringHenyeyGreenstein
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Spectral wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths the anisotropy factor is given at, in nm. A single wavelength means
+           that the phase function does not depend on the wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Empty for a nonspectral parameter set.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: anisotropies
+   :type: List[float]
+
+
+   
+   Anisotropy factors, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New anisotropy factor g at each wavelength, between -1 and 1.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Factors between -1 and 1.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: MODEL
+   :type:  ClassVar[int]
+   :value: 1
+
+
+   
+   Identifier of the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: VOLUMIC_HEADER
+   :type:  ClassVar[str]
+   :value: 'OPTIS - Volumic Scattering file v1'
+
+
+   
+   Header of the scattering block holding the model.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the phase function.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If no anisotropy factor is given, the lists do not match, or an anisotropy
+           factor is outside the -1 to 1 range.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

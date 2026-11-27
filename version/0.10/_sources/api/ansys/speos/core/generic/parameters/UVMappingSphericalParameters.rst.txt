@@ -1,0 +1,103 @@
+
+
+
+
+
+
+:class:`UVMappingSphericalParameters`
+=====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UVMappingSphericalParameters
+
+   Bases: :py:obj:`CommonUVMappingParameters`
+
+
+   
+   Spherical uv mapping parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UVMappingSphericalParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sphere_perimeter`
+            - Perimeter value used for spherical mapping.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UVMappingSphericalParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sphere_perimeter
+   :type:  float
+   :value: 1
+
+
+   
+   Perimeter value used for spherical mapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

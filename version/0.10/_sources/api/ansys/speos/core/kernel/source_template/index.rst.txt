@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``source_template.py`` module
+=================================
+
+.. py:module:: ansys.speos.core.kernel.source_template
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: source_template
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.source_template.SourceTemplateLink`
+            - Link object for a source template in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.source_template.SourceTemplateStub`
+            - Database interactions for source templates.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoSourceTemplate`
+            - SourceTemplate protobuf class : ansys.api.speos.source.v1.source_pb2.SourceTemplate
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SourceTemplateLink</api/ansys/speos/core/kernel/source_template/SourceTemplateLink>
+    <span class="nf nf-cod-symbol_class"></span> SourceTemplateStub</api/ansys/speos/core/kernel/source_template/SourceTemplateStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoSourceTemplate
+
+   
+   SourceTemplate protobuf class : ansys.api.speos.source.v1.source_pb2.SourceTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

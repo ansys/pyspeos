@@ -1,0 +1,347 @@
+
+
+
+
+
+
+:class:`MaterialBirefringentCurve`
+==================================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialBirefringentCurve(wavelength = 550.0, index_a = 1.5, index_b = 1.51, index_c = 1.65, optical_class = MaterialOpticalClass.negative_uniaxial)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Refractive indices of a birefringent material along its three axes.
+
+   Speos does not make the indices of a birefringent material vary with the wavelength
+   when they are given explicitly, so a single index per axis is stored.
+
+   :Parameters:
+
+       **wavelength** : :class:`python:float`, :obj:`optional`
+           Wavelength the indices are given at, in nm. By default, ``550.0``.
+
+       **index_a** : :class:`python:float`, :obj:`optional`
+           Refractive index along the ``a`` axis. By default, ``1.5``.
+
+       **index_b** : :class:`python:float`, :obj:`optional`
+           Refractive index along the ``b`` axis. By default, ``1.51``.
+
+       **index_c** : :class:`python:float`, :obj:`optional`
+           Refractive index along the ``c`` axis. By default, ``1.65``.
+
+       **optical_class** : :obj:`MaterialOpticalClass`, :obj:`optional`
+           Optical class. By default, ``MaterialOpticalClass.negative_uniaxial``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialBirefringentCurve
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check finite indices and the optical class.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelength`
+            - Wavelength of the indices, in nm.
+          * - :py:attr:`~index_a`
+            - Refractive index along the a axis.
+          * - :py:attr:`~index_b`
+            - Refractive index along the b axis.
+          * - :py:attr:`~index_c`
+            - Refractive index along the c axis.
+          * - :py:attr:`~optical_class`
+            - Optical class of the material.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialBirefringentCurve
+
+Property detail
+---------------
+
+.. py:property:: wavelength
+   :type: float
+
+
+   
+   Wavelength of the indices, in nm.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New wavelength the indices are given at, in nm.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite wavelength.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: index_a
+   :type: float
+
+
+   
+   Refractive index along the a axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New refractive index along the ``a`` axis.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite index.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: index_b
+   :type: float
+
+
+   
+   Refractive index along the b axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New refractive index along the ``b`` axis.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite index.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: index_c
+   :type: float
+
+
+   
+   Refractive index along the c axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New refractive index along the ``c`` axis.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite index.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: optical_class
+   :type: MaterialOpticalClass
+
+
+   
+   Optical class of the material.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialOpticalClass`
+           New optical class.
+
+
+
+   :Returns:
+
+       :obj:`MaterialOpticalClass`
+           Negative uniaxial, positive uniaxial, or biaxial.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Dispersion_Curve'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check finite indices and the optical class.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a numeric value or optical class is invalid.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,485 @@
+
+
+
+
+
+
+:class:`BaseSimulation`
+=======================
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/simulation/BaseSimulation.Weight
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation(project, name, description = '', metadata = None, simulation_instance = None)
+
+   
+   Super Class for all simulations.
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which simulation shall be created.
+
+       **name** : :class:`python:str`
+           Name of the simulation.
+
+       **description** : :class:`python:str`
+           Description of the Simulation.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **simulation_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance`, :obj:`optional`
+           Simulation instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This is a Super class, **Do not instantiate this class yourself**
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: BaseSimulation
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sensor_paths`
+            - Set the sensors that the simulation will take into account.
+          * - :py:attr:`~set_source_paths`
+            - Set the sources that the simulation will take into account.
+          * - :py:attr:`~compute_CPU`
+            - Compute the simulation on CPU.
+          * - :py:attr:`~compute_GPU`
+            - Compute the simulation on GPU.
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the project - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~simulation_template_link`
+            - Link object for the simulation template in database.
+          * - :py:attr:`~job_link`
+            - Link object for the job in database.
+          * - :py:attr:`~result_list`
+            - List of results created after a simulation compute.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the simulation.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation import BaseSimulation
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: simulation_template_link
+   :value: None
+
+
+   
+   Link object for the simulation template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: job_link
+   :value: None
+
+
+   
+   Link object for the job in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: result_list
+   :value: []
+
+
+   
+   List of results created after a simulation compute.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sensor_paths(sensor_paths)
+
+   
+   Set the sensors that the simulation will take into account.
+
+
+   :Parameters:
+
+       **sensor_paths** : :obj:`List`\[:class:`python:str`]
+           The sensor paths.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation`
+           Simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_source_paths(source_paths)
+
+   
+   Set the sources that the simulation will take into account.
+
+
+   :Parameters:
+
+       **source_paths** : :obj:`List`\[:class:`python:str`]
+           The source paths.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation`
+           Simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: compute_CPU(threads_number = None)
+
+   
+   Compute the simulation on CPU.
+
+
+   :Parameters:
+
+       **threads_number** : :class:`python:int`, :obj:`optional`
+           The number of threads used.
+           By default, ``None``, means the number of processor available.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.api.speos.job.v2.job_pb2.Result`]
+           List of simulation results.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: compute_GPU()
+
+   
+   Compute the simulation on GPU.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.api.speos.job.v2.job_pb2.Result`]
+           List of simulation results.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the project - read only.
+
+
+   :Parameters:
+
+       **key: str**
+           ..
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           Dictionary of Simulation Feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the simulation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation`
+           Simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation`
+           Simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation`
+           Simulation feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.BaseSimulation.Weight
+
+
+
+

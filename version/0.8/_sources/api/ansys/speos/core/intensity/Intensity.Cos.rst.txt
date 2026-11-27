@@ -1,0 +1,153 @@
+
+
+
+
+
+
+:class:`Cos`
+============
+
+
+.. py:class:: ansys.speos.core.intensity.Intensity.Cos(cos, default_parameters = None)
+
+   
+   Intensity of type: Cos.
+
+   By default, Order of cos law 3, total angle in degrees of the source emission 180.0.
+
+   :Parameters:
+
+       **cos** : :obj:`ansys.api.speos.intensity.v1.IntensityTemplate.Cos`
+           Cos to complete.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.IntensityCosParameters`,         :obj:`ansys.speos.core.generic.parameters.IntensityLambertianParameters`] = :data:`python:None`
+           If defined the values in the Cos instance will be overwritten by the values of the
+           data class.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Cos
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~n`
+            - Property of order of cos law.
+          * - :py:attr:`~total_angle`
+            - Property of total angle of the emission of the light source.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.intensity.Intensity import Cos
+
+Property detail
+---------------
+
+.. py:property:: n
+   :type: float
+
+
+   
+   Property of order of cos law.
+
+
+   :Parameters:
+
+       **n** : :class:`python:float`
+           order of cos law.
+           By default, ``3``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           order of cos law.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: total_angle
+   :type: float
+
+
+   
+   Property of total angle of the emission of the light source.
+
+
+   :Parameters:
+
+       **total_angle** : :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+           By default, ``180.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

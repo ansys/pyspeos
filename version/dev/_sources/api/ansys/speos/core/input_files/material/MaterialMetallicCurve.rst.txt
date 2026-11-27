@@ -1,0 +1,274 @@
+
+
+
+
+
+
+:class:`MaterialMetallicCurve`
+==============================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialMetallicCurve(wavelengths = _DEFAULT_WAVELENGTHS, indices = _DEFAULT_METALLIC_INDICES, extinctions = _DEFAULT_METALLIC_EXTINCTIONS)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Dispersion of a metal given by its complex refractive index.
+
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the curve, in nm. By default, ``[486.0, 532.0, 643.0]``.
+
+       **indices** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Real part n of the refractive index at each wavelength. By default,
+           ``[1.0, 1.0, 1.0]``.
+
+       **extinctions** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Extinction coefficient k at each wavelength. By default, ``[0.0, 0.0, 0.0]``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The default refractive index and extinction values are placeholders, not the optical
+   constants of a real metal.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialMetallicCurve
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the complex index curve is complete.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Curve wavelengths in nm, returned as a copy.
+          * - :py:attr:`~indices`
+            - Real refractive indices, returned as a copy.
+          * - :py:attr:`~extinctions`
+            - Extinction coefficients, returned as a copy.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~KEYWORD`
+            - Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialMetallicCurve
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Curve wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths of the curve, in nm.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: indices
+   :type: List[float]
+
+
+   
+   Real refractive indices, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New real part n of the refractive index at each wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite indices.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: extinctions
+   :type: List[float]
+
+
+   
+   Extinction coefficients, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New extinction coefficient k at each wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite extinction coefficients.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: KEYWORD
+   :type:  ClassVar[str]
+   :value: 'Dispersion_Curve'
+
+
+   
+   Keyword identifying the model in a ``*.material`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the complex index curve is complete.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If columns are empty or their lengths differ.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

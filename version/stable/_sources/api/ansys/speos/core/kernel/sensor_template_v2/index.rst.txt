@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``sensor_template_v2.py`` module
+====================================
+
+.. py:module:: ansys.speos.core.kernel.sensor_template_v2
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: sensor_template_v2
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sensor_template_v2.SensorTemplateLinkV2`
+            - Link object for sensor template v2 in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.sensor_template_v2.SensorTemplateStubV2`
+            - Database interactions for sensor templates v2.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoSensorTemplateV2`
+            - SensorTemplate protobuf class : ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SensorTemplateLinkV2</api/ansys/speos/core/kernel/sensor_template_v2/SensorTemplateLinkV2>
+    <span class="nf nf-cod-symbol_class"></span> SensorTemplateStubV2</api/ansys/speos/core/kernel/sensor_template_v2/SensorTemplateStubV2>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs for sensor.v2.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoSensorTemplateV2
+
+   
+   SensorTemplate protobuf class : ansys.api.speos.sensor.v2.sensor_pb2.SensorTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

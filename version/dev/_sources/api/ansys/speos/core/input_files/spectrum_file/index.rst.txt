@@ -1,0 +1,120 @@
+
+
+
+
+
+
+The ``spectrum_file.py`` module
+===============================
+
+.. py:module:: ansys.speos.core.input_files.spectrum_file
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: spectrum_file
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.spectrum_file.SpectrumFile`
+            - Speos ``*.spectrum`` file, holding a sampled spectral distribution.
+
+
+
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~MAX_SPECTRUM_SAMPLES`
+            - Maximum number of wavelength samples accepted by Speos in a ``*.spectrum`` file.
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SpectrumFile</api/ansys/speos/core/input_files/spectrum_file/SpectrumFile>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.spectrum`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: MAX_SPECTRUM_SAMPLES
+   :value: 32767
+
+
+   
+   Maximum number of wavelength samples accepted by Speos in a ``*.spectrum`` file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

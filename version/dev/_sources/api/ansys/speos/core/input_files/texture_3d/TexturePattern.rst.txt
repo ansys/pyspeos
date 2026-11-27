@@ -1,0 +1,278 @@
+
+
+
+
+
+
+:class:`TexturePattern`
+=======================
+
+
+.. py:class:: ansys.speos.core.input_files.texture_3d.TexturePattern(position = (0.0, 0.0, 0.0), x_direction = (1.0, 0.0, 0.0), y_direction = (0.0, 1.0, 0.0), scale = (1.0, 1.0, 1.0))
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   Placement of one pattern of a Speos 3D Texture.
+
+
+   :Parameters:
+
+       **position** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Origin of the pattern, in the axis system of the 3D Texture.
+           By default, ``(0.0, 0.0, 0.0)``.
+
+       **x_direction** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Orientation of the pattern along the X direction of the axis system.
+           By default, ``(1.0, 0.0, 0.0)``.
+
+       **y_direction** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Orientation of the pattern along the Y direction of the axis system.
+           By default, ``(0.0, 1.0, 0.0)``.
+
+       **scale** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`], :obj:`optional`
+           Scale factors along the X, Y and Z directions, ``1`` meaning 100 percent of the
+           original pattern size. By default, ``(1.0, 1.0, 1.0)``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Construction and setters validate finite three-component vectors before storing them
+   as immutable tuples. Editing a pattern shared with a mapping does not notify the
+   mapping; its uniform-scale constraint is rechecked when validating or saving it.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TexturePattern
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check vector dimensions and finite coordinates.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~position`
+            - Pattern origin.
+          * - :py:attr:`~x_direction`
+            - Pattern X direction.
+          * - :py:attr:`~y_direction`
+            - Pattern Y direction.
+          * - :py:attr:`~scale`
+            - Pattern scale factors.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.texture_3d import TexturePattern
+
+Property detail
+---------------
+
+.. py:property:: position
+   :type: Tuple[float, ...]
+
+
+   
+   Pattern origin.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New origin of the pattern, in the axis system of the 3D Texture.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite Cartesian coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_direction
+   :type: Tuple[float, ...]
+
+
+   
+   Pattern X direction.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New orientation of the pattern along the X direction of the axis system.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite direction coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_direction
+   :type: Tuple[float, ...]
+
+
+   
+   Pattern Y direction.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New orientation of the pattern along the Y direction of the axis system.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite direction coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: scale
+   :type: Tuple[float, ...]
+
+
+   
+   Pattern scale factors.
+
+
+   :Parameters:
+
+       **values** : :obj:`Tuple`\[:class:`python:float`, :class:`python:float`, :class:`python:float`]
+           New scale factors along the X, Y and Z directions, ``1`` meaning 100 percent of the
+           original pattern size.
+
+
+
+   :Returns:
+
+       :obj:`Tuple`\[:class:`python:float`, ...]
+           Three finite scale factors.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check vector dimensions and finite coordinates.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If a vector is not a finite three-component vector.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

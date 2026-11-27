@@ -1,0 +1,161 @@
+
+
+
+
+
+
+:class:`NonIridescence`
+=======================
+
+.. toctree::
+   :hidden:
+
+    Isotropic</api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic>
+    Anisotropic</api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic>
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence(non_iridescence_mode, default_values = True, stable_ctr = False)
+
+   
+   Color does not depend on viewing direction of BSDF measurement settings.
+
+   By default,
+   2 degrees set_isotropic uniform type source sampling is set
+
+   :Parameters:
+
+       **non_iridescence_mode** : :obj:`simulation_template_pb2.NoIridescence`
+           NonIridescence settings to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default settings when True as isotropic source.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: NonIridescence
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_isotropic`
+            - Set isotropic type of uniform source.
+          * - :py:attr:`~set_anisotropic`
+            - Set anisotropic type of uniform source.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics import NonIridescence
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_isotropic()
+
+   
+   Set isotropic type of uniform source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic`
+           Isotropic source settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_anisotropic()
+
+   
+   Set anisotropic type of uniform source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic`
+           Anisotropic source settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic
+    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic
+
+
+
+

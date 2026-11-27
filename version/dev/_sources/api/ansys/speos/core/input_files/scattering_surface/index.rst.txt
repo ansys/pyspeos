@@ -1,0 +1,87 @@
+
+
+
+
+
+
+The ``scattering_surface.py`` module
+====================================
+
+.. py:module:: ansys.speos.core.input_files.scattering_surface
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: scattering_surface
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample`
+            - Scattering contributions of a surface at one angle of incidence and one wavelength.
+
+
+          * - :py:obj:`~ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceFile`
+            - Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> ScatteringSurfaceSample</api/ansys/speos/core/input_files/scattering_surface/ScatteringSurfaceSample>
+    <span class="nf nf-cod-symbol_class"></span> ScatteringSurfaceFile</api/ansys/speos/core/input_files/scattering_surface/ScatteringSurfaceFile>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the Speos ``*.scattering`` input file format.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

@@ -1,0 +1,403 @@
+
+
+
+
+
+
+:class:`ScatteringSurfaceFile`
+==============================
+
+
+.. py:class:: ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceFile(wavelengths = _DEFAULT_WAVELENGTHS, incident_angles = _DEFAULT_INCIDENT_ANGLES, samples = None, description = _DEFAULT_DESCRIPTION)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.scattering`` file, a scattering surface varying with angle and wavelength.
+
+   The file holds one
+   :class:`ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample` per
+   angle of incidence and per wavelength, stored in
+   ``samples[incidence_index][wavelength_index]``.
+
+   :Parameters:
+
+       **wavelengths** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the samples, in nm, sorted in increasing order. At least two
+           wavelengths are required. By default, ``[400.0, 550.0, 700.0]``.
+
+       **incident_angles** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Angles of incidence of the samples, in degrees, sorted in increasing order.
+           ``0`` and ``90`` are required. By default, ``[0.0, 60.0, 90.0]``.
+
+       **samples** : :obj:`List`\[:obj:`List`\[:obj:`ScatteringSurfaceSample`]], :obj:`optional`
+           Contributions, one row per angle of incidence and one column per wavelength.
+           By default, a 3 x 3 grid of independent default
+           :class:`ansys.speos.core.input_files.scattering_surface.ScatteringSurfaceSample`
+           objects, which specularly reflect all the light.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default,
+           ``"Scattering surface"``.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Called without arguments, the constructor creates a 3 x 3 grid of perfect specular
+   reflectors. Pass ``wavelengths``, ``incident_angles`` and ``samples`` together to
+   describe another grid, since each default only matches the other ones.
+
+   Empty lists allow staged construction, but :meth:`ScatteringSurfaceFile.validate` and
+   ``save()`` require a complete surface. Nonempty assignments are checked against the
+   configured axes and grid. To resize a populated grid, clear
+   :attr:`ScatteringSurfaceFile.samples`, assign the new axes,
+   then assign the new grid. List getters return copies of the containers, while sample
+   objects remain shared so their validated properties can be edited directly.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.scattering_surface import (
+   ...     ScatteringSurfaceFile,
+   ...     ScatteringSurfaceSample,
+   ... )
+   >>> grey = ScatteringSurfaceSample(specular_reflection=0.0, lambertian_reflection=50.0)
+   >>> surface = ScatteringSurfaceFile(
+   ...     wavelengths=[400.0, 700.0],
+   ...     incident_angles=[0.0, 90.0],
+   ...     samples=[[grey, grey], [grey, grey]],
+   ... )
+   >>> surface.save("grey.scattering")
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ScatteringSurfaceFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the surface against the constraints of the ``*.scattering`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelengths`
+            - Wavelengths in nm, returned as a copy.
+          * - :py:attr:`~incident_angles`
+            - Angles of incidence in degrees, returned as a copy.
+          * - :py:attr:`~samples`
+            - Sample grid, returned with copied row containers.
+          * - :py:attr:`~description`
+            - Free text written on the second line of the file.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+          * - :py:attr:`~HEADER`
+            - First line of the file. Empty when the format has no header line.
+          * - :py:attr:`~HEADER_PREFIX`
+            - Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.scattering_surface import ScatteringSurfaceFile
+
+Property detail
+---------------
+
+.. py:property:: wavelengths
+   :type: List[float]
+
+
+   
+   Wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New wavelengths of the samples, in nm, sorted in increasing order. At least two
+           wavelengths are required.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Sorted wavelengths. A nonempty assignment requires at least two finite values.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: incident_angles
+   :type: List[float]
+
+
+   
+   Angles of incidence in degrees, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New angles of incidence of the samples, in degrees, sorted in increasing order.
+           ``0`` and ``90`` are required.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Sorted angles. A nonempty assignment must include 0 and 90 degrees.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: samples
+   :type: List[List[ScatteringSurfaceSample]]
+
+
+   
+   Sample grid, returned with copied row containers.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:obj:`List`\[:obj:`ScatteringSurfaceSample`]]
+           New contributions, one row per angle of incidence and one column per wavelength.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`List`\[:obj:`ScatteringSurfaceSample`]]
+           One row per incidence and one column per wavelength. Sample objects remain
+           shared and their properties can be updated through their validated setters.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Assign the grid back to this property to replace, add, or remove entries.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: description
+   :type: str
+
+
+   
+   Free text written on the second line of the file.
+
+
+   :Parameters:
+
+       **value** : :class:`python:str`
+           New free text written on the second line of the file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Description without line separators.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.scattering'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER
+   :value: 'OPTIS - Scattering surface file v1.0'
+
+
+   
+   First line of the file. Empty when the format has no header line.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER_PREFIX
+   :value: 'OPTIS - Scattering surface file'
+
+
+   
+   Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the surface against the constraints of the ``*.scattering`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If fewer than two wavelengths are given, the angles of incidence do not span
+           0 to 90 degrees, the sample grid does not match the wavelengths and angles, or
+           a sample holds invalid contributions.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``intensity_template.py`` module
+====================================
+
+.. py:module:: ansys.speos.core.kernel.intensity_template
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: intensity_template
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.intensity_template.IntensityTemplateLink`
+            - Link object for intensity template in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.intensity_template.IntensityTemplateStub`
+            - Database interactions for intensity templates.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoIntensityTemplate`
+            - IntensityTemplate protobuf class : ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> IntensityTemplateLink</api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink>
+    <span class="nf nf-cod-symbol_class"></span> IntensityTemplateStub</api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoIntensityTemplate
+
+   
+   IntensityTemplate protobuf class : ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

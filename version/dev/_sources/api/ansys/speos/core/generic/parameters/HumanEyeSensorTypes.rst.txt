@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`HumanEyeSensorTypes`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.HumanEyeSensorTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Sensor types available for the human eye sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: HumanEyeSensorTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~colorimetric`
+            - 
+          * - :py:attr:`~spectral`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import HumanEyeSensorTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: colorimetric
+   :value: 'colorimetric'
+
+
+.. py:attribute:: spectral
+   :value: 'spectral'
+
+
+
+
+
+

@@ -1,0 +1,105 @@
+
+
+
+
+
+
+:class:`EnergyDensity3DSensorParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.EnergyDensity3DSensorParameters
+
+   
+   Parameters for a 3D energy density sensor.
+
+
+   :Parameters:
+
+       **dimensions** : :obj:`EnergyDensity3DDimensionsParameters`, :obj:`optional`
+           Volume sizes and voxel sampling.
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`], :obj:`optional`
+           Twelve-value position and orientation, by default the global origin axes.
+
+       **sensor_type** : :obj:`SensorTypes`, :obj:`optional`
+           Photometric or radiometric mode, by default photometric.
+
+       **layer_type** : :obj:`LayerTypes` or :obj:`LayerByFaceParameters`, :obj:`optional`
+           No separation, separation by source, or separation by face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: EnergyDensity3DSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~dimensions`
+            - 
+          * - :py:attr:`~axis_system`
+            - 
+          * - :py:attr:`~sensor_type`
+            - 
+          * - :py:attr:`~layer_type`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import EnergyDensity3DSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: dimensions
+   :type:  EnergyDensity3DDimensionsParameters
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+
+.. py:attribute:: sensor_type
+   :type:  Literal[SensorTypes, SensorTypes]
+
+.. py:attribute:: layer_type
+   :type:  Union[Literal[LayerTypes, LayerTypes], LayerByFaceParameters]
+
+
+
+
+

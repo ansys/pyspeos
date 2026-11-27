@@ -1,0 +1,1030 @@
+
+
+
+
+
+
+:class:`MaterialFile`
+=====================
+
+
+.. py:class:: ansys.speos.core.input_files.material.MaterialFile(description = 'Optical Glass', material_type = MaterialType.isotropic, dispersion = None, absorption_wavelengths = None, absorption_values = None, measured_concentration = 1.0, user_concentration = 1.0, scattering_wavelengths = None, scattering_values = None, scattering = None, axis_j = _DEFAULT_AXIS_J, axis_k = _DEFAULT_AXIS_K, absorption_values_b = None, absorption_values_c = None, fluorescent_pigments = None)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base.SpeosTextFileFormat`
+
+
+   
+   Speos ``*.material`` file, holding the volume optical properties of a body.
+
+   The file always describes how the refractive index and the absorption vary with the
+   wavelength. Setting :attr:`MaterialFile.scattering` adds a volume scattering block,
+   which turns the file into the scattering flavor of the format.
+
+   :attr:`MaterialFile.material_type` selects the flavor of the format, and with it the
+   models :attr:`MaterialFile.dispersion` accepts. A metallic material holds nothing but
+   the complex
+   refractive index of the metal, while a birefringent one holds an index per axis, the
+   orientation of these axes and an absorption curve per axis.
+
+   :Parameters:
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Free text written on the second line of the file. By default, ``"Optical Glass"``
+
+       **material_type** : :obj:`MaterialType`, :obj:`optional`
+           Type of material. By default, ``MaterialType.isotropic``.
+
+       **dispersion** : :obj:`Union`\[:obj:`MaterialDispersion`, :obj:`MaterialBirefringence`, :obj:`MaterialMetallicCurve`], :obj:`optional`
+           How the refractive index varies with the wavelength. A metallic material needs a
+           :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+           birefringent one needs one of the
+           :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models. By
+           default, a :class:`ansys.speos.core.input_files.material.MaterialDispersionCurve`
+           model with its default index curve.
+
+       **absorption_wavelengths** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+           whose extinction coefficient already holds the absorption. By default,
+           ``[486.0, 532.0, 643.0]``, or ``[]`` for a metallic material.
+
+       **absorption_values** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+           the absorption along the ``a`` axis. By default, ``[0.0, 0.0, 0.0]``, or ``[]`` for
+           a metallic material.
+
+       **measured_concentration** : :class:`python:float`, :obj:`optional`
+           Concentration the absorption curve was measured at. By default, ``1.0``.
+
+       **user_concentration** : :class:`python:float`, :obj:`optional`
+           Concentration the absorption curve is scaled to. By default, ``1.0``.
+
+       **scattering_wavelengths** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Wavelengths of the diffusion curve, in nm. By default, ``[486.0, 532.0, 643.0]``
+           when ``scattering`` is given, ``[]`` otherwise.
+
+       **scattering_values** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Diffusion coefficient at each wavelength, in mm-1. By default, ``0.1`` at each
+           default diffusion wavelength when ``scattering`` is given, ``[]`` otherwise.
+
+       **scattering** : :obj:`Optional`\[:obj:`VolumeScattering`], :obj:`optional`
+           Scattering phase function. By default, ``None``, which writes a non-scattering
+           material.
+
+       **axis_j** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Direction of the ``b`` axis of a birefringent material. Ignored by the other
+           flavors. By default, ``[1.0, 0.0, 0.0]``.
+
+       **axis_k** : :obj:`Sequence`\[:class:`python:float`], :obj:`optional`
+           Direction of the ``c`` axis of a birefringent material. Ignored by the other
+           flavors. By default, ``[0.0, 1.0, 0.0]``.
+
+       **absorption_values_b** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Absorption of a birefringent material along its ``b`` axis, one value per
+           wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+           for a birefringent material, ``[]`` otherwise.
+
+       **absorption_values_c** : :obj:`List`\[:class:`python:float`], :obj:`optional`
+           Absorption of a birefringent material along its ``c`` axis, one value per
+           wavelength of the absorption curve. By default, ``0.0`` per absorption wavelength
+           for a birefringent material, ``[]`` otherwise.
+
+       **fluorescent_pigments** : :obj:`Sequence`\[:obj:`FluorescentPigment`], :obj:`optional`
+           Dye entries used by a fluorescent material. By default, no dyes are included;
+           at least one must be added before saving.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Called without arguments, the constructor creates an isotropic optical glass of index
+   1.5 that neither absorbs nor scatters light. The defaults of the curves depend on
+   ``material_type`` and ``scattering`` only so that each flavor stays valid; a fluorescent
+   material defaults to the Speos editor's description and empty dye list, which must be
+   populated before saving. The default dispersion model is always an index curve, so pass
+   a matching model for a metallic or birefringent material.
+
+   Setters validate candidate data without partially updating the material. List getters
+   return copies; dispersion and phase models remain shared with validated properties.
+   Empty columns permit staged construction, while :meth:`MaterialFile.validate` and
+   ``save()`` require complete data and recheck shared child models. To resize a curve,
+   clear all
+   dependent value columns before changing its wavelengths, then repopulate the columns.
+   Likewise, clear all phase parameter columns before changing phase wavelengths.
+   To change between isotropic, metallic and birefringent flavors, construct a new
+   material with the matching dispersion model rather than changing the flavor in place.
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.input_files.material import MaterialFile, MaterialConstringence
+   >>> MaterialFile(
+   ...     description="PMMA",
+   ...     dispersion=MaterialConstringence(constringence=57.2, index=1.49),
+   ...     absorption_wavelengths=[486.0, 643.0],
+   ...     absorption_values=[0.0001, 0.0005],
+   ... ).save("pmma.material")
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MaterialFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the material against the constraints of the ``*.material`` format.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~description`
+            - Single-line description.
+          * - :py:attr:`~absorption_wavelengths`
+            - Absorption wavelengths in nm, returned as a copy.
+          * - :py:attr:`~absorption_values`
+            - Absorption coefficients in mm-1, returned as a copy.
+          * - :py:attr:`~measured_concentration`
+            - Concentration at which absorption was measured.
+          * - :py:attr:`~user_concentration`
+            - Concentration to which absorption is scaled.
+          * - :py:attr:`~scattering_wavelengths`
+            - Diffusion wavelengths in nm, returned as a copy.
+          * - :py:attr:`~scattering_values`
+            - Diffusion coefficients in mm-1, returned as a copy.
+          * - :py:attr:`~scattering`
+            - Volume scattering phase function.
+          * - :py:attr:`~axis_j`
+            - Direction of the b axis, returned as a copy.
+          * - :py:attr:`~axis_k`
+            - Direction of the c axis, returned as a copy.
+          * - :py:attr:`~absorption_values_b`
+            - Absorption coefficients along b, returned as a copy.
+          * - :py:attr:`~absorption_values_c`
+            - Absorption coefficients along c, returned as a copy.
+          * - :py:attr:`~fluorescent_pigments`
+            - Fluorescent dye entries, returned as a copied list.
+          * - :py:attr:`~material_type`
+            - Material flavor matching the dispersion model.
+          * - :py:attr:`~dispersion`
+            - Dispersion model of this material flavor.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~EXTENSION`
+            - Usual file extension of the format.
+          * - :py:attr:`~HEADER`
+            - First line of the file. Empty when the format has no header line.
+          * - :py:attr:`~HEADER_PREFIX`
+            - Version-agnostic start of ``HEADER``, used to validate a file being read.
+          * - :py:attr:`~ISOTROPIC`
+            - Material type of the default flavor of the format.
+          * - :py:attr:`~METALLIC`
+            - Material type of the metallic flavor of the format.
+          * - :py:attr:`~BIREFRINGENT`
+            - Material type of the birefringent flavor of the format.
+          * - :py:attr:`~FLUORESCENT`
+            - Material type of the fluorescent flavor of the format.
+          * - :py:attr:`~DISPERSIONS`
+            - Dispersion models the file can hold.
+          * - :py:attr:`~BIREFRINGENT_DISPERSIONS`
+            - Dispersion models a birefringent material can hold.
+          * - :py:attr:`~SCATTERINGS`
+            - Scattering phase functions the file can hold.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.material import MaterialFile
+
+Property detail
+---------------
+
+.. py:property:: description
+   :type: str
+
+
+   
+   Single-line description.
+
+
+   :Parameters:
+
+       **value** : :class:`python:str`
+           New free text written on the second line of the file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Free text written after the header.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_wavelengths
+   :type: List[float]
+
+
+   
+   Absorption wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New wavelengths of the absorption curve, in nm. Left empty by a metallic material,
+           whose extinction coefficient already holds the absorption.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_values
+   :type: List[float]
+
+
+   
+   Absorption coefficients in mm-1, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New absorption coefficient at each wavelength, in mm-1. For a birefringent material,
+           the absorption along the ``a`` axis.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite coefficients, along the a axis for a birefringent material.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: measured_concentration
+   :type: float
+
+
+   
+   Concentration at which absorption was measured.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New concentration the absorption curve was measured at.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite concentration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: user_concentration
+   :type: float
+
+
+   
+   Concentration to which absorption is scaled.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New concentration the absorption curve is scaled to.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Finite concentration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: scattering_wavelengths
+   :type: List[float]
+
+
+   
+   Diffusion wavelengths in nm, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New wavelengths of the diffusion curve, in nm.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite wavelengths.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: scattering_values
+   :type: List[float]
+
+
+   
+   Diffusion coefficients in mm-1, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New diffusion coefficient at each wavelength, in mm-1.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite coefficients.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: scattering
+   :type: Optional[VolumeScattering]
+
+
+   
+   Volume scattering phase function.
+
+
+   :Parameters:
+
+       **value** : :obj:`Optional`\[:obj:`VolumeScattering`]
+           New scattering phase function.
+
+
+
+   :Returns:
+
+       :obj:`Optional`\[:obj:`VolumeScattering`]
+           Shared phase model, or None for a nonscattering material.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_j
+   :type: List[float]
+
+
+   
+   Direction of the b axis, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New direction of the ``b`` axis of a birefringent material. Ignored by the other
+           flavors.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Three finite coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_k
+   :type: List[float]
+
+
+   
+   Direction of the c axis, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:class:`python:float`]
+           New direction of the ``c`` axis of a birefringent material. Ignored by the other
+           flavors.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Three finite coordinates.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_values_b
+   :type: List[float]
+
+
+   
+   Absorption coefficients along b, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New absorption of a birefringent material along its ``b`` axis, one value per
+           wavelength of the absorption curve.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite coefficients in mm-1.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption_values_c
+   :type: List[float]
+
+
+   
+   Absorption coefficients along c, returned as a copy.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           New absorption of a birefringent material along its ``c`` axis, one value per
+           wavelength of the absorption curve.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           Finite coefficients in mm-1.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: fluorescent_pigments
+   :type: List[ansys.speos.core.input_files.fluorescence.FluorescentPigment]
+
+
+   
+   Fluorescent dye entries, returned as a copied list.
+
+
+   :Parameters:
+
+       **values** : :obj:`Sequence`\[:obj:`FluorescentPigment`]
+           New dye entries. Only fluorescent materials can contain dyes.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`FluorescentPigment`]
+           Dye entries whose nested models remain shared and editable.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: material_type
+   :type: MaterialType
+
+
+   
+   Material flavor matching the dispersion model.
+
+
+   :Parameters:
+
+       **value** : :obj:`MaterialType`
+           New type of material.
+
+
+
+   :Returns:
+
+       :obj:`MaterialType`
+           Isotropic, metallic, birefringent, or fluorescent.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   Construct a new material to switch to a flavor requiring another dispersion type.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: dispersion
+   :type: Union[MaterialDispersion, MaterialBirefringence, MaterialMetallicCurve]
+
+
+   
+   Dispersion model of this material flavor.
+
+
+   :Parameters:
+
+       **value** : :obj:`Union`\[:obj:`MaterialDispersion`, :obj:`MaterialBirefringence`, :obj:`MaterialMetallicCurve`]
+           New how the refractive index varies with the wavelength. A metallic material needs a
+           :class:`ansys.speos.core.input_files.material.MaterialMetallicCurve` and a
+           birefringent one needs one of the
+           :obj:`ansys.speos.core.input_files.material.MaterialBirefringence` models.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`MaterialDispersion`, :obj:`MaterialBirefringence`, :obj:`MaterialMetallicCurve`]
+           Shared model with locally validated properties.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: EXTENSION
+   :value: '.material'
+
+
+   
+   Usual file extension of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER
+   :value: 'OPTIS - Material file v13'
+
+
+   
+   First line of the file. Empty when the format has no header line.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: HEADER_PREFIX
+   :value: 'OPTIS - Material file'
+
+
+   
+   Version-agnostic start of ``HEADER``, used to validate a file being read.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: ISOTROPIC
+   :type:  ClassVar[MaterialType]
+
+   
+   Material type of the default flavor of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: METALLIC
+   :type:  ClassVar[MaterialType]
+
+   
+   Material type of the metallic flavor of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: BIREFRINGENT
+   :type:  ClassVar[MaterialType]
+
+   
+   Material type of the birefringent flavor of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: FLUORESCENT
+   :type:  ClassVar[MaterialType]
+
+   
+   Material type of the fluorescent flavor of the format.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: DISPERSIONS
+   :type:  ClassVar[tuple]
+
+   
+   Dispersion models the file can hold.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: BIREFRINGENT_DISPERSIONS
+   :type:  ClassVar[tuple]
+
+   
+   Dispersion models a birefringent material can hold.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: SCATTERINGS
+   :type:  ClassVar[tuple]
+
+   
+   Scattering phase functions the file can hold.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the material against the constraints of the ``*.material`` format.
+
+
+
+
+
+
+
+
+
+   :Raises:
+
+       :obj:`ValueError`
+           If the dispersion model does not match :attr:`MaterialFile.material_type`, if
+           the absorption curve is empty or inconsistent, if a scattering phase function
+           is set without a matching diffusion curve, if a fluorescent material has no
+           pigments, or if a material carries data the format cannot store.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

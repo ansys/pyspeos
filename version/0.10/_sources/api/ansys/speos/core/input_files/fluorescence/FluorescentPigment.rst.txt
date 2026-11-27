@@ -1,0 +1,227 @@
+
+
+
+
+
+
+:class:`FluorescentPigment`
+===========================
+
+
+.. py:class:: ansys.speos.core.input_files.fluorescence.FluorescentPigment(dye = None, measured_concentration = None, user_concentration = 1.0)
+
+   Bases: :py:obj:`ansys.speos.core.input_files._base._ValueComparable`
+
+
+   
+   A dye entry in the fluorescence table of a material file.
+
+
+   :Parameters:
+
+       **dye** : :obj:`FluorescentPigmentFile`, :obj:`optional`
+           Pigment spectra and properties. A new default pigment is created when omitted.
+
+       **measured_concentration** : :class:`python:float`, :obj:`optional`
+           Concentration at which the dye was measured. If omitted, uses the concentration
+           already stored in ``dye`` (``1.0`` for a new default dye).
+
+       **user_concentration** : :class:`python:float`, :obj:`optional`
+           Concentration used by the material. Defaults to ``1.0``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: FluorescentPigment
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~validate`
+            - Check the concentrations and pigment data.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~dye`
+            - Shared pigment model.
+          * - :py:attr:`~user_concentration`
+            - Concentration used by the material.
+          * - :py:attr:`~measured_concentration`
+            - Concentration at which the dye was measured.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.input_files.fluorescence import FluorescentPigment
+
+Property detail
+---------------
+
+.. py:property:: dye
+   :type: FluorescentPigmentFile
+
+
+   
+   Shared pigment model.
+
+
+   :Parameters:
+
+       **value** : :obj:`FluorescentPigmentFile`
+           New pigment model.
+
+
+
+   :Returns:
+
+       :obj:`FluorescentPigmentFile`
+           Pigment model.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: user_concentration
+   :type: float
+
+
+   
+   Concentration used by the material.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New user concentration.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           User concentration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: measured_concentration
+   :type: float
+
+
+   
+   Concentration at which the dye was measured.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           New measured concentration, also stored in the shared dye.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Measured concentration.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: validate()
+
+   
+   Check the concentrations and pigment data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
